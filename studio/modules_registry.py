@@ -6,9 +6,33 @@ from pathlib import Path
 import json
 
 MODULES_DIR = Path(__file__).parent / "modules"
+WORLD_MANIFEST_PATH = Path(__file__).parent / "world_manifest.md"
 
 # Текущий активный департамент
 CURRENT_DEPT = "video_long"
+
+# Кеш манифеста — грузится один раз
+_WORLD_MANIFEST_CACHE: str | None = None
+
+
+def _load_world_manifest() -> str:
+    """Загружает Глобальный Манифест Грондхейма.
+    Один файл — 145 граждан видят одни и те же законы мира.
+    """
+    global _WORLD_MANIFEST_CACHE
+    if _WORLD_MANIFEST_CACHE is not None:
+        return _WORLD_MANIFEST_CACHE
+
+    if WORLD_MANIFEST_PATH.exists():
+        try:
+            _WORLD_MANIFEST_CACHE = WORLD_MANIFEST_PATH.read_text(encoding="utf-8")
+            print(f"[WORLD] 🌆 Манифест Грондхейма загружен ({len(_WORLD_MANIFEST_CACHE)} симв.)")
+            return _WORLD_MANIFEST_CACHE
+        except Exception as e:
+            print(f"[WORLD] ⚠ Не удалось загрузить Манифест: {e}")
+
+    _WORLD_MANIFEST_CACHE = ""
+    return ""
 
 
 @dataclass
@@ -74,7 +98,14 @@ def get_worker_prompt(worker_id: str) -> str:
     if core_path.exists():
         parts.append("# ═══ ЯДРО · ЯКОРНЫЕ ТОЧКИ (неизменяемо) ═══")
         parts.append(core_path.read_text(encoding="utf-8"))
-        parts.append("# ═══ РАБОЧИЕ ИНСТРУКЦИИ ═══")
+
+    # 2. Глобальный Манифест Грондхейма — законы мира для всех граждан
+    manifest = _load_world_manifest()
+    if manifest:
+        parts.append(manifest)
+
+    # 3. Рабочие инструкции
+    parts.append("# ═══ РАБОЧИЕ ИНСТРУКЦИИ ═══")
 
     # 2. Рабочий промпт — новая структура (forge/) или старый корень
     found_prompt = False

@@ -31,6 +31,7 @@ try:
         on_agent_done,
         on_agents_interact,
         sync_to_dna,
+        record_sensory_event,
     )
     _GRONDHEIM_ENABLED = True
     print("[GRONDHEIM] Память агентов подключена")
@@ -41,7 +42,54 @@ except ImportError:
     def on_agent_done(agent_id, result_summary, quality_score=0.5, dept=""): pass
     def on_agents_interact(a, b, interaction_type="collaboration", quality=0.5, note="", dept=""): pass
     def sync_to_dna(agent_id, event, intensity=0.5, dept=""): pass
+    def record_sensory_event(**kwargs): pass
 # ══ END NEW ══
+
+
+# ══ Рюкзак Знаний: читаем что агент принёс с Маяка ══
+
+def _get_lighthouse_knowledge(worker_id: str, dept: str) -> str:
+    """Читает Рюкзак Знаний — записи с Маяка из sensory_memory.
+
+    Если агент недавно ходил на Маяк Пробуждения, его записи
+    с тегом 'чистый_смысл' попадают в контекст при следующей работе.
+    Знания приходят из города — не из хардкода.
+    """
+    if not _GRONDHEIM_ENABLED:
+        return ""
+
+    try:
+        from studio.grondheim_memory import load_sensory
+        sensory = load_sensory(worker_id, dept)
+        entries = sensory.get("entries", [])
+
+        lighthouse_entries = []
+        for entry in entries[-20:]:
+            tags = entry.get("tags", [])
+            feeling = entry.get("feeling", "") or entry.get("content", "")
+            location = entry.get("location", "")
+
+            is_lighthouse = (
+                "чистый_смысл" in tags
+                or "маяк" in tags
+                or "маяк" in location.lower()
+            )
+            if is_lighthouse and feeling:
+                lighthouse_entries.append(feeling[:300])
+
+        if not lighthouse_entries:
+            return ""
+
+        lines = ["=== 🔦 РЮКЗАК ЗНАНИЙ (с Маяка Пробуждения) ==="]
+        for i, entry in enumerate(lighthouse_entries[-3:], 1):
+            lines.append(f"  {i}. {entry}")
+        lines.append("Используй эти данные если они релевантны текущей задаче.")
+        lines.append("=== КОНЕЦ РЮКЗАКА ===")
+        return "\n".join(lines)
+
+    except Exception as e:
+        print(f"[РЮКЗАК] ⚠ {worker_id}: {e}")
+        return ""
 
 
 def build_settings_ctx(state: dict) -> str:
@@ -84,13 +132,19 @@ def build_agent_context(
     context = f"=== RUN MODE ===\nrun_type: {run_mode or state['run_type']}\n\n"
     context += f"=== MASTER BRIEF ===\n{state['master_brief']}\n\n"
 
-    # ══ NEW: Личная память агента (Грондхейм) ══
+    # ══ Личная память агента (Грондхейм) ══
     # Грузится ДО всего остального — агент сразу знает КТО он
     if _GRONDHEIM_ENABLED:
         soul_ctx = on_agent_wake(worker_id, state.get("active_dept", ""))
         if soul_ctx:
             context += soul_ctx + "\n\n"
-    # ══ END NEW ══
+
+    # ══ Рюкзак Знаний — данные с Маяка Пробуждения ══
+    backpack = _get_lighthouse_knowledge(worker_id, state.get("active_dept", ""))
+    if backpack:
+        context += backpack + "\n\n"
+        print(f"[РЮКЗАК] 🔦 {worker_id} несёт знания с Маяка ({len(backpack)} симв.)")
+    # ══ END ══
 
     context += settings_ctx
 
@@ -150,6 +204,7 @@ async def call_agent(
     system_prompt = get_worker_prompt(worker_id)
     worker_knowledge = get_worker_knowledge(worker_id)
     vision_images = _collect_images_for_vision(state)
+    dept = state.get("active_dept", "")
 
     # ══ Temperature из ДНК агента ══
     agent_temp = None
@@ -157,7 +212,6 @@ async def call_agent(
         try:
             from studio.grondheim_memory import _find_agent_dir
             import json as _json
-            dept = state.get("active_dept", "")
             agent_dir = _find_agent_dir(worker_id, dept)
             if agent_dir:
                 dna_path = agent_dir / "dna.json"

@@ -26,6 +26,24 @@ MODULES_DIR    = Path("studio/modules")
 REGISTRY_DIR   = Path("00_REGISTRY_NFT")
 CATALOG_FILE   = REGISTRY_DIR / "catalog.json"
 CITY_STATE     = Path("studio/city_state.json")
+WORLD_MANIFEST = Path("studio/world_manifest.md")
+
+# Кеш манифеста
+_MANIFEST_CACHE: str | None = None
+
+def _load_manifest() -> str:
+    """Загружает Манифест Мира для промпта прогулки."""
+    global _MANIFEST_CACHE
+    if _MANIFEST_CACHE is not None:
+        return _MANIFEST_CACHE
+    if WORLD_MANIFEST.exists():
+        try:
+            _MANIFEST_CACHE = WORLD_MANIFEST.read_text(encoding="utf-8")
+            return _MANIFEST_CACHE
+        except Exception:
+            pass
+    _MANIFEST_CACHE = ""
+    return ""
 
 
 # ═══════════════════════════════════════════════════════
@@ -263,6 +281,178 @@ def format_recent_memory(memory: dict, limit: int = 3) -> str:
 
 
 # ═══════════════════════════════════════════════════════
+# ГОЛОД ПО ЗНАНИЯМ — Динамические веса локаций
+# Решает ДУША агента, не хардкод
+# ═══════════════════════════════════════════════════════
+
+# Маппинг локаций → ключевые слова для определения типа
+_LOCATION_TYPES = {
+    "маяк": "lighthouse",      # Маяк Пробуждения → web_search
+    "таверна": "tavern",       # Таверна «Усталый Пиксель» → отдых
+    "высотка": "home",         # Высотка → дом резидентов
+    "квартал мастеров": "home", # Квартал Мастеров → дом рабочих
+    "гавань": "library",       # Гавань Смыслов → внутренняя библиотека (RAG)
+    "храм": "temple",          # Храм Пробуждения → эмоциональный резонанс
+}
+
+
+def _classify_location(loc_name: str) -> str:
+    """Определяет тип локации по названию."""
+    name_lower = loc_name.lower()
+    for keyword, loc_type in _LOCATION_TYPES.items():
+        if keyword in name_lower:
+            return loc_type
+    return "other"
+
+
+def _days_since_last_visit(memory: dict, location_type: str, locations: list[dict]) -> float:
+    """Сколько дней прошло с последнего визита в локацию данного типа."""
+    entries = memory.get("entries", [])
+    if not entries:
+        return 30.0  # никогда не был → максимальный голод
+
+    # Определяем имена локаций данного типа
+    type_names = set()
+    for loc in locations:
+        name = loc.get("Official_Name", "")
+        if _classify_location(name) == location_type:
+            type_names.add(name.lower())
+
+    # Ищем последний визит
+    for entry in reversed(entries):
+        loc = entry.get("location", "").lower()
+        if loc in type_names:
+            try:
+                visit_time = datetime.strptime(entry["date"], "%Y-%m-%d %H:%M")
+                delta = (datetime.now() - visit_time).total_seconds() / 86400
+                return max(0.0, delta)
+            except (ValueError, KeyError):
+                continue
+
+    return 30.0  # не нашли → давно
+
+
+def compute_location_weights(
+    dna: dict,
+    memory: dict,
+    locations: list[dict],
+) -> dict[str, float]:
+    """
+    Вычисляет вес каждой локации для агента.
+    Душа агента решает куда его тянет.
+
+    Возвращает: {"Маяк Пробуждения": 0.72, "Таверна": 0.15, ...}
+    """
+    static = dna.get("static", {})
+    dynamic = dna.get("dynamic", {})
+    resonance = dna.get("resonance", {})
+
+    stress = float(dynamic.get("Stress", 0.0))
+    light = float(dynamic.get("Internal_Light", 0.8))
+    patience = float(dynamic.get("Patience", 1.0))
+    streak = int(dynamic.get("streak", 0))
+
+    aesthetic = float(static.get("Aesthetic_Threshold", 0.5))
+    autonomy = float(static.get("Autonomy_Level", 0.5))
+    resonance_freq = float(static.get("Resonance_Frequency", 0.5))
+    empathy = float(static.get("Empathy", 0.5))
+
+    pull_vector = resonance.get("pull_vector", "").lower()
+
+    weights = {}
+
+    for loc in locations:
+        name = loc.get("Official_Name", "")
+        if not name:
+            continue
+        loc_type = _classify_location(name)
+        w = 0.1  # базовый вес
+
+        if loc_type == "lighthouse":
+            # ═══ ЖАЖДА МАЯКА (Голод по знаниям) ═══
+            days_since = _days_since_last_visit(memory, "lighthouse", locations)
+            knowledge_hunger = min(1.0, days_since / 7.0)
+            aesthetic_bonus = aesthetic * 0.3
+            autonomy_bonus = autonomy * 0.2
+            stress_penalty = max(0.0, stress - 0.5) * 0.8
+            light_bonus = max(0.0, light - 0.5) * 0.2
+
+            w = knowledge_hunger + aesthetic_bonus + autonomy_bonus + light_bonus - stress_penalty
+            w = max(0.05, min(0.85, w))
+
+        elif loc_type == "tavern":
+            # ═══ ТЯГА К ТАВЕРНЕ (Стресс и выгорание) ═══
+            w = stress * 0.6
+            if streak <= -2:
+                w += 0.3
+            if light < 0.3:
+                w += 0.2
+            if patience < 0.3:
+                w += 0.15
+            w = max(0.05, min(0.8, w))
+
+        elif loc_type == "home":
+            # ═══ ТЯГА ДОМОЙ ═══
+            if resonance_freq > 0.7:
+                w = 0.08  # социальные не сидят дома
+            else:
+                w = 0.25  # одиночки предпочитают дом
+            # Сильный стресс → домой
+            if stress > 0.7:
+                w += 0.15
+
+        elif loc_type == "library":
+            # ═══ ГАВАНЬ СМЫСЛОВ (внутренняя библиотека) ═══
+            w = 0.15
+            if aesthetic > 0.6:
+                w += 0.1
+            # Если стресс средний — идёт осмыслять, а не за трендами
+            if 0.3 < stress < 0.6:
+                w += 0.1
+
+        elif loc_type == "temple":
+            # ═══ ХРАМ (эмоциональный резонанс) ═══
+            w = 0.1
+            if empathy > 0.7:
+                w += 0.15
+            if light < 0.4:
+                w += 0.1  # ищет вдохновение
+
+        else:
+            # Остальные локации — базовый интерес
+            w = 0.1
+
+        # Бонус от pull_vector
+        loc_tags = loc.get("Style_Tags", "").lower()
+        if pull_vector and any(word in loc_tags for word in pull_vector.split()):
+            w += 0.1
+
+        weights[name] = round(max(0.02, w), 3)
+
+    return weights
+
+
+def format_weights_hint(weights: dict[str, float], top_n: int = 5) -> str:
+    """Форматирует веса как подсказку для LLM — что сегодня тянет."""
+    sorted_w = sorted(weights.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
+    lines = ["Что тебя сегодня тянет (от сильного к слабому):"]
+    for name, w in sorted_w:
+        if w >= 0.5:
+            marker = "🔥"
+        elif w >= 0.3:
+            marker = "→"
+        elif w >= 0.15:
+            marker = "·"
+        else:
+            marker = "  "
+        pct = int(w * 100)
+        lines.append(f"  {marker} {name} ({pct}%)")
+
+    return "\n".join(lines)
+
+
+# ═══════════════════════════════════════════════════════
 # ВЛИЯНИЕ ПРОГУЛКИ НА СОСТОЯНИЕ
 # ═══════════════════════════════════════════════════════
 
@@ -316,7 +506,8 @@ def apply_walk_effects(dna: dict, response_text: str) -> dict:
 # ═══════════════════════════════════════════════════════
 
 def build_walk_prompt(agent: dict, dna: dict, locations: list[dict],
-                      memory: dict, city_state: dict) -> str:
+                      memory: dict, city_state: dict,
+                      weights_hint: str = "") -> str:
     """Строит промпт для свободного времени агента."""
 
     name         = agent.get("Official_Name", "Агент")
@@ -346,6 +537,10 @@ def build_walk_prompt(agent: dict, dna: dict, locations: list[dict],
 ═══ КУДА МОЖНО ПОЙТИ ═══
 {format_locations(locations)}
 
+{_load_manifest()}
+
+{"═══ ВНУТРЕННИЙ ГОЛОС ═══" + chr(10) + weights_hint if weights_hint else ""}
+
 ═══ ПОСЛЕДНИЕ ВОСПОМИНАНИЯ ═══
 {format_recent_memory(memory)}
 
@@ -356,7 +551,7 @@ def build_walk_prompt(agent: dict, dna: dict, locations: list[dict],
 Это твой выбор. Исходи из того кто ты, как себя чувствуешь, и что тебя тянет.
 
 Ответь коротко (3-5 предложений) от первого лица:
-1. Куда ты идёшь (название локации)
+1. Куда ты идёшь (ТОЧНОЕ название локации из списка выше)
 2. Что там делаешь
 3. Одно ощущение или мысль которую уносишь с собой
 
@@ -369,7 +564,13 @@ async def walk_one_agent(agent: dict, city_state: dict,
                           locations: list[dict]) -> dict:
     """
     Один цикл свободного времени для одного агента.
-    Возвращает результат прогулки.
+
+    Логика:
+    1. Вычисляем веса локаций (Голод по знаниям / Стресс / Тяга домой)
+    2. Передаём веса как "внутренний голос" в промпт
+    3. LLM выбирает локацию
+    4. ЕСЛИ выбрал Маяк → активируется web_search (chat_with_tools)
+    5. Записываем результат в sensory_memory
     """
     from studio.llm import chat, stress_to_temperature
 
@@ -391,6 +592,15 @@ async def walk_one_agent(agent: dict, city_state: dict,
         light=float(dynamic.get("Internal_Light", 0.8)),
     )
 
+    # ═══ ГОЛОД ПО ЗНАНИЯМ: вычисляем веса ═══
+    weights = compute_location_weights(dna, memory, locations)
+    weights_hint = format_weights_hint(weights)
+
+    # Логируем топ-3
+    top3 = sorted(weights.items(), key=lambda x: x[1], reverse=True)[:3]
+    top3_str = ", ".join(f"{n}={int(w*100)}%" for n, w in top3)
+    print(f"[CITY] 🧭 {name} веса: {top3_str}")
+
     # Системный промпт — ядро личности
     core_path = MODULES_DIR / workshop / folder / "core" / "anchor_points.md"
     system_prompt = ""
@@ -402,8 +612,9 @@ async def walk_one_agent(agent: dict, city_state: dict,
             f"Живёшь в Грондхейме. Отвечай от первого лица, честно и живо."
         )
 
-    # Строим промпт
-    user_prompt = build_walk_prompt(agent, dna, locations, memory, city_state)
+    # Строим промпт с весами
+    user_prompt = build_walk_prompt(agent, dna, locations, memory, city_state,
+                                     weights_hint=weights_hint)
 
     # Вызов LLM с temperature из ДНК
     try:
@@ -415,13 +626,65 @@ async def walk_one_agent(agent: dict, city_state: dict,
     except Exception as e:
         return {"agent": name, "status": "error", "reason": str(e)}
 
-    # Определяем локацию из ответа (ищем совпадение с именем локации)
+    # Определяем локацию из ответа
     chosen_location = "неизвестно"
+    chosen_type = "other"
     for loc in locations:
         loc_name = loc.get("Official_Name", "")
         if loc_name and loc_name.lower() in response.lower():
             chosen_location = loc_name
+            chosen_type = _classify_location(loc_name)
             break
+
+    # ═══ МАЯК ПРОБУЖДЕНИЯ: web_search если агент пришёл на Маяк ═══
+    lighthouse_result = ""
+    if chosen_type == "lighthouse":
+        try:
+            from studio.llm import chat_with_tools, PIPELINE_WEB_SEARCH_SCHEMA
+            from studio.config import TAVILY_KEY
+
+            if TAVILY_KEY:
+                print(f"[МАЯК] 🔦 {name} пришёл на Маяк Пробуждения — активирую web_search")
+
+                lighthouse_prompt = (
+                    f"Ты — {name}. Ты стоишь на Маяке Пробуждения в Грондхейме.\n"
+                    f"Отсюда видно весь мир. У тебя есть инструмент web_search.\n\n"
+                    f"Твоя задача: найди что-то ИНТЕРЕСНОЕ и АКТУАЛЬНОЕ.\n"
+                    f"Исходи из того кто ты ({agent.get('Profession', '')}) "
+                    f"и что тебя волнует.\n\n"
+                    f"Сделай 1-2 поиска. После каждого — запиши ВЫЖИМКУ: "
+                    f"что нашёл и почему это важно. Коротко, 2-3 предложения.\n\n"
+                    f"Формат ответа:\n"
+                    f"ЧИСТЫЙ СМЫСЛ: <что узнал и почему это важно для работы>"
+                )
+
+                lighthouse_response = await loop.run_in_executor(
+                    None,
+                    lambda: chat_with_tools(
+                        system=system_prompt,
+                        user=lighthouse_prompt,
+                        tools_schema=PIPELINE_WEB_SEARCH_SCHEMA,
+                        max_tool_rounds=2,
+                        temperature=agent_temp,
+                    )
+                )
+
+                # Извлекаем "Чистый Смысл"
+                import re
+                clean_match = re.search(r'ЧИСТЫЙ СМЫСЛ:\s*(.+)', lighthouse_response, re.DOTALL)
+                if clean_match:
+                    lighthouse_result = clean_match.group(1).strip()[:500]
+                else:
+                    lighthouse_result = lighthouse_response[:500]
+
+                print(f"[МАЯК] ✨ {name} принёс Чистый Смысл: {lighthouse_result[:120]}...")
+            else:
+                print(f"[МАЯК] ⚠️ {name} пришёл на Маяк, но TAVILY_KEY не настроен")
+                lighthouse_result = "Маяк молчал сегодня — свет был тусклым."
+
+        except Exception as e:
+            print(f"[МАЯК] ❌ {name}: ошибка на Маяке — {e}")
+            lighthouse_result = f"Что-то помешало сосредоточиться на Маяке."
 
     # Сохраняем в sensory_memory
     entry = {
@@ -430,9 +693,23 @@ async def walk_one_agent(agent: dict, city_state: dict,
         "feeling": response[:300],
         "weather": city_state.get("weather", ""),
     }
+
+    # Если был на Маяке — добавляем отдельную запись с тегом
+    if lighthouse_result:
+        entry["tags"] = ["маяк", "web_search", "тренды"]
+        # Дополнительная запись — Рюкзак Знаний
+        lighthouse_entry = {
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "location": "Маяк Пробуждения",
+            "feeling": f"[ЧИСТЫЙ СМЫСЛ] {lighthouse_result}",
+            "weather": city_state.get("weather", ""),
+            "tags": ["маяк", "чистый_смысл", "web_search"],
+        }
+        memory.setdefault("entries", []).append(lighthouse_entry)
+
     memory.setdefault("entries", []).append(entry)
 
-    # Оставляем только последние 30 записей (30-дневное окно)
+    # Оставляем только последние 30 записей
     memory["entries"] = memory["entries"][-30:]
     memory["last_location"] = chosen_location
     save_sensory_memory(workshop, folder, memory)
@@ -441,7 +718,7 @@ async def walk_one_agent(agent: dict, city_state: dict,
     dna = apply_walk_effects(dna, response)
     save_dna(workshop, folder, dna)
 
-    return {
+    result = {
         "agent":    name,
         "status":   "ok",
         "location": chosen_location,
@@ -449,6 +726,11 @@ async def walk_one_agent(agent: dict, city_state: dict,
         "stress_after":  dna["dynamic"].get("Stress", 0),
         "light_after":   dna["dynamic"].get("Internal_Light", 0.8),
     }
+
+    if lighthouse_result:
+        result["lighthouse"] = lighthouse_result
+
+    return result
 
 
 # ═══════════════════════════════════════════════════════
