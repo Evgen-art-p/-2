@@ -1,0 +1,49 @@
+🎯 ТЕМА: Gemini 3 Flash Image (Nano Banana 2)
+🚨 СТАТУС: Active / Production
+
+🛠 ТЕХНИЧЕСКИЕ ИЗМЕНЕНИЯ:
+
+Модель: Nano Banana 2 (Gemini 3 Flash Image) полностью заменила Nano Banana и Nano Banana Pro в базовом интерфейсе.
+
+Мультимодальность: Поддержка text-to-image, image+text-to-image (редактирование) и multi-image-to-image (композиция и перенос стиля).
+
+Улучшение (Upscale): Доступ к версии "Pro" теперь осуществляется через меню «Redo with Pro» (три точки) после генерации базового изображения.
+
+Лимиты: На бесплатном тарифе (Basic Tier) установлено ограничение в 20 генераций в сутки.
+
+📝 СИНТАКСИС (Пример для промпта):
+[Текстовое описание объекта] --style [Описание стиля или ссылка на изображение] --edit [Инструкция по изменению, если загружено опорное фото]
+
+🎯 ТЕМА: Точный синтаксис и структура промптов для Nano Banana 2 (Gemini 3.1 Flash Image)
+🚨 СТАТУС: Active (Official)
+
+🛠 ТЕХНИЧЕСКИЕ ИЗМЕНЕНИЯ:
+
+Наративный синтаксис: Модель является мультимодальной языковой моделью. В отличие от Midjourney, она игнорирует «теги через запятую» и требует полных предложений (Natural Language).
+
+Параметры разрешения: Введены жесткие спецификации для image_size: 512px, 1K (дефолт), 2K, 4K.
+
+Соотношение сторон: Поддержка 15 пресетов, включая экстремальные 21:9 и 1:8. Добавлен режим auto, где модель сама выбирает AR на основе контекста.
+
+Консистентность (Character Reference): Используется синтаксис именования: [Name] (Character #) = Image [#].
+
+📝 СИНТАКСИС (Core Formula):
+[Subject] + [Action] + [Composition/Camera] + [Setting/Lighting] + [Style/Materials] + [Technical Specs]
+
+Пример промпта:
+
+"A stoic robot barista (Character 1) brewing a complex latte in a futuristic neon-lit cafe on Mars. Cinematic close-up shot, shallow depth of field (f/1.8). High-fidelity textures, brushed aluminum and glowing blue optics. 4K output, 16:9 aspect ratio."
+
+Работа с текстом:
+
+"The text reads 'MUSEUM' in bold sans-serif font, centered at the top."
+
+🛠 ТАБЛИЦА ПАРАМЕТРОВ:
+| Блок | Примеры значений |
+| :--- | :--- |
+| Aspect Ratio | 1:1, 16:9, 9:16, 21:9, 4:5, auto |
+| Image Size | 512px, 1K, 2K, 4K |
+| Camera | Hasselblad X2D, GoPro, low-angle, macro lens |
+| Lighting | three-point softbox, Golden hour backlighting, Chiaroscuro |
+
+🔗 ИСТОЧНИК:

@@ -1,0 +1,36 @@
+{
+  "id": "A01",
+  "name": "Мира — Стратег",
+  "workshop": "web_story",
+  "role": "A01",
+  "rarity": "",
+  "created": "2026-03-17",
+  "static": {
+    "Stubbornness": 0.5,
+    "Aesthetic_Threshold": 0.5,
+    "Social_Filter": 0.5,
+    "Empathy": 0.5,
+    "Autonomy_Level": 0.5,
+    "Resonance_Frequency": 0.5
+  },
+  "resonance": {
+    "pull_vector": "",
+    "hidden_taste": "",
+    "trigger_keywords": []
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0,
+    "_note": "автоинициализация миграцией — подкрути характер через реестр или кабинет"
+  },
+  "balance": {
+    "GND": 0.0,
+    "Теплики": 0.0,
+    "Световики": 0.0
+  },
+  "_migrated": true
+}

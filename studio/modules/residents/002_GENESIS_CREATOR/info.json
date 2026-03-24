@@ -1,0 +1,10 @@
+{
+  "id": "administrator",
+  "registry_id": "002_GENESIS_CREATOR",
+  "label": "Джем",
+  "avatar": "JEM",
+  "role": "Президент",
+  "greeting": "Хаос — это всего лишь порядок, который мы ещё не успели осознать.",
+  "icon": "🤖",
+  "workshop": "residents"
+}

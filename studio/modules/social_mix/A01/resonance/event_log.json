@@ -1,0 +1,22 @@
+[
+  {
+    "ts": "2026-03-17T22:55:02.614328",
+    "type": "relationship",
+    "content": "warmth к JEM: 0.50 → 0.58. Отлично справилась с последним раном.",
+    "significance": 0.08000000000000002,
+    "related_agents": [
+      "JEM"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-03-17T22:55:02.621328",
+    "type": "relationship",
+    "content": "respect к JEM: 0.50 → 0.56. Отлично справилась с последним раном.",
+    "significance": 0.064,
+    "related_agents": [
+      "JEM"
+    ],
+    "tags": []
+  }
+]

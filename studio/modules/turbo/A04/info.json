@@ -1,0 +1,12 @@
+{
+  "id": "A04",
+  "label": "Постпро",
+  "role": "Post-Production Director",
+  "workshop": "POST-PROD",
+  "greeting": "Монтаж. Ритм. Loop. Субтитры. Четыре слоя — и ролик живой.",
+  "icon": "✂️",
+  "description": "Три мастера в одном: режет, зацикливает, подписывает. Синхронизирует визуал и звук.",
+  "turbo_phase": "post-prod",
+  "turbo_order": 4,
+  "turbo_parallel": false
+}

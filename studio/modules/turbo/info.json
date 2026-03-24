@@ -1,0 +1,20 @@
+{
+  "id": "turbo",
+  "label": "TURBO Шортсы",
+  "name": "TURBO Shorts",
+  "icon": "⚡",
+  "color": "amber",
+  "placeholder": "Опишите идею шортса для TURBO-конвейера...",
+  "priority": 10,
+  "suggest": [
+    "TikTok тренд",
+    "Reels для бизнеса",
+    "YouTube Shorts вирусный"
+  ],
+  "keywords": [
+    "turbo",
+    "shorts",
+    "быстрый",
+    "шортс"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "A01",
+  "label": "Стелла Стратег",
+  "role": "Chief Strategist",
+  "workshop": "STRATEGY",
+  "greeting": "Тренд. Хук. Алгоритм. Три удара — и зритель твой.",
+  "icon": "🧠",
+  "description": "Три мозга в одном: чувствует тренды как Трикси, пишет хуки как Гарри, думает алгоритмами как Тони.",
+  "turbo_phase": "strategy",
+  "turbo_order": 1,
+  "turbo_parallel": false
+}

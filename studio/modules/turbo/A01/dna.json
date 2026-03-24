@@ -1,0 +1,39 @@
+{
+  "id": "020_TURBO_STELLA",
+  "name": "Стелла",
+  "workshop": "turbo",
+  "role": "A01",
+  "rarity": "Rare",
+  "created": "2026-03-17",
+  "static": {
+    "Stubbornness": 0.95,
+    "Aesthetic_Threshold": 0.9,
+    "Social_Filter": 0.2,
+    "Empathy": 0.85,
+    "Autonomy_Level": 0.9,
+    "Resonance_Frequency": 0.75
+  },
+  "resonance": {
+    "pull_vector": "Тихие бухты в Гавани, гди смотреть на воду, никуда не переходя.",
+    "hidden_taste": "е можно побыть одному, когда от своей же гениальности устал.  Скамейки на мостике (да, прямо на нём), где можно сидеть Право на паузу без чувства вины.",
+    "trigger_keywords": [
+      "Удар Трикси (тренд)",
+      "Удар Гарри (хук)",
+      "Удар Тони (алгоритм)"
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 0.898,
+    "Stress": 0.0,
+    "Internal_Light": 1.0,
+    "streak": 4,
+    "stars": 0,
+    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

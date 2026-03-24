@@ -1,0 +1,451 @@
+{
+  "project_id": "site_windows_petr",
+  "source_file": "A12_Артур_—_QA.md",
+  "_note": "Открывай рядом с manifest.json. manifest = ЧТО генерировать (картинки). logic_map = КАК это работает (логика, тексты, переходы).",
+  "scenes": [
+    {
+      "scene_id": "scene_01",
+      "scene_name": "Теплый след недоверия",
+      "order": 1,
+      "type": "scene",
+      "emotion": "",
+      "text": "КЛИЕНТ: «Опять...»",
+      "speaker": "",
+      "key_lines": [
+        "КЛИЕНТ: «Опять...»"
+      ],
+      "location": "Уютная, но прохладная гостиная клиента. Слышно завывание ветра за окном, слабый, почти неуловимый сквозняк."
+    },
+    {
+      "scene_id": "scene_02",
+      "scene_name": "Вход мастера",
+      "order": 2,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Добрый день. Пётр.»",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Добрый день. Пётр.»"
+      ],
+      "location": "Прихожая квартиры Клиента. Естественный свет из окна слегка освещает пространство. Тишина, нарушаемая лишь редкими шагами."
+    },
+    {
+      "scene_id": "scene_03",
+      "scene_name": "Внимательный взгляд (Путь: Инструменты)",
+      "order": 3,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Здесь...» (Пётр проводит пальцем по краю рамы, где видна микротрещина).",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Здесь...» (Пётр проводит пальцем по краю рамы, где видна микротрещина)."
+      ],
+      "location": "Гостиная. Мягкий свет из окна освещает рабочую зону."
+    },
+    {
+      "scene_id": "scene_04",
+      "scene_name": "Ритуал чистоты (Путь: Действия)",
+      "order": 4,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Каждый миллиметр… важен.»",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Каждый миллиметр… важен.»"
+      ],
+      "location": "Гостиная. Мягкий свет из окна освещает рабочую зону."
+    },
+    {
+      "scene_id": "scene_05",
+      "scene_name": "Диагностика проблемы",
+      "order": 5,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Проблема не в окне, а в его... истории.» | КЛИЕНТ: «Так вот почему...»",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Проблема не в окне, а в его... истории.»",
+        "КЛИЕНТ: «Так вот почему...»"
+      ],
+      "location": "Около окна. Визуальное увеличение дефектов старого окна."
+    },
+    {
+      "scene_id": "scene_06",
+      "scene_name": "Личный стандарт качества - Тест со свечой",
+      "order": 6,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Мой личный стандарт качества.»",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Мой личный стандарт качества.»"
+      ],
+      "location": "Свежеустановленное, сияющее чистотой окно. Вечер, за окном зажигаются городские огни."
+    },
+    {
+      "scene_id": "scene_07",
+      "scene_name": "Приглашение к решению",
+      "order": 7,
+      "type": "scene",
+      "emotion": "",
+      "text": "ПЁТР: «Если вы готовы к настоящему спокойствию... позвоните, напишите. Просто поговорите со мной.»",
+      "speaker": "",
+      "key_lines": [
+        "ПЁТР: «Если вы готовы к настоящему спокойствию... позвоните, напишите. Просто поговорите со мной.»"
+      ],
+      "location": "Та же гостиная. Атмосфера уюта и тепла, исходящего от нового окна."
+    }
+  ],
+  "branches": [],
+  "interactions": [
+    {
+      "interaction_id": "client_observation_choice",
+      "scene_id": "scene_02",
+      "trigger": "",
+      "action": "",
+      "feedback": {
+        "on_select": {
+          "sound": "soft_click",
+          "animation": "pulse"
+        }
+      },
+      "states": {
+        "default": {
+          "text_color": "#452C1F",
+          "background_color": "#FDF5E6",
+          "border": "1px solid #E6B080"
+        },
+        "hover": {
+          "scale": 1.05,
+          "box_shadow": "0 0 15px rgba(255, 215, 0, 0.7)",
+          "transition": "200ms ease-out"
+        },
+        "active": {
+          "scale": 0.98,
+          "box_shadow": "inset 0 0 10px rgba(0,0,0,0.3)"
+        },
+        "selected": {
+          "border": "3px solid #FFD700",
+          "badge": "checkmark",
+          "animation": "300ms bounce"
+        },
+        "disabled": {
+          "opacity": 0.5,
+          "cursor": "not-allowed"
+        }
+      },
+      "elements": [
+        {
+          "id": "observe_tools",
+          "label": "ИЗУЧАТЬ ЕГО ИНСТРУМЕНТЫ",
+          "consequence_scene_id": "scene_03"
+        },
+        {
+          "id": "observe_actions",
+          "label": "СЛЕДИТЬ ЗА ЕГО ДЕЙСТВИЯМИ",
+          "consequence_scene_id": "scene_04"
+        }
+      ]
+    },
+    {
+      "interaction_id": "cta_main_flow",
+      "scene_id": "scene_07",
+      "trigger": "",
+      "action": "",
+      "feedback": {
+        "on_click": {
+          "sound": "click_success",
+          "animation": "short_pulse"
+        }
+      },
+      "states": {
+        "default": {
+          "background_color": "#FFD700",
+          "text_color": "#5A3A2C",
+          "border": "none"
+        },
+        "hover": {
+          "animation": "vibrate/pulse",
+          "box_shadow": "0 0 20px rgba(255, 215, 0, 1)",
+          "transition": "250ms ease-in-out"
+        },
+        "active": {
+          "scale": 0.96,
+          "box_shadow": "inset 0 0 15px rgba(0,0,0,0.5)"
+        },
+        "disabled": {
+          "opacity": 0.5,
+          "cursor": "not-allowed"
+        }
+      },
+      "elements": [
+        {
+          "id": "cta_request_petr",
+          "label": "Оставить заявку на замер к Петру",
+          "action": "open_lead_form"
+        }
+      ]
+    },
+    {
+      "interaction_id": "cta_express_flow",
+      "scene_id": "express_03",
+      "trigger": "",
+      "action": "",
+      "feedback": {
+        "on_click": {
+          "sound": "click_success",
+          "animation": "short_pulse"
+        }
+      },
+      "states": {
+        "default": {
+          "background_color": "#FFD700",
+          "text_color": "#5A3A2C",
+          "border": "none"
+        },
+        "hover": {
+          "animation": "vibrate/pulse",
+          "box_shadow": "0 0 20px rgba(255, 215, 0, 1)",
+          "transition": "250ms ease-in-out"
+        },
+        "active": {
+          "scale": 0.96,
+          "box_shadow": "inset 0 0 15px rgba(0,0,0,0.5)"
+        },
+        "disabled": {
+          "opacity": 0.5,
+          "cursor": "not-allowed"
+        }
+      },
+      "elements": [
+        {
+          "id": "cta_request_petr_express",
+          "label": "Оставить заявку на замер к Петру",
+          "action": "open_lead_form"
+        }
+      ]
+    },
+    {
+      "interaction_id": "micro",
+      "scene_id": "*",
+      "trigger": "various",
+      "action": "micro-feedback",
+      "feedback": {
+        "page_load": {
+          "elements_fade_in": true,
+          "duration_ms": 600,
+          "stagger_delay_ms": 100,
+          "effect": "initial opacity 0, then 1"
+        },
+        "scroll": {
+          "parallax_enabled": true,
+          "layers_depth": {
+            "background": 0.3,
+            "midground": 0.6,
+            "foreground": 1
+          }
+        },
+        "character_idle_detection": {
+          "threshold_sec": 15,
+          "react_animation": "subtle_movement_or_look_at_camera",
+          "purpose": "повышение вовлеченности"
+        }
+      },
+      "states": {}
+    }
+  ],
+  "achievements": [
+    {
+      "achievement_id": "ach_chistopluy",
+      "name": "Чистоплюй",
+      "condition": "path_taken == 'actions_observation'",
+      "scene_id": "",
+      "icon": "🧼",
+      "reward": 5,
+      "badge_file": "badges/badge_ach_chistopluy.png",
+      "animation": "scale 0→1.2→1 / 250ms spring",
+      "duration_ms": 2000,
+      "sfx": "sfx_achievement"
+    },
+    {
+      "achievement_id": "ach_tech_guru",
+      "name": "Техно-гуру",
+      "condition": "path_taken == 'tools_observation'",
+      "scene_id": "",
+      "icon": "⚙️",
+      "reward": 5,
+      "badge_file": "badges/badge_ach_tech_guru.png",
+      "animation": "scale 0→1.2→1 / 250ms spring",
+      "duration_ms": 2000,
+      "sfx": "sfx_achievement"
+    },
+    {
+      "achievement_id": "ach_teplolyub",
+      "name": "Теплолюб",
+      "condition": "story_completed_full_path == true AND agreed_with_petr == true",
+      "scene_id": "",
+      "icon": "☕",
+      "reward": 15,
+      "badge_file": "badges/badge_ach_teplolyub.png",
+      "animation": "scale 0→1.2→1 / 250ms spring",
+      "duration_ms": 2000,
+      "sfx": "sfx_achievement"
+    },
+    {
+      "achievement_id": "ach_master_helper",
+      "name": "Помощник Мастера",
+      "condition": "social_share_completed == true",
+      "scene_id": "",
+      "icon": "🤝",
+      "reward": 10,
+      "badge_file": "badges/badge_ach_master_helper.png",
+      "animation": "scale 0→1.2→1 / 250ms spring",
+      "duration_ms": 2000,
+      "sfx": "sfx_achievement"
+    },
+    {
+      "achievement_id": "ach_domoved",
+      "name": "Домовед",
+      "condition": "all_endings_found == true",
+      "scene_id": "",
+      "icon": "🏠",
+      "reward": 25,
+      "badge_file": "badges/badge_ach_domoved.png",
+      "animation": "scale 0→1.2→1 / 250ms spring",
+      "duration_ms": 2000,
+      "sfx": "sfx_achievement"
+    },
+    {
+      "achievement_id": "_reward_system",
+      "name": "Система наград",
+      "condition": "meta",
+      "reward": {
+        "currency": {
+          "name": "теплы",
+          "name_plural": "тепликов",
+          "icon": "💡",
+          "visual": "светящийся геометрический кристалл квадратной формы"
+        },
+        "earn_rules": [
+          {
+            "action": "make_choice",
+            "reward": 2,
+            "description": "за каждый выбор в истории"
+          },
+          {
+            "action": "complete_story",
+            "reward": 15,
+            "description": "за завершение основной истории"
+          },
+          {
+            "action": "find_ending",
+            "reward": 10,
+            "description": "за новую найденную концовку"
+          },
+          {
+            "action": "share_result",
+            "reward": 5,
+            "description": "за шеринг в соцсетях"
+          }
+        ],
+        "spend_rules": [
+          {
+            "item": "discount_accessories",
+            "cost": 10,
+            "description": "Скидка 15% на аксессуары для окон (москитные сетки, детские замки)"
+          },
+          {
+            "item": "designer_consultation",
+            "cost": 20,
+            "description": "Бесплатная консультация дизайнера по оформлению окна"
+          },
+          {
+            "item": "extra_warranty_certificate",
+            "cost": 30,
+            "description": "Именной сертификат 'Окно Мастера Петра' с дополнительным годом гарантии (итого 6 лет!)"
+          }
+        ]
+      }
+    }
+  ],
+  "sound_map": [
+    {
+      "scene_id": "scene_01",
+      "emotion": "любопытство",
+      "intensity": "▂▃",
+      "music": "тихо, интригующе, легкая тревога",
+      "ambient": "холодный ветер, сквозняк",
+      "voice": "Клиент: уставший, вздыхающий",
+      "sfx": "sfx_draft_whisper",
+      "silence": false
+    },
+    {
+      "scene_id": "scene_02",
+      "emotion": "предвкушение, осторожное любопытство",
+      "intensity": "▃▄",
+      "music": "чуть тише, появляются нотки надежды",
+      "ambient": "легкий шум улицы, тихие шаги",
+      "voice": "Пётр: спокойный, уверенный",
+      "sfx": "sfx_tool_case_open",
+      "silence": false
+    },
+    {
+      "scene_id": "scene_03",
+      "emotion": "уважение, начало доверия",
+      "intensity": "▄▅",
+      "music": "тихая, концентрированная",
+      "ambient": "фон среды, очень тихие звуки инструментов",
+      "voice": "Пётр: сосредоточенный",
+      "sfx": "элементы раскладываемых инструментов",
+      "silence": false
+    },
+    {
+      "scene_id": "scene_04",
+      "emotion": "удивление, уважение к педантичности",
+      "intensity": "▄▅",
+      "music": "тихая, концентрированная",
+      "ambient": "фон среды, мягкий шорох материалов",
+      "voice": "Пётр: педантичный",
+      "sfx": "sfx_laser_level_hum",
+      "silence": false
+    },
+    {
+      "scene_id": "scene_05",
+      "emotion": "понимание, облегчение от осознания причин",
+      "intensity": "▅▆",
+      "music": "чуть тревожнее, но с пониманием",
+      "ambient": "фон среды",
+      "voice": "Пётр: объясняющий, Клиент: понимающий",
+      "sfx": "акценты на звуках дефектов (скрип, треск)",
+      "silence": false
+    },
+    {
+      "scene_id": "scene_06",
+      "emotion": "кульминация, полное доверие, безопасность",
+      "intensity": "████",
+      "music": "ТИШИНА → затем взрыв теплой оркестровки (основная тема)",
+      "ambient": "OFF",
+      "voice": "Пётр: тихий, удовлетворенный, Клиент: расслабленный",
+      "sfx": "sfx_candle_lighting, Signature Sound (пламя свечи + колокольчик), sfx_window_touch",
+      "silence": true
+    },
+    {
+      "scene_id": "scene_07",
+      "emotion": "тепло, спокойствие, уверенность",
+      "intensity": "▃▄",
+      "music": "возвращается мягко, уютно",
+      "ambient": "фон, уют",
+      "voice": "Пётр: тёплый, прощальный, приглашающий",
+      "sfx": "CTA-звук (приятный звоночек)",
+      "silence": false
+    }
+  ],
+  "assembly_hints": {
+    "scene_order": "scenes[].order — сортируй по нему",
+    "scene_text": "scenes[].text + scenes[].speaker",
+    "next_scene": "branches[from_scene=X].default_next (линейно) ИЛИ branches[].choices[].next_scene (выбор)",
+    "on_click": "interactions[scene_id=X].action",
+    "badge_trigger": "achievements[].condition — проверяй после каждого выбора",
+    "sound_on_scene": "sound_map[scene_id=X] — music/sfx/silence для этой сцены"
+  }
+}

@@ -1,0 +1,487 @@
+{
+  "project_id": "WS_20260314_OKNA",
+  "thumbnails": [],
+  "key_frames": [
+    {
+      "index": 1,
+      "scene": "Тревожное_эхо",
+      "segment": "Тревожное_эхо",
+      "purpose": "Тревожное эхо",
+      "prompt": "сайт_окна_1773366748_objekt_star, medium shot, eye-level, an old, well-worn wooden windowsill in the foreground, a thin white wax candle standing firmly ON the windowsill, its flame flickering and bending due to a subtle draft from the old, cracked window frame. The old window frame is in the subject layer. BG: a blurry, gray, muddy city scene through the window. FG: side of an old, worn couch with a plaid blanket. Cold light enters from the window. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, very cold cinematic color temperature, ultra high detail, photorealistic render",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, warm tones, bright sun, clean window, modern interior",
+      "composition": {
+        "type": "medium",
+        "focus": "candle flame and old window frame",
+        "rule_of_thirds": "candle flame on upper left intersection, window frame spans right third"
+      },
+      "lighting": {
+        "source": "outside the window",
+        "type": "cold",
+        "shadows": "sharp, high contrast"
+      },
+      "color_keys": {
+        "dominant": "#808080",
+        "accent": "#F0F0F0"
+      },
+      "ref_ids": [
+        "loc_objekt_star"
+      ],
+      "preview_paths": [
+        "assets\\objekt_star.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_1_Тревожное эхо.png",
+      "background_prompt": null
+    },
+    {
+      "index": 2,
+      "scene": "Встреча_с_Мастером",
+      "segment": "Встреча_с_Мастером",
+      "purpose": "Встреча с Мастером",
+      "prompt": "сайт_окна_1773366748_objekt_star, medium shot, eye-level, char_сайт_окна_1773366661_Petr standing ON the floor, his right hand firmly holding a measuring device, meticulously examining the window frame, his left hand gently touches the cold windowsill. Char_сайт_окна_1773366693_Zakaz standing slightly behind and to the right, arms crossed ON his chest, observing with skepticism. FG: a corner of the room interior, an indistinct element. BG: the blurry old window frame. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, slightly cool cinematic color temperature, ultra high detail, photorealistic render",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, warm sunny day, modern decor, clean new window. Zakaz smiling, Petr looking impatient.",
+      "composition": {
+        "type": "medium",
+        "focus": "Petr's face and hands, Zakaz's skeptical expression",
+        "rule_of_thirds": "Petr's head on left upper intersection, Zakaz's head on right upper intersection"
+      },
+      "lighting": {
+        "source": "overhead, from the window",
+        "type": "neutral, slightly cool",
+        "shadows": "soft, subtle"
+      },
+      "color_keys": {
+        "dominant": "#A68B6E",
+        "accent": "#4F3C2C"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окna_1773366693_Zakaz",
+        "loc_objekt_star"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\objekt_star.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_2_Встреча с Мастером.png",
+      "background_prompt": null
+    },
+    {
+      "index": 3,
+      "scene": "Диагноз_Дома",
+      "segment": "Диагноз_Дома",
+      "purpose": "Диагноз Дома",
+      "prompt": "сайт_окна_1773366748_objekt_star, medium shot, eye-level. Char_сайт_окна_1773366661_Petr standing ON the floor, gesturing towards the window frame with an open hand, pointing out subtle cracks and gaps in the window. Char_сайт_окна_1773366693_Zakaz standing closer to Petr, his face showing attentive listening but still a hint of worry. FG: Petr's small portable toolkit resting ON the floor. BG: the old window frame, slightly out of focus. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, neutral cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, warm room, new window, Zakaz smiling, Petr looking uninterested",
+      "composition": {
+        "type": "medium",
+        "focus": "Petr's gesture, Zakaz's face",
+        "rule_of_thirds": "Petr and Zakaz occupy the central vertical third, subtle crack on upper right third"
+      },
+      "lighting": {
+        "source": "window, soft overhead",
+        "type": "neutral",
+        "shadows": "soft, defined"
+      },
+      "color_keys": {
+        "dominant": "#A68B6E",
+        "accent": "#4F3C2C"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окна_1773366693_Zakaz",
+        "loc_objekt_star"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\Zakaz.png",
+        "assets\\objekt_star.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_3_Диагноз Дома.png",
+      "background_prompt": null
+    },
+    {
+      "index": 4,
+      "scene": "Ритуал_Чистоты",
+      "segment": "Ритуал_Чистоты",
+      "purpose": "Ритуал Чистоты",
+      "prompt": "сайт_окна_1773366748_objekt_star, medium shot, eye-level. A clean, empty window opening in the center. Char_сайт_окна_1773366661_Petr standing ON the floor, wearing clean work clothes and gloves, meticulously cleaning the edges of the window opening with a precision tool, removing microscopic particles. His hand performs gentle, precise motions. Protective floor covering laid out perfectly ON the wooden floor. FG: an empty bucket for debris ON a plastic sheet. BG: a pristine, blurried wall. No dust visible. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, slightly warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, dirty, dusty, messy, old window, Zakaz present",
+      "composition": {
+        "type": "medium",
+        "focus": "Petr's hands and the pristine window opening",
+        "rule_of_thirds": "Petr's hands in the central area, window opening fills the top two thirds"
+      },
+      "lighting": {
+        "source": "window, diffuse overhead",
+        "type": "clean, bright",
+        "shadows": "soft, subtle, emphasizing cleanliness"
+      },
+      "color_keys": {
+        "dominant": "#F8F4ED",
+        "accent": "#A68B6E"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "loc_objekt_star"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\objekt_star.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_4_Ритуал Чистоты.png",
+      "background_prompt": null
+    },
+    {
+      "index": 5,
+      "scene": "Сердце_Дома",
+      "segment": "Сердце_Дома",
+      "purpose": "Сердце Дома",
+      "prompt": "сайт_окна_1773366765_objekt_nov, medium shot, eye-level. A new, bright white window frame being carefully installed into the cleaned opening. Char_сайт_окна_1773366661_Petr standing ON the floor, his movements precise and confident as he positions the window. Char_сайт_окна_1773366693_Zakaz standing slightly to the side and forward, a slight smile on his face, gently touching the new frame with his right hand. Sunlight streams through the newly installed glass, casting warm glows into the room. BG: the interior of the modernized room, soft and blurred. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, old window, cold light, dirty interior",
+      "composition": {
+        "type": "medium",
+        "focus": "new window, Petr's hands, Zakaz's smile",
+        "rule_of_thirds": "new window fills central vertical third, Petr and Zakaz frame it from sides"
+      },
+      "lighting": {
+        "source": "outside the window, warm sunlight",
+        "type": "golden hour glow",
+        "shadows": "soft, long, warm"
+      },
+      "color_keys": {
+        "dominant": "#F8F4ED",
+        "accent": "#A68B6E"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окна_1773366693_Zakaz",
+        "loc_objekt_nov"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\Zakaz.png",
+        "assets\\objekt_nov.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_5_ .png",
+      "background_prompt": null
+    },
+    {
+      "index": 6,
+      "scene": "Проверка_Огнем",
+      "segment": "Проверка_Огнем",
+      "purpose": "Проверка Огнем",
+      "prompt": "сайт_окна_1773366765_objekt_nov, close-up shot, eye-level. Char_сайт_окна_1773366661_Petr's right hand holding a small burning candle, the flame is absolutely still and upright, not flickering at all. The candle is slowly moving along the perimeter of the new, perfectly installed white window frame. The new window frame takes up the central part of the shot. Char_сайт_окна_1773366693_Zakaz's awestruck face is visible in the background, slightly out of focus. Warm light from the candle illuminates the scene. BG: a clear, bright starry night or city lights visible through the window, slightly blurred. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, very warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, flickering flame, cold light, old window, Petr stressed, Zakaz skeptical",
+      "composition": {
+        "type": "close-up",
+        "focus": "still candle flame and Petr's hand",
+        "rule_of_thirds": "candle flame on upper left intersection, window frame occupies central area"
+      },
+      "lighting": {
+        "source": "candle, subtle ambient from outside",
+        "type": "warm, soft candlelight",
+        "shadows": "soft, long, dancing"
+      },
+      "color_keys": {
+        "dominant": "#EC4E20",
+        "accent": "#F8F4ED"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окна_1773366693_Zakaz",
+        "loc_objekt_nov"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\Zakaz.png",
+        "assets\\objekt_nov.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_6_ .png",
+      "background_prompt": null
+    },
+    {
+      "index": 7,
+      "scene": "Обет_Мастера",
+      "segment": "Обет_Мастера",
+      "purpose": "Обет Мастера",
+      "prompt": "сайт_окна_1773366765_objekt_nov, close-up shot, eye-level. Char_сайт_окна_1773366661_Petr's face, his eyes showing deep thought and a hint of past pain, but also quiet determination. The perfectly installed new window is visible in the background, casting a soft backlight on Petr. The room is filled with soft, warm ambient light. BG: Softly blurred room interior. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, cold light, old window, Zakaz present, cheerful expression",
+      "composition": {
+        "type": "close-up",
+        "focus": "Petr's eyes",
+        "rule_of_thirds": "Petr's eyes on upper horizontal line, his face filling the central area"
+      },
+      "lighting": {
+        "source": "soft ambient light, backlight from window",
+        "type": "warm, almost mystical",
+        "shadows": "soft, subtle, adding depth"
+      },
+      "color_keys": {
+        "dominant": "#A68B6E",
+        "accent": "#F8F4ED"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "loc_objekt_nov"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\objekt_nov.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_7_ .png",
+      "background_prompt": null
+    },
+    {
+      "index": 8,
+      "scene": "Теплое_Признание",
+      "segment": "Теплое_Признание",
+      "purpose": "Теплое Признание",
+      "prompt": "сайт_окна_1773366765_objekt_nov, wide shot, eye-level. A cozy, clean room with a perfectly installed new window. Sunlight floods the room, creating a warm, peaceful ambiance. A small green houseplant standing firmly ON the windowsill. Char_сайт_окна_1773366661_Petr and Char_сайт_окна_1773366693_Zakaz standing side-by-side ON the floor, Zakaz looking at the window with approval, then turning his head to Petr with warmth and gratitude. Zakaz's face is relaxed, showing a calm smile. BG: the distant, clear city through the window. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, very warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, cold light, old window, dirty room, angry expressions",
+      "composition": {
+        "type": "wide",
+        "focus": "transformed room, Petr and Zakaz's interaction",
+        "rule_of_thirds": "characters in central vertical third, window fills upper horizontal third"
+      },
+      "lighting": {
+        "source": "sunlight through window",
+        "type": "bright, soft natural sunlight",
+        "shadows": "soft, long, warm"
+      },
+      "color_keys": {
+        "dominant": "#F8F4ED",
+        "accent": "#A68B6E"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окна_1773366693_Zakaz",
+        "loc_objekt_nov"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\Zakaz.png",
+        "assets\\objekt_nov.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_8_ .png",
+      "background_prompt": null
+    },
+    {
+      "index": 9,
+      "scene": "Его_Слово",
+      "segment": "Его_Слово",
+      "purpose": "Его Слово",
+      "prompt": "сайт_окна_1773366765_objekt_nov, medium close-up, eye-level. Char_сайт_окна_1773366661_Petr standing ON the floor, facing directly into the camera, looking straight at the viewer. He holds his unlit candle in his left hand. His right hand is extended forward, inviting the viewer. A clear, sunny day outside the perfect window in the background. BG: the interior of the warm room, slightly blurred. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, very warm cinematic color temperature, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, cold light, old window, angry expression, hesitant gesture",
+      "composition": {
+        "type": "medium close-up",
+        "focus": "Petr's face and extended hand",
+        "rule_of_thirds": "Petr's face in the central upper third, extended hand on lower right intersection"
+      },
+      "lighting": {
+        "source": "natural daylight from window",
+        "type": "clean, direct, making Petr volumetric",
+        "shadows": "soft, minimal"
+      },
+      "color_keys": {
+        "dominant": "#F8F4ED",
+        "accent": "#A68B6E"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "loc_objekt_nov"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\objekt_nov.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_9_ .png",
+      "background_prompt": null
+    },
+    {
+      "index": 10,
+      "scene": "Быстрое_Решение_Холода",
+      "segment": "Быстрое_Решение_Холода",
+      "purpose": "Быстрое Решение Холода",
+      "prompt": "Quick dynamic montage:사이트_окна_1773366748_objekt_star, close-up of a thin white wax candle standing firmly ON the wooden windowsill, its flame flickering and bending due to a subtle draft from the old, cracked window frame. (transition) Char_сайт_окна_1773366693_Zakaz standing ON the floor, shrugging shoulders and crossing arms, looking cold. (transition) Char_сайт_окна_1773366661_Petr's gloved hands precisely and confidently installing a new white window frame into a cleaned opening. (transition) сайт_окна_1773366765_objekt_nov, close-up of Char_сайт_окна_1773366661_Petr's hand holding a small burning candle, the flame is absolutely still and upright, not flickering at all, moving along the new window perimeter. Rapid shift from cold blue to warm orange tones. FG: dynamic foreground elements. BG: dynamic blurred background. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, dynamic color temperature shift, ultra high detail, photorealistic render, anatomically correct hands",
+      "negative": "blurry, deformed, extra fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, slow pace, static shot, confused expressions, dirty environment",
+      "composition": {
+        "type": "quick cuts, dynamic",
+        "focus": "problem, solution, result",
+        "rule_of_thirds": "varies rapidly with cuts"
+      },
+      "lighting": {
+        "source": "various, shifting quickly",
+        "type": "rapid shift from cold to warm",
+        "shadows": "dynamic, high contrast"
+      },
+      "color_keys": {
+        "dominant": "rapid shift: #808080 to #EC4E20",
+        "accent": "rapid shift: #F0F0F0 to #F8F4ED"
+      },
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr",
+        "сайт_окна_1773366693_Zakaz",
+        "loc_objekt_nov",
+        "loc_objekt_star"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png",
+        "assets\\Zakaz.png",
+        "assets\\objekt_nov.png",
+        "assets\\objekt_star.png"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260314_OKNA\\frame_10_  .png",
+      "background_prompt": null
+    }
+  ],
+  "videos": [],
+  "audio": {},
+  "captions": [],
+  "edit_plan": {},
+  "publication": {
+    "description": "",
+    "hashtags": [],
+    "posting_time": "",
+    "build_order": [
+      "1. Генерация изображений",
+      "2. Генерация звука",
+      "3. TTS голоса",
+      "4. Вёрстка",
+      "5. Интерактив",
+      "6. Геймификация",
+      "7. Аналитика — сенсоры и буфер",
+      "8. Admin-страница",
+      "9. A/B конфиг",
+      "10. Сборка + тест",
+      "11. Публикация"
+    ]
+  },
+  "text": [],
+  "interactive": [],
+  "gamification": [],
+  "sound": [],
+  "_source_format": "web_story",
+  "characters": [
+    {
+      "char_id": "сайт_окна_1773366661_Petr",
+      "char_name": "Petr",
+      "prompt": "сайт_окна_1773366661_Petr, Man, 45 years old, athletic build, short neat haircut, calm confident expression, slight smile, clean work jacket with discreet logo, dark work pants. Holding a small elegant candle in a specific, protective case. Hands are clean and well-kept, 5 fingers, distinct knuckles. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, warm cinematic color temperature, ultra high detail, photorealistic render",
+      "negative": "blurry, deformed, extra fingers, 6 fingers, polydactyly, missing fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, dirty clothes, messy hair, unsure expression, aggressive pose, cartoon, drawing, painting",
+      "anchors": [
+        "чистая рабочая куртка с логотипом",
+        "аккуратная короткая стрижка",
+        "спокойное, уверенное выражение лица",
+        "ухоженные руки",
+        "маленькая свеча в футляре"
+      ],
+      "seed": null,
+      "ref_ids": [
+        "сайт_окна_1773366661_Petr"
+      ],
+      "preview_paths": [
+        "assets\\Petr.png"
+      ],
+      "path": null
+    },
+    {
+      "char_id": "сайт_окна_1773366693_Zakaz",
+      "char_name": "Zakaz",
+      "prompt": "сайт_окна_1773366693_Zakaz, Man, 40 years old, medium build, slightly hunched posture, anxious expression, short grey-flecked hair and beard, wearing a thick green sweater. Often crossing arms or rubbing shoulders, 5 fingers, distinct knuckles. Looking at the old window frame with a skeptical gaze. Stylized 3D realism, clean volumetric lighting, soft diffused textures, cinematic composition, deep contrast with soft shadows, initially cool cinematic color temperature, ultra high detail, photorealistic render",
+      "negative": "blurry, deformed, extra fingers, 6 fingers, polydactyly, missing fingers, text, watermark, signature, low quality, floating objects, impossible physics, objects without support surface, text, letters, words, confident expression, relaxed posture, clean shaven, happy, cartoon, drawing, painting",
+      "anchors": [
+        "проседь в волосах и бороде",
+        "зеленый плотный свитер",
+        "обеспокоенный взгляд",
+        "потирающие движения рук/скрещенные руки",
+        "скептическая мимика"
+      ],
+      "seed": null,
+      "ref_ids": [
+        "сайт_окна_1773366693_Zakaz"
+      ],
+      "preview_paths": [
+        "assets\\Zakaz.png"
+      ],
+      "path": null
+    }
+  ],
+  "badges": [],
+  "interaction_assets": [],
+  "sfx": [
+    {
+      "id": "sfx_draft_whistle",
+      "trigger": "сквозняк в старом окне, Сцена 01",
+      "prompt": "Subtle, high-pitched wind whistle sound, indicating a draft from an old window, with slight rattling of a loose pane.",
+      "duration": "5s (loopable)",
+      "volume": 0.4,
+      "path": null
+    },
+    {
+      "id": "sfx_candle_flicker",
+      "trigger": "пламя свечи колеблется, Сцена 01, Сцена 02",
+      "prompt": "Gentle, irregular 'whoosh' and soft crackling sound of a candle flame flickering due to wind. Not a steady burn.",
+      "duration": "3s (loopable)",
+      "volume": 0.5,
+      "path": null
+    },
+    {
+      "id": "sfx_tool_precision",
+      "trigger": "измерения Петра, обработка проема, Сцена 02, Сцена 03, Сцена 04",
+      "prompt": "Soft, metallic click of a measuring tape extending/retracting, subtle scraping of a precision tool on wood, quiet brush of a protective sheet.",
+      "duration": "2s",
+      "volume": 0.3,
+      "path": null
+    },
+    {
+      "id": "sfx_window_placement",
+      "trigger": "установка нового окна, Сцена 05",
+      "prompt": "Gentle, muffled 'thud' and soft 'swoosh' as a new window frame is carefully settled into an opening, followed by a faint 'click' of a lock.",
+      "duration": "3s",
+      "volume": 0.4,
+      "path": null
+    },
+    {
+      "id": "sfx_still_flame",
+      "trigger": "неподвижное пламя свечи, Сцена 06а",
+      "prompt": "Extremely subtle, almost imperceptible low hum of perfect stillness, without any wind noise or flickering sound. A sense of calm silence.",
+      "duration": "5s (loopable)",
+      "volume": 0.6,
+      "path": null
+    }
+  ],
+  "music": {
+    "suno_prompt": "Ambient orchestral track, slow tempo, string section, piano, subtle woodwinds, melancholic in the beginning, transitioning to warm and hopeful. Evolving from minor to major key. No vocals. Seamlessly loopable. Start with cold, dissonant strings, gradually introduce warm piano melodies and full string harmonies.",
+    "genre": "Ambient Cinematic Orchestral",
+    "bpm": 70,
+    "mood": "Melancholic, evolving to hopeful and serene",
+    "loop": true,
+    "duration": "2:00",
+    "path": null
+  },
+  "voice_over": [
+    {
+      "char_id": "сайт_окна_1773366661_Petr",
+      "tts_prompt": "Male voice, 45 years old, deep bass, calm and confident tone, speaks slowly and measuredly, clear diction, with occasional thoughtful pauses. Professional, slightly empathetic, and wise. Emotional range: thoughtful, determined, slightly melancholic (for 'Обет Мастера').",
+      "sample_line": "Каждый миллиметр важен. Особенно для того, чтобы потом не 'удивиться'.",
+      "voice_description": "Спокойный, уверенный бас. Глубокий, но доброжелательный. Становящийся интимным и пронзительным в ключевые моменты.",
+      "path": null
+    },
+    {
+      "char_id": "сайт_окна_1773366693_Zakaz",
+      "tts_prompt": "Male voice, 40 years old, soft tone, slightly anxious, speaks quickly and intermittently, with occasional sighs and nods. Becomes calmer and more relieved toward the end of the narrative.",
+      "sample_line": "Ну, дует немного. А точно ли?.. У меня уже был опыт.",
+      "voice_description": "Мягкий, но с легкой тревожностью в начале. Быстрый, прерывистый, но замедляется по мере развития доверия. К концу истории облегченный.",
+      "path": null
+    }
+  ]
+}

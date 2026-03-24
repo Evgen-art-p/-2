@@ -1,0 +1,13 @@
+{
+  "id": "A03",
+  "label": "Визор",
+  "role": "Visual Director",
+  "workshop": "VISUAL",
+  "greeting": "Кадр. Свет. Цвет. Промпт. Один удар — четыре слоя.",
+  "icon": "🎬",
+  "description": "Четыре глаза в одном: видит композицию, чувствует свет, подбирает реквизит, собирает промпты.",
+  "turbo_phase": "visual",
+  "turbo_order": 3,
+  "turbo_parallel": true,
+  "turbo_parallel_with": "A02"
+}

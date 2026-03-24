@@ -1,0 +1,508 @@
+{
+  "project_id": "TURBO_20240722_001",
+  "thumbnails": [
+    {
+      "variant": "variant_a",
+      "concept": "Крупный план Локи, смотрящей прямо на зрителя с легкой улыбкой, на фоне размытого берега Финча. Обложка должна вызывать любопытство и ощущение личного обращения.",
+      "prompt": "Cinematic shot, Extreme close-up on char_loka (short pink hair, glasses, white suit with neon blue lines), beautiful hands, 5 fingers, distinct knuckles, slightly playful and curious expression, looking directly at the camera, light smile. Blurred loc_bereg_fincha in the background. Soft natural sunlight, golden hour. 8k, best quality, sharp focus, Stylized 3D Realism.",
+      "text_overlay": "Смотрим или мир?",
+      "emotion": "curiosity / playful",
+      "ref_ids": [
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\TURBO_20240722_001\\thumb_variant_a.png"
+    },
+    {
+      "variant": "variant_b",
+      "concept": "Крупный план Джема с задумчивым выражением лица, смотрящего вдаль, с намеком на диалог. Обложка должна передать философский аспект диалога.",
+      "prompt": "Cinematic shot, Close-up on char_dzhem (blue blazer over polka dot shirt, holding a magic wand emitting subtle light), beautiful hands, 5 fingers, distinct knuckles, contemplative, slightly intrigued expression, looking to the side, blurred loc_bereg_fincha in the background. Soft natural sunlight, diffuse, slightly overcast. 8k, best quality, sharp focus, Stylized 3D Realism.",
+      "text_overlay": "Вопрос, Лока.",
+      "emotion": "thoughtfulness / intrigue",
+      "ref_ids": [
+        "char_dzhem",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "16:9",
+      "path": "output\\generated\\TURBO_20240722_001\\thumb_variant_b.png"
+    }
+  ],
+  "key_frames": [
+    {
+      "index": 1,
+      "segment": "0-1.5s",
+      "purpose": "HOOK",
+      "prompt": "Cinematic shot, Extreme close-up of The character from Figure 1 (Loka: short pink hair, glasses, white suit with neon blue lines), looking directly at the camera with a curious, slightly mischievous expression, subtle movement of head. Bright, engaging eyes. Background is loc_bereg_fincha, blurred. Soft natural light from above, 5600K. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_1_HOOK.png"
+    },
+    {
+      "index": 2,
+      "segment": "1.5-4s",
+      "purpose": "ENGAGE",
+      "prompt": "Cinematic shot, Medium shot of char_dzhem (blue blazer over polka dot shirt, magic wand in hand emitting subtle light), looking at char_loka with a thoughtful, questioning expression, slight tilt of head. They are walking along loc_bereg_fincha. Soft, slightly diffused natural light. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_2_ENGAGE.png"
+    },
+    {
+      "index": 3,
+      "segment": "4-6.5s",
+      "purpose": "DEVELOPMENT",
+      "prompt": "Cinematic shot, Over-the-shoulder shot from char_dzhem's perspective, focusing on char_loka as she gestures slightly, a knowing smile on her face. Her white suit with neon blue lines is prominent. The loc_bereg_fincha is visible in the background. Natural sunlight, slightly stronger. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_3_DEVELOPMENT.png"
+    },
+    {
+      "index": 4,
+      "segment": "6.5-9s",
+      "purpose": "PAYOFF",
+      "prompt": "Cinematic shot, Close-up of char_loka’s eyes, slightly narrowed, as if observing something profound but invisible to others. Reflections of the loc_bereg_fincha environment in her glasses. Subtle movement of her eyes. Soft, focused light on her face. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_4_PAYOFF.png"
+    },
+    {
+      "index": 5,
+      "segment": "9-11.5s",
+      "purpose": "INTRO QUESTION",
+      "prompt": "Cinematic shot, Medium shot of char_loka and char_dzhem walking side-by-side, view from slightly behind. char_loka turns her head towards char_dzhem, listening intently. char_dzhem is looking straight ahead, pondering. The loc_bereg_fincha pathway is well visible. Soft afternoon light. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_loka",
+        "char_dzhem",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\characters\\dzhem.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_5_INTRO QUESTION.png"
+    },
+    {
+      "index": 6,
+      "segment": "11.5-14s",
+      "purpose": "REACTION",
+      "prompt": "Cinematic shot, Close-up on char_loka’s face, a thoughtful, almost serene expression, as if appreciating the simplicity of big ideas. Her glasses subtly reflect the light. Soft, diffused light. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_loka"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_6_REACTION.png"
+    },
+    {
+      "index": 7,
+      "segment": "14-16.5s",
+      "purpose": "CHALLENGE",
+      "prompt": "Cinematic shot, Medium-close up of char_dzhem, now facing the camera directly, asking a rhetorical question with a slight lift of an eyebrow. His magic wand gently glows. The loc_bereg_fincha is in soft focus behind him. Slightly more direct light. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_dzhem",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_7_CHALLENGE.png"
+    },
+    {
+      "index": 8,
+      "segment": "16.5-20s",
+      "purpose": "LOOP",
+      "prompt": "Cinematic shot, Close-up of char_dzhem looking at char_loka with a thoughtful smile, subtle head movement, his expression contemplative. The ambient light from the loc_bereg_fincha wraps around him. Soft natural light, slightly warm. 8k, best quality, sharp focus, Stylized 3D Realism. Beautiful hands, 5 fingers, distinct knuckles.",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "format": "9:16",
+      "path": "output\\generated\\TURBO_20240722_001\\frame_8_LOOP.png"
+    }
+  ],
+  "videos": [
+    {
+      "index": 1,
+      "segment": "0-1.5s",
+      "camera": "Static",
+      "duration": 1.5,
+      "prompt": "char_loka (short pink hair, glasses, white suit with neon blue lines), looking directly at the camera with a curious, slightly mischievous expression, subtle movement of head. Bright, engaging eyes. Background is loc_bereg_fincha, blurred. Soft natural light from above, 5600K. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 2,
+      "segment": "1.5-4s",
+      "camera": "Dynamic Dolly Out",
+      "duration": 2.5,
+      "prompt": "char_dzhem (blue blazer over polka dot shirt, magic wand in hand emitting subtle light), looking at char_loka with a thoughtful, questioning expression, slight tilt of head. They are walking along loc_bereg_fincha. Soft, slightly diffused natural light. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 3,
+      "segment": "4-6.5s",
+      "camera": "Over-the-shoulder POV from char_dzhem",
+      "duration": 2.5,
+      "prompt": "char_loka gesturing slightly, a knowing smile on her face. Her white suit with neon blue lines is prominent. The loc_bereg_fincha is visible in the background. Natural sunlight, slightly stronger. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 4,
+      "segment": "6.5-9s",
+      "camera": "Slow Zoom In on char_loka's eyes",
+      "duration": 2.5,
+      "prompt": "char_loka’s eyes, slightly narrowed, as if observing something profound but invisible to others. Reflections of the loc_bereg_fincha environment in her glasses. Subtle movement of her eyes. Soft, focused light on her face. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 5,
+      "segment": "9-11.5s",
+      "camera": "Tracking Shot from behind char_loka and char_dzhem",
+      "duration": 2.5,
+      "prompt": "char_loka and char_dzhem walking side-by-side, view from slightly behind. char_loka turns her head towards char_dzhem, listening intently. char_dzhem is looking straight ahead, pondering. The loc_bereg_fincha pathway is well visible. Soft afternoon light. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_loka",
+        "char_dzhem",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png",
+        "assets\\characters\\dzhem.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 6,
+      "segment": "11.5-14s",
+      "camera": "Static Close-up",
+      "duration": 2.5,
+      "prompt": "char_loka’s face, a thoughtful, almost serene expression, as if appreciating the simplicity of big ideas. Her glasses subtly reflect the light. Soft, diffused light. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_loka"
+      ],
+      "preview_paths": [
+        "assets\\characters\\loka.png"
+      ],
+      "path": null
+    },
+    {
+      "index": 7,
+      "segment": "14-16.5s",
+      "camera": "Subtle Push In on char_dzhem",
+      "duration": 2.5,
+      "prompt": "char_dzhem, facing the camera directly, asking a rhetorical question with a slight lift of an eyebrow. His magic wand gently glows. The loc_bereg_fincha is in soft focus behind him. Slightly more direct light. Stylized 3D Realism.",
+      "ref_ids": [
+        "char_dzhem",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    },
+    {
+      "index": 8,
+      "segment": "16.5-20s",
+      "camera": "Static Close-up (Looping)",
+      "duration": 3.5,
+      "prompt": "char_dzhem looking at char_loka with a thoughtful smile, subtle head movement, his expression contemplative. The ambient light from the loc_bereg_fincha wraps around him. Soft natural light, slightly warm. Stylized 3D Realism. (LOOPING start matches first frame)",
+      "ref_ids": [
+        "char_dzhem",
+        "char_loka",
+        "loc_bereg_fincha"
+      ],
+      "preview_paths": [
+        "assets\\characters\\dzhem.png",
+        "assets\\characters\\loka.png",
+        "assets\\locations\\exterior\\bereg_fincha.jpg"
+      ],
+      "path": null
+    }
+  ],
+  "audio": {
+    "type": "hybrid",
+    "track": "Whisper of the Tide",
+    "mood": "chill, ethereal, reflective",
+    "bpm": 90,
+    "suno_prompt": "Ambient Electronic, soft synth waves, chill and reflective mood, ethereal pads, subtle arpeggios, distant wave sounds. 90 BPM.",
+    "sfx_map": [
+      {
+        "timing": "0-1.5s",
+        "sfx": "synth swell + light splash",
+        "purpose": "Привлечь внимание, погрузить в атмосферу"
+      },
+      {
+        "timing": "1.5-4s",
+        "sfx": "gentle footsteps on sand",
+        "purpose": "Ощущение движения, погружение в локацию"
+      },
+      {
+        "timing": "4-6.5s",
+        "sfx": "soft rustling of clothing",
+        "purpose": "Подчеркнуть близость персонажей, естественность"
+      },
+      {
+        "timing": "6.5-9s",
+        "sfx": "subtle shimmer (from wand)",
+        "purpose": "Мягкий акцент на волшебной палочке Джема"
+      },
+      {
+        "timing": "9-11.5s",
+        "sfx": "distant seagull cry",
+        "purpose": "Расширить пространство, добавить реализма локации"
+      },
+      {
+        "timing": "11.5-14s",
+        "sfx": "soft, almost imperceptible sigh",
+        "purpose": "Подчеркнуть задумчивость Локи"
+      },
+      {
+        "timing": "14-16.5s",
+        "sfx": "light tap of wand on palm",
+        "purpose": "Небольшой акцент на вопросе Джема"
+      },
+      {
+        "timing": "16.5-20s",
+        "sfx": "fading synth arpeggio, light splash",
+        "purpose": "Бесшовный переход к началу лупа"
+      }
+    ]
+  },
+  "captions": {
+    "style": {
+      "font": "Orbitron",
+      "size": "medium",
+      "color": "#E9E9E9",
+      "outline": "#000000 2px",
+      "shadow": true
+    },
+    "segments": [
+      {
+        "segment": "0-1.5s",
+        "text": "Мы здесь почему?",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "Почему",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "1.5-4s",
+        "text": "Смотрим на мир?",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "мир?",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "4-6.5s",
+        "text": "Или он на нас?",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "на нас?",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "6.5-9s",
+        "text": "Взаимно, наверное.",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "Взаимно.",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "9-11.5s",
+        "text": "А что он нам говорит?",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "говорит?",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "11.5-14s",
+        "text": "Что-то важное.",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "важное.",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "14-16.5s",
+        "text": "Всегда ли мы слышим?",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "слышим?",
+        "accent_style": "color:#FF6B6B"
+      },
+      {
+        "segment": "16.5-20s",
+        "text": "Вопрос, Лока.",
+        "position": "center",
+        "animation": "pop",
+        "accent_word": "Вопрос.",
+        "accent_style": "color:#FF6B6B"
+      }
+    ]
+  },
+  "edit_plan": [
+    {
+      "segment": "0-1.5s",
+      "cuts": 0,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "DROP at 0.0s (synth swell)"
+    },
+    {
+      "segment": "1.5-4s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 2 at 1.5s (soft pluck)"
+    },
+    {
+      "segment": "4-6.5s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 4 at 4.0s (subtle synth)"
+    },
+    {
+      "segment": "6.5-9s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 6 at 6.6s (soft pluck)"
+    },
+    {
+      "segment": "9-11.5s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 8 at 9.0s (subtle synth)"
+    },
+    {
+      "segment": "11.5-14s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 10 at 11.5s (soft pluck)"
+    },
+    {
+      "segment": "14-16.5s",
+      "cuts": 1,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "BEAT 12 at 14.0s (subtle synth)"
+    },
+    {
+      "segment": "16.5-20s",
+      "cuts": 1,
+      "transition_out": "loop",
+      "speed": "1x",
+      "beat_sync": "BEAT 14 at 16.5s (soft pluck)"
+    }
+  ],
+  "publication": {
+    "description": "Лока и Джем прогуливаются по живописному берегу Финча, размышляя о восприятии мира. Откройте для себя наш тестовый прогон системы Turbo Shorts – дружелюбный и легкий диалог двух персонажей в стилизованном 3D реализме. Это больше, чем просто прогулка – это приглашение к размышлению.",
+    "hashtags": [
+      "#TurboShortsTest",
+      "#LokaAndGem",
+      "#Dialogues",
+      "#ConceptualArt",
+      "#Stylized3D",
+      "#AITesting",
+      "#CreativeTech",
+      "#VisualStorytelling",
+      "#Shorts"
+    ],
+    "posting_time": "UNIVERSAL"
+  }
+}

@@ -1,0 +1,456 @@
+{
+  "project_id": "WS_20260301_001",
+  "thumbnails": [],
+  "key_frames": [
+    {
+      "index": 1,
+      "scene": "ПРОЛОГ._ХОЛОД_ДЕТСТВА",
+      "segment": "ПРОЛОГ._ХОЛОД_ДЕТСТВА",
+      "purpose": "ПРОЛОГ. ХОЛОД ДЕТСТВА",
+      "prompt": "A small boy (Master Petr in childhood) sits on an old windowsill, wrapped in a blanket. Outside the window, a blizzard rages, snow cover. Cold air blows from window cracks, gently fluttering a curtain. His gaze is sad. Cold blue tones dominate the scene. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "cozy atmosphere, happy boy, modern window, clear view outside, blurry, deformed, extra fingers, text, watermark, signature, low quality, vibrant colors",
+      "composition": {
+        "type": "средний план",
+        "focus": "на мальчике и окне",
+        "rule_of_thirds": "мальчик расположен на одной из вертикальных линий третей, окно занимает большую часть кадра"
+      },
+      "lighting": {
+        "source": "из-за окна (холодный, приглушенный)",
+        "type": "холодный",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#ADD8E6",
+        "accent": "#4682B4"
+      },
+      "ref_ids": [
+        "char_master_petr"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260301_001\\frame_1_.  .png",
+      "background_prompt": "Winter blizzard outside an old window, snow cover, dark, cold atmosphere, no characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 2,
+      "scene": "ВСТРЕЧА._НАСТОРОЖЕННОСТЬ",
+      "segment": "ВСТРЕЧА._НАСТОРОЖЕННОСТЬ",
+      "purpose": "ВСТРЕЧА. НАСТОРОЖЕННОСТЬ",
+      "prompt": "A clean, modern, but slightly neglected apartment interior. char_master_petr stands opposite char_client (a woman, 30-40 years old). Petr is calm and focused, with clean tools in his gloved hands. The client has her arms crossed, her gaze suspicious, eyebrows slightly furrowed. In the background a worn old window, next to which a light curtain sways slightly, indicating a draft. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "happy client, modern pristine window, messy tools, cold light, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "средний план",
+        "focus": "на взаимодействии персонажей и старом окне",
+        "rule_of_thirds": "персонажи расположены на вертикальных третях, старое окно на фоне"
+      },
+      "lighting": {
+        "source": "из окна и сверху (мягкий, рассеянный)",
+        "type": "нейтральный, слегка холодноватый",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#F5F5DC",
+        "accent": "#8B4513"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260301_001\\frame_2_. .png",
+      "background_prompt": "Slightly neglected apartment with a worn old window, light curtain sways slightly. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 3,
+      "scene": "EXPRESS._БЫСТРАЯ_ДЕМОНСТРАЦИЯ",
+      "segment": "EXPRESS._БЫСТРАЯ_ДЕМОНСТРАЦИЯ",
+      "purpose": "EXPRESS. БЫСТРАЯ ДЕМОНСТРАЦИЯ",
+      "prompt": "A clean, modern apartment interior with a new, sparkling window. char_master_petr holds a lit candle near the new window with a satisfied expression. The flame is absolutely still, not trembling. char_client (smiling, relaxed, hands uncrossed) watches with clear relief. The atmosphere is bright and warm. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "trembling flame, worried client, old window, cold colors, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "средний план",
+        "focus": "на окне, свече и выражении лиц персонажей",
+        "rule_of_thirds": "свеча и окна на одной трети, лица персонажей на другой"
+      },
+      "lighting": {
+        "source": "из окна (яркий, теплый)",
+        "type": "теплый",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#FFFACD",
+        "accent": "#FFD700"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": "output\\generated\\WS_20260301_001\\frame_3_EXPRESS.  .png",
+      "background_prompt": "Clean, modern apartment interior with a new, sparkling window. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 4,
+      "scene": "ДИАГНОСТИКА._ВЗГЛЯД_МАСТЕРА",
+      "segment": "ДИАГНОСТИКА._ВЗГЛЯД_МАСТЕРА",
+      "purpose": "ДИАГНОСТИКА. ВЗГЛЯД МАСТЕРА",
+      "prompt": "A clean, but worn window frame in an apartment. char_master_petr uses a flashlight and a small mirror to inspect the tiniest details of the old window. char_client watches him with slight disbelief. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "petr looking scared, client smiling, modern window, dark room, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "крупный план",
+        "focus": "на руках Петра, зеркальце и фонарике у окна",
+        "rule_of_thirds": "руки Петра и инструмент на одной трети, лицо клиента на другой"
+      },
+      "lighting": {
+        "source": "фонарик Петра (направленный), из окна (дневной)",
+        "type": "нейтральный",
+        "shadows": "детализированные"
+      },
+      "color_keys": {
+        "dominant": "#F5F5DC",
+        "accent": "#696969"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Clean, but worn apartment window frame, no characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 5,
+      "scene": "ПОДГОТОВКА._ТОЧНОСТЬ",
+      "segment": "ПОДГОТОВКА._ТОЧНОСТЬ",
+      "purpose": "ПОДГОТОВКА. ТОЧНОСТЬ",
+      "prompt": "An apartment interior. The floor near the window is covered with protective film. Tools are neatly arranged on a clean canvas. char_master_petr carefully measures the window opening with a tape measure, double-checking. His movements are precise and calibrated. char_client watches from a distance. Details like a level and pencil are in perfect order. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "messy tools, dirty floor, careless movements, client interfering, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "средний план",
+        "focus": "на Петре, его инструментах и процессе замера",
+        "rule_of_thirds": "Петр расположен на одной из линий, инструменты на переднем плане"
+      },
+      "lighting": {
+        "source": "из окна (яркий, дневной)",
+        "type": "нейтральный",
+        "shadows": "четкие, но мягкие"
+      },
+      "color_keys": {
+        "dominant": "#F5F5DC",
+        "accent": "#BDB76B"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Apartment interior with floor covered by protective film. Neatly arranged tools on a clean canvas near a window. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 6,
+      "scene": "МОНТАЖ._РИТУАЛ",
+      "segment": "МОНТАЖ._РИТУАЛ",
+      "purpose": "МОНТАЖ. РИТУАЛ",
+      "prompt": "An apartment interior during the installation of a new window. Small, quiet working sounds. char_master_petr intently installs a new frame. His movements are strong but controlled. Daylight fills the room. char_client watches calmly. The working area is clean and tidy. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "loud noise, messy environment, hurried movements, client worried, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "средний план",
+        "focus": "на Петре и процессе установки рамы",
+        "rule_of_thirds": "Петр с рамой на одной из линий третей"
+      },
+      "lighting": {
+        "source": "из окна (яркий, дневной)",
+        "type": "нейтральный",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#F5F5DC",
+        "accent": "#A9A9A9"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Apartment interior during new window frame installation process, daylight, clean working area. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 7,
+      "scene": "ГЕРМЕТИЗАЦИЯ._ЗАЩИТА",
+      "segment": "ГЕРМЕТИЗАЦИЯ._ЗАЩИТА",
+      "purpose": "ГЕРМЕТИЗАЦИЯ. ЗАЩИТА",
+      "prompt": "An apartment interior, focused on detailed areas of window sealing. char_master_petr carefully applies sealant, smoothing it with surgical precision. Close-up on his gloved hands working with the material. char_client nods, her face relaxed, hands uncrossed. Sunlight fills the room. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "messy sealant application, bad technique, client worried, cold light, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "крупный план",
+        "focus": "на руках Петра и процессе нанесения герметика",
+        "rule_of_thirds": "руки Петра на переднем плане, процесс в центре"
+      },
+      "lighting": {
+        "source": "из окна (яркий, солнечный)",
+        "type": "теплый",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#F5F5DC",
+        "accent": "#87CEEB"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Apartment interior, detailed view of precise window sealing with sealant. Sunlight. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 8,
+      "scene": "КУЛЬМИНАЦИЯ._ТЕСТ_СО_СВЕЧОЙ",
+      "segment": "КУЛЬМИНАЦИЯ._ТЕСТ_СО_СВЕЧОЙ",
+      "purpose": "КУЛЬМИНАЦИЯ. ТЕСТ СО СВЕЧОЙ",
+      "prompt": "An apartment interior with a new, perfectly installed window. char_master_petr holds a lit candle near the perimeter of the new window. The flame is absolutely still, not trembling at all. char_client moves closer, her face illuminated by surprise and relief. Warm golden tones creating a cozy atmosphere. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "trembling flame, cold atmosphere, worried client, old window, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "крупный план",
+        "focus": "на свече, окне и лицах персонажей",
+        "rule_of_thirds": "свеча и окно на одной трети, лица на других"
+      },
+      "lighting": {
+        "source": "свеча (теплый), из окна (золотистый)",
+        "type": "теплый, золотистый",
+        "shadows": "мягкие, играющие"
+      },
+      "color_keys": {
+        "dominant": "#FFD700",
+        "accent": "#FFA500"
+      },
+      "ref_ids": [
+        "char_master_petr",
+        "char_client"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Apartment interior with a new, perfectly installed window. Warm golden tones, cozy atmosphere. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    },
+    {
+      "index": 9,
+      "scene": "РАЗВЯЗКА_И_CTA._ПРИЗЫВ_МАСТЕРА",
+      "segment": "РАЗВЯЗКА_И_CTA._ПРИЗЫВ_МАСТЕРА",
+      "purpose": "РАЗВЯЗКА И CTA. ПРИЗЫВ МАСТЕРА",
+      "prompt": "A cozy and warm apartment. char_client sits relaxed and happy in an armchair near the new window, enjoying the warmth. Outside the window, snow gently falls, but inside the room is cozy. char_master_petr, slightly detached, looks at her with a content smile, then gently turns towards the viewer. Warm, sunny colors dominate the scene. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "cold weather inside, worried client, sad Petr, chaotic scene, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "composition": {
+        "type": "общий план",
+        "focus": "на уюте комнаты и персонажах",
+        "rule_of_thirds": "клиентка в кресле на одной трети, Петр на другой, окно на фоне"
+      },
+      "lighting": {
+        "source": "из окна (мягкий, теплый)",
+        "type": "теплый, солнечный",
+        "shadows": "мягкие"
+      },
+      "color_keys": {
+        "dominant": "#F0F8FF",
+        "accent": "#FFDAB9"
+      },
+      "ref_ids": [
+        "char_client",
+        "char_master_petr"
+      ],
+      "preview_paths": [],
+      "format": "16:9",
+      "path": null,
+      "background_prompt": "Cozy and warm apartment interior. Outside the window, snow gently falls. No characters. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition"
+    }
+  ],
+  "videos": [],
+  "audio": {},
+  "captions": [],
+  "edit_plan": {},
+  "publication": {
+    "description": "",
+    "hashtags": [],
+    "posting_time": "",
+    "build_order": [
+      "1. Генерация изображений",
+      "2. Генерация/подбор звука",
+      "3. TTS голоса",
+      "4. Вёрстка",
+      "5. Интерактив",
+      "6. Геймификация",
+      "7. Аналитика — сенсоры и буфер",
+      "8. Admin-страница",
+      "9. A/B конфиг",
+      "10. Сборка + тест",
+      "11. Публикация"
+    ]
+  },
+  "text": [],
+  "interactive": [],
+  "gamification": [],
+  "sound": [],
+  "_source_format": "web_story",
+  "characters": [
+    {
+      "char_id": "char_master_petr",
+      "char_name": "Мастер Петр",
+      "prompt": "A man named Master Petr, 45 years old, sturdy build, focused gaze, subtle smile lines, neatly groomed stubble, wearing a clean dark-blue work uniform with a multi-pocketed vest, with ideally clean tools in his gloved hands, beautiful hands, 5 fingers, distinct knuckles, Stylized 3D Realism, warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "unclean uniform, messy tools, confused expression, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "anchors": [
+        "чистая рабочая форма (темно-синяя)",
+        "аккуратные перчатки (во время работы)",
+        "набор чистых инструментов в жилетке/на поясе",
+        "сосредоточенный, внимательный взгляд",
+        "мерная рулетка на поясе или карандаш за ухом"
+      ],
+      "seed": null,
+      "ref_ids": [
+        "char_master_petr"
+      ],
+      "preview_paths": [],
+      "path": null
+    },
+    {
+      "char_id": "char_client",
+      "char_name": "Клиент",
+      "prompt": "A client (could be a man or a woman, 28-50 years old), displaying emotions from wariness to hope and relief, wearing casual home clothing, often with arms crossed initially, then relaxed. Beautiful hands, 5 fingers, distinct knuckles. Stylized 3D Realism, warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "negative": "exaggerated emotions, formal clothing, dirty environment, blurry, deformed, extra fingers, text, watermark, signature, low quality",
+      "anchors": [
+        "изменчивая мимика (от настороженности до облегчения)",
+        "язык тела, отражающий недоверие/спокойствие",
+        "повседневная домашняя одежда",
+        "отсутствие активных действий, скорее наблюдение"
+      ],
+      "seed": null,
+      "ref_ids": [
+        "char_client"
+      ],
+      "preview_paths": [],
+      "path": null
+    }
+  ],
+  "badges": [
+    {
+      "achievement_id": "ach_novice_builder",
+      "prompt": "An achievement badge icon for 'Новичок-строитель'. A stylized golden measuring tape icon (📐) with subtle light glow effects on a warm background. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "style": "illustrated",
+      "path": null
+    },
+    {
+      "achievement_id": "ach_trusting_client",
+      "prompt": "An achievement badge icon for 'Доверившийся'. A stylized handshake icon (🤝) with a warm, comforting background and soft golden light. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "style": "illustrated",
+      "path": null
+    },
+    {
+      "achievement_id": "ach_master_apprentice",
+      "prompt": "An achievement badge icon for 'Ученик Мастера'. A stylized lit candle icon (🕯️) with a steady flame, emitting a gentle warm glow, on a cozy background. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "style": "illustrated",
+      "path": null
+    },
+    {
+      "achievement_id": "ach_comfort_seeker",
+      "prompt": "An achievement badge icon for 'Искатель Комфорта'. A stylized cozy armchair icon (🛋️) next to a warm window, suggesting ultimate comfort, with soft, inviting colors. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "style": "illustrated",
+      "path": null
+    },
+    {
+      "achievement_id": "ach_warm_home",
+      "prompt": "An achievement badge icon for 'Теплый Дом'. A stylized cozy house icon (🏠) with warm light radiating from its windows, surrounded by a gentle, inviting aura. Warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "style": "illustrated",
+      "path": null
+    }
+  ],
+  "interaction_assets": [
+    {
+      "interaction_id": "path_choice_btn_full_story",
+      "element_id": "btn_full_story",
+      "prompt": "Digital button labeled 'Выбрать' for a UI. The button has a subtle soft gradient white background and dark text. It has a 1px light gray border and a subtle light shadow. It represents the choice for the full story. Stylized 3D Realism, warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "size": "aspect_ratio_4_1",
+      "states": {
+        "hover_effect": "mild blue gradient, white text, 1px dark blue border, subtle blue glow. Animation: scale up to 1.02 over 200ms ease-out.",
+        "selected_effect": "dark blue background, white text, inset dark shadow. Animation: scale down to 0.98 over 100ms ease-in."
+      },
+      "path": null
+    },
+    {
+      "interaction_id": "path_choice_btn_express_solution",
+      "element_id": "btn_express_solution",
+      "prompt": "Digital button labeled 'Выбрать' for a UI. The button has a subtle soft gradient white background and dark text. It has a 1px light gray border and a subtle light shadow. It represents the choice for the express solution. Stylized 3D Realism, warm painterly digital illustration, soft golden hour lighting, rich textures, warm color temperature +15, high detail with soft focus backgrounds, cinematic composition",
+      "size": "aspect_ratio_4_1",
+      "states": {
+        "hover_effect": "mild blue gradient, white text, 1px dark blue border, subtle blue glow. Animation: scale up to 1.02 over 200ms ease-out.",
+        "selected_effect": "dark blue background, white text, inset dark shadow. Animation: scale down to 0.98 over 100ms ease-in."
+      },
+      "path": null
+    }
+  ],
+  "sfx": [
+    {
+      "id": "sfx_01",
+      "trigger": "сцена 01, в начале",
+      "prompt": "sound of subtle wind blowing through window cracks, faint and chilling, 5 seconds",
+      "duration": "5s",
+      "volume": 0.4,
+      "path": null
+    },
+    {
+      "id": "sfx_03",
+      "trigger": "сцена 04, момент замера",
+      "prompt": "sound of a retractable metal tape measure being extended and retracted, subtle, 2 seconds",
+      "duration": "2s",
+      "volume": 0.5,
+      "path": null
+    },
+    {
+      "id": "sfx_04",
+      "trigger": "сцена 06, момент герметизации",
+      "prompt": "smooth, precise sound of sealant being applied and smoothed, quiet, 3 seconds",
+      "duration": "3s",
+      "volume": 0.4,
+      "path": null
+    },
+    {
+      "id": "sfx_05",
+      "trigger": "сцена 07, в момент кульминации",
+      "prompt": "absence of wind noise, faint whisper of candle flame, absolute stillness, 5 seconds",
+      "duration": "5s",
+      "volume": 0.6,
+      "path": null
+    }
+  ],
+  "music": {
+    "suno_prompt": "Genre: calm instrumental, acoustic, cinematic. Tempo: 70 BPM. Instruments: warm piano, soft strings, subtle acoustic guitar. Mood: peaceful, reliable, comforting, slightly melancholic progressing to warm and hopeful. Duration: 1 min 30 sec. Loop: true. Vocals: none.",
+    "genre": "calm instrumental, acoustic, cinematic",
+    "bpm": 70,
+    "mood": "peaceful, reliable, comforting, slightly melancholic progressing to warm and hopeful",
+    "loop": true,
+    "duration": "1 min 30 sec",
+    "path": null
+  },
+  "voice_over": [
+    {
+      "char_id": "char_master_petr",
+      "tts_prompt": "Male voice, 45 years old, deep, warm bass, calm and confident tone, speaks slowly, with thoughtful pauses, conveying care and professionalism, slight emphasis on key technical terms. Neutral Russian accent.",
+      "sample_line": "«Малейшая деталь имеет значение. Это фундамент тепла.»",
+      "voice_description": "спокойный, уверенный мужской голос с нотками заботы и профессионализма",
+      "path": null
+    },
+    {
+      "char_id": "char_client",
+      "tts_prompt": "Female voice, 30-40 years old, initially wary and questioning tone, gradually transitioning to relief and gratitude, with a normal speaking pace. Emphasizes emotional shifts.",
+      "sample_line": "«Я уже обжигалась… Обещания были, а тепла — нет.»",
+      "voice_description": "женский голос, меняющийся от настороженного до облегченного и благодарного",
+      "path": null
+    }
+  ]
+}

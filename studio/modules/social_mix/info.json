@@ -1,0 +1,23 @@
+{
+  "id": "social_mix",
+  "label": "SMM & Контент",
+  "name": "Social Mix",
+  "icon": "📱",
+  "color": "green",
+  "placeholder": "Опишите задачу для соцсетей...",
+  "priority": 20,
+  "suggest": [
+    "Сделать пост для Instagram",
+    "Контент-план на неделю",
+    "Продающий пост для VK"
+  ],
+  "keywords": [
+    "пост",
+    "соцсети",
+    "контент",
+    "smm",
+    "instagram",
+    "telegram",
+    "вк"
+  ]
+}

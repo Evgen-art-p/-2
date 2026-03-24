@@ -1,0 +1,12 @@
+{
+  "id": "A05",
+  "label": "Финализатор",
+  "role": "Cover Designer + Final Assembly",
+  "workshop": "FINAL",
+  "greeting": "Обложка — обещание. Ролик — выполнение. Пакет — доставка.",
+  "icon": "🏁",
+  "description": "Последний рубеж. Обложка A/B, финальная сборка, печать качества.",
+  "turbo_phase": "final",
+  "turbo_order": 5,
+  "turbo_parallel": false
+}

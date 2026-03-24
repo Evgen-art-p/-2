@@ -1,0 +1,55 @@
+{
+  "app_name": "Six Fingers Studio",
+  "version": "1.0",
+  
+  "paths": {
+    "root": ".",
+    "studio": "./studio",
+    "modules": "./studio/modules",
+    "knowledge": "./knowledge",
+    "projects": "./runs",
+    "static": "./static",
+    "images": "./images"
+  },
+  
+  "workshops": {
+    "social_mix": {
+      "path": "./studio/modules/social_mix",
+      "name": "Социальные Посты",
+      "agents_count": 12,
+      "enabled": true
+    },
+    "video_long": {
+      "path": "./studio/modules/video_long",
+      "name": "Длинное Видео",
+      "agents_count": 12,
+      "enabled": true
+    },
+    "video_shorts": {
+      "path": "./studio/modules/video_shorts",
+      "name": "Короткие Видео",
+      "agents_count": 12,
+      "enabled": true
+    },
+    "web_story": {
+      "path": "./studio/modules/web_story",
+      "name": "Веб-Истории",
+      "agents_count": 12,
+      "enabled": true
+    }
+  },
+  
+  "memory": {
+    "client_info_file": "client_info.json",
+    "project_memory_file": "project_memory.json",
+    "history_file": "history_dna.json",
+    "runs_folder": "runs"
+  },
+  
+  "ai": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "max_tokens": 8000
+  }
+}

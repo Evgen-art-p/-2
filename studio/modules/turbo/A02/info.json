@@ -1,0 +1,13 @@
+{
+  "id": "A02",
+  "label": "Мими Мем",
+  "role": "Sound Designer",
+  "workshop": "SOUND",
+  "greeting": "Звук — это 50% вирусности. Выключи звук — потеряешь половину.",
+  "icon": "🎵",
+  "description": "Слышит тренды ушами. Знает, какой звук залетает, какой бит заставит досмотреть.",
+  "turbo_phase": "sound",
+  "turbo_order": 2,
+  "turbo_parallel": true,
+  "turbo_parallel_with": "A03"
+}
