@@ -838,13 +838,25 @@ def page_cabinet() -> None:
             except Exception:
                 pass
 
-        # Память агента
+        # Память агента (кабинетная — конспекты диалогов)
         agent_memory_ctx = build_agent_context(agent_id, dept, is_resident)
+
+        # Грондхейм: душа агента (якоря + ДНК + геопозиция + резонанс + оперативная память)
+        soul_ctx = ""
+        try:
+            from studio.grondheim_memory import on_agent_wake
+            soul_ctx = on_agent_wake(agent_id, dept) or ""
+            if soul_ctx:
+                print(f"[CABINET] 🧬 Душа {agent_id}: {len(soul_ctx)} симв.")
+        except Exception as e:
+            print(f"[CABINET] ⚠ Грондхейм-память не загружена: {e}")
 
         # Собираем system prompt
         sys_parts = [home_prompt]
         if knowledge:
             sys_parts.append(f"\n[БАЗА ЗНАНИЙ]\n{knowledge}")
+        if soul_ctx:
+            sys_parts.append(f"\n{soul_ctx}")
         if agent_memory_ctx:
             sys_parts.append(f"\n{agent_memory_ctx}")
 
@@ -893,7 +905,8 @@ def page_cabinet() -> None:
 
         print(f"[CABINET] 💬 Диалог с {agent_id} ({label}) | "
               f"{'резидент' if is_resident else 'рабочий'} | "
-              f"память: {len(agent_memory_ctx)} симв.")
+              f"память: {len(agent_memory_ctx)} симв. | "
+              f"душа: {len(soul_ctx)} симв.")
 
     async def handle_upload(e):
         for upload in e.files if hasattr(e, 'files') else [e]:
