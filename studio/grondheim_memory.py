@@ -515,7 +515,7 @@ def _compress_sensory(sensory: dict) -> dict:
     routine = [e for e in entries if e.get("emotional_weight", 0) < 0.5]
 
     # Сводка рутины → в summary
-    routine_texts = [e["content"][:100] for e in routine[-10:]]
+    routine_texts = [(e.get("content") or e.get("feeling", ""))[:100] for e in routine[-10:]]
     old_summary = sensory.get("summary", "")
     new_summary_parts = []
     if old_summary:
@@ -529,8 +529,8 @@ def _compress_sensory(sensory: dict) -> dict:
 
     # Оставляем важное + последние 5 рутинных
     keep = important[-SENSORY_MAX_ENTRIES // 2:] + routine[-5:]
-    # Сортируем по времени
-    keep.sort(key=lambda e: e.get("ts", ""))
+    # Сортируем по времени (поддержка обоих форматов)
+    keep.sort(key=lambda e: e.get("ts") or e.get("date", ""))
     sensory["entries"] = keep
 
     return sensory
@@ -554,14 +554,17 @@ def decay_sensory(agent_id: str, dept: str = ""):
 
     for entry in sensory["entries"]:
         try:
-            entry_time = datetime.fromisoformat(entry["ts"])
-        except (ValueError, KeyError):
+            # Поддержка обоих форматов: grondheim_memory (ts) и city_walker (date)
+            raw_ts = entry.get("ts") or entry.get("date", "")
+            entry_time = datetime.fromisoformat(raw_ts)
+        except (ValueError, KeyError, TypeError):
             surviving.append(entry)
             continue
 
         if entry_time < cutoff and entry.get("emotional_weight", 0) < 0.5:
             # Уходит — но сохраняем след в summary
-            decayed_texts.append(entry["content"][:60])
+            text = entry.get("content") or entry.get("feeling", "")
+            decayed_texts.append(text[:60])
         else:
             surviving.append(entry)
 
@@ -576,7 +579,12 @@ def decay_sensory(agent_id: str, dept: str = ""):
 
 
 def format_sensory_for_prompt(agent_id: str, dept: str = "") -> str:
-    """Форматирует оперативную память для инжекта в prompt."""
+    """Форматирует оперативную память для инжекта в prompt.
+
+    Поддерживает ДВА формата записей:
+      - grondheim_memory: {ts, type, content, emotional_weight, source, tags}
+      - city_walker:      {date, location, feeling, weather}
+    """
     sensory = load_sensory(agent_id, dept)
 
     if not sensory["entries"] and not sensory.get("summary"):
@@ -592,9 +600,21 @@ def format_sensory_for_prompt(agent_id: str, dept: str = "") -> str:
     if recent:
         lines.append("")
         for entry in recent:
-            weight_marker = "●" if entry.get("emotional_weight", 0) >= 0.5 else "○"
-            etype = entry.get("type", "?")
-            lines.append(f"  {weight_marker} [{etype}] {entry['content'][:200]}")
+            # --- Формат city_walker: date/location/feeling ---
+            if "feeling" in entry:
+                loc = entry.get("location", "?")
+                feeling = entry.get("feeling", "")[:200]
+                date = entry.get("date", "")
+                weather = entry.get("weather", "")
+                prefix = f"[{date}] " if date else ""
+                weather_note = f" ({weather})" if weather else ""
+                lines.append(f"  🚶 {prefix}{loc}{weather_note}: {feeling}")
+            # --- Формат grondheim_memory: ts/type/content ---
+            else:
+                weight_marker = "●" if entry.get("emotional_weight", 0) >= 0.5 else "○"
+                etype = entry.get("type", "?")
+                content = entry.get("content", "")[:200]
+                lines.append(f"  {weight_marker} [{etype}] {content}")
 
     lines.append("=== КОНЕЦ ОПЕРАТИВНОЙ ПАМЯТИ ===")
     return "\n".join(lines)
