@@ -1,0 +1,27 @@
+{
+  "id": "clipmakers",
+  "label": "Клипы & Fashion-видео",
+  "name": "Clipmakers",
+  "icon": "🎵",
+  "color": "purple",
+  "placeholder": "Опишите задачу для клипа или fashion-видео...",
+  "priority": 25,
+  "suggest": [
+    "Концепция клипа под трек",
+    "Сториборд для music video",
+    "Fashion mood-video для бренда"
+  ],
+  "keywords": [
+    "клип",
+    "музыкальное видео",
+    "music video",
+    "fashion",
+    "mood",
+    "артист",
+    "трек",
+    "бит",
+    "хореография",
+    "перформанс",
+    "концепт"
+  ]
+}
