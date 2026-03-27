@@ -46,39 +46,14 @@ PAUSE = 2
 # ═══════════════════════════════════════════════════
 
 def is_alive(agent_dir: Path, catalog_entry: dict | None) -> bool:
-    """Агент считается живым если у него В ФАЙЛАХ заполнены:
-    1. anchor_points.md — больше 200 символов, не заглушка
-    2. home_prompt.md — больше 300 символов, не заглушка, есть живой текст
-    
-    Каталог НЕ проверяем — он может быть пустой даже у живых
-    (register_existing записал пустышки). Каталог обновим отдельно.
+    """Простая логика:
+    - turbo и residents → ЖИВЫЕ (заполнены Архитектором вручную)
+    - всё остальное → ДОХЛЫЕ (оживляем через LLM)
     """
-    stub_words = ["не заполнено", "не определён", "— не ", "заполнить", "заглушка", "placeholder"]
-    
-    def is_stub(text: str) -> bool:
-        if not text or len(text.strip()) < 50:
-            return True
-        text_lower = text.lower()
-        return any(w in text_lower for w in stub_words)
-    
-    # 1. anchor_points.md
-    ap = agent_dir / "core" / "anchor_points.md"
-    has_anchor = False
-    if ap.exists():
-        ap_text = ap.read_text(encoding="utf-8")
-        if not is_stub(ap_text) and len(ap_text) > 200:
-            has_anchor = True
-    
-    # 2. home_prompt.md
-    hp = agent_dir / "home" / "home_prompt.md"
-    has_home = False
-    if hp.exists():
-        hp_text = hp.read_text(encoding="utf-8")
-        if not is_stub(hp_text) and len(hp_text) > 300:
-            has_home = True
-    
-    # Живой = оба файла заполнены
-    return has_anchor and has_home
+    dept = agent_dir.parent.name
+    if dept in ("turbo", "residents"):
+        return True
+    return False
 
 
 # ═══════════════════════════════════════════════════
