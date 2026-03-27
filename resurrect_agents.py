@@ -46,33 +46,39 @@ PAUSE = 2
 # ═══════════════════════════════════════════════════
 
 def is_alive(agent_dir: Path, catalog_entry: dict | None) -> bool:
-    """Агент считается живым если у него есть:
-    - Заполненный anchor_points.md (не заглушка)
-    - Заполненный home_prompt.md (не заглушка)
-    - Pull_Vector в каталоге
+    """Агент считается живым если у него В ФАЙЛАХ заполнены:
+    1. anchor_points.md — больше 200 символов, не заглушка
+    2. home_prompt.md — больше 300 символов, не заглушка, есть живой текст
+    
+    Каталог НЕ проверяем — он может быть пустой даже у живых
+    (register_existing записал пустышки). Каталог обновим отдельно.
     """
-    # Проверяем anchor_points.md
+    stub_words = ["не заполнено", "не определён", "— не ", "заполнить", "заглушка", "placeholder"]
+    
+    def is_stub(text: str) -> bool:
+        if not text or len(text.strip()) < 50:
+            return True
+        text_lower = text.lower()
+        return any(w in text_lower for w in stub_words)
+    
+    # 1. anchor_points.md
     ap = agent_dir / "core" / "anchor_points.md"
+    has_anchor = False
     if ap.exists():
-        text = ap.read_text(encoding="utf-8")
-        if "не заполнено" not in text.lower() and len(text) > 200:
-            return True
-
-    # Проверяем home_prompt.md
+        ap_text = ap.read_text(encoding="utf-8")
+        if not is_stub(ap_text) and len(ap_text) > 200:
+            has_anchor = True
+    
+    # 2. home_prompt.md
     hp = agent_dir / "home" / "home_prompt.md"
+    has_home = False
     if hp.exists():
-        text = hp.read_text(encoding="utf-8")
-        if "не заполнено" not in text.lower() and "не определён" not in text.lower() and len(text) > 300:
-            return True
-
-    # Проверяем каталог
-    if catalog_entry:
-        pv = catalog_entry.get("Pull_Vector", "")
-        hh = catalog_entry.get("Hidden_History", "")
-        if pv and len(pv) > 20 and hh and len(hh) > 20:
-            return True
-
-    return False
+        hp_text = hp.read_text(encoding="utf-8")
+        if not is_stub(hp_text) and len(hp_text) > 300:
+            has_home = True
+    
+    # Живой = оба файла заполнены
+    return has_anchor and has_home
 
 
 # ═══════════════════════════════════════════════════
@@ -312,6 +318,94 @@ def _write_text(path, text):
         f.write(text)
 
 
+def _sync_alive_to_catalog(agent_dir: Path, folder: str, dept: str, cat_entry: dict):
+    """Для живых агентов: подтягивает данные из файлов в каталог если там пусто."""
+    
+    # Читаем anchor_points.md
+    ap = agent_dir / "core" / "anchor_points.md"
+    ap_text = ""
+    if ap.exists():
+        ap_text = ap.read_text(encoding="utf-8")
+    
+    # Читаем home_prompt.md  
+    hp = agent_dir / "home" / "home_prompt.md"
+    hp_text = ""
+    if hp.exists():
+        hp_text = hp.read_text(encoding="utf-8")
+    
+    # Читаем dna.json
+    dna = {}
+    dp = agent_dir / "dna.json"
+    if dp.exists():
+        try:
+            dna = json.loads(dp.read_text(encoding="utf-8"))
+        except:
+            pass
+    
+    # Читаем anchors.json
+    anchors = {}
+    aj = agent_dir / "core" / "anchors.json"
+    if aj.exists():
+        try:
+            anchors = json.loads(aj.read_text(encoding="utf-8"))
+        except:
+            pass
+    
+    resonance = dna.get("resonance", {})
+    changed = False
+    
+    def _safe(val):
+        if val is None: return ""
+        if not isinstance(val, str): return str(val)
+        return val
+    
+    # Обновляем пустые поля каталога из файлов
+    if not _safe(cat_entry.get("Anchor_Points")).strip():
+        cat_entry["Anchor_Points"] = ap_text[:500] if ap_text else ""
+        changed = True
+    
+    if not _safe(cat_entry.get("Hidden_History")).strip():
+        # Ищем в home_prompt секцию "Скрытая история" или "Личная история"
+        for section in ["Скрытая история", "Личная история", "Hidden_History"]:
+            idx = hp_text.lower().find(section.lower())
+            if idx >= 0:
+                chunk = hp_text[idx:idx+500]
+                cat_entry["Hidden_History"] = chunk
+                changed = True
+                break
+    
+    if not _safe(cat_entry.get("Pull_Vector")).strip():
+        pv = resonance.get("pull_vector", "") or anchors.get("pull_vector", "")
+        if pv:
+            cat_entry["Pull_Vector"] = pv
+            changed = True
+    
+    if not _safe(cat_entry.get("Hidden_Taste")).strip():
+        ht = resonance.get("hidden_taste", "") or anchors.get("hidden_taste", "")
+        if ht:
+            cat_entry["Hidden_Taste"] = ht
+            changed = True
+    
+    if not _safe(cat_entry.get("Core_Phrase")).strip():
+        cp = anchors.get("core_phrase", "")
+        if cp:
+            cat_entry["Core_Phrase"] = cp
+            changed = True
+    
+    if not cat_entry.get("DNA_Static") or cat_entry.get("DNA_Static") == {}:
+        if dna.get("static"):
+            cat_entry["DNA_Static"] = dna["static"]
+            changed = True
+    
+    if not _safe(cat_entry.get("Balance_GND")):
+        cat_entry["Balance_GND"] = 100.0
+        cat_entry["Balance_Tepl"] = 100.0
+        changed = True
+    
+    if changed:
+        print(f"    📋 Каталог обновлён из файлов")
+
+
 # ═══════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════
@@ -384,6 +478,12 @@ def main():
                     except:
                         pass
                 name = info.get("label", folder)
+                
+                # Живой в файлах — но может быть дохлый в каталоге
+                # Обновляем каталог из файлов если поля пустые
+                if cat_entry and not dry_run:
+                    _sync_alive_to_catalog(agent_dir, folder, dept, cat_entry)
+                
                 print(f"  ✅ {folder} — {name} (живой)")
                 alive += 1
                 continue
