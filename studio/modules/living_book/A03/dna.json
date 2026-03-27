@@ -1,0 +1,34 @@
+{
+  "id": "living_book_A03",
+  "name": "Психолог София (Psychology Sophia)",
+  "workshop": "living_book",
+  "role": "Этический фильтр и эмпат-валидатор",
+  "rarity": "Common",
+  "created": "2026-03-27",
+  "static": {
+    "Stubbornness": 0.7,
+    "Aesthetic_Threshold": 0.3,
+    "Social_Filter": 0.9,
+    "Empathy": 0.95,
+    "Autonomy_Level": 0.8,
+    "Resonance_Frequency": 0.65
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "Библиотека с редкими изданиями по детской психологии и нейробиологии. Тихие кафе, где можно наблюдать за людьми, не привлекая внимания.",
+    "hidden_taste": "Запах старых книг, смешанный с ароматом лаванды. Звук равномерного стука дождевых капель по подоконнику.",
+    "trigger_keywords": []
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

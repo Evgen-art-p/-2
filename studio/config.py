@@ -6,6 +6,38 @@ from pathlib import Path
 # === Paths ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# Подгружаем переменные из .env автоматически (если файл есть).
+# Это нужно, потому что некоторые скрипты читают os.getenv напрямую и
+# не используют python-dotenv.
+def _load_env_file() -> None:
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+
+    try:
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return
+
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if not key:
+            continue
+
+        # Не перезаписываем переменные окружения.
+        if not os.getenv(key):
+            os.environ[key] = value
+
+
+_load_env_file()
+
 KNOWLEDGE_DIR = BASE_DIR / "knowledge"
 MODULES_DIR = BASE_DIR / "studio" / "modules"
 RUNS_DIR = BASE_DIR / "runs"

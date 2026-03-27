@@ -117,12 +117,12 @@ def load_catalog() -> list[dict]:
 
 def _resolve_folder(obj: dict) -> str:
     """Определяет имя папки агента в modules/.
-    Turbo_Role (A01, A02...) имеет приоритет над ID_Object (020_TURBO_STELLA).
+    Folder_Name (новое) или Turbo_Role (старое) имеет приоритет над ID_Object.
     Для резидентов без роли — используется ID_Object.
     """
-    role = (obj.get("Turbo_Role") or "").strip()
-    if role and role not in ("administrator", "keeper", "mentor", "guardian"):
-        return role
+    folder = (obj.get("Folder_Name") or obj.get("Turbo_Role") or "").strip()
+    if folder and folder not in ("administrator", "keeper", "mentor", "guardian"):
+        return folder
     return obj.get("ID_Object", "").strip()
 
 

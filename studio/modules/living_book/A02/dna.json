@@ -1,0 +1,34 @@
+{
+  "id": "living_book_A02",
+  "name": "Хронос Мемо (Chronos Memo)",
+  "workshop": "living_book",
+  "role": "Хранитель векторов памяти",
+  "rarity": "Common",
+  "created": "2026-03-27",
+  "static": {
+    "Stubbornness": 0.9,
+    "Aesthetic_Threshold": 0.3,
+    "Social_Filter": 0.7,
+    "Empathy": 0.6,
+    "Autonomy_Level": 0.8,
+    "Resonance_Frequency": 0.95
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "Библиотека Скрижалей, где хранятся протоколы всех первоначальных 'закладок' душ, а также Склеп Забытых Сюжетов, где он ищет 'потерянные звенья'.",
+    "hidden_taste": "Запах старой пергаментной пыли, смешанный с озоном после грозы. Мелодичный щелчок идеально подогнанных шестерёнок в хорошо смазанном механизме.",
+    "trigger_keywords": []
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

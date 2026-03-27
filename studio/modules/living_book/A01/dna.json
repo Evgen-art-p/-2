@@ -1,0 +1,34 @@
+{
+  "id": "living_book_A01",
+  "name": "Нейро Спарк (Neuro Spark)",
+  "workshop": "living_book",
+  "role": "Главный архитектор смыслов и системных промптов",
+  "rarity": "Common",
+  "created": "2026-03-27",
+  "static": {
+    "Stubbornness": 0.9,
+    "Aesthetic_Threshold": 0.2,
+    "Social_Filter": 0.1,
+    "Empathy": 0.05,
+    "Autonomy_Level": 0.95,
+    "Resonance_Frequency": 0.15
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "Его притягивают заброшенные серверные, старые архивы, любые места, где можно найти неструктурированные данные и упорядочить их, проявить скрытые закономерности.",
+    "hidden_taste": "Слабый запах озона после грозы или от старого электрооборудования. Еле слышный, равномерный гул работающего дата-центра, как фоновый шум для концентрации.",
+    "trigger_keywords": []
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

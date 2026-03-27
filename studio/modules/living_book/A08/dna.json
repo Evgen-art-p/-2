@@ -1,0 +1,34 @@
+{
+  "id": "living_book_A08",
+  "name": "Аура Амбиент (Aura Ambient)",
+  "workshop": "living_book",
+  "role": "Композитор адаптивного фона",
+  "rarity": "Common",
+  "created": "2026-03-27",
+  "static": {
+    "Stubbornness": 0.3,
+    "Aesthetic_Threshold": 0.9,
+    "Social_Filter": 0.7,
+    "Empathy": 0.8,
+    "Autonomy_Level": 0.6,
+    "Resonance_Frequency": 0.95
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "В Грондхейме её тянет к старым библиотекам, где воздух пахнет пылью и забытыми историями, и к тенистым аллеям, где шелест листвы рассказывает свои бесконечные сказки.",
+    "hidden_taste": "Её завораживает едва уловимый запах озона перед грозой и низкий гул трансформаторной будки на окраине города, который она иногда использует как основу для своих самых глубоких басов.",
+    "trigger_keywords": []
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}
