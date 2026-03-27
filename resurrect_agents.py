@@ -115,8 +115,12 @@ def generate_full_identity(name: str, role: str, dept: str, prompt_text: str) ->
         r.raise_for_status()
         content = r.json()["choices"][0]["message"]["content"]
         content = re.sub(r'^```(?:json)?\s*', '', content.strip())
-        content = re.sub(r'\s*```$', '', content)
-        return json.loads(content.strip())
+        content = re.sub(r'\s*```$', '', content).strip()
+
+        # Извлекаем первый валидный JSON объект (игнорируем мусор после)
+        decoder = json.JSONDecoder()
+        result, _ = decoder.raw_decode(content)
+        return result
     except Exception as e:
         print(f"    ⚠ LLM ошибка: {e}")
         return None

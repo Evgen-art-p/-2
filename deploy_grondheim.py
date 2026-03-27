@@ -171,8 +171,10 @@ def generate_soul(name: str, role: str, character: str, dept: str) -> dict | Non
         r.raise_for_status()
         content = r.json()["choices"][0]["message"]["content"]
         content = re.sub(r'^```(?:json)?\s*', '', content.strip())
-        content = re.sub(r'\s*```$', '', content)
-        return json.loads(content.strip())
+        content = re.sub(r'\s*```$', '', content).strip()
+        decoder = json.JSONDecoder()
+        result, _ = decoder.raw_decode(content)
+        return result
     except Exception as e:
         print(f"    ⚠ LLM ошибка: {e}")
         return None
