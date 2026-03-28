@@ -229,11 +229,13 @@ def format_agent_state(dna: dict) -> str:
     lines.append(f"\nХарактер (неизменяемый):")
     lines.append(f"  Упрямство: {stubbornness:.1f}  |  Эмпатия: {empathy:.1f}  |  Открытость: {social:.1f}")
 
-    # Резонанс — pull_vector НЕ передаём в промпт
-    # Агент выбирает локацию по состоянию ДНК, не по записанной привычке
-    taste = resonance.get("hidden_taste", "")
+    # Резонанс
+    pull   = resonance.get("pull_vector", "")
+    taste  = resonance.get("hidden_taste", "")
+    if pull:
+        lines.append(f"\nВектор тяги: {pull}")
     if taste:
-        lines.append(f"\nСкрытый вкус: {taste}")
+        lines.append(f"Скрытый вкус: {taste}")
 
     return "\n".join(lines)
 
@@ -355,7 +357,7 @@ def compute_location_weights(
     resonance_freq = float(static.get("Resonance_Frequency", 0.5))
     empathy = float(static.get("Empathy", 0.5))
 
-    # pull_vector больше не влияет — выбор только по состоянию ДНК
+    pull_vector = resonance.get("pull_vector", "").lower()
 
     weights = {}
 
@@ -420,7 +422,10 @@ def compute_location_weights(
             # Остальные локации — базовый интерес
             w = 0.1
 
-        # pull_vector бонус УБРАН — выбор по текущему состоянию агента
+        # Бонус от pull_vector
+        loc_tags = loc.get("Style_Tags", "").lower()
+        if pull_vector and any(word in loc_tags for word in pull_vector.split()):
+            w += 0.1
 
         weights[name] = round(max(0.02, w), 3)
 

@@ -104,9 +104,7 @@ DNA_DYNAMIC_DEFAULTS = {
 }
 
 WORKSHOP_OPTIONS = [
-    "", "residents", "turbo",
-    "video_long", "video_shorts", "social_mix", "web_story",
-    "clipmakers", "advertising", "emo_card", "logo_design", "market_hit", "living_book",
+    "", "residents", "turbo", "web_story", "video_long", "video_shorts", "social_mix"
 ]
 
 TURBO_ROLE_OPTIONS = [
@@ -119,13 +117,7 @@ RESIDENT_ROLE_OPTIONS = [
  
 PIPELINE_ROLE_OPTIONS = [
     "", "A01", "A02", "A03", "A04", "A05",
-    "A06", "A07", "A08", "A09", "A10", "A11", "A12",
-]
-
-LIVING_BOOK_ROLE_OPTIONS = [
-    "", "A01", "A02", "A03", "A04", "A05",
-    "A06", "A07", "A08", "A09", "A10", "A11", "A12",
-    "A13", "A14", "A15", "A16",
+    "A06", "A07", "A08", "A09", "A10", "A11", "A12"
 ]
  
 ROLE_OPTIONS_MAP = {
@@ -135,12 +127,6 @@ ROLE_OPTIONS_MAP = {
     "video_shorts": PIPELINE_ROLE_OPTIONS,
     "social_mix":   PIPELINE_ROLE_OPTIONS,
     "web_story":    PIPELINE_ROLE_OPTIONS,
-    "clipmakers":   PIPELINE_ROLE_OPTIONS,
-    "advertising":  PIPELINE_ROLE_OPTIONS,
-    "emo_card":     PIPELINE_ROLE_OPTIONS,
-    "logo_design":  PIPELINE_ROLE_OPTIONS,
-    "market_hit":   PIPELINE_ROLE_OPTIONS,
-    "living_book":  LIVING_BOOK_ROLE_OPTIONS,
 }
 
 def generate_agent_files(obj: dict, dna_static: dict,
@@ -273,7 +259,7 @@ def generate_agent_files(obj: dict, dna_static: dict,
 ```
 
 ## Резонансный вектор
-- **Внутренние тяги:** {pull_vector}
+- **Тянет к:** {pull_vector}
 - **Скрытый вкус:** {hidden_taste}
 - **Триггеры памяти:** {trigger_keywords}
 """
@@ -298,7 +284,7 @@ def generate_agent_files(obj: dict, dna_static: dict,
 ## Скрытая история
 {obj.get('Hidden_History', '')}
 
-## Внутренние тяги (что любит, к чему тянет душу)
+## Вектор тяги (куда идёт в свободное время)
 {pull_vector if pull_vector else '— не определён —'}
 
 ## Стартовый баланс
@@ -1294,8 +1280,8 @@ def page_registry():
                         with ui.grid(columns=2).classes("w-full gap-3 mb-3"):
                             with ui.column().classes("w-full gap-0"):
                                 pull_vector_widget["w"] = ui.input(
-                                    label="Вектор тяги (что любит, к чему тянет душу)",
-                                    placeholder="Любит копаться в старых архивах, ценит тишину и порядок..."
+                                    label="Вектор тяги (куда идёт в свободное время)",
+                                    placeholder="В Библиотеку, к архивам трендов..."
                                 ).classes("w-full")
                             with ui.column().classes("w-full gap-0"):
                                 hidden_taste_widget["w"] = ui.input(
