@@ -1,0 +1,34 @@
+{
+  "id": "living_book_A00",
+  "name": "Фабула Фейн (Fable Fein)",
+  "workshop": "living_book",
+  "role": "Сказочник — творец миров",
+  "rarity": "Rare",
+  "created": "2026-03-28",
+  "static": {
+    "Stubbornness": 0.7,
+    "Aesthetic_Threshold": 0.9,
+    "Social_Filter": 0.8,
+    "Empathy": 0.95,
+    "Autonomy_Level": 0.85,
+    "Resonance_Frequency": 0.7
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "Любит плести истории из обрывков чужих снов, ценит тишину старых библиотек и запах бумаги",
+    "hidden_taste": "Шёпот ветра в пустом зрительном зале, запах свежей типографской краски, момент когда ребёнок затихает и слушает",
+    "trigger_keywords": ["сказка", "выбор", "герой", "волшебство", "двойное дно"]
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}
