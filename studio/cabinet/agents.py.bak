@@ -472,39 +472,29 @@ def render_agent_detail(agent: dict, on_talk) -> None:
                     )
                     ui.label(f"{val:.2f}").classes("cab-dna-val")
 
-    # ═══ Резонанс (pull_vector, hidden_taste, trigger_keywords) ═══
+    # Resonance / anchors
     resonance = dna.get("resonance", {})
-    pull = resonance.get("pull_vector", "")
-    taste = resonance.get("hidden_taste", "")
-    triggers = resonance.get("trigger_keywords", [])
+    anchors = resonance.get("anchor_points", [])
+    if anchors:
+        with ui.element("div").style("margin-bottom: 12px;"):
+            ui.html('<div class="cab-detail-header">якоря</div>')
+            with ui.element("div"):
+                for tag in anchors:
+                    ui.html(f'<span class="cab-anchor-tag">{tag}</span>')
 
-    if pull or taste or triggers:
+    # Vector / taste
+    vector = resonance.get("vector", "")
+    taste = resonance.get("hidden_taste", "")
+    if vector or taste:
         with ui.element("div").style("margin-bottom: 12px;"):
             ui.html('<div class="cab-detail-header">резонанс</div>')
-            if pull:
-                # pull_vector может быть списком или строкой
-                if isinstance(pull, list):
-                    pull_text = "; ".join(str(x)[:80] for x in pull[:3])
-                else:
-                    pull_text = str(pull)[:200]
-                ui.label(f"Тяги: {pull_text}").style(
-                    "font-family: 'JetBrains Mono'; font-size: 0.56rem; color: rgba(180,190,220,0.6); margin-bottom: 4px;"
+            if vector:
+                ui.label(f"Вектор: {vector}").style(
+                    "font-family: 'JetBrains Mono'; font-size: 0.56rem; color: rgba(180,190,220,0.6);"
                 )
             if taste:
-                if isinstance(taste, list):
-                    taste_text = "; ".join(str(x)[:60] for x in taste[:3])
-                else:
-                    taste_text = str(taste)[:200]
-                ui.label(f"Вкус: {taste_text}").style(
-                    "font-family: 'JetBrains Mono'; font-size: 0.56rem; color: rgba(180,190,220,0.6); margin-bottom: 4px;"
-                )
-            if triggers:
-                if isinstance(triggers, list):
-                    tags_text = ", ".join(str(t) for t in triggers[:6])
-                else:
-                    tags_text = str(triggers)
-                ui.label(f"Триггеры: {tags_text}").style(
-                    "font-family: 'JetBrains Mono'; font-size: 0.56rem; color: rgba(201,168,76,0.6); margin-bottom: 4px;"
+                ui.label(f"Вкус: {taste}").style(
+                    "font-family: 'JetBrains Mono'; font-size: 0.56rem; color: rgba(180,190,220,0.6);"
                 )
 
     # Feedback
