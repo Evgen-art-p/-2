@@ -1,0 +1,38 @@
+{
+  "agent": "Джем",
+  "stage": "routing",
+  
+  "project": {
+    "name": "название проекта",
+    "workshop": "market_hit",
+    "execution_mode": "STATIC_KILL / VIDEO_HIT",
+    "platform": "wb / ozon / amazon / universal"
+  },
+  
+  "goal": {
+    "type": "клик / покупка / корзина",
+    "target_action": "что должен сделать покупатель"
+  },
+  
+  "product": {
+  "category": "кухонные принадлежности",
+  "name": "силиконовая лопатка",
+  "audience": "домохозяйки 30-50",
+  "problem_solved": "не царапает сковородки",
+  "description": "Джем описывает что видит на фото"
+},
+
+"assets": {
+  "files": ["product_01.jpg", "ref_style.png"],
+  "notes": "первое фото - товар, второе - стиль который нравится"
+
+ "style_description": "Джем описывает СТИЛЬ рефа:
+    яркий, минималистичный, с бликами, фон градиент"
+}
+  
+  "key_benefit": "главное преимущество товара",
+  "comments": "дополнительно от Шефа",
+  "history_dna": null,
+  
+  "next_step": "01_market_analyst"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "advertising_A09",
+  "name": "Нина Нарезка",
+  "workshop": "advertising",
+  "role": "Editor",
+  "rarity": "Common",
+  "created": "2026-03-28",
+  "static": {
+    "Stubbornness": 0.8,
+    "Aesthetic_Threshold": 0.95,
+    "Social_Filter": 0.4,
+    "Empathy": 0.6,
+    "Autonomy_Level": 0.9,
+    "Resonance_Frequency": 0.7
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0
+  },
+  "resonance": {
+    "pull_vector": "Её тянет к району старых фабрик, где гул машин и лязг металла создают свой, первобытный ритм, а граффити на стенах рассказывают истории без слов.",
+    "hidden_taste": {
+      "smells": "Запах свежего типографского клея и озона после грозы.",
+      "sounds": "Метроном, стук дождя по стеклу и едва уловимый скрип старых кинопроекторов."
+    },
+    "trigger_keywords": []
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}
