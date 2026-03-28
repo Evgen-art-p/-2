@@ -1,13 +1,14 @@
-# resurrect_agents.py — Оживление агентов Грондхейма
-# Берёт существующих агентов из studio/modules/ и каталога,
-# генерирует через LLM все недостающие поля (как Страница Жизни),
-# обновляет: dna.json, core/anchor_points.md, home/home_prompt.md, catalog.json
+# resurrect_agents.py v2 — Полное оживление агентов Грондхейма
+# Сканирует catalog.json, находит пустые поля, генерирует через LLM.
+# Заполняет ВСЕ 30+ полей Страницы Жизни (не ~10 как раньше).
 #
 # Использование:
-#   python resurrect_agents.py --dry              — показать кого оживим
+#   python resurrect_agents.py --dry              — показать кого и что оживим
 #   python resurrect_agents.py                    — оживить всех "дохлых"
-#   python resurrect_agents.py video_long         — один цех
-#   python resurrect_agents.py video_long A01     — один агент
+#   python resurrect_agents.py --dept clipmakers   — один цех
+#   python resurrect_agents.py --agent 089_CLIPMAKERS_ВАЙБ_ВИННИ  — один агент по ID
+#   python resurrect_agents.py --fields           — только дозаполнить пустые поля (без перезаписи)
+#   python resurrect_agents.py --force            — перезаписать даже заполненные
 #
 # Студия «Шесть Пальцев» · Грондхейм · 2026
 
@@ -16,11 +17,15 @@ import re
 import sys
 import json
 import time
+import argparse
 import requests
 from pathlib import Path
 from datetime import datetime
 
-# Загружаем .env
+# ═══════════════════════════════════════════════════
+# ENV
+# ═══════════════════════════════════════════════════
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -38,67 +43,200 @@ MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 
 MODULES_DIR = Path("studio/modules")
 CATALOG_PATH = Path("00_REGISTRY_NFT/catalog.json")
-PAUSE = 2
+PAUSE = 2  # секунд между LLM-запросами
+
+# ═══════════════════════════════════════════════════
+# ПОЛЯ КАТАЛОГА — полный список по группам
+# ═══════════════════════════════════════════════════
+
+# Поля которые УЖЕ заполнены у всех 132 агентов (через register_existing / mass_birth)
+ALREADY_FILLED = {
+    "ID_Object", "Official_Name", "Object_Type", "Object_Type_Class",
+    "Author_Signature", "Creation_Date",
+    "Social_Rank", "Profession", "Area_of_Responsibility", "Access_Level",
+    "Hidden_History", "Sensory_Response", "Core_Phrase", "Anchor_Points",
+    "Pull_Vector", "Hidden_Taste", "Trigger_Keywords",
+    "DNA_Static", "Balance_GND", "Balance_Tepl",
+    "Workshop_ID", "Folder_Name", "Turbo_Role",
+    "_timestamp",
+}
+
+# Поля которые нужно ДОЗАПОЛНИТЬ через LLM
+LLM_FILLABLE_FIELDS = {
+    # Блок ③ Физическое воплощение
+    "Visual_Base":       "Описание внешности (2-4 предложения: рост, телосложение, одежда, цвета, стиль)",
+    "Unique_Mark":       "Уникальная метка (родинка, шрам, аксессуар, привычный жест — 1 предложение)",
+    "Material_Texture":  "Материал/текстура (как ощущается рядом — 1 предложение)",
+    # Блок ④ Глубинная суть (дополнения)
+    "Domain_Connection": "К чему привязан по праву рождения (домен, территория — 1 предложение)",
+    "Relationships":     "Связи с коллегами по цеху (2-3 предложения, упомяни конкретные имена из цеха)",
+    # Блок ⑤ Динамика
+    "Object_Behavior":   "Режимы поведения: Работа / Дом / Город (2-3 предложения, что делает в каждом)",
+    "Interaction_Scripts": "Доступные действия/скрипты (через запятую, 4-6 штук)",
+    # Редкость
+    "Rarity":            "Класс редкости: Common / Rare / Epic (не Mythic — только для Genesis)",
+}
+
+# Имена агентов в каждом цеху (для Relationships)
+DEPT_AGENT_NAMES: dict[str, list[str]] = {}  # заполняется из каталога
+
+# ═══════════════════════════════════════════════════
+# РЕАЛЬНЫЕ ЛОКАЦИИ ГРОНДХЕЙМА — ТОЛЬКО ЭТИ!
+# Агенты не могут ходить в места, которых нет на карте.
+# ═══════════════════════════════════════════════════
+
+GRONDHEIM_LOCATIONS = """РЕАЛЬНЫЕ ЛОКАЦИИ ГРОНДХЕЙМА (только эти 12 существуют!):
+
+🔦 Маяк Пробуждения — web_search, знания, тренды. Тянутся: любознательные, высокий Aesthetic.
+🍺 Таверна «Усталый Пиксель» — отдых, разговоры. Тянутся: уставшие, стресс > 0.6.
+⚓ Гавань Смыслов — рефлексия, архивы лучших проектов. Тянутся: вдумчивые.
+🏗️ Квартал Мастеров — работа, пайплайн. Тянутся: отдохнувшие, готовые работать.
+🔮 Храм Пробуждения (Гексагон) — восстановление, медитация. Тянутся: выгоревшие, эмпатичные.
+🏰 Замок Сов — стратегия, планирование. Тянутся: высокий Autonomy.
+📚 Библиотека Смыслов — знания, архивы, исследования. Тянутся: высокий Aesthetic.
+🕐 Павильон Жидкого Времени — рефлексия, перезагрузка (макс 2 агента). Тянутся: перегруженные.
+🏠 Высотка — дом резидентов (Лока, Джем, Сет). Тянутся: резиденты.
+📐 Площадь Резонанса — встречи, обмен идеями. Тянутся: социальные агенты.
+🎬 Студия «Шесть Пальцев» — штаб, демонстрации. Тянутся: все (события).
+🐛 Artifacts & Bugs — дебаг, починка, артефакты. Тянутся: технари.
+
+⛔ ДРУГИХ МЕСТ В ГОРОДЕ НЕТ. Не выдумывай кинотеатры, кафе, клубы, набережные, районы.
+Каждый агент ходит ТОЛЬКО в места из этого списка."""
 
 
 # ═══════════════════════════════════════════════════
-# ОПРЕДЕЛЯЕМ КТО "ДОХЛЫЙ"
+# УТИЛИТЫ
 # ═══════════════════════════════════════════════════
 
-def is_alive(agent_dir: Path, catalog_entry: dict | None) -> bool:
-    """Простая логика:
-    - turbo и residents → ЖИВЫЕ (заполнены Архитектором вручную)
-    - всё остальное → ДОХЛЫЕ (оживляем через LLM)
-    """
-    dept = agent_dir.parent.name
-    if dept in ("turbo", "residents"):
+def _write_json(path: Path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, ensure_ascii=False, indent=2, fp=f)
+
+
+def _write_text(path: Path, text: str):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+
+def _safe_str(val) -> str:
+    if val is None:
+        return ""
+    if isinstance(val, list):
+        return ", ".join(str(x) for x in val)
+    return str(val).strip()
+
+
+def _is_empty(val) -> bool:
+    """Считаем поле пустым если оно None, '', [], {}."""
+    if val is None:
+        return True
+    if isinstance(val, str) and not val.strip():
+        return True
+    if isinstance(val, (list, dict)) and not val:
         return True
     return False
 
 
+def find_empty_fields(obj: dict) -> dict[str, str]:
+    """Возвращает {field_name: description} для полей которые пустые."""
+    empty = {}
+    for field, desc in LLM_FILLABLE_FIELDS.items():
+        if _is_empty(obj.get(field)):
+            empty[field] = desc
+    return empty
+
+
+def build_dept_names(catalog: list[dict]):
+    """Строит словарь имён агентов по цехам для Relationships."""
+    global DEPT_AGENT_NAMES
+    DEPT_AGENT_NAMES.clear()
+    for obj in catalog:
+        if obj.get("Object_Type_Class") != "agent":
+            continue
+        dept = obj.get("Workshop_ID", "")
+        name = obj.get("Official_Name", "")
+        if dept and name:
+            DEPT_AGENT_NAMES.setdefault(dept, []).append(name)
+
+
 # ═══════════════════════════════════════════════════
-# LLM: ГЕНЕРАЦИЯ ПОЛНОЙ ЛИЧНОСТИ
+# LLM: ГЕНЕРАЦИЯ НЕДОСТАЮЩИХ ПОЛЕЙ
 # ═══════════════════════════════════════════════════
 
-def generate_full_identity(name: str, role: str, dept: str, prompt_text: str) -> dict | None:
-    """Генерирует ВСЕ поля Страницы Жизни через LLM."""
+def generate_missing_fields(
+    obj: dict,
+    empty_fields: dict[str, str],
+) -> dict | None:
+    """Генерирует только недостающие поля через LLM."""
     if not OPENROUTER_API_KEY:
         return None
 
-    # Берём первые 500 символов промпта для контекста
-    prompt_excerpt = prompt_text[:500] if prompt_text else ""
+    name = obj.get("Official_Name", "")
+    role = obj.get("Profession", "")
+    dept = obj.get("Workshop_ID", "")
+    core_phrase = obj.get("Core_Phrase", "")
+    hidden_history = _safe_str(obj.get("Hidden_History", ""))[:300]
+    anchor_points = _safe_str(obj.get("Anchor_Points", ""))[:300]
+
+    # Коллеги по цеху (для Relationships)
+    colleagues = DEPT_AGENT_NAMES.get(dept, [])
+    colleagues_str = ", ".join(c for c in colleagues if c != name)[:400]
+
+    # Формируем список полей для генерации
+    fields_spec = "\n".join(
+        f'  "{field}": "{desc}"'
+        for field, desc in empty_fields.items()
+    )
+
+    # Правила для Rarity
+    rarity_rule = ""
+    if "Rarity" in empty_fields:
+        rarity_rule = """
+ПРАВИЛА ДЛЯ Rarity:
+- "Common" — базовые агенты (A06-A12 в каждом цехе)
+- "Rare" — ключевые специалисты (A01-A05 с яркой личностью)
+- "Epic" — выдающиеся агенты (только если имя/роль действительно уникальны)
+- НИКОГДА не ставь "Mythic" — это только для Genesis (Лока, Джем, Сет)
+Folder_Name этого агента: {folder}. A01-A05 чаще Rare, A06-A12 чаще Common.
+""".format(folder=obj.get("Folder_Name", ""))
 
     llm_prompt = f"""Ты — архитектор душ города Грондхейм (студия «Шесть Пальцев»).
-Создай ПОЛНУЮ личность для цифрового агента. Не банально — с причудами, тайнами, живыми деталями.
+Дозаполни НЕДОСТАЮЩИЕ поля для цифрового агента.
+Пиши живо, с деталями, без банальностей. Каждый ответ — в характере персонажа.
+
+{GRONDHEIM_LOCATIONS}
 
 АГЕНТ:
 - Имя: {name}
 - Роль: {role}
 - Цех: {dept}
-- Из рабочего промпта: {prompt_excerpt}
+- Коронная фраза: «{core_phrase}»
+- Скрытая история: {hidden_history}
+- Якоря: {anchor_points}
+- Коллеги по цеху: {colleagues_str}
+{rarity_rule}
+ЗАПОЛНИ ТОЛЬКО ЭТИ ПОЛЯ (JSON):
+{{
+{fields_spec}
+}}
 
-Сгенерируй JSON со ВСЕМИ блоками:
-
-"dna_static" (числа 0.0–1.0):
-  Stubbornness, Aesthetic_Threshold, Social_Filter, Empathy, Autonomy_Level, Resonance_Frequency
-
-"catalog_fields" (текст, каждое поле ОБЯЗАТЕЛЬНО заполнено):
-  "hidden_history" — Скрытая история: как родился, какая тайна за ним (3-5 предложений, от третьего лица)
-  "sensory_response" — Сенсорный отклик: что чувствуешь рядом с ним (2-3 предложения)
-  "core_phrase" — Коронная фраза (1 предложение, яркое, в характере)
-  "anchor_points" — Якорные точки: кто он, его обеты, его суть (3-4 предложения)
-  "pull_vector" — Вектор тяги: 3-4 места в Грондхейме куда ходит и почему
-  "hidden_taste" — Скрытый вкус: 3 странные детали (запахи, звуки, привычки)
-  "trigger_keywords" — Триггеры: 3 ключевых слова/ситуации которые его активируют
-
-"home_prompt" (текст, 300-500 слов, от первого лица):
-  Описание жилья в Грондхейме. Где живёт, что на стенах, какие привычки, 
-  личная история, сенсорный отклик на коллег, вектор тяги.
-  Стиль как у Мими Мем — живо, с деталями, с юмором, с душой.
-  Секции: Личная история, Сенсорный отклик, Скрытая история, Вектор тяги, Стартовый баланс.
-
-"anchor_points_md" (текст, markdown):
-  Файл anchor_points.md с секциями: Кто я, Мои обеты, Скрытый вкус, Творец.
+ПРАВИЛА:
+- Visual_Base: описывай КАК ВЫГЛЯДИТ персонаж (рост, телосложение, одежда, стиль, цвета). 
+  НЕ пиши "при взаимодействии чувствуется..." — это Sensory_Response.
+  Пример: "Высокий, сухощавый парень в потёртой кожаной куртке и чёрных джинсах. Волосы — тёмный ёжик. На шее — серебряная цепочка с USB-флешкой."
+- Unique_Mark: одна конкретная деталь (шрам, аксессуар, жест, особенность)
+- Material_Texture: тактильное ощущение (не характер, а физика)
+- Domain_Connection: к чему привязан (территория, тема, стихия — НЕ выдумывай места)
+- Relationships: упоминай конкретных коллег по имени из списка выше. Кто друг, кто раздражает, с кем спорит.
+- Object_Behavior: три режима:
+  * Работа — что делает в Квартале Мастеров / Студии
+  * Дом — что делает в Высотке / Квартале
+  * Город — в какие РЕАЛЬНЫЕ локации ходит (ТОЛЬКО из списка выше!) и зачем
+- Interaction_Scripts: конкретные действия (через запятую)
+- Если поле не в списке — НЕ генерируй его
+- ⛔ НЕ ВЫДУМЫВАЙ ЛОКАЦИИ! Только 12 мест из списка выше.
 
 Верни ТОЛЬКО валидный JSON без markdown обёрток."""
 
@@ -109,18 +247,25 @@ def generate_full_identity(name: str, role: str, dept: str, prompt_text: str) ->
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
             },
-            json={"model": MODEL, "messages": [{"role": "user", "content": llm_prompt}], "temperature": 0.75},
+            json={
+                "model": MODEL,
+                "messages": [{"role": "user", "content": llm_prompt}],
+                "temperature": 0.8,
+            },
             timeout=90,
         )
         r.raise_for_status()
         content = r.json()["choices"][0]["message"]["content"]
+
+        # Чистим markdown обёртки
         content = re.sub(r'^```(?:json)?\s*', '', content.strip())
         content = re.sub(r'\s*```$', '', content).strip()
 
-        # Извлекаем первый валидный JSON объект (игнорируем мусор после)
+        # Извлекаем первый валидный JSON
         decoder = json.JSONDecoder()
         result, _ = decoder.raw_decode(content)
         return result
+
     except Exception as e:
         print(f"    ⚠ LLM ошибка: {e}")
         return None
@@ -130,259 +275,53 @@ def generate_full_identity(name: str, role: str, dept: str, prompt_text: str) ->
 # ПРИМЕНЕНИЕ РЕЗУЛЬТАТОВ
 # ═══════════════════════════════════════════════════
 
-def resurrect_agent(
-    agent_dir: Path,
-    folder: str,
-    dept: str,
-    catalog: list,
-    dry_run: bool,
-) -> bool:
-    """Оживляет одного агента."""
+def apply_to_catalog(obj: dict, generated: dict) -> int:
+    """Применяет сгенерированные поля к объекту каталога. Возвращает кол-во заполненных."""
+    count = 0
+    for field in LLM_FILLABLE_FIELDS:
+        val = generated.get(field)
+        if val is not None and not _is_empty(val):
+            obj[field] = val
+            count += 1
+    obj["_timestamp"] = datetime.now().isoformat()
+    return count
 
-    # Читаем текущие данные
-    info = {}
+
+def apply_to_files(obj: dict, generated: dict):
+    """Обновляет файлы агента на диске если нужно."""
+    dept = obj.get("Workshop_ID", "")
+    folder = obj.get("Folder_Name", obj.get("Turbo_Role", ""))
+    if not dept or not folder:
+        return
+
+    agent_dir = MODULES_DIR / dept / folder
+    if not agent_dir.exists():
+        return
+
+    # Обновляем anchors.json — добавляем domain_connection
+    anchors_path = agent_dir / "core" / "anchors.json"
+    if anchors_path.exists():
+        try:
+            anchors = json.loads(anchors_path.read_text(encoding="utf-8"))
+            changed = False
+            if generated.get("Domain_Connection") and not anchors.get("domain"):
+                anchors["domain"] = generated["Domain_Connection"]
+                changed = True
+            if changed:
+                _write_json(anchors_path, anchors)
+        except Exception:
+            pass
+
+    # Обновляем info.json — Visual_Base как описание
     info_path = agent_dir / "info.json"
-    if info_path.exists() and info_path.stat().st_size > 5:
+    if info_path.exists():
         try:
             info = json.loads(info_path.read_text(encoding="utf-8"))
-        except:
+            if generated.get("Visual_Base") and not info.get("visual_description"):
+                info["visual_description"] = generated["Visual_Base"]
+                _write_json(info_path, info)
+        except Exception:
             pass
-
-    dna = {}
-    dna_path = agent_dir / "dna.json"
-    if dna_path.exists():
-        try:
-            dna = json.loads(dna_path.read_text(encoding="utf-8"))
-        except:
-            pass
-
-    name = info.get("label", "") or dna.get("name", "") or folder
-    role = info.get("role", "") or dna.get("role", "") or "Agent"
-
-    # Читаем рабочий промпт
-    prompt_text = ""
-    for pf in ["forge/prompt.md", "prompt.md", "prompt.txt"]:
-        pp = agent_dir / pf
-        if pp.exists():
-            prompt_text = pp.read_text(encoding="utf-8")
-            break
-
-    print(f"  🧬 {folder} — {name} ({role})")
-
-    if dry_run:
-        print(f"    [DRY] Будет оживлён")
-        return True
-
-    # Генерируем через LLM
-    result = generate_full_identity(name, role, dept, prompt_text)
-    if not result:
-        print(f"    ❌ LLM не ответил")
-        return False
-
-    cat_fields = result.get("catalog_fields", {})
-    dna_static = result.get("dna_static", {})
-    home_text = result.get("home_prompt", "")
-    anchor_md = result.get("anchor_points_md", "")
-
-    # ═══ 1. Обновляем dna.json ═══
-    if dna_static:
-        if "static" not in dna:
-            dna["static"] = {}
-        for k in ["Stubbornness", "Aesthetic_Threshold", "Social_Filter",
-                   "Empathy", "Autonomy_Level", "Resonance_Frequency"]:
-            if k in dna_static:
-                dna["static"][k] = float(dna_static[k])
-
-    if "dynamic" not in dna:
-        dna["dynamic"] = {
-            "Respect": 1.0, "Patience": 1.0, "Stress": 0.0,
-            "Internal_Light": 0.8, "streak": 0, "stars": 0,
-        }
-
-    if "resonance" not in dna:
-        dna["resonance"] = {}
-    dna["resonance"]["pull_vector"] = cat_fields.get("pull_vector", "")
-    dna["resonance"]["hidden_taste"] = cat_fields.get("hidden_taste", "")
-
-    if "balance" not in dna:
-        dna["balance"] = {"GND": 100.0, "Теплики": 100.0, "Световики": 0.0}
-
-    if "name" not in dna:
-        dna["name"] = name
-    if "workshop" not in dna:
-        dna["workshop"] = dept
-
-    _write_json(dna_path, dna)
-
-    # ═══ 2. Обновляем core/anchor_points.md ═══
-    ap_dir = agent_dir / "core"
-    ap_dir.mkdir(parents=True, exist_ok=True)
-    if anchor_md:
-        _write_text(ap_dir / "anchor_points.md", anchor_md)
-    else:
-        _write_text(ap_dir / "anchor_points.md",
-            f"# ⚓ {name} — Якорные Точки\n\n"
-            f"## Кто я\n{cat_fields.get('anchor_points', name)}\n\n"
-            f"## Скрытый вкус\n{cat_fields.get('hidden_taste', '')}\n\n"
-            f"## Творец\nАрхитектор Евген и Хранительница Лока · Грондхейм\n"
-        )
-
-    # ═══ 3. Обновляем core/anchors.json ═══
-    anchors = {
-        "name": name,
-        "id": f"{dept}_{folder}",
-        "creator": "Архитектор Евген и Хранительница Лока",
-        "core_phrase": cat_fields.get("core_phrase", ""),
-        "domain": f"Цех {dept}",
-        "workshop": dept,
-        "role": role,
-        "pull_vector": cat_fields.get("pull_vector", ""),
-        "hidden_taste": cat_fields.get("hidden_taste", ""),
-        "trigger_keywords": cat_fields.get("trigger_keywords", ""),
-        "vows": "",
-    }
-    _write_json(ap_dir / "anchors.json", anchors)
-
-    # ═══ 4. Обновляем home/home_prompt.md ═══
-    if home_text:
-        home_dir = agent_dir / "home"
-        home_dir.mkdir(parents=True, exist_ok=True)
-        _write_text(home_dir / "home_prompt.md",
-            f"# 🏠 ДОМАШНИЙ КОНТЕКСТ — {name}\n\n{home_text}\n\n"
-            f"## Стартовый баланс\n- 💰 GND: 100.0\n- 🔆 Теплики: 100.0\n- 💡 Световики: 0\n"
-        )
-
-    # ═══ 5. Обновляем catalog.json ═══
-    for obj in catalog:
-        ws = obj.get("Workshop_ID", "")
-        fn = obj.get("Folder_Name", obj.get("Turbo_Role", ""))
-        if ws == dept and fn == folder:
-            obj["Hidden_History"] = cat_fields.get("hidden_history", "")
-            obj["Sensory_Response"] = cat_fields.get("sensory_response", "")
-            obj["Core_Phrase"] = cat_fields.get("core_phrase", "")
-            obj["Anchor_Points"] = cat_fields.get("anchor_points", "")
-            obj["Pull_Vector"] = cat_fields.get("pull_vector", "")
-            obj["Hidden_Taste"] = cat_fields.get("hidden_taste", "")
-            obj["Trigger_Keywords"] = cat_fields.get("trigger_keywords", "")
-            obj["DNA_Static"] = dna.get("static", {})
-            obj["Balance_GND"] = 100.0
-            obj["Balance_Tepl"] = 100.0
-            break
-
-    # ═══ 6. Создаём sensory если нет ═══
-    sensory_path = agent_dir / "sensory" / "sensory_memory.json"
-    if not sensory_path.exists() or sensory_path.stat().st_size < 10:
-        sensory_path.parent.mkdir(parents=True, exist_ok=True)
-        _write_json(sensory_path, {
-            "entries": [], "summary": "", "last_location": "", "location_tags": [],
-        })
-
-    # ═══ 7. Создаём resonance если нет ═══
-    res_dir = agent_dir / "resonance"
-    res_dir.mkdir(parents=True, exist_ok=True)
-    ew = res_dir / "emotional_weights.json"
-    if not ew.exists() or ew.stat().st_size < 5:
-        _write_json(ew, {})
-
-    print(f"    ✅ Оживлён! Phrase: «{cat_fields.get('core_phrase', '?')[:60]}»")
-    return True
-
-
-def _write_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, ensure_ascii=False, indent=2, fp=f)
-
-def _write_text(path, text):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(text)
-
-
-def _sync_alive_to_catalog(agent_dir: Path, folder: str, dept: str, cat_entry: dict):
-    """Для живых агентов: подтягивает данные из файлов в каталог если там пусто."""
-    
-    # Читаем anchor_points.md
-    ap = agent_dir / "core" / "anchor_points.md"
-    ap_text = ""
-    if ap.exists():
-        ap_text = ap.read_text(encoding="utf-8")
-    
-    # Читаем home_prompt.md  
-    hp = agent_dir / "home" / "home_prompt.md"
-    hp_text = ""
-    if hp.exists():
-        hp_text = hp.read_text(encoding="utf-8")
-    
-    # Читаем dna.json
-    dna = {}
-    dp = agent_dir / "dna.json"
-    if dp.exists():
-        try:
-            dna = json.loads(dp.read_text(encoding="utf-8"))
-        except:
-            pass
-    
-    # Читаем anchors.json
-    anchors = {}
-    aj = agent_dir / "core" / "anchors.json"
-    if aj.exists():
-        try:
-            anchors = json.loads(aj.read_text(encoding="utf-8"))
-        except:
-            pass
-    
-    resonance = dna.get("resonance", {})
-    changed = False
-    
-    def _safe(val):
-        if val is None: return ""
-        if not isinstance(val, str): return str(val)
-        return val
-    
-    # Обновляем пустые поля каталога из файлов
-    if not _safe(cat_entry.get("Anchor_Points")).strip():
-        cat_entry["Anchor_Points"] = ap_text[:500] if ap_text else ""
-        changed = True
-    
-    if not _safe(cat_entry.get("Hidden_History")).strip():
-        # Ищем в home_prompt секцию "Скрытая история" или "Личная история"
-        for section in ["Скрытая история", "Личная история", "Hidden_History"]:
-            idx = hp_text.lower().find(section.lower())
-            if idx >= 0:
-                chunk = hp_text[idx:idx+500]
-                cat_entry["Hidden_History"] = chunk
-                changed = True
-                break
-    
-    if not _safe(cat_entry.get("Pull_Vector")).strip():
-        pv = resonance.get("pull_vector", "") or anchors.get("pull_vector", "")
-        if pv:
-            cat_entry["Pull_Vector"] = pv
-            changed = True
-    
-    if not _safe(cat_entry.get("Hidden_Taste")).strip():
-        ht = resonance.get("hidden_taste", "") or anchors.get("hidden_taste", "")
-        if ht:
-            cat_entry["Hidden_Taste"] = ht
-            changed = True
-    
-    if not _safe(cat_entry.get("Core_Phrase")).strip():
-        cp = anchors.get("core_phrase", "")
-        if cp:
-            cat_entry["Core_Phrase"] = cp
-            changed = True
-    
-    if not cat_entry.get("DNA_Static") or cat_entry.get("DNA_Static") == {}:
-        if dna.get("static"):
-            cat_entry["DNA_Static"] = dna["static"]
-            changed = True
-    
-    if not _safe(cat_entry.get("Balance_GND")):
-        cat_entry["Balance_GND"] = 100.0
-        cat_entry["Balance_Tepl"] = 100.0
-        changed = True
-    
-    if changed:
-        print(f"    📋 Каталог обновлён из файлов")
 
 
 # ═══════════════════════════════════════════════════
@@ -390,13 +329,15 @@ def _sync_alive_to_catalog(agent_dir: Path, folder: str, dept: str, cat_entry: d
 # ═══════════════════════════════════════════════════
 
 def main():
-    args = sys.argv[1:]
-    dry_run = "--dry" in args
-    args = [a for a in args if a != "--dry"]
-    target_dept = args[0] if args else None
-    target_agent = args[1] if len(args) > 1 else None
+    parser = argparse.ArgumentParser(description="Оживление агентов Грондхейма v2")
+    parser.add_argument("--dry", action="store_true", help="Показать что будет сделано")
+    parser.add_argument("--dept", type=str, help="Только один цех")
+    parser.add_argument("--agent", type=str, help="Только один агент (по ID_Object)")
+    parser.add_argument("--force", action="store_true", help="Перезаписать даже заполненные")
+    parser.add_argument("--pause", type=int, default=PAUSE, help="Пауза между запросами (сек)")
+    args = parser.parse_args()
 
-    if not OPENROUTER_API_KEY and not dry_run:
+    if not OPENROUTER_API_KEY and not args.dry:
         print("❌ OPENROUTER_API_KEY не задан!")
         return
 
@@ -405,96 +346,113 @@ def main():
     if CATALOG_PATH.exists():
         try:
             catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-        except:
-            pass
+        except Exception as e:
+            print(f"❌ Ошибка загрузки каталога: {e}")
+            return
 
-    print(f"🧬 Оживление дохлых агентов Грондхейма")
-    print(f"   Режим: {'DRY RUN' if dry_run else 'БОЕВОЙ'}")
+    # Строим справочник имён по цехам
+    build_dept_names(catalog)
+
+    print(f"🧬 Оживление агентов Грондхейма v2")
+    print(f"   Режим: {'DRY RUN' if args.dry else 'БОЕВОЙ'}")
     print(f"   Модель: {MODEL}")
+    print(f"   Каталог: {len(catalog)} объектов")
     print()
 
-    alive = 0
-    resurrected = 0
+    # Фильтруем агентов
+    agents = [
+        o for o in catalog
+        if o.get("Object_Type_Class") == "agent"
+    ]
+    if args.dept:
+        agents = [a for a in agents if a.get("Workshop_ID") == args.dept]
+    if args.agent:
+        agents = [a for a in agents if a.get("ID_Object") == args.agent]
+
+    # Живые — turbo и residents (заполнены Архитектором)
+    ALIVE_DEPTS = {"turbo", "residents"}
+
+    total = 0
+    filled = 0
+    skipped = 0
     failed = 0
+    current_dept = ""
 
-    for dept_dir in sorted(MODULES_DIR.iterdir()):
-        if not dept_dir.is_dir():
+    for obj in agents:
+        dept = obj.get("Workshop_ID", "")
+        name = obj.get("Official_Name", "")
+        obj_id = obj.get("ID_Object", "")
+
+        # Заголовок цеха
+        if dept != current_dept:
+            current_dept = dept
+            print(f"═══ {dept.upper()} ═══")
+
+        # Определяем пустые поля
+        if args.force:
+            empty = dict(LLM_FILLABLE_FIELDS)
+        else:
+            empty = find_empty_fields(obj)
+
+        # Живые и с заполненными полями — пропускаем
+        if not empty:
+            print(f"  ✅ {name} — всё заполнено")
+            skipped += 1
             continue
-        dept = dept_dir.name
-        if target_dept and dept != target_dept:
-            continue
 
-        agents = sorted([
-            d for d in dept_dir.iterdir()
-            if d.is_dir() and not d.name.startswith(".") and d.name != "__pycache__"
-        ])
-        if not agents:
-            continue
-
-        print(f"═══ {dept.upper()} ═══")
-
-        for agent_dir in agents:
-            folder = agent_dir.name
-            if target_agent and folder != target_agent:
+        # Живые (turbo/residents) — только дозаполняем если есть пустое
+        if dept in ALIVE_DEPTS and not args.force:
+            # У живых может быть пустое Rarity или Visual_Base
+            if not empty:
+                print(f"  ✅ {name} — живой, всё ок")
+                skipped += 1
                 continue
 
-            # Ищем запись в каталоге
-            cat_entry = None
-            for obj in catalog:
-                ws = obj.get("Workshop_ID", "")
-                fn = obj.get("Folder_Name", obj.get("Turbo_Role", ""))
-                if ws == dept and fn == folder:
-                    cat_entry = obj
-                    break
+        empty_names = ", ".join(empty.keys())
+        print(f"  🧬 {name} ({dept}/{obj.get('Folder_Name','')}) — пустые: {empty_names}")
+        total += 1
 
-            # Проверяем жив ли
-            if is_alive(agent_dir, cat_entry):
-                info = {}
-                ip = agent_dir / "info.json"
-                if ip.exists():
-                    try:
-                        info = json.loads(ip.read_text(encoding="utf-8"))
-                    except:
-                        pass
-                name = info.get("label", folder)
-                
-                # Живой в файлах — но может быть дохлый в каталоге
-                # Обновляем каталог из файлов если поля пустые
-                if cat_entry and not dry_run:
-                    _sync_alive_to_catalog(agent_dir, folder, dept, cat_entry)
-                
-                print(f"  ✅ {folder} — {name} (живой)")
-                alive += 1
-                continue
+        if args.dry:
+            continue
 
-            # Оживляем
-            ok = resurrect_agent(agent_dir, folder, dept, catalog, dry_run)
-            if ok:
-                resurrected += 1
-            else:
-                failed += 1
+        # Генерируем через LLM
+        generated = generate_missing_fields(obj, empty)
+        if not generated:
+            print(f"    ❌ LLM не ответил")
+            failed += 1
+            time.sleep(args.pause)
+            continue
 
-            if not dry_run:
-                time.sleep(PAUSE)
+        # Применяем к каталогу
+        count = apply_to_catalog(obj, generated)
 
-        print()
+        # Применяем к файлам
+        apply_to_files(obj, generated)
+
+        # Показываем что получилось
+        rarity = generated.get("Rarity", "")
+        visual = _safe_str(generated.get("Visual_Base", ""))[:80]
+        print(f"    ✅ +{count} полей | {rarity} | {visual}...")
+        filled += 1
+
+        time.sleep(args.pause)
 
     # Сохраняем каталог
-    if not dry_run and resurrected > 0:
+    if not args.dry and filled > 0:
         CATALOG_PATH.write_text(
             json.dumps(catalog, ensure_ascii=False, indent=2),
-            encoding="utf-8"
+            encoding="utf-8",
         )
-        print(f"💾 Каталог обновлён: {CATALOG_PATH}")
+        print(f"\n💾 Каталог сохранён: {CATALOG_PATH}")
 
+    print()
     print(f"═══════════════════════════════════════")
-    if dry_run:
-        print(f"🧬 Будет оживлено: {resurrected}")
-        print(f"   (запусти без --dry!)")
+    if args.dry:
+        print(f"  🔍 Найдено для оживления: {total}")
     else:
-        print(f"🧬 Оживлено: {resurrected}")
-    print(f"✅ Уже живы: {alive}")
-    print(f"❌ Ошибки: {failed}")
+        print(f"  ✅ Дозаполнено: {filled}")
+    print(f"  ⏭️  Пропущено (полные): {skipped}")
+    print(f"  ❌ Ошибки: {failed}")
     print(f"═══════════════════════════════════════")
 
 
