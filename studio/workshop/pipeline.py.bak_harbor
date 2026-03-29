@@ -24,17 +24,6 @@ except ImportError:
     def get_feedback(client_slug, worker_id): return ""
     def save_feedback(client_slug, arthur_result): pass
 
-# ══ NEW: Гавань Смыслов — RAG внутренних знаний ══
-try:
-    from studio.harbor_of_meanings import get_harbor_knowledge
-    _HARBOR_ENABLED = True
-    print("[ГАВАНЬ] ⚓ Рюкзак Знаний v2 (RAG) подключён")
-except ImportError:
-    _HARBOR_ENABLED = False
-    print("[ГАВАНЬ] ⚠ harbor_of_meanings.py не найден — работаем без Гавани")
-    def get_harbor_knowledge(worker_id, dept, task_context=""): return ""
-# ══ END ГАВАНЬ ══
-
 # ══ NEW: Грондхейм — личная память агента ══
 try:
     from studio.grondheim_memory import (
@@ -155,17 +144,6 @@ def build_agent_context(
     if backpack:
         context += backpack + "\n\n"
         print(f"[РЮКЗАК] 🔦 {worker_id} несёт знания с Маяка ({len(backpack)} симв.)")
-
-    # ══ Гавань Смыслов — RAG по внутренним знаниям ══
-    if _HARBOR_ENABLED:
-        harbor_ctx = get_harbor_knowledge(
-            worker_id,
-            state.get("active_dept", ""),
-            task_context=state.get("master_brief", "")[:300],
-        )
-        if harbor_ctx:
-            context += harbor_ctx + "\n\n"
-            print(f"[РЮКЗАК] ⚓ {worker_id} получил знания из Гавани ({len(harbor_ctx)} симв.)")
     # ══ END ══
 
     context += settings_ctx

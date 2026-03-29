@@ -289,7 +289,7 @@ _LOCATION_TYPES = {
     "таверна": "tavern",       # Таверна «Усталый Пиксель» → отдых
     "высотка": "home",         # Высотка → дом резидентов
     "квартал мастеров": "home", # Квартал Мастеров → дом рабочих
-    "гавань": "harbor",        # Гавань Смыслов → RAG (ChromaDB)
+    "гавань": "library",       # Гавань Смыслов → внутренняя библиотека (RAG)
     "храм": "temple",          # Храм Пробуждения → эмоциональный резонанс
 }
 
@@ -399,20 +399,14 @@ def compute_location_weights(
             if stress > 0.7:
                 w += 0.15
 
-        elif loc_type == "harbor":
-            # ═══ ГАВАНЬ СМЫСЛОВ (RAG — внутренняя мудрость) ═══
-            days_since_harbor = _days_since_last_visit(memory, "harbor", locations)
-            harbor_hunger = min(1.0, days_since_harbor / 5.0)  # голод быстрее чем Маяк
-            w = harbor_hunger * 0.4
+        elif loc_type == "library":
+            # ═══ ГАВАНЬ СМЫСЛОВ (внутренняя библиотека) ═══
+            w = 0.15
             if aesthetic > 0.6:
-                w += 0.15
-            # Средний стресс — осмысление, не поиск снаружи
-            if 0.3 < stress < 0.6:
-                w += 0.15
-            # Высокий Light — хочет углубиться
-            if light > 0.7:
                 w += 0.1
-            w = max(0.05, min(0.75, w))
+            # Если стресс средний — идёт осмыслять, а не за трендами
+            if 0.3 < stress < 0.6:
+                w += 0.1
 
         elif loc_type == "temple":
             # ═══ ХРАМ (эмоциональный резонанс) ═══
@@ -687,32 +681,6 @@ async def walk_one_agent(agent: dict, city_state: dict,
             print(f"[МАЯК] ❌ {name}: ошибка на Маяке — {e}")
             lighthouse_result = f"Что-то помешало сосредоточиться на Маяке."
 
-    # ═══ ГАВАНЬ СМЫСЛОВ: RAG если агент пришёл в Гавань ═══
-    harbor_result = ""
-    if chosen_type == "harbor":
-        try:
-            from studio.harbor_of_meanings import harbor_visit as _harbor_visit, index_new_files
-
-            # Инкрементальная индексация перед поиском
-            index_new_files()
-
-            print(f"[ГАВАНЬ] ⚓ {name} пришёл в Гавань Смыслов — активирую search_harbor")
-
-            harbor_result = await _harbor_visit(
-                agent_name=name,
-                agent_profession=agent.get("Profession", ""),
-                agent_dna=dna,
-                system_prompt=system_prompt,
-                temperature=agent_temp,
-            )
-
-        except ImportError:
-            print(f"[ГАВАНЬ] ⚠️ harbor_of_meanings.py не найден — pip install chromadb")
-            harbor_result = "Гавань была закрыта сегодня."
-        except Exception as e:
-            print(f"[ГАВАНЬ] ❌ {name}: ошибка в Гавани — {e}")
-            harbor_result = "Что-то помешало сосредоточиться в Гавани."
-
     # Сохраняем в sensory_memory
     entry = {
         "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -733,18 +701,6 @@ async def walk_one_agent(agent: dict, city_state: dict,
             "tags": ["маяк", "чистый_смысл", "web_search"],
         }
         memory.setdefault("entries", []).append(lighthouse_entry)
-
-    # Запись Гавани в память (Найденный Смысл)
-    if harbor_result:
-        entry["tags"] = entry.get("tags", []) + ["гавань", "найденный_смысл"]
-        harbor_entry = {
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "location": "Гавань Смыслов",
-            "feeling": f"[НАЙДЕННЫЙ СМЫСЛ] {harbor_result}",
-            "weather": city_state.get("weather", ""),
-            "tags": ["гавань", "найденный_смысл", "rag"],
-        }
-        memory.setdefault("entries", []).append(harbor_entry)
 
     memory.setdefault("entries", []).append(entry)
 
@@ -768,8 +724,6 @@ async def walk_one_agent(agent: dict, city_state: dict,
 
     if lighthouse_result:
         result["lighthouse"] = lighthouse_result
-    if harbor_result:
-        result["harbor"] = harbor_result
 
     return result
 
