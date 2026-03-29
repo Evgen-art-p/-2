@@ -1,17 +1,28 @@
 {
-  "id": "living_book_A00a",
+  "id": "150_LIVING_BOOK_ВЕРА_ДУША__VERA",
   "name": "Вера Душа (Vera Dusha)",
   "workshop": "living_book",
-  "role": "Детский психолог-критик",
-  "rarity": "Rare",
+  "role": "A00a",
+  "rarity": "Epic",
   "created": "2026-03-28",
   "static": {
     "Stubbornness": 0.85,
-    "Aesthetic_Threshold": 0.8,
-    "Social_Filter": 0.9,
-    "Empathy": 1.0,
-    "Autonomy_Level": 0.6,
-    "Resonance_Frequency": 0.65
+    "Aesthetic_Threshold": 0.85,
+    "Social_Filter": 0.7,
+    "Empathy": 0.7,
+    "Autonomy_Level": 0.85,
+    "Resonance_Frequency": 0.75
+  },
+  "resonance": {
+    "pull_vector": "Чувствует детские страхи на расстоянии, ищет в каждом тексте скрытые триггеры и невидимые раны",
+    "hidden_taste": "Тишина после детского плача, тёплое одеяло в холодной комнате, момент когда ребёнок впервые говорит правду",
+    "trigger_keywords": [
+      "безопасность",
+      "травма",
+      "возраст",
+      "нотация",
+      "надежда"
+    ]
   },
   "dynamic": {
     "Respect": 1.0,
@@ -20,11 +31,6 @@
     "Internal_Light": 0.8,
     "streak": 0,
     "stars": 0
-  },
-  "resonance": {
-    "pull_vector": "Чувствует детские страхи на расстоянии, ищет в каждом тексте скрытые триггеры и невидимые раны",
-    "hidden_taste": "Тишина после детского плача, тёплое одеяло в холодной комнате, момент когда ребёнок впервые говорит правду",
-    "trigger_keywords": ["безопасность", "травма", "возраст", "нотация", "надежда"]
   },
   "balance": {
     "GND": 100.0,
