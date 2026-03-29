@@ -1546,16 +1546,7 @@ Style: {state['settings']['style']}
         for i, (shop_name, worker_id) in enumerate(all_agents):
             if i < start_index:
                 continue
-
-            # ══ REWIND: ревизионная петля вернула нас назад ══
-            if state.get("_rewind_to"):
-                target = state["_rewind_to"]
-                if worker_id != target:
-                    continue  # Пропускаем пока не дойдём до целевого агента
-                # Дошли — очищаем маркер и продолжаем нормально
-                state.pop("_rewind_to")
-                print(f"[REWIND] ✅ Дошли до {target}, продолжаем пайплайн")
-
+            
             try:
                 if worker_id in avatars_ref['elements']:
                     avatars_ref['elements'][worker_id].classes(remove='done')
@@ -1666,61 +1657,7 @@ Style: {state['settings']['style']}
                 # Парсим ответ
                 human_text, meta = parse_agent_response(raw_result)
                 human_text = _clean_response(human_text)
-
-                # ══ REVISION LOOP: A00a (Вера Душа) → возврат на A00 ══
-                if worker_id == "A00a" and state.get("run_type") == "living_book":
-                    verdict = (meta.get("verdict") or meta.get("my_output", {}).get("verdict", "")).upper().strip()
-                    revision_count = state.get("_revision_count", 0)
-                    _max_rev = 3
-
-                    if verdict == "REVISION" and revision_count < _max_rev:
-                        state["_revision_count"] = revision_count + 1
-                        _rev_notes = (
-                            meta.get("revision_notes")
-                            or meta.get("my_output", {}).get("revision_notes", "")
-                            or human_text[:500]
-                        )
-
-                        ui.notify(
-                            f"🔄 Вера Душа: РЕВИЗИЯ #{revision_count + 1}/{_max_rev}. Возврат к Фабуле.",
-                            type="warning", timeout=8000
-                        )
-                        print(f"[REVISION] A00a → A00: loop {revision_count + 1}/{_max_rev}")
-                        print(f"[REVISION] Замечания: {_rev_notes[:200]}")
-
-                        # Сохраняем результат Веры
-                        state["results"]["A00a"] = {
-                            "text": human_text, "meta": meta, "raw": raw_result
-                        }
-                        if worker_id in avatars_ref['elements']:
-                            avatars_ref['elements'][worker_id].classes(remove='working')
-                            avatars_ref['elements'][worker_id].classes(add='done')
-
-                        # Добавляем замечания в previous_output для Фабулы
-                        previous_output += (
-                            f"\n\n--- Вера Душа (A00a) — РЕВИЗИЯ #{revision_count + 1} ---\n"
-                            f"СТАТУС: REVISION\n"
-                            f"ЗАМЕЧАНИЯ:\n{_rev_notes}\n"
-                            f"ИНСТРУКЦИЯ: Переработай сценарий с учётом замечаний выше.\n"
-                        )
-
-                        # Ставим маркер rewind → цикл вернётся на A00
-                        state["_rewind_to"] = "A00"
-                        continue  # Следующая итерация for — перехватит rewind
-
-                    elif verdict == "APPROVED" or revision_count >= _max_rev:
-                        if revision_count >= _max_rev and verdict != "APPROVED":
-                            ui.notify(
-                                f"⚠️ Вера Душа: {_max_rev} ревизий исчерпано. Принудительно продолжаем.",
-                                type="warning", timeout=5000
-                            )
-                            print(f"[REVISION] A00a: max loops reached, forcing APPROVED")
-                        else:
-                            ui.notify("✅ Вера Душа: ОДОБРЕНО!", type="positive")
-                            print(f"[REVISION] A00a: APPROVED")
-                        state["_revision_count"] = 0
-                # ══ END REVISION LOOP ══
-
+                
                 # ── Этап 5: валидация asset_ids ──
                 _ghost_ids = _validate_asset_ids(meta, worker_id)
                 if _ghost_ids:
