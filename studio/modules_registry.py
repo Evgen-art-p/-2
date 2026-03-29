@@ -236,7 +236,10 @@ def get_worker_knowledge(worker_id: str) -> str:
 
 
 def list_workers() -> list[str]:
-    """Список воркеров текущего департамента"""
+    """Список воркеров текущего департамента.
+    Читает папки из modules/{dept}/ — поддерживает A00, A00a, A01-A16.
+    Сортировка: A00 → A00a → A01 → A02 → ... → A16.
+    """
     dept_path = get_dept_path()
     if not dept_path.exists():
         return []
@@ -245,17 +248,137 @@ def list_workers() -> list[str]:
     for d in sorted(dept_path.iterdir()):
         if d.is_dir() and d.name.startswith("A"):
             workers.append(d.name)
+
+    # ══ Умная сортировка: A00 < A00a < A01 < A02 ... A16 ══
+    def _sort_key(w: str) -> tuple:
+        # A00 → (0, ""), A00a → (0, "a"), A01 → (1, ""), A16 → (16, "")
+        import re
+        m = re.match(r"A(\d+)(.*)", w)
+        if m:
+            return (int(m.group(1)), m.group(2))
+        return (999, w)
+
+    workers.sort(key=_sort_key)
     return workers
 
 
 def get_chain(start_from: int = 1, end_at: int = 12) -> list[str]:
-    """Получить цепочку воркеров для запуска"""
+    """Получить цепочку воркеров для запуска.
+
+    ══ ОБНОВЛЕНО: динамическая цепочка ══
+    Для living_book и других модулей с >12 агентами:
+    читает реальные папки из modules/{dept}/.
+    start_from/end_at работают как раньше для обратной совместимости.
+    """
+    # Динамический режим: если в текущем dept есть агенты за пределами A01-A12
+    all_workers = list_workers()
+    if not all_workers:
+        # Fallback: старый режим
+        workers = []
+        for i in range(start_from, end_at + 1):
+            worker_id = f"A{str(i).zfill(2)}"
+            if get_worker_path(worker_id).exists():
+                workers.append(worker_id)
+        return workers
+
+    # Если запрашивают весь диапазон (дефолт) — отдаём всех
+    if start_from == 1 and end_at == 12 and len(all_workers) > 12:
+        return all_workers
+
+    # Иначе — фильтруем по старому range для совместимости
     workers = []
     for i in range(start_from, end_at + 1):
         worker_id = f"A{str(i).zfill(2)}"
-        if get_worker_path(worker_id).exists():
+        if worker_id in all_workers:
             workers.append(worker_id)
     return workers
+
+
+# ══ NEW: Получить WORKERS dict для конкретного департамента ══
+# Используется в ui.py вместо хардкода
+
+# Конфигурация цехов: какие фазы и checkpoints
+DEPT_PIPELINE_CONFIG = {
+    "living_book": {
+        "phases": {
+            "GENESIS":   ["A00", "A00a"],
+            "PRE-PROD":  ["A01", "A02", "A03", "A04"],
+            "PROD":      ["A05", "A06", "A07", "A08"],
+            "POST-PROD": ["A09", "A10", "A11", "A12"],
+            "DELIVERY":  ["A13", "A14", "A15", "A16"],
+        },
+        "revision_loop": {
+            # Если A00a (Вера Душа) возвращает REVISION — задача идёт назад на A00
+            "reviewer": "A00a",
+            "return_to": "A00",
+            "status_field": "verdict",      # поле в meta ответа
+            "revision_value": "REVISION",   # значение = переделка
+            "approved_value": "APPROVED",   # значение = прошло
+            "max_loops": 3,                 # максимум петель
+        },
+    },
+    # Другие цеха используют дефолтную структуру 3×4
+}
+
+
+def get_dept_workers(dept: str | None = None) -> dict[str, list[str]]:
+    """Получить WORKERS dict для департамента.
+
+    Для living_book: читает из DEPT_PIPELINE_CONFIG.
+    Для остальных: стандартная структура 3×4.
+    Всегда читает реальные папки как fallback.
+    """
+    dept = dept or CURRENT_DEPT
+
+    # Проверяем есть ли конфиг для этого цеха
+    config = DEPT_PIPELINE_CONFIG.get(dept)
+    if config:
+        phases = config["phases"]
+        # Валидируем: убираем агентов у которых нет папки
+        dept_path = MODULES_DIR / dept
+        validated = {}
+        for phase_name, agents in phases.items():
+            existing = [a for a in agents if (dept_path / a).is_dir()]
+            if existing:
+                validated[phase_name] = existing
+        return validated
+
+    # Дефолт: 3 фазы по 4 агента (старое поведение)
+    dept_path = MODULES_DIR / dept
+    if not dept_path.exists():
+        return {
+            "PRE-PROD":  ["A01", "A02", "A03", "A04"],
+            "PROD":      ["A05", "A06", "A07", "A08"],
+            "POST-PROD": ["A09", "A10", "A11", "A12"],
+        }
+
+    # Читаем реально существующие папки
+    all_agents = list_workers()
+    if len(all_agents) <= 12:
+        return {
+            "PRE-PROD":  [a for a in all_agents if a in ["A01","A02","A03","A04"]],
+            "PROD":      [a for a in all_agents if a in ["A05","A06","A07","A08"]],
+            "POST-PROD": [a for a in all_agents if a in ["A09","A10","A11","A12"]],
+        }
+
+    # >12 агентов без конфига — разбиваем по 4
+    result = {}
+    for i in range(0, len(all_agents), 4):
+        chunk = all_agents[i:i+4]
+        phase = f"PHASE-{i//4 + 1}"
+        result[phase] = chunk
+    return result
+
+
+def get_dept_all_workers(dept: str | None = None) -> list[str]:
+    """Плоский список всех агентов департамента в правильном порядке."""
+    workers_dict = get_dept_workers(dept)
+    result = []
+    for agents in workers_dict.values():
+        result.extend(agents)
+    return result
+
+
 # === Совместимость с ui_reception.py ===
 @dataclass(frozen=True)
 class Dept:
