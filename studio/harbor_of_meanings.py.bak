@@ -64,7 +64,7 @@ def _get_embedding_function():
     try:
         from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
         _embedding_fn = SentenceTransformerEmbeddingFunction(
-            model_name="intfloat/multilingual-e5-large"
+            model_name="paraphrase-multilingual-MiniLM-L12-v2"
         )
         _embedding_type = "multilingual"
         print("[ГАВАНЬ] 🌍 Embedding: paraphrase-multilingual-MiniLM-L12-v2")
@@ -397,8 +397,6 @@ def search_harbor(
     top_k: int = DEFAULT_TOP_K,
     category: str = None,
     dept: str = None,
-    min_score: float = 0.38,
-    exclude_categories: list = None,
 ) -> list[dict]:
     """
     Поиск по Гавани Смыслов.
@@ -408,12 +406,6 @@ def search_harbor(
         top_k: сколько результатов
         category: фильтр по категории (set_knowledge, project_results, city_lore, agent_knowledge)
         dept: фильтр по цеху
-        min_score: минимальный порог релевантности (0.0–1.0). По умолчанию 0.38.
-                   Всё ниже — мусор, не попадает в выдачу.
-                   Примечание: paraphrase-multilingual-MiniLM-L12-v2 редко даёт > 0.55
-                   на смешанном контенте, поэтому 0.6 отрежет всё.
-        exclude_categories: список категорий которые исключить из выдачи.
-                   Например: ["project_results"] уберёт архивы клиентских проектов.
 
     Returns:
         Список результатов: [{"text": "...", "source": "...", "score": 0.85, ...}]
@@ -451,27 +443,13 @@ def search_harbor(
         distances = results["distances"][0] if results.get("distances") else [0.0] * len(docs)
 
         for doc, meta, dist in zip(docs, metas, distances):
-            score = round(1.0 - dist, 3)  # cosine distance → similarity
-
-            # ── Фильтр 1: порог релевантности ──
-            if score < min_score:
-                continue
-
-            # ── Фильтр 2: исключить нежелательные категории ──
-            cat = meta.get("category", "")
-            if exclude_categories and cat in exclude_categories:
-                continue
-
             output.append({
                 "text": doc,
                 "source": meta.get("source", ""),
-                "category": cat,
-                "score": score,
+                "category": meta.get("category", ""),
+                "score": round(1.0 - dist, 3),  # cosine distance → similarity
                 "metadata": meta,
             })
-
-    if not output:
-        print(f"[ГАВАНЬ] 🔇 Релевантных данных не обнаружено (порог {min_score:.0%})")
 
     return output
 
@@ -723,8 +701,6 @@ if __name__ == "__main__":
             print("Использование: --search <запрос>")
             sys.exit(1)
         results = search_harbor(query)
-        if not results:
-            print("🔇 Релевантных данных не обнаружено")
         for r in results:
             print(f"\n[{r['score']:.0%}] {r['category']}")
             print(f"  {r['text'][:200]}")
