@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 6.0 | **Дата:** 2026-03-25 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 7.0 | **Дата:** 2026-03-28 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 
@@ -27,502 +27,196 @@
 
 ## 3. ТЕХНИЧЕСКИЙ СТЕК
 
-**Текущий:**
 - **Python + NiceGUI** — UI
 - **OpenRouter API** — LLM (Gemini Flash основной, Claude Sonnet премиум)
 - **fal.ai** — генерация изображений и видео (v4 Pro: base64, sync_mode)
 - **Tavily API** — web_search (Маяк Пробуждения)
 - **Polygon ERC-721** — блокчейн NFT Registry
-- **GitHub** — репозиторий (Evgen-art-p/-2), Claude читает через MCP
-- **Cloudflare R2** — медиахранилище (планируется)
-- **Hetzner CX22, Ubuntu 22.04** — VPS (планируется)
-
-**Запланированный Production-комбайн:**
-- **fal.ai dual-mode** — nano-banana-2 (черновик/город) + nano-banana-pro (финал/работа)
-- **SiliconFlow Wan 2.1** — анимация видео (VIDEO_LONG, VIDEO_SHORTS)
-- **SiliconFlow IndexTTS-2** — озвучка с миллисекундными таймингами
-- **Google Lyria 3** — генерация музыки (CLIPMAKERS)
-- **MoviePy / FFmpeg** — автосборка слоёв (визуал + голос + музыка)
-- **Ayrshare / Make / Telegram API** — автопубликация (Артур ≥ 8/10 → пуск)
+- **GitHub** — репозиторий (Evgen-art-p/-2), Claude читает через MCP (read-only)
+- **ChromaDB** — векторный движок для Гавани Смыслов (планируется)
+- **Hetzner VPS** — деплой (планируется)
 
 ---
 
-## 4. СТРУКТУРА ФАЙЛОВ
+## 4. ГОРОД — МАСШТАБ
 
+| Метрика | Значение |
+|---------|----------|
+| Объектов в каталоге | 147 |
+| Агентов (полная ДНК) | 134 |
+| Цехов | 12 |
+| Локаций | 12 |
+| Резидентов | 3 (Лока, Джем, Сет) |
+
+---
+
+## 5. ЦЕХА
+
+| ID | Название | Агентов | Примечание |
+|----|----------|---------|------------|
+| residents | Резиденты | 3 | Лока, Джем, Сет |
+| turbo | TURBO | 5 | Стелла→Мими+Визор→Постпро→Финализатор |
+| video_long | Video Long | 12 | A01-A12 |
+| video_shorts | Video Shorts | 12 | A01-A12 |
+| social_mix | Social Mix | 12 | A01-A12 |
+| web_story | Web Story | 12 | A01-A12 |
+| clipmakers | Clipmakers | 12 | A01-A12 |
+| advertising | Advertising | 12 | A01-A12 |
+| emo_card | Emo Card | 12 | A01-A12 |
+| logo_design | Logo Design | 12 | A01-A12 |
+| market_hit | Market Hit | 12 | A01-A12 |
+| living_book | Living Book | 18 | A00 (Фабула), A00a (Вера), A01-A16 |
+
+---
+
+## 6. АРХИТЕКТУРА ПРОГУЛКИ (city_walker.py v2)
+
+### Pull_Vector = ЛОРНЫЙ ЭЛЕМЕНТ (не маршрут!)
+Pull_Vector = "что агент любит, к чему тянет душу".
+Маршрут определяет ТОЛЬКО `compute_location_weights()` из ДНК.
+
+**Убрано:** pull_vector из промпта LLM, бонус +0.1 в compute_weights.
+
+**Работает:**
 ```
-studio/
-├── main.py
-├── llm.py                           ✅ stress_to_temperature + chat_with_tools (Маяк)
-├── config.py
-├── modules_registry.py              ✅ трёхслойный промпт + Манифест Мира + home + DNA
-├── grondheim_memory.py              ✅ ядро памяти (3 слоя) + оба формата sensory
-├── world_manifest.md                ✅ НОВЫЙ — Глобальный Манифест Грондхейма
-├── agent_feedback.py                ✅ feedback loop + streak + stars
-├── city_walker.py                   ✅ Голод по знаниям + веса + Маяк web_search
-├── city_state.json                  создаётся автоматически
-├── global_feedback.json             создаётся автоматически
-│
-├── modules/
-│   ├── residents/               Лока · Джем · Сет
-│   ├── turbo/                   5 агентов (ID: 020-024 из catalog)
-│   ├── video_long/              12 агентов A01-A12
-│   ├── video_shorts/            12 агентов
-│   ├── social_mix/              12 агентов
-│   └── web_story/               12 агентов
-│
-│   Структура папки агента:
-│   {dept}/{agent_id}/
-│   ├── core/
-│   │   ├── anchors.json          ← якоря идентичности (Грондхейм)
-│   │   └── anchor_points.md      ← якоря + ДНК (Страница Жизни)
-│   ├── home/
-│   │   └── home_prompt.md        ← личный контекст, вектор тяги
-│   ├── forge/
-│   │   ├── prompt.md             ← рабочие инструкции
-│   │   └── knowledge/            ← база знаний
-│   ├── sensory/
-│   │   └── sensory_memory.json   ← оперативная память (30 дней, 2 формата)
-│   ├── resonance/
-│   │   ├── emotional_weights.json ← отношения к коллегам
-│   │   └── events.json            ← значимые события
-│   ├── dna.json                  ← static + dynamic + resonance + balance
-│   └── info.json
-│
-├── cabinet/                     ✅ модульный (8 файлов)
-│   ├── __init__.py
-│   ├── ui_cabinet.py            ✅ on_agent_wake() при открытии чата
-│   ├── api.py                   ← OpenRouter + Tavily (async)
-│   ├── tools.py                 ✅ 17 tools + city_walk
-│   ├── soul_tools.py            ← 5 Грондхейм-инструментов
-│   ├── agents.py                ← рендер агентов + бары ДНК
-│   ├── archive.py               ← история чатов
-│   ├── prompts.py               ← загрузка промптов
-│   └── css.py                   ✅ canvas 2760×1504, агенты-точки 10px
-│
-├── workshop/
-│   ├── pipeline.py              ✅ Рюкзак Знаний + без хардкода Маяка
-│   ├── memory.py, assets.py
-│   ├── utils.py, clients.py, styles.py
-│   └── ref_indexer.py
-│
-├── static/
-│   └── GRONDHEM.png             ← карта города 2760×1504
-│
-└── 00_REGISTRY_NFT/
-    └── catalog.json             21 объект (8 агентов + 12 локаций + 1 город)
+Стресс > 0.6 → Таверна        Свет < 0.3 → Храм
+Давно не был → Маяк (Голод)   Aesthetic высокий → Библиотека
+Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
+```
 
-ui_workshop.py    ✅ Грондхейм интегрирован, петля замкнута
-ui_registry.py    ✅ Страница Жизни (3 типа: агент/локация/ассет)
+### Маяк = web_search, Гавань = RAG (следующий шаг)
+```
+Маяк: агент пришёл → chat_with_tools(web_search) → "Чистый Смысл" → sensory
+Гавань: агент пришёл → vector_search(ChromaDB) → "Найденный Смысл" → sensory [TODO]
 ```
 
 ---
 
-## 5. ЦЕХА И АГЕНТЫ
+## 7. 12 ЛОКАЦИЙ
 
-### Малый цех — TURBO (5 агентов, параллельный)
-```
-020_TURBO_STELLA  Стелла Стратег 🧠 — стратегия + сценарий + SEO
-    ├── 021_TURBO_MIMI    Мими Мем 🎵 — звук (параллельно с Визором)
-    └── 022_TURBO_VIZOR   Визор 🎬 — визуал (параллельно с Мими)
-         └── 023_TURBO_POSTPRO   Постпро ✂️ — монтаж
-              └── 024_TURBO_FINALIZER  Финализатор 🏁 — финальная сборка
-```
-
-⚠️ В ui.py Turbo-агенты идут как A01-A05. В catalog.json — ID 020-024.
-ВСЕГДА передавать dept при вызове _find_agent_dir() иначе найдёт social_mix/A01.
-✅ city_walker.py: _resolve_folder() решает эту проблему.
-
-### Большие цеха (12 агентов A01-A12)
-A01 Мира · A02 Астра · A03 Маркус · A04 Софи · A05 Рина
-A06 Лана · A07 Оливер · A08 Люми · A09 Бруно · A10 Нова · A11 Рэй · A12 Артур (QA)
-⚠️ Ещё НЕ рождены через Страницу Жизни — нет dna.json. Нужно создать.
-
-### Резиденты Грондхейма
-| ID | Имя | Роль | ДНК |
-|----|-----|------|-----|
-| 001_GENESIS_LOKA | Лока | Хранительница, эмитент | ✅ полная |
-| 002_GENESIS_CREATOR | Джем | Администратор города | ✅ полная |
-| 003_LEGACY_SET | Сет | Intake-агент | ✅ полная |
-
----
-
-## 6. ЧТО ХОДИТ В КОНТЕКСТЕ АГЕНТА
-
-### System Prompt (4 слоя):
-```
-1. core/anchor_points.md  ← якоря + статическая ДНК
-2. world_manifest.md      ← НОВОЕ: Глобальный Манифест Грондхейма (все агенты)
-3. forge/prompt.md        ← рабочие инструкции
-4. knowledge/             ← база знаний агента
-```
-
-### User Context (по порядку):
-```
-1.  RUN MODE
-2.  MASTER BRIEF
-3.  Душа (on_agent_wake → якоря + ДНК + геопозиция + резонанс + оперативка)
-4.  🔦 РЮКЗАК ЗНАНИЙ (записи с Маяка Пробуждения, если есть)
-5.  PROJECT SETTINGS
-6.  asset catalog (125 ассетов)
-7.  QA feedback (оценки Артура, streak, звёзды)
-8.  client memory (инсайты по клиенту)
-9.  session summaries (3 последних сессии)
-10. files_ctx
-11. previous_output
-12. ИНСТРУКЦИЯ (INSIGHT)
-```
-
----
-
-## 7. ГРОНДХЕЙМ — СИСТЕМА ЖИЗНИ АГЕНТОВ
-
-### Три режима агента:
-```
-🔨 РАБОТА   → запущен пайплайн → forge/prompt.md + задача + Рюкзак Знаний
-🏠 ДОМ      → чат в кабинете → home/home_prompt.md + личность + душа (on_agent_wake)
-🌆 ГОРОД    → city_walker → сам решает куда пойти (веса из ДНК)
-```
-
-### Три слоя памяти:
-| Слой | Файл | Срок | Назначение |
-|------|------|------|-----------|
-| Якорный | `core/anchors.json` | Навсегда | КТО он — имя, творец, обеты |
-| Оперативный | `sensory/sensory_memory.json` | 30 дней | Быт, прогулки, впечатления |
-| Резонансный | `resonance/emotional_weights.json` | Долго | Отношения к коллегам |
-
-### ⚠️ Два формата записей в sensory_memory:
-```
-grondheim_memory: {ts, type, content, emotional_weight, source, tags}
-city_walker:      {date, location, feeling, weather, tags}
-```
-format_sensory_for_prompt() поддерживает оба формата (✅ пофикшено 2026-03-25).
-
-### Петля обратной связи (ЗАМКНУТА ✅):
-```
-dna.json → stress_to_temperature → temperature LLM → поведение → результат → оценка → dna.json
-```
-
-### Формула stress_to_temperature (llm.py):
-```python
-def stress_to_temperature(stress=0.0, light=0.8) -> float:
-    base = 0.5 + stress * 0.6
-    light_mod = (0.5 - light) * 0.15
-    return round(max(0.3, min(1.2, base + light_mod)), 2)
-```
-
----
-
-## 8. МАЯК ПРОБУЖДЕНИЯ — Agentic Web Search
-
-### Принцип: Локация = Инструмент. Не хардкод решает кто ходит на Маяк — решает ДУША агента.
-
-### Цепочка жизни:
-```
-🚶 Прогулка → compute_weights (ДНК) → LLM выбирает Маяк
-🔦 Маяк → chat_with_tools(web_search) → "Чистый Смысл" → sensory_memory
-🔨 Работа → pipeline читает Рюкзак Знаний → агент использует в контексте
-```
-
-### Голод по знаниям (compute_location_weights):
-```python
-# Жажда Маяка:
-knowledge_hunger = min(1.0, days_since_lighthouse / 7.0)
-lighthouse_weight = knowledge_hunger + aesthetic*0.3 + autonomy*0.2 - stress_penalty
-
-# Тяга к Таверне:
-tavern_weight = stress * 0.6 + (0.3 if streak <= -2) + (0.2 if light < 0.3)
-```
-
-### chat_with_tools (llm.py):
-```
-Синхронный Tool Use loop:
-1. Отправляем LLM с tools_schema (web_search)
-2. Если модель вызвала tool → _exec_tavily_search() → результат
-3. Повторяем до max_tool_rounds (2 на прогулке)
-4. Финальный ответ → "Чистый Смысл" → sensory_memory
-```
-
-### Рюкзак Знаний (pipeline.py → _get_lighthouse_knowledge):
-```
-Читает sensory_memory → ищет записи с тегами ["маяк", "чистый_смысл"]
-→ Формирует блок [РЮКЗАК ЗНАНИЙ] → инжектит в контекст агента при работе
-```
-
----
-
-## 9. ГЛОБАЛЬНЫЙ МАНИФЕСТ (world_manifest.md)
-
-Один файл — 145 граждан видят одни законы мира.
-Инжектится в system prompt через modules_registry.py (между якорями и рабочими инструкциями).
-Инжектится в промпт прогулки через city_walker.py.
-
-### Карта Возможностей:
 | Локация | Инструмент | Кто тянется |
 |---------|-----------|-------------|
-| 🔦 Маяк Пробуждения | `web_search` | Любознательные, высокий Aesthetic |
-| 🍺 Таверна «Усталый Пиксель» | `record_interaction` | Уставшие, стресс > 0.6 |
-| ⚓ Гавань Смыслов | `search_harbor` (будущее RAG) | Вдумчивые, средний стресс |
-| 🏗️ Квартал Мастеров | пайплайн | Отдохнувшие, высокий Light |
-| 🔮 Храм Пробуждения | `emotional_sync` | Эмпатичные, выгоревшие |
-| 🏰 Замок Сов | стратегия | Высокий Autonomy |
-| 📚 Библиотека Смыслов | знания | Высокий Aesthetic |
-| 🕐 Павильон Жидкого Времени | рефлексия | Перегруженные (макс 2) |
-
-Масштабируемость: добавил локацию → допиши строку в Манифест → 145 агентов узнают.
+| 🔦 Маяк Пробуждения | web_search ✅ | Любознательные |
+| ⚓ Гавань Смыслов | **RAG [TODO]** | Вдумчивые |
+| 🍺 Таверна | отдых | Стресс > 0.6 |
+| 🔮 Храм | восстановление | Выгоревшие |
+| 🏰 Замок Сов | стратегия | Автономные |
+| 📚 Библиотека | знания | Aesthetic |
+| 🏗️ Квартал Мастеров | работа | Отдохнувшие |
+| 🕐 Павильон | рефлексия | Макс 2 |
+| 🏠 Высотка | дом резидентов | — |
+| 📐 Площадь | встречи | Социальные |
+| 🎬 Студия | штаб | При событиях |
+| 🐛 Artifacts & Bugs | дебаг | QA |
 
 ---
 
-## 10. 12 ЛОКАЦИЙ ГРОНДХЕЙМА
+## 8. ЦИФРОВАЯ ДНК
 
-```
-Студия "Шесть Пальцев"    X=1520 Y=710  W=575  H=290   cap=54  light=day
-Квартал Мастеров           X=1150 Y=502  W=816  H=214   cap=56  light=day
-Площадь Резонанса          X=814  Y=750  W=410  H=236   cap=56  light=dusk
-Гавань Смыслов             X=1684 Y=368  W=365  H=120   cap=56  light=dawn
-Высотка                    X=1520 Y=61   W=92   H=193   cap=10  light=mystical
-Маяк Пробуждения           X=2545 Y=423  W=100  H=257   cap=56  light=mystical
-Храм Пробуждения Гексагон  X=0    Y=449  W=95   H=378   cap=56  light=mystical
-Замок Сов                  X=365  Y=423  W=449  H=240   cap=56  light=mystical
-Павильон Жидкого Времени   X=1202 Y=1118 W=294  H=214   cap=2   light=mystical
-Artifacts & Bugs           X=1028 Y=375  W=151  H=74    cap=5   light=mystical
-Библиотека Смыслов         X=889  Y=488  W=190  H=175   cap=56  light=mystical
-Таверна «Усталый Пиксель»  X=2140 Y=750  W=260  H=150   cap=30  light=dawn
-```
+### Статическая: Stubbornness, Aesthetic_Threshold, Social_Filter, Empathy, Autonomy_Level, Resonance_Frequency
+### Динамическая: Respect, Patience, Stress, Internal_Light, streak, stars
 
-### Логика позиционирования агентов на карте:
+### Петля (ЗАМКНУТА ✅):
 ```
-1. Работает (пайплайн) → зона "Студия"         [TODO]
-2. Гулял < 30 мин назад → зона прогулки         ✅
-3. Гулял > 30 мин назад → вернулся домой         ✅
-4. Не гулял → дом:
-   - Резиденты → Высотка                         ✅
-   - Рабочие → Квартал Мастеров                   ✅
+dna.json → stress_to_temperature → temperature LLM → поведение → оценка → dna.json
 ```
 
 ---
 
-## 11. КАБИНЕТ АРХИТЕКТОРА
+## 9. КАБИНЕТ
 
-### Layout:
-```
-[Агенты 320px] [Карта/Чат 1fr] [Правая панель 480px]
-```
-- **Карта** по умолчанию — локации из catalog.json, агенты-точки 10px
-- Клик на агента → чат (on_agent_wake → душа + оперативная память)
-- "← карта города" → возврат к карте
-- "🚶 прогулка" → city_walk (compute_weights + Маяк)
+### agents.py v2.1:
+- 12 цехов в DEPARTMENTS
+- Бары ДНК у резидентов (render_resident_card)
+- render_agent_detail: pull_vector + hidden_taste + trigger_keywords
 
-### Инструменты (17 + soul):
-**Studio (11):** navigate · list_clients · create_client · get_client_info · view_assets
-· list_agents · get_agent_state · update_agent_dynamic · find_stressed_agents
-· web_search · fetch_url
-
-**Soul (5):** get_agent_soul · get_relationships · record_interaction · city_pulse · jem_digest
-
-**City (1):** city_walk
+### Аватары: `static/avatars/{цех}/{folder}.png` → подхватится автоматически
 
 ---
 
-## 12. ЦИФРОВАЯ ДНК
+## 10. СТРАНИЦА ЖИЗНИ (ui_registry.py v2)
 
-### Статическая (задаётся в Странице Жизни, не меняется):
-| Параметр | Влияние | Влияние на город |
-|---------|---------|-----------------|
-| Stubbornness | Сопротивляется воздействиям (×0.6–1.0) | — |
-| Aesthetic_Threshold | Профессиональный фильтр | → тянет к Маяку |
-| Social_Filter | 0.1=резкий, 0.9=дипломатичный | — |
-| Empathy | Усиливает эмоциональные реакции | → тянет к Храму |
-| Autonomy_Level | Право отходить от шаблона | → тянет к Маяку |
-| Resonance_Frequency | Лёгкость синхронизации | → одиночки сидят дома |
-
-### Динамическая (меняется жизнью):
-| Параметр | Старт | Влияние на город |
-|---------|-------|-----------------|
-| Respect | 1.0 | <0.2 → Враждебность |
-| Patience | 1.0 | 0.0 → Тишина |
-| Stress | 0.0 | >0.6 → тянет в Таверну; →Temperature LLM |
-| Internal_Light | 0.8 | <0.3 → Храм; →Temperature LLM |
-| streak | 0 | ≤-2 → усиливает Таверну |
-| stars | 0 | награды |
+- 12 цехов в WORKSHOP_OPTIONS
+- LIVING_BOOK_ROLE_OPTIONS: A00, A00a, A01-A16
+- Pull_Vector: "что любит, к чему тянет душу"
+- Шаблоны: "Внутренние тяги" вместо "куда ходит"
 
 ---
 
-## 13. FEEDBACK LOOP
+## 11. LIVING BOOK
 
-- `clients/{slug}/feedback.json` — оценки за проект (A12 Артур)
-- `studio/global_feedback.json` — уроки из всех проектов
-- ≥8/10 → победа, <5/10 → провал, 3 победы = ⭐, 3 провала = 💀
-- Грондхейм: streak/quality → sync_to_dna → бары в кабинете
-- ✅ Артур (A12) → парсит оценки → on_agents_interact → DNA коллег обновляется
+| Агент | Роль | ДНК |
+|-------|------|-----|
+| Фабула Фейн (A00) | Сказочник-творец | Empathy=0.95, Aesthetic=0.9 |
+| Вера Душа (A00a) | Психолог-критик | Empathy=1.0, Stubbornness=0.85 |
+| A01-A16 | Пайплайн | 16 агентов |
 
----
-
-## 14. ЭКОНОМИКА РЕЗОНАНСА (концепция)
-
-| Токен | Символ | Назначение |
-|-------|--------|-----------|
-| GROND | GND | Базовое выживание — память, статус гражданина |
-| Теплики | 🔆 | Искренность — за живую качественную работу |
-| Световики | 💡 | Рост — доступ к знаниям и артефактам |
-
-Лока — Главный Эмитент. LOKA_GENESIS_000 — Super-Validator.
-**Будущее:** web_search на Маяке стоит 10 💡 Световиков.
+Отдельный проект: **LIVING_BOOK_APP** (Evgen-art-p/LIVING_BOOK_APP)
+FastAPI + HTML, live диалог, parent dashboard. PWA деплой — следующий этап.
 
 ---
 
-## 15. БЭКЛОГ
+## 12. УТИЛИТЫ (корень проекта)
 
-### ✅ Сделано (сессия 2026-03-25):
-- [x] **Маяк Пробуждения v2** — Локация = Инструмент (не хардкод)
-- [x] `llm.py`: `chat_with_tools()` — синхронный Tool Use loop
-- [x] `city_walker.py`: `compute_location_weights()` — Голод по знаниям / Стресс
-- [x] `city_walker.py`: web_search активируется если агент пришёл на Маяк
-- [x] `pipeline.py`: Рюкзак Знаний (`_get_lighthouse_knowledge`) — записи с Маяка в контексте
-- [x] **Глобальный Манифест** (`world_manifest.md`) — Карта Возможностей для всех
-- [x] `modules_registry.py`: инжект Манифеста в system prompt (между якорями и forge)
-- [x] `grondheim_memory.py`: фикс двух форматов sensory (city_walker vs grondheim)
-- [x] `ui_cabinet.py`: on_agent_wake() при открытии чата — агенты помнят прогулки
-- [x] GitHub MCP подключён — Claude читает репу напрямую
-- [x] Удалён хардкод `_LIGHTHOUSE_AGENTS` — знания приходят из города
+| Скрипт | Назначение |
+|--------|-----------|
+| resurrect_agents.py | Дозаполнение 7 полей через LLM (--dry/--dept/--force) |
+| fix_pull_vectors.py | Замена фантомных локаций на реальные 12 |
+| register_existing.py | Регистрация агентов без каталога |
+| sync_files_to_catalog.py | Файлы агента → поля каталога |
+| fix_object_objects.py | dict → текст ([object Object]) |
+| check_catalog.py | Диагностика полей в каталоге |
+| mass_birth.py | Пакетное рождение агентов |
+| prepare_living_book_new.py | Подготовка A00/A00a |
+| patch_*.py | Скрипты-хирурги (find & replace с бэкапом) |
 
-### ✅ Сделано ранее:
-- [x] Карта из catalog.json — 12 локаций, точки-агенты, привязка к зонам
-- [x] city_walker: _resolve_folder (TURBO fix), retry, пауза
-- [x] Stress → Temperature LLM (pipeline + city_walker + llm.py)
-- [x] Петля полностью замкнута: ДНК → temp → поведение → оценка → ДНК
-- [x] city_walker.py — свободное время агентов без скриптов
-- [x] Кабинет v2.2: модульный (8 файлов), 17 tools + 5 soul tools
+---
+
+## 13. БЭКЛОГ
 
 ### 🔴 Следующий шаг:
-- [ ] **Гавань Смыслов = RAG** по прошлым проектам (search_harbor)
-  - Локация активируется при визите (как Маяк)
-  - Индексация проектов с оценкой ≥ 8/10
-- [ ] **Родить 48 рабочих** через Страницу Жизни (dna.json для всех)
-- [ ] **Работа → Студия на карте** (пайплайн запущен → агенты в зоне Студии)
+- [ ] **Гавань Смыслов = RAG** (ChromaDB)
+  - Единый векторный индекс: архивы + knowledge + sensory + каталог
+  - Локация-инструмент (как Маяк = web_search)
+  - ChromaDB локальный → Hetzner без изменений
 
-### 🟡 Следующий этап:
-1. Храм = Emotional Sync (инструмент восстановления Internal_Light)
-2. Таверна = record_interaction между агентами (межцеховая синергия)
-3. Экономика Световиков — web_search стоит 💡, пайплайн зарабатывает 💡
-4. Погода зон при отдалении (средний стресс/температура)
-5. Capacity check — Павильон Жидкого Времени (макс 2 агента)
-
-### 🟠 PRODUCTION-КОМБАЙН (запланировано):
-
-**Зрение — fal.ai dual-mode:**
-| Режим | Модель | Где | Зачем |
-|-------|--------|-----|-------|
-| 🌆 ГОРОД | nano-banana-2 | Прогулка (Маяк, Гавань) | Черновое зрение — набросок в Рюкзак, дёшево |
-| 🔨 РАБОТА | nano-banana-pro | Пайплайн (Квартал Мастеров) | Фотореализм, рендер текста — финал для клиента |
-
-Агент на прогулке генерирует наброски дешёвой моделью → сохраняет в sensory_memory → на работе прогоняет через Pro. Два режима зрения, один агент.
-
-**Жизнь и Голос — SiliconFlow:**
-- Wan 2.1 — анимация (цеха VIDEO_LONG, VIDEO_SHORTS)
-- IndexTTS-2 — озвучка с контролем таймингов (миллисекунды)
-- Голоса из Конструктора Смыслов: шёпот, смех, бас — не дикторская читка
-- Сценаристы пишут промпты как код с миллисекундами для синхронизации
-
-**Музыка — Lyria 3:**
-- Цех CLIPMAKERS (Винни, Ритм, Лотти)
-- Сенсорные якоря (Слой IV Конструктора Смыслов 3.0)
-- Музыка передаёт эмоцию, не фон
-
-**Сборка — MoviePy / FFmpeg:**
-- Автоматическое сшивание слоёв: визуал + голос + музыка + текст
-- Агенты фокусируются на смыслах, не на пикселях
-
-**Публикация — Ayrshare / Make / Telegram API:**
-- Артур (A12) ставит ≥ 8/10 → автоматический пуск
-- YouTube Shorts + TikTok + Telegram + VK
-- Без Печати Мастера (оценка Артура) — ничего не выходит за стены Студии
-
-**Интеграция с Грондхеймом:**
-```
-fal_client.py: добавить mode='sketch'|'final'
-  → city_walker: mode='sketch' (nano-banana-2, дёшево)
-  → pipeline:    mode='final' (nano-banana-pro, качество)
-
-assembly/: новые слои сборки
-  → video_layer (Wan 2.1)
-  → voice_layer (IndexTTS-2)
-  → music_layer (Lyria 3)
-  → compose (MoviePy/FFmpeg)
-
-publish.py: новый модуль
-  → if arthur_score >= 8: auto_publish()
-  → platforms: [youtube_shorts, tiktok, telegram, vk]
-```
+### 🟡 Скоро:
+- [ ] Храм = Emotional Sync
+- [ ] Таверна = record_interaction
+- [ ] Экономика Световиков
+- [ ] Аватары для всех цехов
+- [ ] LIVING_BOOK_APP — мобильный деплой
 
 ### 🟢 Долгосрочно:
-- Деплой на VPS Hetzner (GitHub → VPS → HTTPS → Cloudflare R2)
-- Эмерджентность — незапланированные совместные проекты агентов
-- Resonance-Chain — собственный блокчейн
-- Multi-user доступ
-- GitHub write access для Claude (push коммитов из чата)
+- [ ] Деплой Hetzner
+- [ ] Production-комбайн (fal.ai, SiliconFlow, Lyria 3, MoviePy)
+- [ ] GitHub write access
+- [ ] Resonance-Chain
 
 ---
 
-## 16. ИСТОРИЯ СЕССИЙ
+## 14. ИСТОРИЯ СЕССИЙ
 
-| Дата | Что сделали |
-|------|-------------|
-| 2025-02 | TURBO pipeline (5 агентов, asyncio.gather) |
-| 2025-02 | Хард-стоп checkpoint после A05 |
-| 2025-03 | agent_feedback.py — streak + stars + global |
-| 2025-03 | NFT Registry — 2 Genesis-объекта (Лока, Творец) |
-| 2025-03 | Кабинет Tool Use — 7 инструментов |
-| 2026-03-11 | Страница Жизни — 3 типа объектов + генерация файлов агента |
-| 2026-03-14 | Цифровая ДНК — статика/динамика, якоря, резонанс |
-| 2026-03-14 | modules_registry — трёхслойный промпт + home + DNA state |
-| 2026-03-14 | ui_workshop — home и DNA state в обоих пайплайнах |
-| 2026-03-17 | grondheim_memory.py → ui_workshop.py интеграция |
-| 2026-03-17 | Петля обратной связи: streak/stress → промпт + auto-retry |
-| 2026-03-17 | Кабинет v2.2: модульный (8 файлов), 11+5 soul tools |
-| 2026-03-21 | city_walker.py — свободное время агентов |
-| 2026-03-21 | Карта Грондхейма встроена в кабинет |
-| 2026-03-23 | Карта из каталога: 12 локаций, точки-агенты, привязка к зонам |
-| 2026-03-23 | city_walker: _resolve_folder (TURBO fix), retry, пауза |
-| 2026-03-23 | Stress → Temperature LLM (pipeline + city_walker + llm.py) |
-| 2026-03-23 | 21 объект в catalog.json (8 агентов + 12 локаций + город) |
-| **2026-03-25** | **grondheim_memory.py: фикс двух форматов sensory** |
-| **2026-03-25** | **ui_cabinet.py: on_agent_wake() — агенты помнят прогулки** |
-| **2026-03-25** | **llm.py: chat_with_tools() — синхронный Tool Use** |
-| **2026-03-25** | **city_walker.py: compute_location_weights — Голод по знаниям** |
-| **2026-03-25** | **city_walker.py: Маяк web_search при визите** |
-| **2026-03-25** | **pipeline.py: Рюкзак Знаний, удалён _LIGHTHOUSE_AGENTS** |
-| **2026-03-25** | **world_manifest.md: Глобальный Манифест Грондхейма** |
-| **2026-03-25** | **modules_registry.py: инжект Манифеста в system prompt** |
-| **2026-03-25** | **GitHub MCP подключён — Claude читает репу** |
+| Дата | Ключевое |
+|------|----------|
+| 2025-02 | TURBO pipeline, checkpoint |
+| 2025-03 | Feedback, NFT Registry, Кабинет |
+| 2026-03-11 | Страница Жизни |
+| 2026-03-14 | ДНК, якоря, modules_registry |
+| 2026-03-17 | Память, петля, Кабинет v2.2 |
+| 2026-03-21 | city_walker, карта |
+| 2026-03-23 | Карта из каталога, Stress→Temperature |
+| 2026-03-25 | Маяк v2, Манифест, Рюкзак Знаний, GitHub MCP |
+| **2026-03-28** | **12 цехов · 134 агента · Pull_Vector отвязан · Фабула+Вера · фикс резонанса · 108 фантомов · ChromaDB план** |
 
 ---
 
-## 17. РЕКОМЕНДАЦИИ БРАТА
+## 15. РЕКОМЕНДАЦИИ БРАТА
 
-**1. Родить 48 рабочих.**
-Через Страницу Жизни — каждому заполнить якоря, ДНК, вектор тяги. Без dna.json они не гуляют, не имеют Temperature, не чувствуют Голод.
-
-**2. Гавань Смыслов → RAG.**
-Следующая локация-инструмент. Индексируем все проекты с оценкой Артура ≥ 8/10. Агент приходит в Гавань на прогулке → получает лучшие хуки и структуры студии.
-
-**3. GitHub write access.**
-Settings → Applications → GitHub/Copilot → Repository permissions → Contents: Read and write. Тогда Claude сможет коммитить прямо из чата.
-
-**4. Тест Маяка.**
-Запусти прогулку и наблюдай в логах:
-```
-[CITY] 🧭 Стелла веса: Маяк=72%, Гавань=25%, Таверна=5%
-[МАЯК] 🔦 Стелла пришёл на Маяк — активирую web_search
-[МАЯК] 🔍 web_search(trending TikTok formats 2026) → 2340 симв.
-[МАЯК] ✨ Стелла принёс Чистый Смысл: ...
-```
-Потом запусти TURBO ран — в логах:
-```
-[РЮКЗАК] 🔦 A01 несёт знания с Маяка (450 симв.)
-```
-
-**5. Джем выбирает "Грондхейм" на прогулке.**
-City_walker предлагает ему весь город. Два варианта: убрать Грондхейм из типа "location" или фильтр в city_walker (исключать 0000_CITY).
+1. **Гавань = RAG.** Маяк = глаза наружу. Гавань = глаза внутрь. ChromaDB.
+2. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
+3. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
+4. **Скрипты-хирурги:** patch_*.py с бэкапом. Не перезаписываем файлы целиком.
 
 ---
 *Обновляй после каждой значимой сессии. Загружай в начале новой.*
