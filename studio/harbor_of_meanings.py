@@ -223,7 +223,7 @@ def index_file(filepath: Path, category: str = "general") -> int:
             dept = filepath.stem.replace("set_", "")
             metadata["dept"] = dept
 
-    chunks = _chunk_text(text, str(filepath), metadata)
+    chunks = _chunk_text(f"passage: {text}", str(filepath), metadata)
     if not chunks:
         return 0
 
