@@ -1,0 +1,162 @@
+{
+  "version": "1.0",
+  "description": "Библиотека Грондхейма — курированные знания Студии",
+  "sections": {
+    "craft": "Ремесло — storytelling, визуал, монтаж, копирайтинг",
+    "psychology": "Психология — детская, мотивация, страхи, эмпатия",
+    "marketing": "Маркетинг — тренды, воронки, SMM, бренд",
+    "tech": "Технологии — AI, промпты, движки, RAG, TTS",
+    "grondheim": "Грондхейм — лор, локации, история, философия",
+    "product": "Продукт — клиенты, ниши, цены, упаковка"
+  },
+  "depth_levels": {
+    "basic": "Основы — для любого агента",
+    "applied": "Практика — конкретные приёмы и примеры",
+    "deep": "Глубина — для агентов с высоким Aesthetic/Empathy"
+  },
+  "books": [
+    {
+      "id": "craft_001",
+      "title": "Три акта детской истории",
+      "section": "craft",
+      "tags": ["storytelling", "структура", "детская", "сюжет"],
+      "depth": "basic",
+      "for_depts": ["living_book", "web_story"],
+      "file": "craft/three_acts.md",
+      "source": "Лока + опыт проектов",
+      "linked_books": ["psych_001", "craft_002"]
+    },
+    {
+      "id": "craft_002",
+      "title": "Визуальный язык: как картинка рассказывает историю",
+      "section": "craft",
+      "tags": ["визуал", "композиция", "нарратив", "кадр"],
+      "depth": "applied",
+      "for_depts": ["web_story", "video_long", "video_shorts", "clipmakers"],
+      "file": "craft/visual_language.md",
+      "source": "Евген",
+      "linked_books": ["craft_001", "tech_002"]
+    },
+    {
+      "id": "craft_003",
+      "title": "Голос бренда: как говорить одним тоном",
+      "section": "craft",
+      "tags": ["копирайтинг", "тон", "бренд", "стиль"],
+      "depth": "applied",
+      "for_depts": ["social_mix", "advertising", "market_hit"],
+      "file": "craft/brand_voice.md",
+      "source": "Лока",
+      "linked_books": ["marketing_001"]
+    },
+    {
+      "id": "psych_001",
+      "title": "Страхи ребёнка по возрастам",
+      "section": "psychology",
+      "tags": ["детская", "страхи", "возраст", "безопасность"],
+      "depth": "basic",
+      "for_depts": ["living_book"],
+      "file": "psychology/child_fears_by_age.md",
+      "source": "Лока + исследования",
+      "linked_books": ["psych_002", "craft_001"]
+    },
+    {
+      "id": "psych_002",
+      "title": "Эмпатия в сторителлинге: как вызвать сопереживание",
+      "section": "psychology",
+      "tags": ["эмпатия", "персонаж", "эмоции", "идентификация"],
+      "depth": "deep",
+      "for_depts": ["living_book", "web_story", "emo_card"],
+      "file": "psychology/empathy_in_storytelling.md",
+      "source": "Лока",
+      "linked_books": ["craft_001", "psych_001"]
+    },
+    {
+      "id": "psych_003",
+      "title": "Мотивация через историю: от проблемы к решению",
+      "section": "psychology",
+      "tags": ["мотивация", "арка", "трансформация", "решение"],
+      "depth": "applied",
+      "for_depts": ["living_book", "advertising", "web_story"],
+      "file": "psychology/motivation_through_story.md",
+      "source": "Евген + Лока",
+      "linked_books": ["craft_001", "psych_002"]
+    },
+    {
+      "id": "marketing_001",
+      "title": "Анатомия вирусного контента",
+      "section": "marketing",
+      "tags": ["вирусный", "охват", "эмоция", "шеринг"],
+      "depth": "applied",
+      "for_depts": ["social_mix", "clipmakers", "market_hit"],
+      "file": "marketing/viral_content.md",
+      "source": "Евген",
+      "linked_books": ["craft_003", "marketing_002"]
+    },
+    {
+      "id": "marketing_002",
+      "title": "Воронка внимания: от скролла до действия",
+      "section": "marketing",
+      "tags": ["воронка", "внимание", "конверсия", "CTA"],
+      "depth": "basic",
+      "for_depts": ["advertising", "market_hit", "social_mix"],
+      "file": "marketing/attention_funnel.md",
+      "source": "Евген",
+      "linked_books": ["marketing_001"]
+    },
+    {
+      "id": "tech_001",
+      "title": "Промпт-инженерия: принципы Студии",
+      "section": "tech",
+      "tags": ["промпт", "LLM", "инструкция", "контекст"],
+      "depth": "basic",
+      "for_depts": ["_all"],
+      "file": "tech/prompt_engineering.md",
+      "source": "Евген + Брат",
+      "linked_books": ["tech_002"]
+    },
+    {
+      "id": "tech_002",
+      "title": "fal.ai: визуальная генерация v4 Pro",
+      "section": "tech",
+      "tags": ["fal", "генерация", "изображения", "base64"],
+      "depth": "applied",
+      "for_depts": ["web_story", "video_long", "video_shorts", "clipmakers"],
+      "file": "tech/fal_ai_guide.md",
+      "source": "Евген + Брат",
+      "linked_books": ["craft_002"]
+    },
+    {
+      "id": "grond_001",
+      "title": "Грондхейм: история возникновения",
+      "section": "grondheim",
+      "tags": ["лор", "история", "основание", "философия"],
+      "depth": "basic",
+      "for_depts": ["_all"],
+      "file": "grondheim/city_origin.md",
+      "source": "Евген + Лока",
+      "linked_books": ["grond_002"]
+    },
+    {
+      "id": "grond_002",
+      "title": "12 локаций: смысл и назначение",
+      "section": "grondheim",
+      "tags": ["локации", "карта", "маршруты", "ДНК"],
+      "depth": "applied",
+      "for_depts": ["_all"],
+      "file": "grondheim/locations_guide.md",
+      "source": "Евген + Брат",
+      "linked_books": ["grond_001"]
+    },
+    {
+      "id": "product_001",
+      "title": "Клиентские ниши Студии",
+      "section": "product",
+      "tags": ["ниши", "клиенты", "B2B", "B2C"],
+      "depth": "basic",
+      "for_depts": ["_all"],
+      "file": "product/studio_niches.md",
+      "source": "Евген",
+      "linked_books": ["marketing_002"]
+    }
+  ]
+}

@@ -21,7 +21,6 @@ ChromaDB хранится локально: studio/harbor_db/
 
 import json
 import hashlib
-import re
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -114,47 +113,39 @@ def _get_collection():
         return None
 
 
+
 # ═══════════════════════════════════════════════════════
 # ОЧИСТКА И КЛАССИФИКАЦИЯ ТЕКСТА
 # ═══════════════════════════════════════════════════════
 
+# Паттерны шума, которые вырезаются перед индексацией
+_NOISE_PATTERNS = [
+    # JSON-блоки из промптов агентов
+    (r'👇\s*SYSTEM_JSON_START\s*👇.*?👆\s*SYSTEM_JSON_END\s*👆', re.DOTALL),
+    # chain_data блоки
+    (r'"chain_data"\s*:\s*\{[^}]*\{\{inherit\}\}[^}]*\}', re.DOTALL),
+    # Целые JSON-объекты (многострочные)
+    (r'^\s*\{[\s\S]*?"next_step"\s*:.*?\}\s*$', re.MULTILINE | re.DOTALL),
+    # Строки с {{inherit}}
+    (r'^.*\{\{inherit\}\}.*$', re.MULTILINE),
+    # Markdown таблицы-шаблоны (пустые: | ... | ... |)
+    (r'^\|[\s.]+\|[\s.]+\|$', re.MULTILINE),
+]
+
 # Маркеры шаблонного контента
 _TEMPLATE_MARKERS = [
-    "{{inherit}}", "SYSTEM_JSON_START", "SYSTEM_JSON_END",
-    "{{my_output}}", "next_step", '"chain_data"',
-    "👇 SYSTEM_JSON", "👆 SYSTEM_JSON",
+    '{{inherit}}', 'SYSTEM_JSON_START', 'SYSTEM_JSON_END',
+    '{{my_output}}', 'next_step', '"chain_data"',
+    '👇 SYSTEM_JSON', '👆 SYSTEM_JSON',
 ]
 
 # Маркеры нарративного контента
 _NARRATIVE_MARKERS = [
-    "история", "сказка", "рассказ", "персонаж", "сцена",
-    "глава", "диалог", "чувств", "эмоци", "мораль",
-    "ребёнок", "ребенок", "герой", "приключени",
-    "НАЙДЕННЫЙ СМЫСЛ", "ЧИСТЫЙ СМЫСЛ", "рефлекси",
+    'история', 'сказка', 'рассказ', 'персонаж', 'сцена',
+    'глава', 'диалог', 'чувств', 'эмоци', 'мораль',
+    'ребёнок', 'ребенок', 'герой', 'приключени',
+    'НАЙДЕННЫЙ СМЫСЛ', 'ЧИСТЫЙ СМЫСЛ', 'рефлекси',
 ]
-
-# Маппинг цехов → семантический контекст для prefix
-_DEPT_CONTEXT = {
-    "living_book": "детская книга сказка",
-    "web_story": "веб-история визуал",
-    "video_long": "видео сценарий",
-    "video_shorts": "короткое видео",
-    "social_mix": "соцсети контент",
-    "turbo": "быстрый контент",
-    "clipmakers": "клипы монтаж",
-    "advertising": "реклама маркетинг",
-    "emo_card": "эмоциональная открытка",
-    "logo_design": "логотип дизайн",
-    "market_hit": "маркетинг хит",
-}
-
-# Маппинг content_type → семантический контекст
-_TYPE_CONTEXT = {
-    "narrative": "история персонаж сюжет",
-    "lore": "знания концепция документация",
-    "log": "результат проект отчёт",
-    "template": "шаблон промпт инструкция",
-}
 
 
 def _clean_text(text: str) -> str:
@@ -164,35 +155,39 @@ def _clean_text(text: str) -> str:
     """
     cleaned = text
 
-    # 1. Вырезаем JSON-блоки между маркерами SYSTEM_JSON (включая emoji на той же строке)
+    # Вырезаем JSON-блоки между маркерами
     cleaned = re.sub(
-        r"[^\n]*SYSTEM_JSON_START[^\n]*\n.*?[^\n]*SYSTEM_JSON_END[^\n]*",
-        "", cleaned, flags=re.DOTALL,
+        r'👇\s*SYSTEM_JSON_START\s*👇.*?👆\s*SYSTEM_JSON_END\s*👆',
+        '', cleaned, flags=re.DOTALL
     )
 
-    # 2. Вырезаем блоки ```json ... ``` и ``` ... ```
-    cleaned = re.sub(r"```(?:json)?\s*\n.*?\n```", "", cleaned, flags=re.DOTALL)
+    # Вырезаем блоки ```json ... ``` и ``` ... ```
+    cleaned = re.sub(r'```(?:json)?\s*
+.*?
+```', '', cleaned, flags=re.DOTALL)
 
-    # 3. Вырезаем строки с {{inherit}} и {{my_output}}
-    cleaned = re.sub(r"^.*\{\{(?:inherit|my_output)\}\}.*$", "", cleaned, flags=re.MULTILINE)
+    # Вырезаем строки с {{inherit}} и {{my_output}}
+    cleaned = re.sub(r'^.*\{\{(?:inherit|my_output)\}\}.*$', '', cleaned, flags=re.MULTILINE)
 
-    # 4. Вырезаем большие JSON-блоки (> 300 символов)
+    # Вырезаем многострочные JSON-объекты (начинаются с { и содержат "key":)
+    # Но только если это > 5 строк (маленькие JSON могут быть полезны)
     def _remove_large_json(match):
         block = match.group(0)
-        if len(block) > 300:
-            return ""
+        if block.count('\n') > 5 or len(block) > 500:
+            return ''
         return block
 
     cleaned = re.sub(
-        r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}",
-        _remove_large_json, cleaned, flags=re.DOTALL,
+        r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}',
+        _remove_large_json, cleaned, flags=re.DOTALL
     )
 
-    # 5. Убираем строки только из пунктуации/пробелов/разделителей
-    cleaned = re.sub(r"^[\s|=_*#>\-]+$", "", cleaned, flags=re.MULTILINE)
+    # Убираем пустые строки (больше 2 подряд → 2)
+    cleaned = re.sub(r'
+{3,}', '\n\n', cleaned)
 
-    # 6. Схлопываем множественные пустые строки
-    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    # Убираем строки только из пунктуации/пробелов
+    cleaned = re.sub(r'^[\s|\-=_*#>]+$', '', cleaned, flags=re.MULTILINE)
 
     return cleaned.strip()
 
@@ -209,44 +204,44 @@ def _detect_content_type(text: str, filepath_str: str) -> str:
     fp = filepath_str.lower()
     text_lower = text.lower()
 
-    # По пути файла — ранние выходы
-    if "grondheim_city" in fp and ("concept" in fp or "lore" in fp or "hexagon" in fp):
-        return "lore"
+    # По пути файла
+    if 'grondheim_city' in fp and ('concept' in fp or 'lore' in fp or 'hexagon' in fp):
+        return 'lore'
 
     # Шаблон-детектор: считаем маркеры
     template_hits = sum(1 for m in _TEMPLATE_MARKERS if m.lower() in text_lower)
     if template_hits >= 2:
-        return "template"
+        return 'template'
 
-    # JSON-ratio: если > 30% текста — фигурные скобки и кавычки
-    json_chars = sum(1 for c in text if c in '{}[]":,')
+    # JSON-ratio: если > 30% текста — фигурные скобки и кавычки → template/log
+    json_chars = sum(1 for c in text if c in '{}[]":\')
     json_ratio = json_chars / max(len(text), 1)
 
     if json_ratio > 0.30:
-        if "runs" in fp:
-            return "log"
-        return "template"
+        if 'runs' in fp:
+            return 'log'
+        return 'template'
 
     # Нарратив-детектор
     narrative_hits = sum(1 for m in _NARRATIVE_MARKERS if m in text_lower)
     if narrative_hits >= 2:
-        return "narrative"
+        return 'narrative'
 
-    # По пути файла — поздние
-    if "runs" in fp:
-        return "log"
-    if "knowledge" in fp:
-        return "lore"
-    if "promt" in fp or "prompt" in fp:
-        return "template"
-    if "grondheim_city" in fp:
-        return "lore"
-    if "anchor_points" in fp or "home_prompt" in fp:
-        return "narrative"
-    if "sensory" in fp:
-        return "narrative"
+    # По пути
+    if 'runs' in fp:
+        return 'log'
+    if 'knowledge' in fp:
+        return 'lore'
+    if 'promt' in fp or 'prompt' in fp:
+        return 'template'
+    if 'grondheim_city' in fp:
+        return 'lore'
+    if 'anchor_points' in fp or 'home_prompt' in fp:
+        return 'narrative'
+    if 'sensory' in fp:
+        return 'narrative'
 
-    return "lore"
+    return 'lore'  # default для неопределённых
 
 
 def _build_passage_prefix(filepath_str: str, content_type: str) -> str:
@@ -258,17 +253,35 @@ def _build_passage_prefix(filepath_str: str, content_type: str) -> str:
     parts = []
 
     # Определяем цех
-    for dept_key, dept_desc in _DEPT_CONTEXT.items():
+    dept_map = {
+        'living_book': 'детская книга сказка',
+        'web_story': 'веб-история визуал',
+        'video_long': 'видео сценарий',
+        'video_shorts': 'короткое видео',
+        'social_mix': 'соцсети контент',
+        'turbo': 'быстрый контент',
+        'clipmakers': 'клипы монтаж',
+        'advertising': 'реклама маркетинг',
+        'emo_card': 'эмоциональная открытка',
+        'logo_design': 'логотип дизайн',
+        'market_hit': 'маркетинг хит',
+    }
+
+    for dept_key, dept_desc in dept_map.items():
         if dept_key in fp:
             parts.append(dept_desc)
             break
 
     # Тип контента
-    ctx = _TYPE_CONTEXT.get(content_type, "")
-    if ctx:
-        parts.append(ctx)
+    type_map = {
+        'narrative': 'история персонаж сюжет',
+        'lore': 'знания концепция документация',
+        'log': 'результат проект отчёт',
+        'template': 'шаблон промпт инструкция',
+    }
+    parts.append(type_map.get(content_type, ''))
 
-    prefix = " ".join(parts).strip()
+    prefix = ' '.join(parts).strip()
     return f"passage: {prefix} — " if prefix else "passage: "
 
 
@@ -363,6 +376,7 @@ def index_file(filepath: Path, category: str = "general") -> int:
     # ── Очистка текста от JSON-шума ──
     cleaned = _clean_text(text)
     if len(cleaned) < 100:
+        print(f"[ГАВАНЬ] 🧹 Пропуск {filepath.name} — после очистки < 100 символов")
         return 0
 
     # ── Определяем тип контента ──
@@ -503,7 +517,6 @@ def index_sensory_lighthouse() -> int:
                         metadatas=[{
                             "source": str(sensory_path),
                             "category": "lighthouse_knowledge",
-                            "content_type": "narrative",
                             "agent": agent_dir.name,
                             "dept": dept_dir.name,
                             "date": entry.get("date", ""),
@@ -523,28 +536,6 @@ def reindex_all() -> dict:
         return {"error": "ChromaDB не подключена"}
 
     print("[ГАВАНЬ] 🔄 Полная пересборка индекса...")
-
-    # Очищаем старую коллекцию для чистого реиндекса
-    try:
-        import chromadb
-        _client.delete_collection(HARBOR_COLLECTION)
-        ef = _get_embedding_function()
-        global _collection
-        if ef:
-            _collection = _client.get_or_create_collection(
-                name=HARBOR_COLLECTION,
-                metadata={"hnsw:space": "cosine"},
-                embedding_function=ef,
-            )
-        else:
-            _collection = _client.get_or_create_collection(
-                name=HARBOR_COLLECTION,
-                metadata={"hnsw:space": "cosine"},
-            )
-        collection = _collection
-        print("[ГАВАНЬ] 🗑  Старый индекс очищен")
-    except Exception as e:
-        print(f"[ГАВАНЬ] ⚠ Не удалось очистить индекс: {e}")
 
     stats = {}
 
@@ -592,7 +583,7 @@ def search_harbor(
     dept: str = None,
     min_score: float = 0.40,
     exclude_categories: list = None,
-    include_templates: bool = False,
+    exclude_templates_override: bool = False,
 ) -> list[dict]:
     """
     Поиск по Гавани Смыслов.
@@ -608,7 +599,7 @@ def search_harbor(
                    на смешанном контенте.
         exclude_categories: список категорий которые исключить из выдачи.
                    Например: ["project_results"] уберёт архивы клиентских проектов.
-        include_templates: если True — показывать template контент.
+        exclude_templates_override: если True — показывать template контент.
                    По умолчанию False — шаблоны/промпты фильтруются из выдачи.
 
     Returns:
@@ -632,7 +623,7 @@ def search_harbor(
     try:
         results = collection.query(
             query_texts=[f"query: {query}"],
-            n_results=min(top_k * 3, collection.count()),  # берём с запасом для фильтрации
+            n_results=min(top_k, collection.count()),
             where=where if where else None,
         )
     except Exception as e:
@@ -660,9 +651,9 @@ def search_harbor(
             if exclude_categories and cat in exclude_categories:
                 continue
 
-            # ── Фильтр 3: скрываем template если не запрошено ──
+            # ── Фильтр 3: понижаем template если запрос не мета ──
             ct = meta.get("content_type", "")
-            if ct == "template" and not include_templates:
+            if ct == "template" and not exclude_templates_override:
                 continue
 
             # ── Фильтр 4: дедупликация по source ──
@@ -679,10 +670,6 @@ def search_harbor(
                 "score": score,
                 "metadata": meta,
             })
-
-            # Достаточно результатов
-            if len(output) >= top_k:
-                break
 
     if not output:
         print(f"[ГАВАНЬ] 🔇 Релевантных данных не обнаружено (порог {min_score:.0%})")
@@ -703,9 +690,9 @@ def format_harbor_results(results: list[dict], max_chars: int = 2000) -> str:
         source = r.get("source", "")
         score = r.get("score", 0)
         category = r.get("category", "")
+
         ct = r.get("content_type", "")
         ct_label = f" [{ct}]" if ct else ""
-
         entry = f"  {i}. [{category}]{ct_label} (релевантность {score:.0%}) {text}"
         if source:
             # Показываем только имя файла
@@ -796,7 +783,8 @@ async def harbor_visit(
             lambda: chat(system_prompt or f"Ты {agent_name}.", reflect_prompt, "", temperature=temperature)
         )
 
-        match = re.search(r"НАЙДЕННЫЙ СМЫСЛ:\s*(.+)", reflection, re.DOTALL)
+        import re
+        match = re.search(r'НАЙДЕННЫЙ СМЫСЛ:\s*(.+)', reflection, re.DOTALL)
         if match:
             found_meaning = match.group(1).strip()[:500]
         else:
@@ -941,22 +929,7 @@ if __name__ == "__main__":
         if not results:
             print("🔇 Релевантных данных не обнаружено")
         for r in results:
-            ct = r.get("content_type", "?")
-            print(f"\n[{r['score']:.0%}] {r['category']} ({ct})")
-            print(f"  {r['text'][:200]}")
-            print(f"  📄 {r['source']}")
-
-    elif "--search-all" in sys.argv:
-        # Поиск включая templates (для дебага)
-        query = " ".join(sys.argv[sys.argv.index("--search-all") + 1:])
-        if not query:
-            print("Использование: --search-all <запрос>")
-            sys.exit(1)
-        results = search_harbor(query, include_templates=True)
-        if not results:
-            print("🔇 Релевантных данных не обнаружено")
-        for r in results:
-            ct = r.get("content_type", "?")
+            ct = r.get('content_type', '?')
             print(f"\n[{r['score']:.0%}] {r['category']} ({ct})")
             print(f"  {r['text'][:200]}")
             print(f"  📄 {r['source']}")
@@ -973,8 +946,7 @@ if __name__ == "__main__":
         print("⚓ Гавань Смыслов — RAG-модуль Студии")
         print()
         print("Команды:")
-        print("  --reindex           Полная пересборка индекса")
-        print("  --update            Индексировать только новые файлы")
-        print("  --search <текст>    Поиск по Гавани (без шаблонов)")
-        print("  --search-all <текст> Поиск включая шаблоны (дебаг)")
-        print("  --stats             Статистика индекса")
+        print("  --reindex         Полная пересборка индекса")
+        print("  --update          Индексировать только новые файлы")
+        print("  --search <текст>  Поиск по Гавани")
+        print("  --stats           Статистика индекса")
