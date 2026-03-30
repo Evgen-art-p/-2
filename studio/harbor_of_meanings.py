@@ -435,7 +435,7 @@ def search_harbor(
 
     try:
         results = collection.query(
-            query_texts=[query],
+            query_texts=[f"query: {query}"],
             n_results=min(top_k, collection.count()),
             where=where if where else None,
         )
