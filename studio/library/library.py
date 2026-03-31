@@ -5,21 +5,12 @@
 Гавань смотрит внутрь (RAG по сырым архивам).
 Библиотека даёт структурированные знания — книги по полкам.
 
-Принцип тот же: Локация = Инструмент.
+ВСЕ КНИГИ ДОСТУПНЫ ВСЕМ АГЕНТАМ.
+Подбор: по ДНК (depth) + по тегам задачи. Без привязки к цехам.
+
+Принцип: Локация = Инструмент.
 Агент приходит на прогулке → library_visit() → «Прочитанный Смысл» → sensory_memory.
-При работе → get_library_book() подбирает книгу под задачу.
-
-Структура:
-  library/
-  ├── catalog.json        ← реестр всех книг
-  ├── craft/              ← Ремесло
-  ├── psychology/         ← Психология
-  ├── marketing/          ← Маркетинг
-  ├── tech/               ← Технологии
-  ├── grondheim/          ← Лор города
-  └── product/            ← Продукт
-
-Каждая книга = единица знания с id, section, tags, depth, for_depts.
+При работе → get_library_book() подбирает книгу по тегам задачи.
 """
 
 import json
@@ -99,25 +90,12 @@ def get_books_by_tag(tag: str) -> list[dict]:
     return [b for b in get_all_books() if tag in b.get("tags", [])]
 
 
-def get_books_for_dept(dept: str) -> list[dict]:
-    """Книги, подходящие для конкретного цеха."""
-    result = []
-    for book in get_all_books():
-        depts = book.get("for_depts", [])
-        if "_all" in depts or dept in depts:
-            result.append(book)
-    return result
-
-
 # ═══════════════════════════════════════════════════════
 # ЧТЕНИЕ КНИГИ
 # ═══════════════════════════════════════════════════════
 
 def read_book(book: dict, max_chars: int = 3000) -> str:
-    """
-    Читает содержимое книги с диска.
-    Возвращает текст, обрезанный до max_chars.
-    """
+    """Читает содержимое книги с диска."""
     filepath = LIBRARY_ROOT / book.get("file", "")
     if not filepath.exists():
         return ""
@@ -133,28 +111,23 @@ def read_book(book: dict, max_chars: int = 3000) -> str:
 
 
 # ═══════════════════════════════════════════════════════
-# ПОДБОР КНИГИ ПО ДНК
+# ПОДБОР КНИГИ
 # ═══════════════════════════════════════════════════════
 
 def pick_book_for_agent(
-    dept: str,
     agent_dna: dict = None,
     preferred_tags: list = None,
     exclude_ids: list = None,
 ) -> Optional[dict]:
     """
-    Умный подбор книги для агента на основе:
-    - Его цеха (dept)
-    - Его ДНК (Aesthetic_Threshold / Empathy → depth)
-    - Предпочтений по тегам
-    - Исключений (уже читал)
+    Подбор книги для агента.
+    Все книги доступны всем — подбор только по ДНК (depth) и тегам.
 
-    Возвращает dict книги или None.
+    - agent_dna → определяет максимальную глубину (basic/applied/deep)
+    - preferred_tags → сортирует по совпадению тегов
+    - exclude_ids → исключает уже прочитанные
     """
-    candidates = get_books_for_dept(dept)
-    if not candidates:
-        candidates = get_all_books()
-
+    candidates = get_all_books()
     if not candidates:
         return None
 
@@ -185,11 +158,12 @@ def pick_book_for_agent(
         if filtered:
             candidates = filtered
 
-    # Буст: если есть preferred_tags, сортируем по совпадению тегов
+    # Буст по тегам: если есть preferred_tags, сортируем
     if preferred_tags:
         def tag_score(book):
             return sum(1 for t in preferred_tags if t in book.get("tags", []))
         candidates.sort(key=tag_score, reverse=True)
+        # Берём топ-3 по тегам и случайно из них
         top = candidates[:3]
         return random.choice(top)
 
@@ -204,14 +178,13 @@ async def library_visit(
     agent_name: str,
     agent_profession: str,
     agent_dna: dict,
-    dept: str = "",
     system_prompt: str = "",
     temperature: float = 0.7,
 ) -> str:
     """
     Агент пришёл в Библиотеку Грондхейма на прогулке.
 
-    1. Подбирает книгу по ДНК и цеху
+    1. Подбирает книгу по ДНК (depth)
     2. Читает её
     3. Рефлексирует — что понял, как применит
     4. Возвращает «Прочитанный Смысл»
@@ -219,8 +192,7 @@ async def library_visit(
     import asyncio
     from studio.llm import chat
 
-    # Шаг 1: Подбираем книгу
-    book = pick_book_for_agent(dept=dept, agent_dna=agent_dna)
+    book = pick_book_for_agent(agent_dna=agent_dna)
 
     if not book:
         print(f"[БИБЛИОТЕКА] 📭 {agent_name}: каталог пуст")
@@ -234,7 +206,6 @@ async def library_visit(
     book_title = book["title"]
     print(f"[БИБЛИОТЕКА] 📖 {agent_name} читает: «{book_title}»")
 
-    # Шаг 2: Рефлексия через LLM
     reflect_prompt = (
         f"Ты — {agent_name}, {agent_profession}.\n"
         f"Ты в Библиотеке Грондхейма. Взял книгу с полки:\n"
@@ -276,17 +247,16 @@ async def library_visit(
 
 def get_library_book(
     worker_id: str,
-    dept: str,
     task_tags: list = None,
     max_chars: int = 2000,
 ) -> str:
     """
     Достаёт книгу из Библиотеки для агента во время работы.
-    Вызывается из pipeline.py → build_agent_context().
+    Подбирает по тегам задачи — агент сам ищет что ему нужно.
 
-    Возвращает отформатированный текст для инжекта в контекст.
+    Вызывается из pipeline.py → build_agent_context().
     """
-    book = pick_book_for_agent(dept=dept, preferred_tags=task_tags)
+    book = pick_book_for_agent(preferred_tags=task_tags)
 
     if not book:
         return ""
@@ -325,7 +295,8 @@ if __name__ == "__main__":
             print(f"  [{sec_id}] {sec_desc}")
             for b in sec_books:
                 has_file = "✅" if (LIBRARY_ROOT / b.get("file", "")).exists() else "📝"
-                print(f"    {has_file} {b['id']}: {b['title']} ({b['depth']})")
+                tags = ", ".join(b.get("tags", [])[:4])
+                print(f"    {has_file} {b['id']}: {b['title']} ({b['depth']}) [{tags}]")
             if not sec_books:
                 print("    (пусто)")
             print()
@@ -345,16 +316,26 @@ if __name__ == "__main__":
         print(content[:2000])
 
     elif "--pick" in sys.argv:
-        idx = sys.argv.index("--pick")
-        dept = sys.argv[idx + 1] if idx + 1 < len(sys.argv) else "living_book"
-        book = pick_book_for_agent(dept=dept)
+        book = pick_book_for_agent()
         if book:
-            print(f"📚 Для цеха [{dept}] подобрана:")
-            print(f"   «{book['title']}» ({book['depth']})")
+            print(f"📚 Подобрана: «{book['title']}» ({book['depth']})")
             print(f"   Теги: {', '.join(book.get('tags', []))}")
-            print(f"   Файл: {book.get('file', '?')}")
         else:
-            print(f"📭 Для цеха [{dept}] книг не нашлось")
+            print("📭 Книг не нашлось")
+
+    elif "--find" in sys.argv:
+        idx = sys.argv.index("--find")
+        tags = sys.argv[idx + 1:] if idx + 1 < len(sys.argv) else []
+        if not tags:
+            print("Использование: --find тег1 тег2 тег3")
+            sys.exit(1)
+        book = pick_book_for_agent(preferred_tags=tags)
+        if book:
+            print(f"📚 По тегам [{', '.join(tags)}]:")
+            print(f"   «{book['title']}» ({book['depth']})")
+            print(f"   Совпадения: {[t for t in tags if t in book.get('tags', [])]}")
+        else:
+            print(f"📭 По тегам [{', '.join(tags)}] ничего не нашлось")
 
     elif "--stats" in sys.argv:
         catalog = _load_catalog()
@@ -369,7 +350,8 @@ if __name__ == "__main__":
         print("📚 Библиотека Грондхейма")
         print()
         print("Команды:")
-        print("  --list              Все книги по секциям")
-        print("  --read <book_id>    Прочитать книгу")
-        print("  --pick <dept>       Подобрать книгу для цеха")
-        print("  --stats             Статистика библиотеки")
+        print("  --list                Все книги по секциям")
+        print("  --read <book_id>      Прочитать книгу")
+        print("  --pick                Случайная книга")
+        print("  --find тег1 тег2      Найти книгу по тегам")
+        print("  --stats               Статистика библиотеки")
