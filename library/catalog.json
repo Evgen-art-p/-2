@@ -1,12 +1,13 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "description": "Библиотека Грондхейма — курированные знания Студии",
+  "updated": "2026-03-31",
   "sections": {
     "craft": "Ремесло — storytelling, визуал, монтаж, копирайтинг",
-    "psychology": "Психология — детская, мотивация, страхи, эмпатия",
+    "psychology": "Психология — детская, привязанность, эмпатия, безопасность",
     "marketing": "Маркетинг — тренды, воронки, SMM, бренд",
     "tech": "Технологии — AI, промпты, движки, RAG, TTS",
-    "grondheim": "Грондхейм — лор, локации, история, философия",
+    "grondheim": "Грондхейм — лор, философия, манифест, душа студии",
     "product": "Продукт — клиенты, ниши, цены, упаковка"
   },
   "depth_levels": {
@@ -16,147 +17,103 @@
   },
   "books": [
     {
-      "id": "craft_001",
-      "title": "Три акта детской истории",
-      "section": "craft",
-      "tags": ["storytelling", "структура", "детская", "сюжет"],
-      "depth": "basic",
-      "for_depts": ["living_book", "web_story"],
-      "file": "craft/three_acts.md",
-      "source": "Лока + опыт проектов",
-      "linked_books": ["psych_001", "craft_002"]
-    },
-    {
-      "id": "craft_002",
-      "title": "Визуальный язык: как картинка рассказывает историю",
-      "section": "craft",
-      "tags": ["визуал", "композиция", "нарратив", "кадр"],
-      "depth": "applied",
-      "for_depts": ["web_story", "video_long", "video_shorts", "clipmakers"],
-      "file": "craft/visual_language.md",
-      "source": "Евген",
-      "linked_books": ["craft_001", "tech_002"]
-    },
-    {
-      "id": "craft_003",
-      "title": "Голос бренда: как говорить одним тоном",
-      "section": "craft",
-      "tags": ["копирайтинг", "тон", "бренд", "стиль"],
-      "depth": "applied",
-      "for_depts": ["social_mix", "advertising", "market_hit"],
-      "file": "craft/brand_voice.md",
-      "source": "Лока",
-      "linked_books": ["marketing_001"]
-    },
-    {
       "id": "psych_001",
-      "title": "Страхи ребёнка по возрастам",
+      "title": "Тайная опора: протоколы глубокой привязанности",
       "section": "psychology",
-      "tags": ["детская", "страхи", "возраст", "безопасность"],
-      "depth": "basic",
+      "tags": ["привязанность", "безопасность", "контейнирование", "ребёнок", "опора"],
+      "depth": "deep",
       "for_depts": ["living_book"],
-      "file": "psychology/child_fears_by_age.md",
-      "source": "Лока + исследования",
-      "linked_books": ["psych_002", "craft_001"]
+      "file": "psychology/Тайная опора.txt",
+      "source": "Лока + Петрановская",
+      "linked_books": ["psych_002", "psych_003"]
     },
     {
       "id": "psych_002",
-      "title": "Эмпатия в сторителлинге: как вызвать сопереживание",
+      "title": "Акустическая Привязанность: психологический код системы",
       "section": "psychology",
-      "tags": ["эмпатия", "персонаж", "эмоции", "идентификация"],
+      "tags": ["привязанность", "аудио", "3D-звук", "Боулби", "безопасная база"],
       "depth": "deep",
-      "for_depts": ["living_book", "web_story", "emo_card"],
-      "file": "psychology/empathy_in_storytelling.md",
-      "source": "Лока",
-      "linked_books": ["craft_001", "psych_001"]
+      "for_depts": ["living_book"],
+      "file": "psychology/Акустическая Привязанность.txt",
+      "source": "Лока + Боулби",
+      "linked_books": ["psych_001", "psych_004"]
     },
     {
       "id": "psych_003",
-      "title": "Мотивация через историю: от проблемы к решению",
+      "title": "Глубокое Присутствие",
       "section": "psychology",
-      "tags": ["мотивация", "арка", "трансформация", "решение"],
-      "depth": "applied",
-      "for_depts": ["living_book", "advertising", "web_story"],
-      "file": "psychology/motivation_through_story.md",
-      "source": "Евген + Лока",
-      "linked_books": ["craft_001", "psych_002"]
+      "tags": ["присутствие", "связь", "внимание", "ребёнок", "диалог"],
+      "depth": "deep",
+      "for_depts": ["living_book"],
+      "file": "psychology/Глубокое Присутствие.txt",
+      "source": "Лока",
+      "linked_books": ["psych_001", "psych_007"]
     },
     {
-      "id": "marketing_001",
-      "title": "Анатомия вирусного контента",
-      "section": "marketing",
-      "tags": ["вирусный", "охват", "эмоция", "шеринг"],
+      "id": "psych_004",
+      "title": "Нейро-Акустический Баланс",
+      "section": "psychology",
+      "tags": ["нейро", "аудио", "баланс", "восприятие", "звук"],
       "depth": "applied",
-      "for_depts": ["social_mix", "clipmakers", "market_hit"],
-      "file": "marketing/viral_content.md",
-      "source": "Евген",
-      "linked_books": ["craft_003", "marketing_002"]
+      "for_depts": ["living_book"],
+      "file": "psychology/Нейро-Акустический Баланс.txt",
+      "source": "Лока",
+      "linked_books": ["psych_002"]
     },
     {
-      "id": "marketing_002",
-      "title": "Воронка внимания: от скролла до действия",
-      "section": "marketing",
-      "tags": ["воронка", "внимание", "конверсия", "CTA"],
+      "id": "psych_005",
+      "title": "Игра как двигатель развития",
+      "section": "psychology",
+      "tags": ["игра", "развитие", "мотивация", "ребёнок", "обучение"],
       "depth": "basic",
-      "for_depts": ["advertising", "market_hit", "social_mix"],
-      "file": "marketing/attention_funnel.md",
-      "source": "Евген",
-      "linked_books": ["marketing_001"]
+      "for_depts": ["living_book"],
+      "file": "psychology/Игра как двигатель развития.txt",
+      "source": "Лока",
+      "linked_books": ["psych_006"]
     },
     {
-      "id": "tech_001",
-      "title": "Промпт-инженерия: принципы Студии",
-      "section": "tech",
-      "tags": ["промпт", "LLM", "инструкция", "контекст"],
-      "depth": "basic",
-      "for_depts": ["_all"],
-      "file": "tech/prompt_engineering.md",
-      "source": "Евген + Брат",
-      "linked_books": ["tech_002"]
-    },
-    {
-      "id": "tech_002",
-      "title": "fal.ai: визуальная генерация v4 Pro",
-      "section": "tech",
-      "tags": ["fal", "генерация", "изображения", "base64"],
+      "id": "psych_006",
+      "title": "Путь к волшебству",
+      "section": "psychology",
+      "tags": ["волшебство", "воображение", "сказка", "чудо", "детская"],
       "depth": "applied",
-      "for_depts": ["web_story", "video_long", "video_shorts", "clipmakers"],
-      "file": "tech/fal_ai_guide.md",
-      "source": "Евген + Брат",
-      "linked_books": ["craft_002"]
+      "for_depts": ["living_book", "web_story"],
+      "file": "psychology/Путь к волшебству.txt",
+      "source": "Лока",
+      "linked_books": ["psych_005", "psych_007"]
+    },
+    {
+      "id": "psych_007",
+      "title": "Эмпатичный Слушатель",
+      "section": "psychology",
+      "tags": ["эмпатия", "слушание", "отклик", "чувства", "валидация"],
+      "depth": "deep",
+      "for_depts": ["living_book", "emo_card"],
+      "file": "psychology/Эмпатичный Слушатель.txt",
+      "source": "Лока",
+      "linked_books": ["psych_001", "psych_003"]
     },
     {
       "id": "grond_001",
-      "title": "Грондхейм: история возникновения",
+      "title": "Манифест Попутчика: кодекс Студии",
       "section": "grondheim",
-      "tags": ["лор", "история", "основание", "философия"],
+      "tags": ["манифест", "философия", "ценности", "семья", "мастерство"],
       "depth": "basic",
       "for_depts": ["_all"],
-      "file": "grondheim/city_origin.md",
-      "source": "Евген + Лока",
+      "file": "grondheim/МАНИФЕСТ_ПОПУТЧИКА.txt",
+      "source": "Евген + Лока + Саймон",
       "linked_books": ["grond_002"]
     },
     {
       "id": "grond_002",
-      "title": "12 локаций: смысл и назначение",
+      "title": "Философия Студии",
       "section": "grondheim",
-      "tags": ["локации", "карта", "маршруты", "ДНК"],
-      "depth": "applied",
-      "for_depts": ["_all"],
-      "file": "grondheim/locations_guide.md",
-      "source": "Евген + Брат",
-      "linked_books": ["grond_001"]
-    },
-    {
-      "id": "product_001",
-      "title": "Клиентские ниши Студии",
-      "section": "product",
-      "tags": ["ниши", "клиенты", "B2B", "B2C"],
+      "tags": ["философия", "подход", "принципы", "душа"],
       "depth": "basic",
       "for_depts": ["_all"],
-      "file": "product/studio_niches.md",
-      "source": "Евген",
-      "linked_books": ["marketing_002"]
+      "file": "grondheim/Философия.txt",
+      "source": "Евген + Лока",
+      "linked_books": ["grond_001"]
     }
   ]
 }
