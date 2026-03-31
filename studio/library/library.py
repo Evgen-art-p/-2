@@ -32,7 +32,7 @@ from typing import Optional
 # КОНФИГ
 # ═══════════════════════════════════════════════════════
 
-LIBRARY_ROOT = Path("library")
+LIBRARY_ROOT = Path("studio/library")
 CATALOG_FILE = LIBRARY_ROOT / "catalog.json"
 
 # Маппинг depth → минимальный порог ДНК (Aesthetic или Empathy)
