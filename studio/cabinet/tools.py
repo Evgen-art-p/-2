@@ -195,18 +195,38 @@ TOOLS_SCHEMA = [
         "type": "function",
         "function": {
             "name": "city_walk",
-            "description": "Отправить агентов Грондхейма на прогулку по городу. Каждый агент сам решает куда пойти исходя из своего состояния, характера и погоды города. Прогулка снижает стресс и пополняет оперативную память.",
+            "description": "Отправить РЕЗИДЕНТОВ Грондхейма на прогулку (Лока, Джем, Сет, Оле). Быстрая прогулка — только постоянные жители.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "agent_ids": {
+                    "event": {
+                        "type": "string",
+                        "description": "Событие которое добавить в историю города."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "city_walk_workshop",
+            "description": "Отправить на прогулку агентов выбранных цехов + резиденты (они гуляют всегда). Используй после завершения пайплайна чтобы дать отдохнуть цеху который отработал.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "workshops": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Список ID агентов для прогулки. Если не указан — гуляют все у кого есть dna.json."
+                        "description": "Цехи для прогулки: turbo, video_long, video_shorts, social_mix, web_story, clipmakers, advertising, emo_card, logo_design, market_hit, living_book"
                     },
                     "event": {
                         "type": "string",
-                        "description": "Событие которое добавить в историю города (например 'завершён TURBO ран' или 'Артур выдал критику')."
+                        "description": "Событие для истории города."
+                    },
+                    "max_agents": {
+                        "type": "integer",
+                        "description": "Лимит агентов (0 = без лимита). По умолчанию 20."
                     }
                 }
             }
@@ -269,7 +289,8 @@ async def execute_tool(fn: str, args: dict) -> str:
         "update_agent_dynamic": lambda a: exec_update_agent_dynamic(a),
         "find_stressed_agents": lambda a: exec_find_stressed_agents(),
         # City Walker
-        "city_walk": lambda a: exec_city_walk(a.get("agent_ids"), a.get("event", "")),
+        "city_walk": lambda a: exec_city_walk(None, a.get("event", "")),
+        "city_walk_workshop": lambda a: exec_city_walk_workshop(a.get("workshops", []), a.get("event", ""), a.get("max_agents", 20)),
     }
     executor = executors.get(fn)
     if not executor:
@@ -550,7 +571,7 @@ async def exec_find_stressed_agents() -> str:
 # ── City Walker ──────────────────────────────────
 
 async def exec_city_walk(agent_ids: list | None = None, event: str = "") -> str:
-    """Запустить прогулку агентов по городу."""
+    """Запустить прогулку РЕЗИДЕНТОВ по городу."""
     try:
         from studio.city_walker import run_city_walk
 
@@ -561,6 +582,7 @@ async def exec_city_walk(agent_ids: list | None = None, event: str = "") -> str:
 
         results = await run_city_walk(
             agent_ids=agent_ids or None,
+            workshops=[],  # только резиденты
             add_event=event or None,
             on_progress=collect,
         )

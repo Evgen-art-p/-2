@@ -174,7 +174,13 @@ def generate_agent_files(obj: dict, dna_static: dict,
     # Имя папки агента:
     #   - Если указана роль (A01, T1...) → используем её (существующая папка)
     #   - Если роль пустая (резиденты) → используем ID_Object (LOKA, JEM)
-    folder_name = agent_role.strip() if agent_role.strip() else agent_id
+    # Для резидентов: ВСЕГДА используем ID_Object как папку.
+    # Роль (keeper/administrator) — это лор, не имя директории.
+    # Для рабочих агентов: роль (A01, T1...) = имя папки.
+    if workshop == "residents":
+        folder_name = agent_id
+    else:
+        folder_name = agent_role.strip() if agent_role.strip() else agent_id
 
     # Корневая папка агента
     agent_dir = MODULES_DIR / workshop / folder_name
