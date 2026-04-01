@@ -1,0 +1,15 @@
+{
+  "name": "Оле",
+  "id": "004_OLE",
+  "creator": "",
+  "core_phrase": "Тихо тут... Заходи, я как раз нашла кое-что интересное на полке.",
+  "anchor_facts": [],
+  "domain": "",
+  "rarity": "Epic",
+  "workshop": "residents",
+  "role": "administrator",
+  "pull_vector": "",
+  "hidden_taste": "",
+  "trigger_keywords": [],
+  "created_at": "2026-04-01"
+}

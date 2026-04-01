@@ -20,6 +20,15 @@ except ImportError:
     async def dispatch_soul_tool(fn, args): return None
     SOUL_TOOLS_SCHEMA = []
 
+# ══ Библиотека: library tools ══
+try:
+    from studio.cabinet.library_tools import LIBRARY_TOOLS_SCHEMA, dispatch_library_tool
+    _LIBRARY_TOOLS_ENABLED = True
+except ImportError:
+    _LIBRARY_TOOLS_ENABLED = False
+    async def dispatch_library_tool(fn, args): return None
+    LIBRARY_TOOLS_SCHEMA = []
+
 
 # ═══════════════════════════════════════════════════
 #  TOOL SCHEMA (OpenRouter function calling)
@@ -209,6 +218,10 @@ TOOLS_SCHEMA = [
 if _SOUL_TOOLS_ENABLED:
     TOOLS_SCHEMA.extend(SOUL_TOOLS_SCHEMA)
 
+# Добавляем library tools (Библиотека)
+if _LIBRARY_TOOLS_ENABLED:
+    TOOLS_SCHEMA.extend(LIBRARY_TOOLS_SCHEMA)
+
 
 # ═══════════════════════════════════════════════════
 #  SIDE-EFFECTS
@@ -231,6 +244,11 @@ def get_pending_nav() -> str | None:
 
 async def execute_tool(fn: str, args: dict) -> str:
     """Центральный диспетчер инструментов."""
+    # ══ Library tools (Библиотека) ══
+    if _LIBRARY_TOOLS_ENABLED:
+        result = await dispatch_library_tool(fn, args)
+        if result is not None:
+            return result
     # ══ Soul tools (Грондхейм) ══
     if _SOUL_TOOLS_ENABLED:
         result = await dispatch_soul_tool(fn, args)
