@@ -1,6 +1,6 @@
 {
-  "date": "2026-04-01",
-  "weather": "туман над гаванью",
+  "date": "2026-04-03",
+  "weather": "тёплый дождь",
   "energy": 0.7,
   "active_agents": [
     "Лока",
@@ -140,5 +140,5 @@
     "Оле"
   ],
   "recent_events": [],
-  "walk_count": 3
+  "walk_count": 1
 }
