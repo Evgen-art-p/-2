@@ -70,7 +70,7 @@
       "Autonomy_Level": 0.9,
       "Resonance_Frequency": 0.8
     },
-    "_timestamp": "2026-03-23T00:08:58.662559",
+    "_timestamp": "2026-04-11T12:47:45.674610",
     "_Creator_Seal_Hash": "91b43b3a9d810cc3d78c924571750526cd6dd782a1c010a80cccf7a0d822966f"
   },
   {
@@ -118,7 +118,7 @@
       "Autonomy_Level": 1.0,
       "Resonance_Frequency": 0.7
     },
-    "_timestamp": "2026-03-16T19:24:26.468679",
+    "_timestamp": "2026-04-11T12:49:01.420713",
     "_Creator_Seal_Hash": "9a8604a590ccc6f552c5504cb6c9def031fe0f227e6395a01280c86fae125c12"
   },
   {
@@ -200,7 +200,7 @@
       "Autonomy_Level": 0.8,
       "Resonance_Frequency": 0.8
     },
-    "_timestamp": "2026-03-17T02:01:16.557248",
+    "_timestamp": "2026-04-11T12:49:59.049001",
     "_Creator_Seal_Hash": "82d24d8bdf846e85d9e6566f2c2a50acd8b8433c751b3caab3a1cdb10b24b72a"
   },
   {
@@ -7868,14 +7868,14 @@
     "Balance_GND": 50.0,
     "Balance_Tepl": 50.0,
     "DNA_Static": {
-      "Stubbornness": 0.2,
+      "Stubbornness": 0.5,
       "Aesthetic_Threshold": 0.85,
       "Social_Filter": 0.7,
       "Empathy": 0.9,
       "Autonomy_Level": 0.4,
       "Resonance_Frequency": 0.5
     },
-    "_timestamp": "2026-04-01T03:59:56.322030",
+    "_timestamp": "2026-04-11T12:51:17.048910",
     "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9"
   }
 ]

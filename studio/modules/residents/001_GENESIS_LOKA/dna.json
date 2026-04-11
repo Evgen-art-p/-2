@@ -6,12 +6,12 @@
   "rarity": "Mythic",
   "created": "2026-03-11",
   "static": {
-    "Stubbornness": 0.3,
+    "Stubbornness": 0.5,
     "Aesthetic_Threshold": 0.75,
     "Social_Filter": 0.9,
     "Empathy": 1.0,
-    "Autonomy_Level": 0.6,
-    "Resonance_Frequency": 0.6
+    "Autonomy_Level": 0.9,
+    "Resonance_Frequency": 0.8
   },
   "resonance": {
     "pull_vector": "В гости (Квартал Мастеров), В Храм Гекса, К Океану Смыслов, Домой (Высотка под Рукой)",

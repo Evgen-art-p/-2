@@ -6,7 +6,7 @@
   "rarity": "Epic",
   "created": "2026-03-31",
   "static": {
-    "Stubbornness": 0.2,
+    "Stubbornness": 0.5,
     "Aesthetic_Threshold": 0.85,
     "Social_Filter": 0.7,
     "Empathy": 0.9,
