@@ -780,32 +780,25 @@ async def walk_one_agent(agent: dict, city_state: dict,
 
 async def run_city_walk(
     agent_ids: list[str] | None = None,
-    workshops: list[str] | None = None,
     add_event: str | None = None,
     on_progress=None,
-    max_agents: int = 0,
 ) -> list[dict]:
     """
     Запускает прогулку по городу.
 
-    agent_ids:   список ID агентов для прогулки (точечный выбор).
-    workshops:   список цехов для прогулки (напр. ["turbo", "web_story"]).
-                 Резиденты (residents) гуляют ВСЕГДА, даже если не указаны.
-                 Если None и agent_ids=None — гуляют ВСЕ.
-    add_event:   событие которое добавляется в city_state
+    agent_ids: список ID агентов для прогулки.
+               Если None — гуляют все у кого есть dna.json.
+    add_event: событие которое добавляется в city_state
+               (например "завершён TURBO ран" или "Артур выдал критику")
     on_progress: callback(message: str) для UI прогресса
-    max_agents:  лимит агентов за один запуск (0 = без лимита).
-                 Полезно для тестов: max_agents=5
 
     Возвращает список результатов по каждому агенту.
     """
 
-    async def log(msg: str):
+    def log(msg: str):
         print(f"[CITY] {msg}")
         if on_progress:
-            result = on_progress(msg)
-            if asyncio.iscoroutine(result):
-                await result
+            on_progress(msg)
 
     # Обновляем погоду
     city_state = update_city_weather()
@@ -818,34 +811,22 @@ async def run_city_walk(
 
     # Загружаем агентов
     all_agents = get_all_agents()
-
     if agent_ids:
-        # Точечный выбор по ID
         all_agents = [a for a in all_agents if a.get("ID_Object") in agent_ids]
-    elif workshops:
-        # Фильтр по цехам + резиденты ВСЕГДА
-        allowed = set(workshops)
-        allowed.add("residents")  # резиденты гуляют всегда
-        all_agents = [a for a in all_agents if a.get("Workshop_ID", "") in allowed]
-
-    # Лимит агентов (для тестов и безопасности)
-    if max_agents > 0 and len(all_agents) > max_agents:
-        await log(f"⚠ Лимит: {max_agents} из {len(all_agents)} агентов")
-        all_agents = all_agents[:max_agents]
 
     if not all_agents:
-        await log("Нет агентов для прогулки.")
+        log("Нет агентов для прогулки.")
         return []
 
     # Загружаем локации
     locations = get_all_locations()
     if not locations:
-        await log("⚠️ Нет локаций в каталоге — создай хотя бы одну через Страницу Жизни.")
+        log("⚠️ Нет локаций в каталоге — создай хотя бы одну через Страницу Жизни.")
         return []
 
-    await log(f"🌆 Город просыпается. Погода: {city_state['weather']}")
-    await log(f"👥 Агентов выходит на прогулку: {len(all_agents)}")
-    await log(f"🏛️ Доступных локаций: {len(locations)}")
+    log(f"🌆 Город просыпается. Погода: {city_state['weather']}")
+    log(f"👥 Агентов выходит на прогулку: {len(all_agents)}")
+    log(f"🏛️ Доступных локаций: {len(locations)}")
 
     # Обновляем список активных агентов в city_state
     city_state["active_agents"] = [a.get("Official_Name", "") for a in all_agents]
@@ -856,25 +837,25 @@ async def run_city_walk(
     results = []
     for i, agent in enumerate(all_agents):
         name = agent.get("Official_Name", agent.get("ID_Object", "?"))
-        await log(f"🚶 {name} выходит в город...")
+        log(f"🚶 {name} выходит в город...")
 
         result = await walk_one_agent(agent, city_state, locations)
 
         # Retry при обрыве соединения (1 попытка)
         if result.get("status") == "error" and "Connection" in result.get("reason", ""):
-            await log(f"  ⚡ Переподключение через 3 сек...")
+            log(f"  ⚡ Переподключение через 3 сек...")
             await asyncio.sleep(3)
             result = await walk_one_agent(agent, city_state, locations)
 
         results.append(result)
 
         if result["status"] == "ok":
-            await log(f"  → {name} пошёл в: {result['location']}")
-            await log(f"  💭 {result['response'][:120]}...")
+            log(f"  → {name} пошёл в: {result['location']}")
+            log(f"  💭 {result['response'][:120]}...")
         elif result["status"] == "skip":
-            await log(f"  ⏭ {name}: {result['reason']}")
+            log(f"  ⏭ {name}: {result['reason']}")
         else:
-            await log(f"  ❌ {name}: ошибка — {result['reason']}")
+            log(f"  ❌ {name}: ошибка — {result['reason']}")
 
         # Пауза между агентами — защита от rate limit OpenRouter
         await asyncio.sleep(2)
@@ -883,7 +864,7 @@ async def run_city_walk(
     city_state["active_agents"] = []
     save_city_state(city_state)
 
-    await log(f"✅ Прогулка завершена. {len([r for r in results if r['status'] == 'ok'])} агентов побывали в городе.")
+    log(f"✅ Прогулка завершена. {len([r for r in results if r['status'] == 'ok'])} агентов побывали в городе.")
     return results
 
 

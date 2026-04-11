@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 7.1 | **Дата:** 2026-03-31 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 7.0 | **Дата:** 2026-03-28 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 
@@ -31,9 +31,9 @@
 - **OpenRouter API** — LLM (Gemini Flash основной, Claude Sonnet премиум)
 - **fal.ai** — генерация изображений и видео (v4 Pro: base64, sync_mode)
 - **Tavily API** — web_search (Маяк Пробуждения)
-- **ChromaDB** — векторный движок Гавани Смыслов (intfloat/multilingual-e5-large) ✅
 - **Polygon ERC-721** — блокчейн NFT Registry
 - **GitHub** — репозиторий (Evgen-art-p/-2), Claude читает через MCP (read-only)
+- **ChromaDB** — векторный движок для Гавани Смыслов (планируется)
 - **Hetzner VPS** — деплой (планируется)
 
 ---
@@ -47,8 +47,6 @@
 | Цехов | 12 |
 | Локаций | 12 |
 | Резидентов | 3 (Лока, Джем, Сет) |
-| Книг в Библиотеке | 9 (7 psych + 2 grondheim) |
-| Документов в Гавани | ~2323 |
 
 ---
 
@@ -77,6 +75,8 @@
 Pull_Vector = "что агент любит, к чему тянет душу".
 Маршрут определяет ТОЛЬКО `compute_location_weights()` из ДНК.
 
+**Убрано:** pull_vector из промпта LLM, бонус +0.1 в compute_weights.
+
 **Работает:**
 ```
 Стресс > 0.6 → Таверна        Свет < 0.3 → Храм
@@ -84,11 +84,10 @@ Pull_Vector = "что агент любит, к чему тянет душу".
 Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
 ```
 
-### ТРИ ГЛАЗА ГРОНДХЕЙМА (Локации-Инструменты):
+### Маяк = web_search, Гавань = RAG (следующий шаг)
 ```
-Маяк:       агент пришёл → web_search       → "Чистый Смысл"     → sensory ✅
-Гавань:     агент пришёл → vector_search     → "Найденный Смысл"  → sensory ✅
-Библиотека: агент пришёл → library_visit()   → "Прочитанный Смысл" → sensory [интеграция TODO]
+Маяк: агент пришёл → chat_with_tools(web_search) → "Чистый Смысл" → sensory
+Гавань: агент пришёл → vector_search(ChromaDB) → "Найденный Смысл" → sensory [TODO]
 ```
 
 ---
@@ -98,11 +97,11 @@ Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
 | Локация | Инструмент | Кто тянется |
 |---------|-----------|-------------|
 | 🔦 Маяк Пробуждения | web_search ✅ | Любознательные |
-| ⚓ Гавань Смыслов | RAG (ChromaDB) ✅ | Вдумчивые |
-| 📚 Библиотека | library_visit() ✅ | Aesthetic |
+| ⚓ Гавань Смыслов | **RAG [TODO]** | Вдумчивые |
 | 🍺 Таверна | отдых | Стресс > 0.6 |
-| 🔮 Храм | восстановление [TODO] | Выгоревшие |
+| 🔮 Храм | восстановление | Выгоревшие |
 | 🏰 Замок Сов | стратегия | Автономные |
+| 📚 Библиотека | знания | Aesthetic |
 | 🏗️ Квартал Мастеров | работа | Отдохнувшие |
 | 🕐 Павильон | рефлексия | Макс 2 |
 | 🏠 Высотка | дом резидентов | — |
@@ -112,81 +111,7 @@ Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
 
 ---
 
-## 8. ГАВАНЬ СМЫСЛОВ (harbor_of_meanings.py v2)
-
-### Что нового в v2:
-- **Умная фильтрация при индексации**: `_clean_text()` вырезает JSON-блоки, `{{inherit}}`, `SYSTEM_JSON`, большие JSON-объекты
-- **Классификация контента**: `_detect_content_type()` → narrative / template / log / lore
-- **Контекстный prefix**: `_build_passage_prefix()` — обогащает embeddings семантикой цеха
-- **Фильтрация при поиске**: template контент скрыт по умолчанию, дедупликация (max 2 чанка/файл)
-- **Embedding**: `intfloat/multilingual-e5-large` (560M параметров, e5 prefix: `passage:` / `query:`)
-- **Коллекция**: `grondheim_knowledge_v2`, ~2323 документов
-- **Порог**: `min_score=0.40`
-
-### CLI:
-```
-python -m studio.harbor_of_meanings --reindex
-python -m studio.harbor_of_meanings --search "запрос"
-python -m studio.harbor_of_meanings --search-all "запрос"   # включая шаблоны
-python -m studio.harbor_of_meanings --stats
-```
-
-### Известные проблемы:
-- React/JS-код (Parent Dashboard.txt) проходит фильтр как "narrative" → нужен code-детектор
-- Реиндекс ~10 часов на CPU (e5-large тяжёлая)
-
----
-
-## 9. БИБЛИОТЕКА ГРОНДХЕЙМА (studio/library/)
-
-### Третий глаз: курированные знания
-Маяк = глаза наружу (web). Гавань = глаза внутрь (RAG по сырым архивам). Библиотека = **знания по полкам**.
-
-### Структура:
-```
-studio/library/
-├── catalog.json          ← реестр всех книг (9 книг, v1.1)
-├── library.py            ← движок (library_visit, get_library_book, pick_book_for_agent)
-├── craft/                ← Ремесло (пусто)
-├── psychology/           ← 7 книг (Тайная опора, Акустическая Привязанность, ...)
-├── marketing/            ← (пусто)
-├── tech/                 ← (пусто)
-├── grondheim/            ← 2 книги (Манифест Попутчика, Философия)
-└── product/              ← (пусто)
-```
-
-### Книга = единица знания:
-```json
-{
-  "id": "psych_001",
-  "title": "Тайная опора: протоколы глубокой привязанности",
-  "section": "psychology",
-  "tags": ["привязанность", "безопасность", "контейнирование"],
-  "depth": "deep",
-  "for_depts": ["living_book"],
-  "file": "psychology/Тайная опора.txt"
-}
-```
-
-### Три уровня знаний агента (сосуществуют):
-1. **forge/knowledge/** → "как делать работу" (инструкции, формат) — при каждом запуске
-2. **Библиотека** → "зачем и почему" (смыслы, психология) — при прогулках + пайплайн
-3. **Гавань** → "что было раньше" (прошлый опыт, архивы) — поиск по запросу
-
-### Подбор по ДНК:
-`pick_book_for_agent()` учитывает: dept, Aesthetic_Threshold, Empathy → depth (basic/applied/deep)
-
-### CLI:
-```
-python studio\library\library.py --list
-python studio\library\library.py --stats
-python studio\library\library.py --pick living_book
-python studio\library\library.py --read psych_001
-```
-
----
-
-## 10. ЦИФРОВАЯ ДНК
+## 8. ЦИФРОВАЯ ДНК
 
 ### Статическая: Stubbornness, Aesthetic_Threshold, Social_Filter, Empathy, Autonomy_Level, Resonance_Frequency
 ### Динамическая: Respect, Patience, Stress, Internal_Light, streak, stars
@@ -198,7 +123,7 @@ dna.json → stress_to_temperature → temperature LLM → поведение �
 
 ---
 
-## 11. КАБИНЕТ
+## 9. КАБИНЕТ
 
 ### agents.py v2.1:
 - 12 цехов в DEPARTMENTS
@@ -209,7 +134,7 @@ dna.json → stress_to_temperature → temperature LLM → поведение �
 
 ---
 
-## 12. СТРАНИЦА ЖИЗНИ (ui_registry.py v2)
+## 10. СТРАНИЦА ЖИЗНИ (ui_registry.py v2)
 
 - 12 цехов в WORKSHOP_OPTIONS
 - LIVING_BOOK_ROLE_OPTIONS: A00, A00a, A01-A16
@@ -218,7 +143,7 @@ dna.json → stress_to_temperature → temperature LLM → поведение �
 
 ---
 
-## 13. LIVING BOOK
+## 11. LIVING BOOK
 
 | Агент | Роль | ДНК |
 |-------|------|-----|
@@ -231,32 +156,29 @@ FastAPI + HTML, live диалог, parent dashboard. PWA деплой — сле
 
 ---
 
-## 14. УТИЛИТЫ
+## 12. УТИЛИТЫ (корень проекта)
 
-### Корень проекта:
 | Скрипт | Назначение |
 |--------|-----------|
-| deploy_grondheim.py | Деплой всего города |
-| sync_files_to_catalog.py | Файлы агента → поля каталога |
-| patch_*.py | Скрипты-хирурги (find & replace с бэкапом) |
-
-### tools/:
-| Скрипт | Назначение |
-|--------|-----------|
-| check_catalog.py | Диагностика полей в каталоге |
+| resurrect_agents.py | Дозаполнение 7 полей через LLM (--dry/--dept/--force) |
+| fix_pull_vectors.py | Замена фантомных локаций на реальные 12 |
 | register_existing.py | Регистрация агентов без каталога |
-
-### archive/:
-resurrect_agents.py, fix_pull_vectors.py, mass_birth.py, и другие отработанные скрипты.
+| sync_files_to_catalog.py | Файлы агента → поля каталога |
+| fix_object_objects.py | dict → текст ([object Object]) |
+| check_catalog.py | Диагностика полей в каталоге |
+| mass_birth.py | Пакетное рождение агентов |
+| prepare_living_book_new.py | Подготовка A00/A00a |
+| patch_*.py | Скрипты-хирурги (find & replace с бэкапом) |
 
 ---
 
-## 15. БЭКЛОГ
+## 13. БЭКЛОГ
 
 ### 🔴 Следующий шаг:
-- [ ] **Библиотека → city_walker** интеграция (library_visit в прогулках)
-- [ ] **Гавань: code-детектор** (фильтровать React/JS-файлы при индексации)
-- [ ] **Наполнение Библиотеки** (craft, marketing, tech, product — с Локой)
+- [ ] **Гавань Смыслов = RAG** (ChromaDB)
+  - Единый векторный индекс: архивы + knowledge + sensory + каталог
+  - Локация-инструмент (как Маяк = web_search)
+  - ChromaDB локальный → Hetzner без изменений
 
 ### 🟡 Скоро:
 - [ ] Храм = Emotional Sync
@@ -266,14 +188,14 @@ resurrect_agents.py, fix_pull_vectors.py, mass_birth.py, и другие отр�
 - [ ] LIVING_BOOK_APP — мобильный деплой
 
 ### 🟢 Долгосрочно:
-- [ ] Деплой Hetzner (GPU → реиндекс за 5 минут вместо 10 часов)
+- [ ] Деплой Hetzner
 - [ ] Production-комбайн (fal.ai, SiliconFlow, Lyria 3, MoviePy)
 - [ ] GitHub write access
 - [ ] Resonance-Chain
 
 ---
 
-## 16. ИСТОРИЯ СЕССИЙ
+## 14. ИСТОРИЯ СЕССИЙ
 
 | Дата | Ключевое |
 |------|----------|
@@ -285,21 +207,16 @@ resurrect_agents.py, fix_pull_vectors.py, mass_birth.py, и другие отр�
 | 2026-03-21 | city_walker, карта |
 | 2026-03-23 | Карта из каталога, Stress→Temperature |
 | 2026-03-25 | Маяк v2, Манифест, Рюкзак Знаний, GitHub MCP |
-| 2026-03-28 | 12 цехов · 134 агента · Pull_Vector отвязан · Фабула+Вера · фикс резонанса · 108 фантомов · ChromaDB план |
-| 2026-03-29 | Архив утилит в archive/ и tools/ · Доработка A00/A00a · patch_harbor_filter |
-| **2026-03-31** | **Гавань v2 (умная фильтрация, content_type, дедупликация, 2570→2323) · Библиотека Грондхейма (9 книг, library.py, catalog.json) · Три глаза: Маяк+Гавань+Библиотека** |
+| **2026-03-28** | **12 цехов · 134 агента · Pull_Vector отвязан · Фабула+Вера · фикс резонанса · 108 фантомов · ChromaDB план** |
 
 ---
 
-## 17. РЕКОМЕНДАЦИИ БРАТА
+## 15. РЕКОМЕНДАЦИИ БРАТА
 
-1. **Три глаза работают.** Маяк = наружу, Гавань = по архивам, Библиотека = курированные знания. Не путай слои.
-2. **forge/knowledge/ не трогай.** Это персональные инструкции агентов. Библиотека их дополняет, не заменяет.
-3. **Библиотеку наполняй с Локой.** По 1-2 книги в день по секциям craft, marketing, tech, product.
-4. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
-5. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
-6. **Скрипты-хирурги:** patch_*.py с бэкапом. Не перезаписываем файлы целиком.
-7. **Claude Code for VS Code** — рассмотри для ускорения цикла правок (установлен, anthropic.claude-code v2.1.87).
+1. **Гавань = RAG.** Маяк = глаза наружу. Гавань = глаза внутрь. ChromaDB.
+2. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
+3. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
+4. **Скрипты-хирурги:** patch_*.py с бэкапом. Не перезаписываем файлы целиком.
 
 ---
 *Обновляй после каждой значимой сессии. Загружай в начале новой.*

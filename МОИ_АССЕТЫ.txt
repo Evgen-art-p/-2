@@ -1,88 +1,88 @@
 ============================================================
   СТУДИЯ: Six Fingers
   СТИЛЬ:  Stylized 3D Realism (Pixar-like)
-  ВСЕГО:  118 ассетов
-  ДАТА:   31.03.2026 16:25
+  ВСЕГО:  111 ассетов
+  ДАТА:   23.02.2026 05:27
   ИСТОЧНИК: assets_catalog.json
 ============================================================
 
-  ПЕРСОНАЖИ — 89 шт.
+  ПЕРСОНАЖИ — 87 шт.
   --------------------------------------------------
-    1. Petr
-       файл: ?
-       фон: ?
-    2. Zakaz
-       файл: ?
-       фон: ?
-    3. ага
-       файл: ?
-       фон: ?
-    4. Арам
-       файл: ?
-       фон: ?
-    5. Ашот
-       файл: ?
-       фон: ?
-    6. Белла Байт
+    1. Адам Арка
+       файл: adam_arka.png
+       фон: transparent
+    2. Алекс Стиль
+       файл: aleks_stil.png
+       фон: solid
+    3. Алекс Экшн
+       файл: aleks_ekshn.png
+       фон: solid
+    4. Артур.
+       файл: artur..png
+       фон: solid
+    5. Арче Архетип
+       файл: arche_arhetip.png
+       фон: solid
+    6. Астра
+       файл: astra.png
+       фон: solid
+    7. Белла Байт
        файл: bella_bajt.png
        фон: complex
-    7. Боб Блокбастер
+    8. Боб Блокбастер
        файл: bob_blokbaster.png
        фон: solid
-    8. Бруно
+    9. Бруно
        файл: bruno.png
        фон: transparent
-    9. Вера Верс
+   10. Вера Верс
        файл: vera_vers.png
        фон: solid
-   10. Вера Вертикаль
+   11. Вера Вертикаль
        файл: vera_vertikal.png
        фон: transparent
-   11. Вика Винтаж
+   12. Вика Винтаж
        файл: vika_vintazh.png
        фон: solid
-   12. Гарри Хук
+   13. Гарри Хук
        файл: garri_huk.png
        фон: transparent
-   13. гера гармония
+   14. гера гармония
        файл: gera_garmoniya.png
        фон: solid
-   14. Герман Гост
+   15. Герман Гост
        файл: german_gost.png
        фон: transparent
-   15. Глеб Глиф
+   16. Глеб Глиф
        файл: gleb_glif.png
        фон: solid
-   16. Глеб Контроль
+   17. Глеб Контроль
        файл: gleb_kontrol.png
        фон: transparent
-   17. Джакс
+   18. Джакс
        файл: dzhaks.png
        фон: transparent
-   18. Джем
+   19. Джем
        файл: dzhem.png
        фон: solid
-   19. Джулия Джус
+   20. Джулия Джус
        файл: dzhuliya_dzhus.png
        фон: solid
-   20. Ева Эпик
+   21. Ева Эпик
        файл: eva_epik.png
        фон: solid
-   21. Зак Зум
+   22. Зак Зум
        файл: zak_zum.png
        фон: solid
-   22. Иван Айкон
+   23. Иван Айкон
        файл: ivan_ajkon.png
        фон: solid
-   23. Илья Инфо
+   24. Илья Инфо
        файл: ilya_info.png
        фон: transparent
-   24. Ирис
+   25. Ирис
        файл: iris.png
        фон: solid
-   25. История Виктора
-       файл: История Виктора.txt
-       фон: transparent
    26. Катя Кат
        файл: katya_kat.png
        фон: transparent
@@ -149,220 +149,208 @@
    47. Миша Мокап
        файл: misha_mokap.png
        фон: solid
-   48. Мужчина в зеленом свитере
-       файл: Zakaz.png
-       фон: transparent
-   49. Муза Мьюз
+   48. Муза Мьюз
        файл: muza_myuz.png
        фон: transparent
-   50. Никита Флэш
+   49. Никита Флэш
        файл: nikita_flesh.png
        фон: solid
-   51. Нова
+   50. Нова
        файл: nova.png
        фон: solid
-   52. Олег Оптим
+   51. Олег Оптим
        файл: oleg_optim.png
        фон: transparent
-   53. Оливер
+   52. Оливер
        файл: oliver.png
        фон: solid
-   54. Пара
+   53. Пара
        файл: para.png
        фон: solid
-   55. Пенни Прод
+   54. Пенни Прод
        файл: penni_prod.png
        фон: transparent
-   56. Пиксель
+   55. Пиксель
        файл: piksel.png
        фон: solid
-   57. Пит Панч
+   56. Пит Панч
        файл: pit_panch.png
        фон: transparent
-   58. Полли Пак
+   57. Полли Пак
        файл: polli_pak.png
        фон: solid
-   59. Поля Пастель
+   58. Поля Пастель
        файл: polya_pastel.png
        фон: solid
-   60. Пэт Пэнтон
+   59. Пэт Пэнтон
        файл: pet_penton.png
        фон: solid
-   61. Рабочий / Инженер
-       файл: Petr.png
-       фон: transparent
-   62. Рик Ринглайт (2)
+   60. Рик Ринглайт (2)
        файл: rik_ringlajt_(2).png
        фон: transparent
-   63. Рома Ракурс
+   61. Рома Ракурс
        файл: roma_rakurs.png
        фон: transparent
-   64. Рэй.
+   62. Рэй.
        файл: rej..png
        фон: transparent
-   65. Сабби Сью
+   63. Сабби Сью
        файл: sabbi_syu.png
        фон: transparent
-   66. Сева Семантик
+   64. Сева Семантик
        файл: seva_semantik.png
        фон: solid
-   67. соня соул
+   65. соня соул
        файл: sonya_soul.png
        фон: solid
-   68. Софи
+   66. Софи
        файл: sofi.png
        фон: solid
-   69. Стелла Скрипт
+   67. Стелла Скрипт
        файл: stella_skript.png
        фон: solid
-   70. Стен Статус
+   68. Стен Статус
        файл: sten_status.png
        фон: solid
-   71. Стрим Стэн
+   69. Стрим Стэн
        файл: strim_sten.png
        фон: transparent
-   72. Сэм Символ
+   70. Сэм Символ
        файл: sem_simvol.png
        фон: transparent
-   73. Сэм Скаут
+   71. Сэм Скаут
        файл: sem_skaut.png
        фон: solid
-   74. Сэм Стерео
+   72. Сэм Стерео
        файл: sem_stereo.png
        фон: solid
-   75. Тамб Том
+   73. Тамб Том
        файл: tamb_tom.png
        фон: transparent
-   76. Тая Тактиль
+   74. Тая Тактиль
        файл: taya_taktil.png
        фон: solid
-   77. Тим Таргет
+   75. Тим Таргет
        файл: tim_target.png
        фон: solid
-   78. Тим Титр
+   76. Тим Титр
        файл: tim_titr.png
        фон: solid
-   79. Тим Тон
+   77. Тим Тон
        файл: tim_ton.png
        фон: transparent
-   80. Трейси Тизер
+   78. Трейси Тизер
        файл: trejsi_tizer.png
        фон: solid
-   81. Трикси Тренд
+   79. Трикси Тренд
        файл: triksi_trend.png
        фон: transparent
-   82. Тэг Тони
+   80. Тэг Тони
        файл: teg_toni.png
        фон: transparent
-   83. Федя Фикс
+   81. Федя Фикс
        файл: fedya_fiks.png
        фон: transparent
-   84. Феликс Фикс
+   82. Феликс Фикс
        файл: feliks_fiks.png
        фон: solid
-   85. Филл Флэш
+   83. Филл Флэш
        файл: fill_flesh.png
        фон: transparent
-   86. Финч
+   84. Финч
        файл: finch.png
        фон: solid
-   87. Флора Флэтлей
+   85. Флора Флэтлей
        файл: flora_fletlej.png
        фон: solid
-   88. Эван Вижн
+   86. Эван Вижн
        файл: evan_vizhn.png
        фон: solid
-   89. Эля Эстет
+   87. Эля Эстет
        файл: elya_estet.png
        фон: solid
 
-  ЛОКАЦИИ — 23 шт.
+  ЛОКАЦИИ — 22 шт.
   --------------------------------------------------
-   90. Зал света
+   88. Берег финча
+       файл: bereg_fincha.jpg
+       фон: complex
+   89. Зал света
        файл: zal_sveta.png
        фон: complex
-   91. Зал спокойствия
+   90. Зал спокойствия
        файл: zal_spokojstviya.png
        фон: complex
-   92. Квартира Локи
+   91. Квартира Локи
        файл: kvartira_loki.png
        фон: complex
-   93. Комната с диваном и окном
-       файл: objekt_star.png
-       фон: transparent
-   94. Крыши города
+   92. Крыши города
        файл: kryshi_goroda.png
        фон: complex
-   95. Лаборатория световых чувств
+   93. Лаборатория световых чувств
        файл: laboratoriya_svetovyh_chuvstv.png
        фон: complex
-   96. Мастерская Ирис
+   94. Мастерская Ирис
        файл: masterskaya_iris.jpg
        фон: complex
-   97. Маяк ночью
+   95. Маяк ночью
        файл: mayak_nochyu.png
        фон: complex
-   98. маяк эйрика
+   96. маяк эйрика
        файл: mayak_ejrika.png
        фон: complex
-   99. Мыс Эйрика
+   97. Мыс Эйрика
        файл: mys_ejrika.png
        фон: complex
-  100. Павильон Жидкого Времени
+   98. Павильон Жидкого Времени
        файл: pavilon_zhidkogo_vremeni.png
        фон: complex
-  101. Площадь мастеров
+   99. Площадь мастеров
        файл: ploschad_masterov.png
        фон: complex
-  102. Площадь хранителя равновесия
+  100. Площадь хранителя равновесия
        файл: ploschad_hranitelya_ravnovesiya.png
        фон: complex
-  103. Приемная Локи
+  101. Приемная Локи
        файл: priemnaya_loki.png
        фон: complex
-  104. Проспект Мастеров
+  102. Проспект Мастеров
        файл: prospekt_masterov.png
        фон: complex
-  105. Студия
+  103. Студия
        файл: studiya.png
        фон: complex
-  106. Тайная комната
+  104. Тайная комната
        файл: tajnaya_komnata.png
        фон: complex
-  107. улица мастеров
+  105. улица мастеров
        файл: ulitsa_masterov.png
        фон: complex
-  108. Улица старых мастеров
+  106. Улица старых мастеров
        файл: ulitsa_staryh_masterov.png
        фон: complex
-  109. Уютная комната
-       файл: objekt_nov.png
-       фон: transparent
-  110. храм равновесия
+  107. храм равновесия
        файл: hram_ravnovesiya.png
        фон: complex
-  111. Храм Хранителя Равновессия
+  108. Храм Хранителя Равновессия
        файл: hram_hranitelya_ravnovessiya.png
        фон: complex
-  112. Цех идей
+  109. Цех идей
        файл: tseh_idej.jpg
        фон: complex
 
-  РЕКВИЗИТ — 3 шт.
+  РЕКВИЗИТ — 2 шт.
   --------------------------------------------------
-  113. Колье «Галактическая капля»
-       файл: kulon_loki.png
-       фон: transparent
-  114. Кольцо Локи
+  110. Кольцо Локи
        файл: koltso_loki.png
        фон: soft blur
-  115. Паспорт Локи
+  111. Паспорт Локи
        файл: pasport_loki.png
        фон: complex
 
 ============================================================
-  ИТОГО: 118 ассетов
-    ПЕРСОНАЖИ: 89
-    ЛОКАЦИИ: 23
-    РЕКВИЗИТ: 3
+  ИТОГО: 111 ассетов
+    ПЕРСОНАЖИ: 87
+    ЛОКАЦИИ: 22
+    РЕКВИЗИТ: 2
 ============================================================

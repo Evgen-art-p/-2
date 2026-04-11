@@ -293,53 +293,6 @@ def search_agents_global(query: str) -> list[dict]:
     return results
 
 
-
-
-# ═══════════════════════════════════════════════════
-#  LIBRARY CONTEXT (для Оле)
-# ═══════════════════════════════════════════════════
-
-def _get_library_context() -> str:
-    """Загружает каталог библиотеки как контекст для Оле.
-    
-    Вызывается при сборке system_prompt когда выбран агент 004_OLE.
-    Возвращает строку с полным каталогом книг для инъекции в промпт.
-    """
-    import json
-    catalog_file = Path("studio/library/catalog.json")
-    if not catalog_file.exists():
-        return "\n[КАТАЛОГ БИБЛИОТЕКИ: не найден]\n"
-    
-    try:
-        catalog = json.loads(catalog_file.read_text(encoding="utf-8"))
-        books = catalog.get("books", [])
-        sections = catalog.get("sections", {})
-        
-        lines = ["\n=== КАТАЛОГ БИБЛИОТЕКИ ГРОНДХЕЙМА ==="]
-        lines.append(f"Всего книг: {len(books)}\n")
-        
-        for sec_id, sec_desc in sections.items():
-            sec_books = [b for b in books if b.get("section") == sec_id]
-            if not sec_books:
-                continue
-            lines.append(f"📚 {sec_desc} [{sec_id}]:")
-            for b in sec_books:
-                annotation = b.get("annotation", "")
-                tags = ", ".join(b.get("tags", [])[:5])
-                linked = b.get("linked_books", [])
-                lines.append(f"  • {b['id']}: «{b['title']}» ({b['depth']})")
-                if annotation:
-                    lines.append(f"    📝 {annotation}")
-                lines.append(f"    Теги: [{tags}]")
-                if linked:
-                    lines.append(f"    Связи: {', '.join(linked)}")
-            lines.append("")
-        
-        lines.append("=== КОНЕЦ КАТАЛОГА ===")
-        return "\n".join(lines)
-    except Exception as e:
-        return f"\n[КАТАЛОГ БИБЛИОТЕКИ: ошибка загрузки — {e}]\n"
-
 # ═══════════════════════════════════════════════════
 #  UI RENDER HELPERS (NiceGUI)
 # ═══════════════════════════════════════════════════

@@ -27,9 +27,9 @@
   "dynamic": {
     "Respect": 1.0,
     "Patience": 1.0,
-    "Stress": 0,
-    "Internal_Light": 0.84,
-    "streak": 1,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
     "stars": 0
   },
   "balance": {
