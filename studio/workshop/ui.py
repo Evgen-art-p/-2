@@ -3154,6 +3154,11 @@ Style: {state['settings']['style']}
                             'border:1px solid rgba(255,140,0,0.3); '
                             'color:rgba(255,140,0,0.8); background:rgba(255,140,0,0.07);'
                         ).tooltip('Сборочный цех')
+                        ui.button('🔌', on_click=lambda: ui.navigate.to('/cartridges', new_tab=True)).props('flat').style(
+                            'padding:6px 10px; border-radius:8px; font-size:1rem; '
+                            'border:1px solid rgba(140,108,255,0.3); '
+                            'color:rgba(140,108,255,0.8); background:rgba(140,108,255,0.07);'
+                        ).tooltip('Менеджер картриджей')
 
                     # ── ПРАВАЯ ГРУППА: WORD | PDF ─────────────────────────
                     with ui.row().style('gap: 8px; justify-content: flex-end;'):

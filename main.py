@@ -9,6 +9,7 @@ from studio.reception import page_reception
 from studio.assembly import page_assembly
 from studio.cabinet.ui_cabinet import page_cabinet
 from studio.ui_registry import page_registry
+from studio.cartridge_manager import page_cartridge_manager
 
 BASE_DIR = Path(__file__).resolve().parent
 app.add_static_files('/images', str(BASE_DIR / 'images'))
@@ -46,6 +47,11 @@ def assembly():
 @ui.page('/registry')
 def registry():
     page_registry()
+    
+
+@ui.page('/cartridges')
+def cartridges():
+    page_cartridge_manager()    
 
 from studio.grondheim_memory import run_loka_filter_all
 run_loka_filter_all()

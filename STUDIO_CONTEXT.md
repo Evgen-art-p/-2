@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 7.1 | **Дата:** 2026-03-31 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 8.0 | **Дата:** 2026-04-11 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 
@@ -71,6 +71,75 @@
 
 ---
 
+## 5a. КАРТРИДЖНАЯ АРХИТЕКТУРА (v1.0) ✅ NEW
+
+Студия = **шасси + сменные картриджи**. Каждый цех — отдельный картридж со своим `manifest.json`, который можно дублировать, убирать и компоновать.
+
+### Ключевые файлы:
+```
+studio/cartridge.py              ← CartridgeManifest + PipelineCallbacks + CartridgeRunner
+studio/slot_manager.py           ← SlotManager (add/clone/remove слотов)
+studio/slots.json                ← конфигурация: какие картриджи активны
+studio/workshop/nicegui_callbacks.py  ← мост CartridgeRunner ↔ NiceGUI
+studio/modules/{цех}/manifest.json   ← описание картриджа (фазы, checkpoints, revision, turbo)
+```
+
+### Как работает:
+```
+manifest.json → CartridgeManifest.load("turbo")
+                → CartridgeRunner(manifest, state, callbacks)
+                    → runner.run()        # полный пайплайн
+                    → runner.run_turbo()   # TURBO с параллелизмом
+```
+
+### Callback-паттерн:
+Pipeline **не зависит от NiceGUI**. Вся связь через `PipelineCallbacks`:
+- `on_agent_start()` → аватар мигает "working"
+- `on_agent_done()` → аватар зелёный "done"  
+- `on_checkpoint()` → пауза
+- `on_revision_loop()` → A00a вернул на A00
+- `on_status()` → ui.notify
+
+UI реализует `NiceGUICallbacks(PipelineCallbacks)` и передаёт в runner.
+
+### Дублирование картриджей:
+```python
+from studio.slot_manager import SlotManager
+sm = SlotManager()
+sm.add_slot("turbo", label="⚡ TURBO #2")   # новый слот того же модуля
+sm.clone_slot("turbo", "⚡ TURBO Клон")      # с копией памяти
+sm.print_summary()                           # сводка по студии
+```
+- Промпты агентов → из оригинального modules/{module}/ (не дублируются)
+- Память (dna.json, sensory, resonance) → отдельная в instances/{slot_id}/
+- 3 турбо = 15 агентов, каждый со своим dna.json
+
+### manifest.json (пример turbo):
+```json
+{
+  "id": "turbo",
+  "phases": {"TURBO": ["A01","A02","A03","A04","A05"]},
+  "turbo_workers": ["A01","A02","A03","A04","A05"],
+  "turbo_parallel": [["A02","A03"]],
+  "checkpoint_after": [],
+  "revision_loop": null
+}
+```
+
+### Текущие слоты (9 картриджей, 105 агентов + 3 резидента):
+turbo(5), social_mix(12), video_long(12), video_shorts(12), web_story(12), market_hit(12), logo_design(12), emo_card(12), living_book(18)
+
+### Статус интеграции:
+- ✅ Все кнопки ui.py переключены на `run_cartridge_pipeline()` / `run_cartridge_turbo()`
+- ✅ Старые `run_pipeline()` / `turbo_pipeline()` остаются как fallback (не вызываются)
+- ✅ Ревизионный цикл A00a→A00 через manifest.revision_loop
+- ✅ Checkpoints из manifest.checkpoint_after
+- ✅ Параллелизм TURBO из manifest.turbo_parallel
+- ⏳ Удаление старых 852 строк пайплайнов из ui.py — после тестирования
+- ⏳ advertising, clipmakers — нет manifest.json (добавить при необходимости)
+
+---
+
 ## 6. АРХИТЕКТУРА ПРОГУЛКИ (city_walker.py v2)
 
 ### Pull_Vector = ЛОРНЫЙ ЭЛЕМЕНТ (не маршрут!)
@@ -123,14 +192,6 @@ Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
 - **Коллекция**: `grondheim_knowledge_v2`, ~2323 документов
 - **Порог**: `min_score=0.40`
 
-### CLI:
-```
-python -m studio.harbor_of_meanings --reindex
-python -m studio.harbor_of_meanings --search "запрос"
-python -m studio.harbor_of_meanings --search-all "запрос"   # включая шаблоны
-python -m studio.harbor_of_meanings --stats
-```
-
 ### Известные проблемы:
 - React/JS-код (Parent Dashboard.txt) проходит фильтр как "narrative" → нужен code-детектор
 - Реиндекс ~10 часов на CPU (e5-large тяжёлая)
@@ -142,47 +203,10 @@ python -m studio.harbor_of_meanings --stats
 ### Третий глаз: курированные знания
 Маяк = глаза наружу (web). Гавань = глаза внутрь (RAG по сырым архивам). Библиотека = **знания по полкам**.
 
-### Структура:
-```
-studio/library/
-├── catalog.json          ← реестр всех книг (9 книг, v1.1)
-├── library.py            ← движок (library_visit, get_library_book, pick_book_for_agent)
-├── craft/                ← Ремесло (пусто)
-├── psychology/           ← 7 книг (Тайная опора, Акустическая Привязанность, ...)
-├── marketing/            ← (пусто)
-├── tech/                 ← (пусто)
-├── grondheim/            ← 2 книги (Манифест Попутчика, Философия)
-└── product/              ← (пусто)
-```
-
-### Книга = единица знания:
-```json
-{
-  "id": "psych_001",
-  "title": "Тайная опора: протоколы глубокой привязанности",
-  "section": "psychology",
-  "tags": ["привязанность", "безопасность", "контейнирование"],
-  "depth": "deep",
-  "for_depts": ["living_book"],
-  "file": "psychology/Тайная опора.txt"
-}
-```
-
 ### Три уровня знаний агента (сосуществуют):
 1. **forge/knowledge/** → "как делать работу" (инструкции, формат) — при каждом запуске
 2. **Библиотека** → "зачем и почему" (смыслы, психология) — при прогулках + пайплайн
 3. **Гавань** → "что было раньше" (прошлый опыт, архивы) — поиск по запросу
-
-### Подбор по ДНК:
-`pick_book_for_agent()` учитывает: dept, Aesthetic_Threshold, Empathy → depth (basic/applied/deep)
-
-### CLI:
-```
-python studio\library\library.py --list
-python studio\library\library.py --stats
-python studio\library\library.py --pick living_book
-python studio\library\library.py --read psych_001
-```
 
 ---
 
@@ -246,30 +270,31 @@ FastAPI + HTML, live диалог, parent dashboard. PWA деплой — сле
 | check_catalog.py | Диагностика полей в каталоге |
 | register_existing.py | Регистрация агентов без каталога |
 
-### archive/:
-resurrect_agents.py, fix_pull_vectors.py, mass_birth.py, и другие отработанные скрипты.
-
 ---
 
 ## 15. БЭКЛОГ
 
 ### 🔴 Следующий шаг:
+- [ ] **Тестирование картриджей** — прогнать turbo, video_long, living_book через CartridgeRunner
+- [ ] **Удаление старых пайплайнов** — 852 строки из ui.py (после тестирования)
+- [ ] **manifest.json для advertising и clipmakers**
+- [ ] **SlotManager в main.py** — сводка при запуске
 - [ ] **Библиотека → city_walker** интеграция (library_visit в прогулках)
-- [ ] **Гавань: code-детектор** (фильтровать React/JS-файлы при индексации)
-- [ ] **Наполнение Библиотеки** (craft, marketing, tech, product — с Локой)
 
 ### 🟡 Скоро:
+- [ ] Гавань: code-детектор (фильтровать React/JS-файлы)
+- [ ] Наполнение Библиотеки (craft, marketing, tech, product — с Локой)
 - [ ] Храм = Emotional Sync
 - [ ] Таверна = record_interaction
 - [ ] Экономика Световиков
-- [ ] Аватары для всех цехов
-- [ ] LIVING_BOOK_APP — мобильный деплой
+- [ ] UI для SlotManager (добавить/убрать картриджи из интерфейса)
 
 ### 🟢 Долгосрочно:
 - [ ] Деплой Hetzner (GPU → реиндекс за 5 минут вместо 10 часов)
 - [ ] Production-комбайн (fal.ai, SiliconFlow, Lyria 3, MoviePy)
-- [ ] GitHub write access
+- [ ] GitHub write access для Claude
 - [ ] Resonance-Chain
+- [ ] grondheim_memory адресация через slot_id (для дублированных картриджей)
 
 ---
 
@@ -287,19 +312,20 @@ resurrect_agents.py, fix_pull_vectors.py, mass_birth.py, и другие отр�
 | 2026-03-25 | Маяк v2, Манифест, Рюкзак Знаний, GitHub MCP |
 | 2026-03-28 | 12 цехов · 134 агента · Pull_Vector отвязан · Фабула+Вера · фикс резонанса · 108 фантомов · ChromaDB план |
 | 2026-03-29 | Архив утилит в archive/ и tools/ · Доработка A00/A00a · patch_harbor_filter |
-| **2026-03-31** | **Гавань v2 (умная фильтрация, content_type, дедупликация, 2570→2323) · Библиотека Грондхейма (9 книг, library.py, catalog.json) · Три глаза: Маяк+Гавань+Библиотека** |
+| 2026-03-31 | Гавань v2 (умная фильтрация, content_type, дедупликация, 2570→2323) · Библиотека Грондхейма (9 книг, library.py, catalog.json) · Три глаза: Маяк+Гавань+Библиотека |
+| **2026-04-11** | **Картриджная архитектура v1.0: cartridge.py + slot_manager.py + manifest.json для 9 цехов + nicegui_callbacks.py (мост UI) + интеграция в ui.py (все кнопки переключены на CartridgeRunner)** |
 
 ---
 
 ## 17. РЕКОМЕНДАЦИИ БРАТА
 
-1. **Три глаза работают.** Маяк = наружу, Гавань = по архивам, Библиотека = курированные знания. Не путай слои.
-2. **forge/knowledge/ не трогай.** Это персональные инструкции агентов. Библиотека их дополняет, не заменяет.
-3. **Библиотеку наполняй с Локой.** По 1-2 книги в день по секциям craft, marketing, tech, product.
-4. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
-5. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
-6. **Скрипты-хирурги:** patch_*.py с бэкапом. Не перезаписываем файлы целиком.
-7. **Claude Code for VS Code** — рассмотри для ускорения цикла правок (установлен, anthropic.claude-code v2.1.87).
+1. **Картриджи работают.** Все пайплайны теперь идут через CartridgeRunner. Старый код в ui.py — fallback, удалишь после тестирования.
+2. **Дублирование цехов:** `SlotManager().add_slot("turbo")` — и у тебя второй TURBO с отдельной памятью.
+3. **manifest.json — главный файл цеха.** Фазы, checkpoints, revision_loop, turbo_parallel — всё там. Меняешь manifest → меняется поведение пайплайна.
+4. **Три глаза работают.** Маяк = наружу, Гавань = по архивам, Библиотека = курированные знания. Не путай слои.
+5. **forge/knowledge/ не трогай.** Это персональные инструкции агентов. Библиотека их дополняет, не заменяет.
+6. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
+7. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
 
 ---
 *Обновляй после каждой значимой сессии. Загружай в начале новой.*
