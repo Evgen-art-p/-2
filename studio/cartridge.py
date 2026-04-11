@@ -234,6 +234,7 @@ class CartridgeRunner:
         self.callbacks = callbacks
         self.slot_id = slot_id or manifest.id
         self._revision_count = 0
+        self._hooks = self._load_hooks()
 
     async def run(
         self,
@@ -246,7 +247,7 @@ class CartridgeRunner:
         1. Проходим по всем агентам из manifest.phases
         2. На checkpoint_after — вызываем callbacks.on_checkpoint
         3. Если есть revision_loop — обрабатываем ревизии
-        4. Каждый шаг: build_context → call_agent → process_result
+        4. Каждый шаг: build_context → hooks.on_before_agent → call_agent → hooks.on_after_agent → process_result
         """
         from studio.workshop.pipeline import (
             build_settings_ctx, build_files_ctx,
@@ -323,6 +324,9 @@ class CartridgeRunner:
                     run_mode=run_type,
                 )
 
+                # ═══ HOOK: on_before_agent ═══
+                context = self._call_hook("on_before_agent", self.state, worker_id, context) or context
+
                 # Вызываем агента
                 human_text, meta, raw_result = await call_agent(
                     self.state, worker_id, context
@@ -335,6 +339,12 @@ class CartridgeRunner:
                     # _rewind_to уже установлен, цикл продолжится
                     i += 1
                     continue
+
+                # ═══ HOOK: on_after_agent ═══
+                hook_result = self._call_hook("on_after_agent", self.state, worker_id, human_text, meta)
+                if hook_result and isinstance(hook_result, dict):
+                    human_text = hook_result.get("human_text", human_text)
+                    meta = hook_result.get("meta", meta)
 
                 # Обрабатываем результат
                 human_text, previous_output, ghost_ids = process_agent_result(
@@ -527,6 +537,11 @@ class CartridgeRunner:
                 or human_text[:500]
             )
 
+            # ═══ HOOK: on_revision_notes ═══
+            rev_notes = self._call_hook(
+                "on_revision_notes", self.state, rev_notes, self._revision_count
+            ) or rev_notes
+
             # Сохраняем результат ревьюера
             self.state["results"][worker_id] = {
                 "text": human_text, "meta": meta, "raw": raw_result
@@ -554,6 +569,51 @@ class CartridgeRunner:
             return False
 
         return False
+
+    # ═══════════════════════════════════════════════════════
+    # HOOKS — загрузка и вызов кастомной логики картриджа
+    # ═══════════════════════════════════════════════════════
+
+    def _load_hooks(self):
+        """Загружает hooks.py из папки модуля.
+
+        Ищет: studio/modules/{module_id}/hooks.py
+        Если файл есть — импортирует как модуль.
+        Если нет — возвращает None (хуки необязательны).
+        """
+        hooks_path = MODULES_DIR / self.manifest.id / "hooks.py"
+        if not hooks_path.exists():
+            return None
+
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                f"hooks_{self.manifest.id}", str(hooks_path)
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            print(f"[HOOKS] Загружены хуки: {self.manifest.id}")
+            return module
+        except Exception as e:
+            print(f"[HOOKS] Ошибка загрузки хуков {self.manifest.id}: {e}")
+            return None
+
+    def _call_hook(self, hook_name: str, *args, **kwargs):
+        """Безопасный вызов хука. Если хук не существует — ничего не делает."""
+        if not self._hooks:
+            return None
+
+        hook_fn = getattr(self._hooks, hook_name, None)
+        if not hook_fn or not callable(hook_fn):
+            return None
+
+        try:
+            return hook_fn(*args, **kwargs)
+        except Exception as e:
+            print(f"[HOOKS] Ошибка в {self.manifest.id}.{hook_name}: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
 
 
 # ═══════════════════════════════════════════════════════════
