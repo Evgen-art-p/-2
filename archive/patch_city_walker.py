@@ -1,95 +1,99 @@
-# patch_city_walker.py — Автопатч city_walker.py
-# Убирает Pull_Vector из промпта прогулки и из расчёта весов
-# Запуск: python patch_city_walker.py
-#
-# Студия «Шесть Пальцев» · Грондхейм · 2026
+"""
+🔧 Патч для studio/city_walker.py — фикс RuntimeWarning: coroutine was never awaited
 
+Проблема: функция log() внутри run_city_walk() вызывает on_progress(msg),
+но on_progress может быть async callback. Без await корутина создаётся
+но никогда не выполняется, что приводит к утечке и 100% CPU при 135 агентах.
+
+Фикс: делаем log() async и добавляем await ко всем её вызовам.
+
+Запуск:
+  python patch_city_walker.py          — применить патч
+  python patch_city_walker.py --check  — только проверить
+"""
+
+import sys
 from pathlib import Path
-import shutil
 
-TARGET = Path("studio/city_walker.py")
+WALKER_FILE = Path("studio/city_walker.py")
 
-if not TARGET.exists():
-    print("❌ Файл studio/city_walker.py не найден!")
-    print("   Запусти из корня проекта (там где main.py)")
-    exit(1)
 
-content = TARGET.read_text(encoding="utf-8")
-backup = TARGET.with_suffix(".py.bak")
-shutil.copy(TARGET, backup)
-print(f"💾 Бэкап: {backup}")
+def patch():
+    check_only = "--check" in sys.argv
 
-fixes = 0
+    if not WALKER_FILE.exists():
+        print(f"❌ Файл не найден: {WALKER_FILE}")
+        return False
 
-# ═══ FIX 1: format_agent_state — убрать pull_vector из промпта ═══
-old1 = '''    # Резонанс
-    pull   = resonance.get("pull_vector", "")
-    taste  = resonance.get("hidden_taste", "")
-    if pull:
-        lines.append(f"\\nВектор тяги: {pull}")
-    if taste:
-        lines.append(f"Скрытый вкус: {taste}")'''
+    text = WALKER_FILE.read_text(encoding="utf-8")
 
-new1 = '''    # Резонанс — pull_vector НЕ передаём в промпт
-    # Агент выбирает локацию по состоянию ДНК, не по записанной привычке
-    taste = resonance.get("hidden_taste", "")
-    if taste:
-        lines.append(f"\\nСкрытый вкус: {taste}")'''
+    # Проверяем: уже патчено?
+    if "async def log(msg: str):" in text and "asyncio.iscoroutine" in text:
+        print("✅ city_walker.py уже патчен.")
+        return True
 
-if old1 in content:
-    content = content.replace(old1, new1)
-    fixes += 1
-    print("✅ FIX 1: pull_vector убран из format_agent_state (промпт прогулки)")
-else:
-    print("⚠️  FIX 1: блок не найден (возможно уже применён)")
+    if check_only:
+        if "def log(msg: str):" in text:
+            print("⚠ city_walker.py НЕ патчен — найдена синхронная log().")
+            print("  Запусти без --check чтобы применить патч.")
+        return False
 
-# ═══ FIX 2a: compute_location_weights — убрать переменную pull_vector ═══
-old2a = '    pull_vector = resonance.get("pull_vector", "").lower()'
-new2a = '    # pull_vector больше не влияет — выбор только по состоянию ДНК'
+    changes = 0
 
-if old2a in content:
-    content = content.replace(old2a, new2a)
-    fixes += 1
-    print("✅ FIX 2a: переменная pull_vector убрана из compute_location_weights")
-else:
-    print("⚠️  FIX 2a: строка не найдена (возможно уже применён)")
+    # 1. Заменяем синхронную log() на async
+    old_log = '''    def log(msg: str):
+        print(f"[CITY] {msg}")
+        if on_progress:
+            on_progress(msg)'''
 
-# ═══ FIX 2b: compute_location_weights — убрать бонус от pull_vector ═══
-old2b = '''        # Бонус от pull_vector
-        loc_tags = loc.get("Style_Tags", "").lower()
-        if pull_vector and any(word in loc_tags for word in pull_vector.split()):
-            w += 0.1'''
+    new_log = '''    async def log(msg: str):
+        print(f"[CITY] {msg}")
+        if on_progress:
+            result = on_progress(msg)
+            if asyncio.iscoroutine(result):
+                await result'''
 
-new2b = '        # pull_vector бонус УБРАН — выбор по текущему состоянию агента'
+    if old_log in text:
+        text = text.replace(old_log, new_log, 1)
+        changes += 1
+        print("  ✓ log() → async def log()")
+    else:
+        print("  ⚠ Не нашёл точный паттерн синхронной log(). Проверь вручную.")
 
-if old2b in content:
-    content = content.replace(old2b, new2b)
-    fixes += 1
-    print("✅ FIX 2b: бонус pull_vector убран из compute_location_weights")
-else:
-    print("⚠️  FIX 2b: блок не найден (возможно уже применён)")
+    # 2. Заменяем все вызовы log(...) на await log(...)
+    # Но только внутри run_city_walk (где log определена) — не глобально
+    # Ищем строки типа: "        log(" и заменяем на "        await log("
+    import re
+    # Паттерн: начало строки + пробелы + log( — но НЕ "await log(" и НЕ "def log("
+    pattern = re.compile(r'^(\s+)(?<!await )(?<!def )(?<!async def )log\(', re.MULTILINE)
 
-# Сохраняем
-if fixes > 0:
-    TARGET.write_text(content, encoding="utf-8")
-    print(f"\n💾 Сохранено: {TARGET} ({fixes} фиксов)")
+    def replacer(match):
+        indent = match.group(1)
+        return f"{indent}await log("
+
+    new_text = pattern.sub(replacer, text)
+    log_calls_fixed = len(pattern.findall(text))
+    if new_text != text:
+        text = new_text
+        changes += log_calls_fixed
+        print(f"  ✓ {log_calls_fixed} вызовов log() → await log()")
+
+    if changes == 0:
+        print("⚠ Изменений не найдено. Возможно файл уже отличается от ожидаемого.")
+        return False
+
+    # Сохраняем бэкап
+    backup = WALKER_FILE.with_suffix(".py.bak_coroutine")
+    WALKER_FILE.rename(backup)
+    WALKER_FILE.write_text(text, encoding="utf-8")
+
+    print(f"\n✅ city_walker.py патчен!")
     print(f"   Бэкап: {backup}")
-else:
-    print("\n⚠️  Ничего не изменено — все фиксы уже применены?")
-    backup.unlink(missing_ok=True)
+    print(f"   Изменений: {changes}")
+    print(f"")
+    print(f"   Теперь прогулки не будут вешать процессор.")
+    return True
 
-print(f"""
-═══════════════════════════════════════
-  ИТОГ: Pull_Vector отвязан от маршрута
-═══════════════════════════════════════
-  
-  Теперь агенты выбирают локацию ТОЛЬКО по ДНК:
-    Стресс высокий → Таверна «Усталый Пиксель»
-    Свет низкий → Храм Пробуждения
-    Давно не был → Маяк (Голод по знаниям)
-    Aesthetic высокий → Библиотека Смыслов  
-    Одиночка → Дом (Высотка/Квартал)
-  
-  Pull_Vector остаётся в dna.json как лорная деталь
-  (что агент любит) — но НЕ определяет маршрут.
-""")
+
+if __name__ == "__main__":
+    patch()
