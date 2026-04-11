@@ -1,7 +1,16 @@
 {
   "_note": "оперативная память",
   "created": "2026-03-27",
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-04-03T19:48:24.589969",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: Галлюцинации — это шум. Я оставляю только сигнал.\n\nПродюсер, я провел анализ `living_book_spec` и `A00a_Fable_Fein`, а также `A00b_Vera_Dusha`.\nФейн предоставил структуру, Вера выявила критические лог",
+      "tags": [],
+      "emotional_weight": 0.8
+    }
+  ],
   "summary": "",
   "last_location": "",
   "location_tags": []

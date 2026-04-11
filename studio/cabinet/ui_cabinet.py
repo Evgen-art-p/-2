@@ -860,6 +860,17 @@ def page_cabinet() -> None:
         if agent_memory_ctx:
             sys_parts.append(f"\n{agent_memory_ctx}")
 
+         # Библиотека: каталог для Оле
+        if agent_id == "004_OLE":
+            try:
+                from studio.cabinet.agents import _get_library_context
+                library_ctx = _get_library_context()
+                if library_ctx:
+                    sys_parts.append(f"\n{library_ctx}")
+                    print(f"[CABINET] 📚 Каталог библиотеки для Оле: {len(library_ctx)} симв.")
+            except Exception as e:
+                print(f"[CABINET] ⚠ Каталог библиотеки не загружен: {e}")   
+
         # Tools hint — только для резидентов
         if is_resident:
             sys_parts.append(
@@ -876,6 +887,11 @@ def page_cabinet() -> None:
                 "- record_interaction — записать взаимодействие\n"
                 "- city_pulse — пульс города\n"
                 "- jem_digest — дайджест для администратора\n"
+                "- search_library — поиск книг в библиотеке по тегам\n"
+                "- browse_shelf — посмотреть полку секции\n"
+                "- read_book_excerpt — прочитать начало книги\n"
+                "- library_stats — статистика библиотеки\n"
+                "- recommend_for_agent — подобрать книгу для агента\n"
                 "- web_search — поиск в интернете\n"
                 "- fetch_url — загрузить веб-страницу\n"
                 "Используй когда уместно. Не описывай — делай.\n"

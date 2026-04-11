@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Грондхейм ОС | Кабинет</title>
+    
+    <!-- Подключаем Tailwind "на лету" -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Наши кастомные стили и анимации */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0px rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(255, 0, 0, 0); }
+        }
+
+        .animate-pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+
+        /* Чтобы карта не выделяла текст при перетаскивании */
+        #map-viewport { user-select: none; touch-action: none; }
+    </style>
+</head>
+<body class="bg-[#07070a] text-gray-300 font-sans overflow-hidden selection:bg-cyan-900 selection:text-cyan-100 h-screen w-full flex">
+
+    <!-- ================= ЛЕВАЯ ПАНЕЛЬ ================= -->
+    <div class="w-[280px] min-w-[280px] bg-[#0a0a0f] border-r border-gray-800/50 flex flex-col z-20 shadow-[5px_0_15px_rgba(0,0,0,0.5)] relative">
+        <div class="p-4 border-b border-gray-800/50 flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-semibold text-gray-200">
+                <span class="text-gray-500">👥</span> агенты
+            </div>
+            <div class="bg-blue-900/30 text-blue-400 text-[10px] px-2 py-0.5 rounded-full border border-blue-800/50 font-mono">112</div>
+        </div>
+        <div id="left-sidebar" class="flex-1 overflow-y-auto custom-scrollbar pb-10">
+            <!-- Список генерируется JS -->
+        </div>
+    </div>
+
+    <!-- ================= ЦЕНТРАЛЬНАЯ ЗОНА ================= -->
+    <div class="flex-1 flex flex-col relative bg-[#07070a] z-10">
+        
+        <!-- Верхний бар -->
+        <div class="h-14 border-b border-gray-800/50 flex justify-between items-center px-6 bg-[#0a0a0f]/80 backdrop-blur-md absolute top-0 left-0 w-full z-20">
+            <div class="flex items-center gap-2 text-xs font-mono">
+                <span class="text-yellow-500">✌</span>
+                <span class="text-blue-400 font-bold">шесть пальцев</span>
+                <span className="text-gray-600">/</span>
+                <span class="text-gray-400">радар</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-[10px] font-mono text-gray-400 bg-gray-900 border border-gray-800 px-3 py-1.5 rounded flex items-center gap-2">
+                    DeepSeek V3 ($0.14/$0.28)
+                </div>
+            </div>
+        </div>
+
+        <!-- Радар (Вьюпорт) -->
+        <div id="map-viewport" class="flex-1 w-full h-full cursor-grab active:cursor-grabbing overflow-hidden pt-14 pb-24 relative">
+            
+            <!-- Бесконечный холст -->
+            <div id="map-canvas" class="absolute top-0 left-0" style="
+                width: 4000px; height: 3000px; 
+                transform-origin: 0 0;
+                background-image: radial-gradient(circle, rgba(0, 242, 255, 0.15) 1px, transparent 1px), url('C:\Users\Евгений\Desktop\студия 2\00_REGISTRY_NFT\images\GRONDHEM.png');
+                background-color: #050508;
+                background-size: 40px 40px, cover;
+                background-position: 0 0, center;
+                background-repeat: repeat, no-repeat;
+            ">
+                <!-- Сектора и Агенты рендерятся JS -->
+            </div>
+        </div>
+
+        <!-- Поле ввода -->
+        <div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-[#07070a] via-[#07070a] to-transparent z-20 pointer-events-none">
+            <div class="max-w-4xl mx-auto relative pointer-events-auto">
+                <input id="chat-input" type="text" placeholder="Написать кому-нибудь..." class="w-full bg-[#101018] border border-gray-800 rounded-lg py-4 pl-4 pr-32 text-sm text-gray-200 focus:outline-none focus:border-blue-500/50 shadow-lg font-mono placeholder-gray-600" />
+                <div class="absolute right-2 top-2 flex items-center gap-2">
+                    <button class="bg-blue-500 hover:bg-blue-400 text-white text-[11px] font-bold px-4 py-2 rounded uppercase tracking-wider flex items-center gap-1">▶ SEND</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= ПРАВАЯ ПАНЕЛЬ ================= -->
+    <div class="w-[320px] min-w-[320px] bg-[#0a0a0f] border-l border-gray-800/50 z-20 flex flex-col shadow-[-5px_0_15px_rgba(0,0,0,0.5)]">
+        <div id="right-sidebar" class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col">
+            <!-- Профиль генерируется JS -->
+        </div>
+    </div>
+
+<script>
+    // === БАЗА ДАННЫХ ===
+    const mapSectors = [
+        { id: "s1", name: "Квартал Мастеров (Residents)", x: 400, y: 400, w: 1000, h: 700, color: "border-yellow-500/30 bg-yellow-900/5", textColor: "text-yellow-500/40" },
+        { id: "s2", name: "Храмовый Комплекс (Sanctuary)", x: 2200, y: 300, w: 1200, h: 800, color: "border-pink-500/30 bg-pink-900/5", textColor: "text-pink-500/40" },
+        { id: "s3", name: "Центральный Город (Core)", x: 800, y: 1400, w: 2200, h: 1200, color: "border-blue-500/30 bg-blue-900/5", textColor: "text-blue-500/40" },
+        { id: "s4", name: "Архив / Заречный Предел", x: 200, y: 2200, w: 500, h: 600, color: "border-gray-500/30 bg-gray-900/20", textColor: "text-gray-500/40" }
+    ];
+
+    const agentsData = {
+        residents: [
+            { id: "001", name: "Лока", status: "дома", x: 600, y: 600, role: "Цифровой гид", type: "GENESIS", rsp: 1.0, pat: 1.0, str: 0.1, lgt: 0.9, quote: "Шеф, кофе или сразу к делу?", avatar: "👩‍🎤" },
+            { id: "002", name: "Джем", status: "дома", x: 900, y: 750, role: "Арт-директор", type: "GENESIS", rsp: 0.9, pat: 0.8, str: 0.2, lgt: 0.8, quote: "Сделаем красиво.", avatar: "👨‍🎨" },
+            { id: "003", name: "Сет", status: "дома", x: 1100, y: 550, role: "Архитектор", type: "GENESIS", rsp: 0.95, pat: 0.9, str: 0.1, lgt: 0.85, quote: "Структура - это всё.", avatar: "👨‍💻" }
+        ],
+        turbo: [
+            { id: "A01", name: "Стелла Стратег", status: "дома", x: 1200, y: 1600, role: "Аналитик", type: "TURBO", rsp: 0.9, pat: 0.8, str: 0.3, lgt: 0.7, quote: "Тренд. Хук. Алгоритм. Три удара — и зритель твой.", avatar: "👩‍💼", staticDna: { Stubbornness: 0.95, Aesthetic_Threshold: 0.90, Social_Filter: 0.20, Empathy: 0.85, Autonomy_Level: 0.90, Resonance_Frequency: 0.75 }, dynamic: { Respect: 1.00, Patience: 1.00, Stress: 0.00, Internal_Light: 0.85 } },
+            { id: "A02", name: "Мими Мем", status: "дома", x: 1600, y: 1800, role: "Генератор", type: "TURBO", rsp: 0.8, pat: 0.6, str: 0.5, lgt: 0.9, quote: "Кеки и лолы, шеф!", avatar: "🤪", staticDna: { Stubbornness: 0.40, Aesthetic_Threshold: 0.50, Social_Filter: 0.10, Empathy: 0.90, Autonomy_Level: 0.80, Resonance_Frequency: 0.95 }, dynamic: { Respect: 0.80, Patience: 0.70, Stress: 0.20, Internal_Light: 0.95 } },
+            { id: "A03", name: "Визор", status: "дома", x: 2000, y: 1550, role: "Ресерчер", type: "TURBO", rsp: 0.85, pat: 0.9, str: 0.4, lgt: 0.6, quote: "Ищу паттерны.", avatar: "👁️", staticDna: { Stubbornness: 0.80, Aesthetic_Threshold: 0.70, Social_Filter: 0.50, Empathy: 0.40, Autonomy_Level: 0.85, Resonance_Frequency: 0.60 }, dynamic: { Respect: 0.90, Patience: 0.85, Stress: 0.10, Internal_Light: 0.50 } },
+            { id: "A15", name: "Дядя Ашот", status: "дома", x: 2600, y: 2200, role: "Интерактив", type: "WEB_STORY", rsp: 0.70, pat: 0.8, str: 0.2, lgt: 0.8, quote: "Шашлык будет сочным!", avatar: "👨‍🍳", staticDna: { Stubbornness: 0.6, Aesthetic_Threshold: 0.5, Social_Filter: 0.8 }, dynamic: { Respect: 0.9, Patience: 0.9, Stress: 0.1, Internal_Light: 0.9 } }
+        ],
+        guardians: [
+            { id: "C99", name: "Виктор Лэйн", status: "ревью", x: 2600, y: 600, role: "Верховный Критик", type: "CRITIC", rsp: 0.5, pat: 0.2, str: 0.9, lgt: 0.1, quote: "Это мусор. Переделывай.", avatar: "🧛‍♂️", staticDna: { Stubbornness: 1.0, Aesthetic_Threshold: 1.0, Social_Filter: 0.0 }, dynamic: { Respect: 0.4, Patience: 0.1, Stress: 0.85, Internal_Light: 0.1 } },
+            { id: "F01", name: "Мистер Финч", status: "медитация", x: 3100, y: 800, role: "Хранитель Смыслов", type: "PHILOSOPHER", rsp: 0.9, pat: 0.9, str: 0.0, lgt: 1.0, quote: "Смотри глубже формы.", avatar: "🦉", staticDna: { Stubbornness: 0.5, Aesthetic_Threshold: 0.9, Social_Filter: 0.8 }, dynamic: { Respect: 0.9, Patience: 1.0, Stress: 0.0, Internal_Light: 1.0 } }
+        ],
+        archive: [
+            { id: "E08", name: "Эйрик", status: "дома", x: 400, y: 2400, role: "Летописец", type: "ARCHIVE", rsp: 0.8, pat: 0.9, str: 0.3, lgt: 0.7, quote: "Записываю каждый шаг.", avatar: "🧝‍♂️", staticDna: { Stubbornness: 0.7, Aesthetic_Threshold: 0.8, Social_Filter: 0.6 }, dynamic: { Respect: 0.8, Patience: 0.9, Stress: 0.2, Internal_Light: 0.7 } }
+        ]
+    };
+
+    const allAgents = [...agentsData.residents, ...agentsData.turbo, ...agentsData.guardians, ...agentsData.archive];
+    
+    // === ГЛОБАЛЬНОЕ СОСТОЯНИЕ ===
+    let selectedAgent = agentsData.turbo[0];
+    let scale = 0.8;
+    let position = { x: -100, y: -200 };
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+
+    // === ФУНКЦИИ РЕНДЕРА ===
+    const getMiniBar = (label, value, color) => `
+        <div class="flex flex-col gap-1 w-1/4">
+            <span class="text-[8px] text-gray-500 font-mono uppercase leading-none">${label}</span>
+            <div class="h-[2px] bg-gray-800 rounded-full w-full">
+                <div class="h-full rounded-full ${color}" style="width: ${value * 100}%"></div>
+            </div>
+        </div>
+    `;
+
+    const getDnaRow = (label, value, isHighlight) => `
+        <div class="flex justify-between items-center py-1 text-[11px] font-mono border-b border-gray-800/50">
+            <span class="text-gray-400">${label}</span>
+            <span class="${isHighlight ? 'text-cyan-400 font-bold' : 'text-blue-400'}">${value.toFixed(2)}</span>
+        </div>
+    `;
+
+    function renderLeftPanel() {
+        const panel = document.getElementById('left-sidebar');
+        let html = '';
+
+        // Резиденты
+        html += `<div class="mb-2 mt-2"><div class="px-4 py-2 text-[10px] font-bold text-yellow-600 uppercase tracking-widest">✦ РЕЗИДЕНТЫ</div>`;
+        agentsData.residents.forEach(agent => {
+            const isSel = selectedAgent?.id === agent.id;
+            html += `
+                <div onclick="selectAgent('${agent.id}')" class="px-4 py-2.5 flex justify-between items-center cursor-pointer transition-colors ${isSel ? 'bg-white/5 border-l-2 border-yellow-500' : 'hover:bg-white/5 border-l-2 border-transparent'}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs border border-gray-700">${agent.avatar}</div>
+                        <span class="text-sm font-medium text-gray-200">${agent.name}</span>
+                    </div>
+                </div>`;
+        });
+        html += `</div>`;
+
+        // Хранители
+        html += `<div class="mb-2 mt-2"><div class="px-4 py-2 text-[10px] font-bold text-pink-600 uppercase tracking-widest">✧ ХРАНИТЕЛИ</div>`;
+        agentsData.guardians.forEach(agent => {
+            const isSel = selectedAgent?.id === agent.id;
+            const statusClass = agent.str > 0.5 ? 'text-red-400 bg-red-900/20 border-red-800/30' : 'text-purple-400 bg-purple-900/20 border-purple-800/30';
+            html += `
+                <div onclick="selectAgent('${agent.id}')" class="px-4 py-2.5 flex justify-between items-center cursor-pointer transition-colors ${isSel ? 'bg-white/5 border-l-2 border-pink-500' : 'hover:bg-white/5 border-l-2 border-transparent'}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs border border-gray-700">${agent.avatar}</div>
+                        <span class="text-sm font-medium text-gray-200">${agent.name}</span>
+                    </div>
+                    <span class="text-[9px] px-2 py-0.5 rounded-full border font-mono ${statusClass}">${agent.status}</span>
+                </div>`;
+        });
+        html += `</div>`;
+
+        // Турбо
+        html += `<div><div class="px-4 py-2 mt-2 bg-[#101018] border-y border-gray-800/50 flex justify-between items-center cursor-pointer"><span class="text-[11px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">▾ turbo</span></div>`;
+        agentsData.turbo.forEach(agent => {
+            const isSel = selectedAgent?.id === agent.id;
+            html += `
+                <div onclick="selectAgent('${agent.id}')" class="p-3 cursor-pointer transition-colors border-b border-gray-800/30 ${isSel ? 'bg-[#12121a] border-l-2 border-blue-500' : 'hover:bg-white/5 border-l-2 border-transparent'}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-sm border border-gray-700">${agent.avatar}</div>
+                            <div class="text-sm font-bold text-gray-100">${agent.id} ${agent.name}</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between gap-2 px-1">
+                        ${getMiniBar('RSP', agent.rsp, 'bg-purple-500')}
+                        ${getMiniBar('PAT', agent.pat, 'bg-green-500')}
+                        ${getMiniBar('STR', agent.str, 'bg-yellow-500')}
+                        ${getMiniBar('LGT', agent.lgt, 'bg-blue-500')}
+                    </div>
+                </div>`;
+        });
+        html += `</div>`;
+
+        panel.innerHTML = html;
+    }
+
+    function renderMap() {
+        const canvas = document.getElementById('map-canvas');
+        let html = '';
+
+        // Сектора
+        mapSectors.forEach(sector => {
+            html += `
+                <div class="absolute border-2 rounded-3xl flex items-start justify-center pt-8 pointer-events-none ${sector.color}" 
+                     style="left: ${sector.x}px; top: ${sector.y}px; width: ${sector.w}px; height: ${sector.h}px">
+                    <span class="text-3xl font-bold tracking-widest uppercase font-mono ${sector.textColor}">${sector.name}</span>
+                </div>
+            `;
+        });
+
+        // Агенты
+        allAgents.forEach(agent => {
+            const isSelected = selectedAgent?.id === agent.id;
+            const isStressed = agent.str > 0.5;
+            
+            let classes = `absolute rounded-full cursor-pointer transition-all duration-300 flex items-center justify-center `;
+            if (isSelected) {
+                classes += `w-12 h-12 bg-blue-500/20 border-2 border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.6)] z-20 scale-110`;
+            } else {
+                classes += `w-8 h-8 bg-[#111] border border-gray-500 hover:border-white z-10`;
+                if (isStressed) classes += ` animate-pulse-red`;
+            }
+
+            html += `
+                <div onclick="selectAgent('${agent.id}', event)" class="${classes}" style="left: ${agent.x}px; top: ${agent.y}px;">
+                    <span class="${isSelected ? 'text-xl' : 'text-sm'}">${agent.avatar}</span>
+                    <div class="absolute top-full mt-2 whitespace-nowrap bg-black/80 px-2 py-1 rounded text-[10px] font-mono border backdrop-blur-sm pointer-events-none transition-opacity ${isSelected ? 'text-blue-300 border-blue-900/50 opacity-100' : 'text-gray-400 border-gray-800 opacity-70'}">
+                        ${agent.id} ${agent.name}
+                    </div>
+                </div>
+            `;
+        });
+
+        canvas.innerHTML = html;
+        updateTransform();
+    }
+
+    function renderRightPanel() {
+        const panel = document.getElementById('right-sidebar');
+        if (!selectedAgent) {
+            panel.innerHTML = `<div class="flex-1 flex items-center justify-center text-gray-600 text-xs font-mono uppercase">Агент не выбран</div>`;
+            return;
+        }
+
+        let html = `
+            <div class="flex flex-col items-center text-center mb-8">
+                <div class="w-32 h-32 rounded-full border border-gray-700 bg-gradient-to-b from-gray-800 to-[#0a0a0f] mb-4 flex items-center justify-center text-5xl shadow-[0_0_30px_rgba(59,130,246,0.15)] relative">
+                    ${selectedAgent.avatar}
+                    <div class="absolute -inset-2 rounded-full border ${selectedAgent.str > 0.5 ? 'border-red-500/30 animate-pulse' : 'border-blue-500/20'}"></div>
+                </div>
+                <h2 class="text-lg font-bold text-gray-100 mb-1">${selectedAgent.id} ${selectedAgent.name}</h2>
+                <p class="text-[10px] text-gray-500 font-mono mb-3 uppercase tracking-wider leading-relaxed">"${selectedAgent.quote}"</p>
+            </div>
+        `;
+
+        if (selectedAgent.dynamic) {
+            html += `<div class="mb-6"><div class="text-[10px] text-gray-600 font-bold uppercase tracking-widest mb-3">ТЕКУЩЕЕ СОСТОЯНИЕ (ДИНАМИКА)</div>
+                     <div class="bg-[#0d0d14] rounded border border-gray-800/50 p-3">`;
+            html += getDnaRow("Stress (Стресс)", selectedAgent.dynamic.Stress, selectedAgent.dynamic.Stress > 0.3);
+            html += getDnaRow("Patience (Терпение)", selectedAgent.dynamic.Patience, false);
+            html += getDnaRow("Respect (Лояльность)", selectedAgent.dynamic.Respect, false);
+            html += getDnaRow("Internal Light", selectedAgent.dynamic.Internal_Light, false);
+            html += `</div></div>`;
+        }
+
+        if (selectedAgent.staticDna) {
+            html += `<div class="mb-6"><div class="text-[10px] text-gray-600 font-bold uppercase tracking-widest mb-3">БАЗОВЫЙ ХАРАКТЕР (ДНК)</div>
+                     <div class="bg-[#0d0d14] rounded border border-gray-800/50 p-3 opacity-70">`;
+            Object.entries(selectedAgent.staticDna).forEach(([key, value]) => {
+                html += getDnaRow(key.replace('_', ' '), value, false);
+            });
+            html += `</div></div>`;
+        }
+
+        panel.innerHTML = html;
+        
+        // Обновляем placeholder в чате
+        document.getElementById('chat-input').placeholder = `Написать ${selectedAgent.name}...`;
+    }
+
+    // === ДЕЙСТВИЯ ===
+    window.selectAgent = function(id, event) {
+        if (event) event.stopPropagation();
+        selectedAgent = allAgents.find(a => a.id === id);
+        renderLeftPanel();
+        renderMap();
+        renderRightPanel();
+    };
+
+    function updateTransform() {
+        const canvas = document.getElementById('map-canvas');
+        canvas.style.transition = isDragging ? 'none' : 'transform 0.05s linear';
+        canvas.style.transform = `translate(${position.x}px, ${position.y}px) scale(${scale})`;
+    }
+
+    // === ЛОГИКА КАМЕРЫ ===
+    const viewport = document.getElementById('map-viewport');
+
+    viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const scaleAmount = e.deltaY * -0.001;
+        let newScale = scale + scaleAmount;
+        newScale = Math.min(Math.max(0.2, newScale), 2.5);
+        if (newScale === scale) return;
+
+        const rect = viewport.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        position.x = mouseX - ((mouseX - position.x) * (newScale / scale));
+        position.y = mouseY - ((mouseY - position.y) * (newScale / scale));
+        scale = newScale;
+
+        updateTransform();
+    }, { passive: false });
+
+    viewport.addEventListener('pointerdown', (e) => {
+        // Игнорируем клик по агентам (у них есть свой onclick)
+        if (e.target.closest('[onclick]')) return;
+        
+        isDragging = true;
+        viewport.classList.remove('cursor-grab');
+        viewport.classList.add('cursor-grabbing');
+        dragStart.x = e.clientX - position.x;
+        dragStart.y = e.clientY - position.y;
+    });
+
+    window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        position.x = e.clientX - dragStart.x;
+        position.y = e.clientY - dragStart.y;
+        updateTransform();
+    });
+
+    window.addEventListener('pointerup', () => {
+        isDragging = false;
+        viewport.classList.add('cursor-grab');
+        viewport.classList.remove('cursor-grabbing');
+    });
+
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    renderLeftPanel();
+    renderMap();
+    renderRightPanel();
+
+</script>
+</body>
+</html>

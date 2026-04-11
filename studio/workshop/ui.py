@@ -20,6 +20,11 @@ app.add_static_files("/nft_registry", "00_REGISTRY_NFT")
 app.add_static_files("/runs", "runs")
 app.add_static_files("/clients", "clients")
 
+# Глобальные переменные для API
+_current_state = None
+_current_run_pipeline = None
+_auto_run_requested = False
+
 # --- Вынесенные модули ---
 from studio.workshop.styles import IDENTITY_BUREAU_CSS
 from studio.workshop.export import _get_viewer_text, _export_docx, _export_pdf
@@ -278,7 +283,8 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     global WORKERS, ALL_WORKERS
     WORKERS, ALL_WORKERS = _build_workers_for_dept(dept)
     print(f"[WORKSHOP] Цех={dept}: {sum(len(v) for v in WORKERS.values())} агентов, фазы: {list(WORKERS.keys())}")
-    
+    _page_client = ui.context.client
+
     state = {
         "active_worker": "SET",
         "chat_history": [],
@@ -306,7 +312,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         "paused_output": "",      # previous_output для продолжения
         "paused_context": {},     # сохранённый контекст
     }
-    
+
+    global _current_state
+    _current_state = state
+
     # project_dir — будет создан при запуске пайплайна
     state["project_dir"] = None
     state["file_processor"] = None
@@ -1473,6 +1482,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     # ─── TURBO PIPELINE (A02∥A03 параллельно) ────────────
     async def run_pipeline(from_worker=None, with_chat_context=False):
         """Запуск пайплайна"""
+        global _current_run_pipeline        # ← добавить
+        _current_run_pipeline = run_pipeline  # ← добавить
+
         if not state["master_brief"]:
             ui.notify("Сначала соберите бриф!", type='warning')
             return
@@ -1497,8 +1509,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         update_status()
         ui.notify("🚀 Пайплайн запущен!", type='info')
         
+        _workers_snapshot = {k: list(v) for k, v in WORKERS.items()}  # снимок до старта
         all_agents = []
-        for shop_name, workers in WORKERS.items():
+        for shop_name, workers in _workers_snapshot.items():
             all_agents.extend([(shop_name, w) for w in workers])
         
         start_index = 0
@@ -1619,6 +1632,7 @@ Style: {state['settings']['style']}
                     context += dna_state + "\n\n"
                 
                 # Грондхейм: инжект души перед работой
+                _soul = ""  # ← ДОБАВИТЬ: гарантия что _soul всегда bound
                 if _GRONDHEIM_ENABLED:
                     _dept = state.get("active_dept", "")
                     _soul = on_agent_wake(worker_id, _dept)
@@ -1955,6 +1969,11 @@ Style: {state['settings']['style']}
         
         # Финальное обновление runs (после всех записей)
         update_runs_display()
+
+          # Регистрируем run_pipeline для API
+    global _current_run_pipeline
+    _current_run_pipeline = run_pipeline
+
     
     # --- Буфер для pending-загрузок (до подтверждения категории) ---
     _pending_uploads: list = []
@@ -3167,3 +3186,46 @@ Style: {state['settings']['style']}
                 ).classes('neon-btn g').props('flat')
                 ui.button('▶ FROM CURRENT', on_click=lambda: run_pipeline(state["active_worker"])).classes('neon-btn b').props('flat')
                 ui.button('⚓ ANCHOR', on_click=lambda: run_pipeline(from_worker=state["active_worker"], with_chat_context=True)).classes('neon-btn p').props('flat')
+
+                async def _check_auto_run():
+                    global _auto_run_requested
+                    if _auto_run_requested and not state["pipeline_running"]:
+                        _auto_run_requested = False
+                        with _page_client:
+                            await run_pipeline()  # <- добавить отступ (4 пробела)
+
+                ui.timer(1.0, _check_auto_run)
+
+# ═══════════════════════════════════════════════════════════
+# API ДЛЯ РОДИТЕЛЬСКОГО КАБИНЕТА
+# ═══════════════════════════════════════════════════════════
+from pydantic import BaseModel
+from typing import Optional
+
+class _AutoRequest(BaseModel):
+    child_name: str
+    child_age: str
+    task_context: str
+    parent_email: Optional[str] = None
+
+@app.post("/api/studio/generate")
+async def _auto_generate(request: _AutoRequest):
+    global _current_state, _current_run_pipeline
+
+    if _current_state is None:
+        return {"status": "error", "message": "Студия не открыта в браузере"}
+
+    master_brief = {
+        "project": {"name": f"История для {request.child_name}", "workshop": "living_book"},
+        "story": {"real_task": request.task_context},
+        "child": {"name": request.child_name, "age": request.child_age},
+        "key_message": f"{request.child_name} справится!"
+    }
+
+    import json as _json
+    _current_state["master_brief"] = _json.dumps(master_brief, ensure_ascii=False, indent=2)
+    _current_state["active_dept"] = "living_book"
+
+    global _auto_run_requested
+    _auto_run_requested = True
+    return {"status": "started", "child_name": request.child_name}
