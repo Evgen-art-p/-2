@@ -1,0 +1,16 @@
+{
+  "id": "turbo",
+  "label": "⚡ TURBO Шортсы",
+  "icon": "⚡",
+  "version": "1.0",
+  "description": "Быстрый конвейер шортсов: A01→(A02∥A03)→A04→A05",
+  "run_type": "turbo",
+  "phases": {
+    "TURBO": ["A01", "A02", "A03", "A04", "A05"]
+  },
+  "turbo_workers": ["A01", "A02", "A03", "A04", "A05"],
+  "turbo_parallel": [["A02", "A03"]],
+  "checkpoint_after": [],
+  "stop_after": null,
+  "revision_loop": null
+}
