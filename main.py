@@ -50,5 +50,8 @@ def registry():
 from studio.grondheim_memory import run_loka_filter_all
 run_loka_filter_all()
 
+from studio.slot_manager import SlotManager
+SlotManager().print_summary()
+
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()

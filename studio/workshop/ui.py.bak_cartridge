@@ -49,8 +49,6 @@ from studio.workshop.assets import (
     unregister_asset,
 )
 from studio.workshop.ref_indexer import convert_to_png, index_asset
-from studio.cartridge import CartridgeManifest, CartridgeRunner
-from studio.workshop.nicegui_callbacks import NiceGUICallbacks
 
 # --- Грондхейм: память города ---
 try:
@@ -1177,128 +1175,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             from_worker=resume_from,
             with_chat_context=ctx.get("with_chat_context", False)
         )
-     # ─── CARTRIDGE PIPELINE (новая система) ──────────────
-    async def run_cartridge_pipeline(from_worker=None, with_chat_context=False):
-        """Запуск пайплайна через картриджную систему."""
-        global _current_run_pipeline
-        _current_run_pipeline = run_cartridge_pipeline
 
-        if not state["master_brief"]:
-            ui.notify("Сначала соберите бриф!", type='warning')
-            return
-
-        if state["pipeline_running"]:
-            ui.notify("Пайплайн уже запущен!", type='warning')
-            return
-
-        # Подготовка project_dir
-        if not state["project_dir"] or not state["project_dir"].exists():
-            _update_project_dir(create=True)
-        elif not state["file_processor"]:
-            assets_dir = state["project_dir"] / "assets"
-            assets_dir.mkdir(exist_ok=True)
-            state["file_processor"] = FileProcessor(assets_dir)
-            app.add_static_files('/files', str(assets_dir))
-
-        # Загружаем картридж по текущему dept
-        manifest = CartridgeManifest.load(dept)
-
-        # Создаём callbacks для NiceGUI
-        _client = ui.context.client
-        callbacks = NiceGUICallbacks(
-            state=state,
-            avatars_ref=avatars_ref,
-            ui_client=_client,
-            update_viewer_fn=update_viewer,
-            update_status_fn=update_status,
-            update_runs_display_fn=update_runs_display,
-        )
-
-        # Запускаем через CartridgeRunner
-        runner = CartridgeRunner(manifest, state, callbacks, slot_id=dept)
-        await runner.run(from_worker=from_worker, with_chat_context=with_chat_context)
-
-    async def run_cartridge_turbo():
-        """TURBO через картриджную систему."""
-        if not state["master_brief"]:
-            ui.notify("Сначала соберите бриф!", type='warning')
-            return
-
-        if state["pipeline_running"]:
-            ui.notify("Пайплайн уже запущен!", type='warning')
-            return
-
-        # Подготовка project_dir
-        if not state["project_dir"] or not state["project_dir"].exists():
-            _update_project_dir(create=True)
-        elif not state["file_processor"]:
-            assets_dir = state["project_dir"] / "assets"
-            assets_dir.mkdir(exist_ok=True)
-            state["file_processor"] = FileProcessor(assets_dir)
-            app.add_static_files('/files', str(assets_dir))
-
-        # Загружаем картридж
-        manifest = CartridgeManifest.load(dept)
-
-        # Callbacks
-        _client = ui.context.client
-        callbacks = NiceGUICallbacks(
-            state=state,
-            avatars_ref=avatars_ref,
-            ui_client=_client,
-            update_viewer_fn=update_viewer,
-            update_status_fn=update_status,
-            update_runs_display_fn=update_runs_display,
-        )
-
-        # Запуск TURBO
-        runner = CartridgeRunner(manifest, state, callbacks, slot_id=dept)
-        await runner.run_turbo()
-
-    # ─── CARTRIDGE CONTINUE ──────────────────────────────
-    async def continue_cartridge_pipeline():
-        """Продолжить пайплайн после checkpoint (картриджная версия)."""
-        if not state["paused_at"]:
-            ui.notify("Нет паузы — нечего продолжать!", type="warning")
-            return
-
-        resume_from = state["paused_at"]
-
-        # Очищаем checkpoint
-        state["paused_at"] = None
-
-        # Пересобираем previous_output из актуальных results
-        all_agents_flat = [w for workers in WORKERS.values() for w in workers]
-        rebuilt_output = ""
-
-        for wid in all_agents_flat:
-            if wid == resume_from:
-                break
-            if wid not in state["results"]:
-                continue
-            res = state["results"][wid]
-            text = res.get("text", "") if isinstance(res, dict) else str(res)
-            meta = res.get("meta", {}) if isinstance(res, dict) else {}
-            info = get_worker_info(wid)
-            label = info.get("label", wid) if info else wid
-            my_output = meta.get("my_output", {})
-            chain_json = ""
-            if my_output:
-                try:
-                    chain_json = f"\n```json\n{json.dumps(my_output, ensure_ascii=False, indent=2)}\n```"
-                except Exception:
-                    pass
-            chunk = meta.get("next_input") or (text[:800] + chain_json)
-            rebuilt_output += f"\n\n--- {label} ({wid}) ---\n{chunk}"
-
-        state["paused_output"] = rebuilt_output
-        print(f"[CONTINUE] Пересобран previous_output: {len(rebuilt_output)} символов")
-
-        ui.notify(f"▶ Продолжаю с {resume_from}...", type="positive")
-        await run_cartridge_pipeline(
-            from_worker=resume_from,
-            with_chat_context=False
-        )
 
     # ─── TURBO PIPELINE (A02∥A03 параллельно) ────────────
     async def turbo_pipeline():
@@ -3144,7 +3021,7 @@ Style: {state['settings']['style']}
 
                     # ── ЦЕНТРАЛЬНАЯ ГРУППА: CONTINUE | 🏭 ────────────────
                     with ui.element('div').style('display:flex; gap:6px; align-items:center; justify-content:center;'):
-                        ui.button('▶ CONTINUE', on_click=lambda: continue_cartridge_pipeline()).props('flat no-caps').style(
+                        ui.button('▶ CONTINUE', on_click=lambda: continue_pipeline()).props('flat no-caps').style(
                             'padding:6px 14px; border-radius:8px; font-size:0.72rem; font-weight:700; '
                             'letter-spacing:0.06em; border:1px solid rgba(255,210,0,0.35); '
                             'color:rgba(255,210,0,0.85); background:rgba(255,210,0,0.07);'
@@ -3305,17 +3182,17 @@ Style: {state['settings']['style']}
                 # --- ACTION BUTTONS (3 старта) ---
                 ui.button(
                     '⚡ TURBO' if is_turbo else '▶ FULL PIPELINE',
-                    on_click=lambda: run_cartridge_turbo() if is_turbo else run_cartridge_pipeline()
+                    on_click=lambda: turbo_pipeline() if is_turbo else run_pipeline()
                 ).classes('neon-btn g').props('flat')
-                ui.button('▶ FROM CURRENT', on_click=lambda: run_cartridge_pipeline(state["active_worker"])).classes('neon-btn b').props('flat')
-                ui.button('⚓ ANCHOR', on_click=lambda: run_cartridge_pipeline(from_worker=state["active_worker"], with_chat_context=True)).classes('neon-btn p').props('flat')
+                ui.button('▶ FROM CURRENT', on_click=lambda: run_pipeline(state["active_worker"])).classes('neon-btn b').props('flat')
+                ui.button('⚓ ANCHOR', on_click=lambda: run_pipeline(from_worker=state["active_worker"], with_chat_context=True)).classes('neon-btn p').props('flat')
 
                 async def _check_auto_run():
                     global _auto_run_requested
                     if _auto_run_requested and not state["pipeline_running"]:
                         _auto_run_requested = False
                         with _page_client:
-                            await run_cartridge_pipeline()  # <- добавить отступ (4 пробела)
+                            await run_pipeline()  # <- добавить отступ (4 пробела)
 
                 ui.timer(1.0, _check_auto_run)
 
