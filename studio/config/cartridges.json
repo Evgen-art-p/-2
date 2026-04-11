@@ -1,0 +1,38 @@
+{
+  "default": {
+    "name": "🏭 Полная Студия (Default)",
+    "description": "Все цеха и департаменты доступны. Полный цикл производства.",
+    "modules": ["all"],
+    "pipelines": ["all"]
+  },
+  "shorts_factory": {
+    "name": "🎬 Фабрика Шортсов",
+    "description": "Специализированный режим для создания вертикальных видео. Только Turbo и Video модули.",
+    "modules": ["turbo", "video_shorts", "clipmakers"],
+    "pipelines": ["shorts_render", "turbo_boost"]
+  },
+  "living_book_studio": {
+    "name": "📚 Живая Книга",
+    "description": "Глубокая проработка сюжетов, персонажей и мира. Многоступенчатый пайплайн.",
+    "modules": ["living_book", "residents", "emo_card"],
+    "pipelines": ["book_phase_1", "book_phase_2", "book_phase_3", "book_phase_4", "book_phase_5"]
+  },
+  "web_studio": {
+    "name": "🌐 Веб-Студия",
+    "description": "Создание лендингов, статей и веб-историй.",
+    "modules": ["web_story", "advertising", "logo_design"],
+    "pipelines": ["web_publish", "article_flow"]
+  },
+  "social_media_hub": {
+    "name": "📱 Соцсети Хаб",
+    "description": "Планирование постов, генерация контента для соцсетей.",
+    "modules": ["social_mix", "advertising", "clipmakers"],
+    "pipelines": ["social_schedule", "post_generator"]
+  },
+  "video_production": {
+    "name": "🎥 Видео Продакшн",
+    "description": "Полный цикл видео: шортсы, лонги, клипы.",
+    "modules": ["video_shorts", "video_long", "clipmakers", "turbo"],
+    "pipelines": ["video_pipeline", "turbo_boost"]
+  }
+}
