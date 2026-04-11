@@ -1,15 +1,17 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "description": "Конфигурация слотов картриджей студии. Один модуль можно вставить в несколько слотов.",
   "slots": [
-    {"slot_id": "turbo",        "module": "turbo",        "label": "⚡ TURBO Шортсы",   "enabled": true, "order": 10},
-    {"slot_id": "social_mix",   "module": "social_mix",   "label": "📱 SMM & Контент",   "enabled": true, "order": 20},
-    {"slot_id": "video_long",   "module": "video_long",   "label": "🎥 Видео Long",      "enabled": true, "order": 30},
-    {"slot_id": "video_shorts", "module": "video_shorts", "label": "⚡ Видео Shorts",    "enabled": true, "order": 40},
-    {"slot_id": "web_story",    "module": "web_story",    "label": "🌐 Web Story",       "enabled": true, "order": 50},
-    {"slot_id": "market_hit",   "module": "market_hit",   "label": "🛒 Маркетплейсы",    "enabled": true, "order": 60},
-    {"slot_id": "logo_design",  "module": "logo_design",  "label": "🧩 Логотипы",        "enabled": true, "order": 70},
-    {"slot_id": "emo_card",     "module": "emo_card",     "label": "💌 Открытки",         "enabled": true, "order": 80},
-    {"slot_id": "living_book",  "module": "living_book",  "label": "📖 Живая Книга",      "enabled": true, "order": 110}
+    {"slot_id": "turbo",        "module": "turbo",        "label": "⚡ TURBO Шортсы",    "enabled": true, "order": 10},
+    {"slot_id": "social_mix",   "module": "social_mix",   "label": "📱 SMM & Контент",    "enabled": true, "order": 20},
+    {"slot_id": "video_long",   "module": "video_long",   "label": "🎥 Видео Long",       "enabled": true, "order": 30},
+    {"slot_id": "video_shorts", "module": "video_shorts", "label": "⚡ Видео Shorts",     "enabled": true, "order": 40},
+    {"slot_id": "web_story",    "module": "web_story",    "label": "🌐 Web Story",        "enabled": true, "order": 50},
+    {"slot_id": "clipmakers",   "module": "clipmakers",   "label": "🎵 Клипмейкеры",      "enabled": true, "order": 55},
+    {"slot_id": "market_hit",   "module": "market_hit",   "label": "🛒 Маркетплейсы",     "enabled": true, "order": 60},
+    {"slot_id": "advertising",  "module": "advertising",  "label": "📢 Реклама",          "enabled": true, "order": 65},
+    {"slot_id": "logo_design",  "module": "logo_design",  "label": "🧩 Логотипы",         "enabled": true, "order": 70},
+    {"slot_id": "emo_card",     "module": "emo_card",     "label": "💌 Открытки",          "enabled": true, "order": 80},
+    {"slot_id": "living_book",  "module": "living_book",  "label": "📖 Живая Книга",       "enabled": true, "order": 110}
   ]
 }

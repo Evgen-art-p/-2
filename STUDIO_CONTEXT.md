@@ -1,7 +1,8 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 8.0 | **Дата:** 2026-04-11 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 8.1 | **Дата:** 2026-04-12 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
+> ⚠️ 12 апреля — студия была потеряна (удалена репа + файлы). Восстановлена за ночь. Картриджная архитектура спасла: модули изолированы, каждый восстановим отдельно.
 
 ---
 
@@ -44,288 +45,145 @@
 |---------|----------|
 | Объектов в каталоге | 147 |
 | Агентов (полная ДНК) | 134 |
-| Цехов | 12 |
+| Цехов-картриджей | 11 (+ residents) |
 | Локаций | 12 |
-| Резидентов | 3 (Лока, Джем, Сет) |
+| Резидентов | 4 (Лока, Джем, Сет, Оле) |
 | Книг в Библиотеке | 9 (7 psych + 2 grondheim) |
 | Документов в Гавани | ~2323 |
 
 ---
 
-## 5. ЦЕХА
+## 5. КАРТРИДЖНАЯ АРХИТЕКТУРА (v1.1) ✅
 
-| ID | Название | Агентов | Примечание |
-|----|----------|---------|------------|
-| residents | Резиденты | 3 | Лока, Джем, Сет |
-| turbo | TURBO | 5 | Стелла→Мими+Визор→Постпро→Финализатор |
-| video_long | Video Long | 12 | A01-A12 |
-| video_shorts | Video Shorts | 12 | A01-A12 |
-| social_mix | Social Mix | 12 | A01-A12 |
-| web_story | Web Story | 12 | A01-A12 |
-| clipmakers | Clipmakers | 12 | A01-A12 |
-| advertising | Advertising | 12 | A01-A12 |
-| emo_card | Emo Card | 12 | A01-A12 |
-| logo_design | Logo Design | 12 | A01-A12 |
-| market_hit | Market Hit | 12 | A01-A12 |
-| living_book | Living Book | 18 | A00 (Фабула), A00a (Вера), A01-A16 |
-
----
-
-## 5a. КАРТРИДЖНАЯ АРХИТЕКТУРА (v1.0) ✅ NEW
-
-Студия = **шасси + сменные картриджи**. Каждый цех — отдельный картридж со своим `manifest.json`, который можно дублировать, убирать и компоновать.
+Студия = **шасси + сменные картриджи**. Каждый цех — отдельный картридж со своим manifest.json, hooks.py, и pipeline. Можно дублировать, убирать, компоновать.
 
 ### Ключевые файлы:
 ```
-studio/cartridge.py              ← CartridgeManifest + PipelineCallbacks + CartridgeRunner
-studio/slot_manager.py           ← SlotManager (add/clone/remove слотов)
-studio/slots.json                ← конфигурация: какие картриджи активны
-studio/workshop/nicegui_callbacks.py  ← мост CartridgeRunner ↔ NiceGUI
-studio/modules/{цех}/manifest.json   ← описание картриджа (фазы, checkpoints, revision, turbo)
+studio/cartridge.py                  ← CartridgeManifest + PipelineCallbacks + CartridgeRunner + Hooks
+studio/slot_manager.py               ← SlotManager (add/clone/remove слотов)
+studio/slots.json                    ← какие картриджи активны (11 слотов)
+studio/workshop/nicegui_callbacks.py ← мост CartridgeRunner ↔ NiceGUI
+studio/cartridge_manager/ui.py       ← UI менеджер картриджей (/cartridges)
+studio/api_living_book.py            ← Headless API для Маяка
+studio/modules/{цех}/manifest.json   ← фазы, checkpoints, revision, turbo
+studio/modules/{цех}/hooks.py        ← кастомная логика цеха
 ```
 
-### Как работает:
-```
-manifest.json → CartridgeManifest.load("turbo")
-                → CartridgeRunner(manifest, state, callbacks)
-                    → runner.run()        # полный пайплайн
-                    → runner.run_turbo()   # TURBO с параллелизмом
-```
+### Текущие слоты (11 картриджей):
 
-### Callback-паттерн:
-Pipeline **не зависит от NiceGUI**. Вся связь через `PipelineCallbacks`:
-- `on_agent_start()` → аватар мигает "working"
-- `on_agent_done()` → аватар зелёный "done"  
-- `on_checkpoint()` → пауза
-- `on_revision_loop()` → A00a вернул на A00
-- `on_status()` → ui.notify
+| Слот | Агентов | Особенности |
+|------|---------|-------------|
+| turbo | 5 | A02∥A03 параллельно |
+| social_mix | 12 | полный цикл |
+| video_long | 12 | checkpoint после A03 |
+| video_shorts | 12 | полный цикл |
+| web_story | 12 | checkpoint после A05 |
+| clipmakers | 12 | checkpoint после A03 |
+| advertising | 12 | полный цикл |
+| market_hit | 12 | полный цикл |
+| logo_design | 12 | stop_after=4 |
+| emo_card | 12 | stop_after=4 |
+| living_book | 18 | revision A00a→A00, 5 фаз |
 
-UI реализует `NiceGUICallbacks(PipelineCallbacks)` и передаёт в runner.
+### Hooks — кастомная логика без правки ui.py:
+Каждый цех: `modules/{цех}/hooks.py` — on_before_agent, on_after_agent, on_revision_notes.
+Правишь hooks.py (50-80 строк), а не ui.py (3400 строк).
 
-### Дублирование картриджей:
-```python
-from studio.slot_manager import SlotManager
-sm = SlotManager()
-sm.add_slot("turbo", label="⚡ TURBO #2")   # новый слот того же модуля
-sm.clone_slot("turbo", "⚡ TURBO Клон")      # с копией памяти
-sm.print_summary()                           # сводка по студии
-```
-- Промпты агентов → из оригинального modules/{module}/ (не дублируются)
-- Память (dna.json, sensory, resonance) → отдельная в instances/{slot_id}/
-- 3 турбо = 15 агентов, каждый со своим dna.json
-
-### manifest.json (пример turbo):
-```json
-{
-  "id": "turbo",
-  "phases": {"TURBO": ["A01","A02","A03","A04","A05"]},
-  "turbo_workers": ["A01","A02","A03","A04","A05"],
-  "turbo_parallel": [["A02","A03"]],
-  "checkpoint_after": [],
-  "revision_loop": null
-}
-```
-
-### Текущие слоты (9 картриджей, 105 агентов + 3 резидента):
-turbo(5), social_mix(12), video_long(12), video_shorts(12), web_story(12), market_hit(12), logo_design(12), emo_card(12), living_book(18)
-
-### Статус интеграции:
-- ✅ Все кнопки ui.py переключены на `run_cartridge_pipeline()` / `run_cartridge_turbo()`
-- ✅ Старые `run_pipeline()` / `turbo_pipeline()` остаются как fallback (не вызываются)
-- ✅ Ревизионный цикл A00a→A00 через manifest.revision_loop
-- ✅ Checkpoints из manifest.checkpoint_after
-- ✅ Параллелизм TURBO из manifest.turbo_parallel
-- ⏳ Удаление старых 852 строк пайплайнов из ui.py — после тестирования
-- ⏳ advertising, clipmakers — нет manifest.json (добавить при необходимости)
+### Менеджер картриджей:
+- UI: `/cartridges` (кнопка 🔌 в workshop)
+- Включить/выключить, клонировать, удалить, добавить
 
 ---
 
-## 6. АРХИТЕКТУРА ПРОГУЛКИ (city_walker.py v2)
+## 5b. МОСТ МАЯК ↔ СТУДИЯ ✅ NEW
 
-### Pull_Vector = ЛОРНЫЙ ЭЛЕМЕНТ (не маршрут!)
-Pull_Vector = "что агент любит, к чему тянет душу".
-Маршрут определяет ТОЛЬКО `compute_location_weights()` из ДНК.
+LIVING_BOOK_APP (Маяк) = **клиент** студии, НЕ параллельный мозг.
 
-**Работает:**
+### Архитектура:
 ```
-Стресс > 0.6 → Таверна        Свет < 0.3 → Храм
-Давно не был → Маяк (Голод)   Aesthetic высокий → Библиотека
-Autonomy высокий → Замок Сов   Streak <= -2 → Таверна
+Родитель → Маяк (POST /api/studio/generate)
+           → Студия (POST /api/living_book/generate)
+              → CartridgeRunner headless (18 агентов, ДНК, память, ревизия)
+              → book_package (JSON)
+           ← Маяк сохраняет в stories/
+           ← Искорка забирает через /api/beacon/stories
 ```
 
-### ТРИ ГЛАЗА ГРОНДХЕЙМА (Локации-Инструменты):
-```
-Маяк:       агент пришёл → web_search       → "Чистый Смысл"     → sensory ✅
-Гавань:     агент пришёл → vector_search     → "Найденный Смысл"  → sensory ✅
-Библиотека: агент пришёл → library_visit()   → "Прочитанный Смысл" → sensory [интеграция TODO]
-```
+### Ключевые файлы:
+- **Студия:** `studio/api_living_book.py` — headless API, HeadlessCallbacks
+- **Маяк:** `server/main.py` — чистый relay, дубли агентов УДАЛЕНЫ
+
+### Что УДАЛЕНО с Маяка:
+- ❌ call_set(), call_fabula_fein(), call_vera_dusha(), call_marka_fain()
+- Всё делают 18 агентов студии через CartridgeRunner
+
+### Что осталось на Маяке:
+- `/api/free_talk` — реалтайм-диалог Искорки (мгновенная реакция)
+- `/api/beacon/stories` — Искорка забирает готовые книги
+- `/parent/*` — кабинет родителя
+- `/api/health` — проверка связи со студией
 
 ---
 
-## 7. 12 ЛОКАЦИЙ
+## 6-9. ПРОГУЛКИ, ЛОКАЦИИ, ГАВАНЬ, БИБЛИОТЕКА
 
-| Локация | Инструмент | Кто тянется |
-|---------|-----------|-------------|
-| 🔦 Маяк Пробуждения | web_search ✅ | Любознательные |
-| ⚓ Гавань Смыслов | RAG (ChromaDB) ✅ | Вдумчивые |
-| 📚 Библиотека | library_visit() ✅ | Aesthetic |
-| 🍺 Таверна | отдых | Стресс > 0.6 |
-| 🔮 Храм | восстановление [TODO] | Выгоревшие |
-| 🏰 Замок Сов | стратегия | Автономные |
-| 🏗️ Квартал Мастеров | работа | Отдохнувшие |
-| 🕐 Павильон | рефлексия | Макс 2 |
-| 🏠 Высотка | дом резидентов | — |
-| 📐 Площадь | встречи | Социальные |
-| 🎬 Студия | штаб | При событиях |
-| 🐛 Artifacts & Bugs | дебаг | QA |
-
----
-
-## 8. ГАВАНЬ СМЫСЛОВ (harbor_of_meanings.py v2)
-
-### Что нового в v2:
-- **Умная фильтрация при индексации**: `_clean_text()` вырезает JSON-блоки, `{{inherit}}`, `SYSTEM_JSON`, большие JSON-объекты
-- **Классификация контента**: `_detect_content_type()` → narrative / template / log / lore
-- **Контекстный prefix**: `_build_passage_prefix()` — обогащает embeddings семантикой цеха
-- **Фильтрация при поиске**: template контент скрыт по умолчанию, дедупликация (max 2 чанка/файл)
-- **Embedding**: `intfloat/multilingual-e5-large` (560M параметров, e5 prefix: `passage:` / `query:`)
-- **Коллекция**: `grondheim_knowledge_v2`, ~2323 документов
-- **Порог**: `min_score=0.40`
-
-### Известные проблемы:
-- React/JS-код (Parent Dashboard.txt) проходит фильтр как "narrative" → нужен code-детектор
-- Реиндекс ~10 часов на CPU (e5-large тяжёлая)
-
----
-
-## 9. БИБЛИОТЕКА ГРОНДХЕЙМА (studio/library/)
-
-### Третий глаз: курированные знания
-Маяк = глаза наружу (web). Гавань = глаза внутрь (RAG по сырым архивам). Библиотека = **знания по полкам**.
-
-### Три уровня знаний агента (сосуществуют):
-1. **forge/knowledge/** → "как делать работу" (инструкции, формат) — при каждом запуске
-2. **Библиотека** → "зачем и почему" (смыслы, психология) — при прогулках + пайплайн
-3. **Гавань** → "что было раньше" (прошлый опыт, архивы) — поиск по запросу
+Три глаза: Маяк (web_search ✅), Гавань (ChromaDB ✅), Библиотека (library ✅).
+12 локаций. city_walker.py v2. Pull_Vector = лорный элемент.
 
 ---
 
 ## 10. ЦИФРОВАЯ ДНК
 
-### Статическая: Stubbornness, Aesthetic_Threshold, Social_Filter, Empathy, Autonomy_Level, Resonance_Frequency
-### Динамическая: Respect, Patience, Stress, Internal_Light, streak, stars
-
-### Петля (ЗАМКНУТА ✅):
-```
-dna.json → stress_to_temperature → temperature LLM → поведение → оценка → dna.json
-```
+Статическая + Динамическая. Петля ЗАМКНУТА ✅: dna → temperature → LLM → оценка → dna.
 
 ---
 
-## 11. КАБИНЕТ
+## 11-12. КАБИНЕТ + СТРАНИЦА ЖИЗНИ + LIVING BOOK
 
-### agents.py v2.1:
-- 12 цехов в DEPARTMENTS
-- Бары ДНК у резидентов (render_resident_card)
-- render_agent_detail: pull_vector + hidden_taste + trigger_keywords
-
-### Аватары: `static/avatars/{цех}/{folder}.png` → подхватится автоматически
+12 цехов, аватары, бары ДНК. Living Book: 18 агентов, отдельный проект LIVING_BOOK_APP.
+Связан со студией через api_living_book.py.
 
 ---
 
-## 12. СТРАНИЦА ЖИЗНИ (ui_registry.py v2)
-
-- 12 цехов в WORKSHOP_OPTIONS
-- LIVING_BOOK_ROLE_OPTIONS: A00, A00a, A01-A16
-- Pull_Vector: "что любит, к чему тянет душу"
-- Шаблоны: "Внутренние тяги" вместо "куда ходит"
-
----
-
-## 13. LIVING BOOK
-
-| Агент | Роль | ДНК |
-|-------|------|-----|
-| Фабула Фейн (A00) | Сказочник-творец | Empathy=0.95, Aesthetic=0.9 |
-| Вера Душа (A00a) | Психолог-критик | Empathy=1.0, Stubbornness=0.85 |
-| A01-A16 | Пайплайн | 16 агентов |
-
-Отдельный проект: **LIVING_BOOK_APP** (Evgen-art-p/LIVING_BOOK_APP)
-FastAPI + HTML, live диалог, parent dashboard. PWA деплой — следующий этап.
-
----
-
-## 14. УТИЛИТЫ
-
-### Корень проекта:
-| Скрипт | Назначение |
-|--------|-----------|
-| deploy_grondheim.py | Деплой всего города |
-| sync_files_to_catalog.py | Файлы агента → поля каталога |
-| patch_*.py | Скрипты-хирурги (find & replace с бэкапом) |
-
-### tools/:
-| Скрипт | Назначение |
-|--------|-----------|
-| check_catalog.py | Диагностика полей в каталоге |
-| register_existing.py | Регистрация агентов без каталога |
-
----
-
-## 15. БЭКЛОГ
+## 13. БЭКЛОГ
 
 ### 🔴 Следующий шаг:
-- [ ] **Тестирование картриджей** — прогнать turbo, video_long, living_book через CartridgeRunner
-- [ ] **Удаление старых пайплайнов** — 852 строки из ui.py (после тестирования)
-- [ ] **manifest.json для advertising и clipmakers**
-- [ ] **SlotManager в main.py** — сводка при запуске
-- [ ] **Библиотека → city_walker** интеграция (library_visit в прогулках)
+- [ ] Тестирование картриджей (turbo, video_long, living_book)
+- [ ] Тестирование моста Маяк↔Студия
+- [ ] Удаление старых пайплайнов из ui.py
 
 ### 🟡 Скоро:
-- [ ] Гавань: code-детектор (фильтровать React/JS-файлы)
-- [ ] Наполнение Библиотеки (craft, marketing, tech, product — с Локой)
-- [ ] Храм = Emotional Sync
-- [ ] Таверна = record_interaction
-- [ ] Экономика Световиков
-- [ ] UI для SlotManager (добавить/убрать картриджи из интерфейса)
+- [ ] Библиотека → city_walker, code-детектор для Гавани
+- [ ] Храм, Таверна, Экономика Световиков
+- [ ] grondheim_memory через slot_id
 
 ### 🟢 Долгосрочно:
-- [ ] Деплой Hetzner (GPU → реиндекс за 5 минут вместо 10 часов)
-- [ ] Production-комбайн (fal.ai, SiliconFlow, Lyria 3, MoviePy)
-- [ ] GitHub write access для Claude
-- [ ] Resonance-Chain
-- [ ] grondheim_memory адресация через slot_id (для дублированных картриджей)
+- [ ] Деплой Hetzner, GitHub write, Resonance-Chain
 
 ---
 
-## 16. ИСТОРИЯ СЕССИЙ
+## 14. ИСТОРИЯ СЕССИЙ
 
 | Дата | Ключевое |
 |------|----------|
 | 2025-02 | TURBO pipeline, checkpoint |
 | 2025-03 | Feedback, NFT Registry, Кабинет |
-| 2026-03-11 | Страница Жизни |
-| 2026-03-14 | ДНК, якоря, modules_registry |
-| 2026-03-17 | Память, петля, Кабинет v2.2 |
-| 2026-03-21 | city_walker, карта |
-| 2026-03-23 | Карта из каталога, Stress→Temperature |
-| 2026-03-25 | Маяк v2, Манифест, Рюкзак Знаний, GitHub MCP |
-| 2026-03-28 | 12 цехов · 134 агента · Pull_Vector отвязан · Фабула+Вера · фикс резонанса · 108 фантомов · ChromaDB план |
-| 2026-03-29 | Архив утилит в archive/ и tools/ · Доработка A00/A00a · patch_harbor_filter |
-| 2026-03-31 | Гавань v2 (умная фильтрация, content_type, дедупликация, 2570→2323) · Библиотека Грондхейма (9 книг, library.py, catalog.json) · Три глаза: Маяк+Гавань+Библиотека |
-| **2026-04-11** | **Картриджная архитектура v1.0: cartridge.py + slot_manager.py + manifest.json для 9 цехов + nicegui_callbacks.py (мост UI) + интеграция в ui.py (все кнопки переключены на CartridgeRunner)** |
+| 2026-03 | ДНК, якоря, city_walker, карта, Маяк v2, Три глаза |
+| 2026-03-31 | Гавань v2, Библиотека (9 книг) |
+| 2026-04-11 | Картриджная архитектура v1.0 |
+| **2026-04-12** | **hooks.py для всех 11 цехов · manifest для advertising + clipmakers · Менеджер картриджей (UI 🔌) · Мост Маяк↔Студия (headless API + чистый Маяк без дублей) · Потеря и восстановление студии** |
 
 ---
 
-## 17. РЕКОМЕНДАЦИИ БРАТА
+## 15. РЕКОМЕНДАЦИИ БРАТА
 
-1. **Картриджи работают.** Все пайплайны теперь идут через CartridgeRunner. Старый код в ui.py — fallback, удалишь после тестирования.
-2. **Дублирование цехов:** `SlotManager().add_slot("turbo")` — и у тебя второй TURBO с отдельной памятью.
-3. **manifest.json — главный файл цеха.** Фазы, checkpoints, revision_loop, turbo_parallel — всё там. Меняешь manifest → меняется поведение пайплайна.
-4. **Три глаза работают.** Маяк = наружу, Гавань = по архивам, Библиотека = курированные знания. Не путай слои.
-5. **forge/knowledge/ не трогай.** Это персональные инструкции агентов. Библиотека их дополняет, не заменяет.
-6. **Аватары:** `static/avatars/{цех}/{folder}.png` — подхватится без правок.
-7. **GitHub write:** Settings → Applications → Copilot → Contents: Read and write.
+1. **Картриджи = безопасность.** Каждый цех изолирован. Потерял — восстанови из репы.
+2. **hooks.py — рабочий файл.** Дорабатываешь цех? Правь hooks.py, не ui.py.
+3. **Маяк — клиент, не мозг.** Генерация через студию. free_talk на Маяке (реалтайм).
+4. **Менеджер:** /cartridges — визуально.
+5. **Бэкапы:** ui.py.bak_cartridge. Перед правками — copy.
+6. **Три глаза.** Маяк наружу, Гавань внутрь, Библиотека по полкам.
+7. **forge/knowledge/ не трогай.** Библиотека дополняет, не заменяет.
 
 ---
 *Обновляй после каждой значимой сессии. Загружай в начале новой.*
