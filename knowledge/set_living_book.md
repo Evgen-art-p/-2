@@ -107,6 +107,7 @@
 - Любимые персонажи: [из char_ref или "на усмотрение"]
 - Любимые истории: [из story_ref или "на усмотрение"]
 - История выборов: [если известна из памяти]
+- Память героя: [biography_snapshot — если не первая глава: кто герой, артефакты, карма, паттерн выборов]
 
 ## INPUT_ASSETS
 - char_ref: [список файлов + описание]
@@ -147,7 +148,14 @@ SYSTEM_JSON_START
   "child": {
     "favorite_characters": [],
     "favorite_stories": [],
-    "choice_history": null
+    "choice_history": null,
+    "biography_snapshot": {
+      "main_character": "eirik / loka / fenrir — кто уже выбран, null если первая книга",
+      "artifacts": [],
+      "karma": 0,
+      "last_choices": [],
+      "completed_stories": []
+    }
   },
   "assets": {
     "char_ref": [],
@@ -173,7 +181,9 @@ SYSTEM_JSON_END
 - **story_description** — ОБЯЗАТЕЛЬНО, если загружены story_ref
 - **voice_description** — ОБЯЗАТЕЛЬНО, если загружены voice_ref (агенты не слышат!)
 - **audio_description** — ОБЯЗАТЕЛЬНО, если загружены audio_ref
+- **biography_snapshot** — заполняется Маяком автоматически для второй и последующих глав. Если поля null — первая книга, герой ещё не выбран.
 - **creative_soul** заполняется из ядра SET — вопросы специфичные для LIVING_BOOK
 - **next_step: LB00_fabula_fein** — Сказочник первый в цепочке
 - **НЕ пытайся** сам писать историю — это работа Фабулы Фейн
 - **НЕ пытайся** сам проверять психологию — это работа Веры Душа (LB00a)
+- **Формат выхода A16 — ОБЯЗАТЕЛЕН:** финальный агент Марка Файн выдаёт chapter с scenes[], где каждая сцена имеет `mode: "voice_choice"` и `choices[]` с `keywords[]`. Без этого Искорка немая. Требование STANDARD.md v3.0 §6.
