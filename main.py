@@ -10,6 +10,7 @@ from studio.assembly import page_assembly
 from studio.cabinet.ui_cabinet import page_cabinet
 from studio.ui_registry import page_registry
 from studio.cartridge_manager import page_cartridge_manager
+from studio.modules.living_book.ui_book_loader import page_book_loader
 
 BASE_DIR = Path(__file__).resolve().parent
 app.add_static_files('/images', str(BASE_DIR / 'images'))
@@ -52,6 +53,10 @@ def registry():
 @ui.page('/cartridges')
 def cartridges():
     page_cartridge_manager()    
+
+@ui.page("/living_book_loader")
+def living_book_loader_page():
+    page_book_loader() 
 
 from studio.grondheim_memory import run_loka_filter_all
 run_loka_filter_all()

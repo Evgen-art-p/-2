@@ -1,5 +1,6 @@
 # studio/api_living_book.py — API генерации Живых Книг
 # СТАНДАРТ v3.0 compliant. Dual-format intake.
+# + POST /api/living_book/prepare_book — Цех разделки (загрузка книги на Витрину)
 
 from __future__ import annotations
 import json, asyncio, os, uuid
@@ -39,6 +40,27 @@ class BookResponse(BaseModel):
     run_id: Optional[str] = None
     error: Optional[str] = None
     agents_log: Optional[list] = None
+
+
+class PrepareBookRequest(BaseModel):
+    """Запрос на подготовку книги для Витрины (Цех разделки)."""
+    book_id: str
+    title: str
+    text: str                    # сырой текст книги
+    description: str = ""
+    age_group: str = "7-12"
+    main_character: str = "eirik"
+    home_world: str = "cave"
+
+
+class PrepareBookResponse(BaseModel):
+    status: str
+    book_id: str
+    chapters_found: int = 0
+    chapter_id: Optional[str] = None
+    ready_book_path: Optional[str] = None
+    showcase_path: Optional[str] = None
+    error: Optional[str] = None
 
 
 # ── DUAL-FORMAT PARSER ───────────────────────────────────────────────────────
@@ -294,12 +316,13 @@ def _build_minimal_package(state: dict, results: dict) -> dict:
 # ── REGISTER ─────────────────────────────────────────────────────────────────
 
 def register_living_book_api(fastapi_app):
+
+    # ── /api/living_book/generate ────────────────────────────────────────────
     @fastapi_app.post("/api/living_book/generate")
     async def generate_book(body: Any = None):
         try:
             parsed = _parse_request(body if isinstance(body, (dict, BookRequest)) else {})
 
-            # Run pipeline
             print(f"\n{'='*60}")
             print(f"[API] 📖 {parsed['child_name']} {parsed['child_age']} [{parsed['version']}]")
             print(f"[API] 📝 {parsed['task_context']}")
@@ -326,7 +349,6 @@ def register_living_book_api(fastapi_app):
                 )
                 print(f"[API] 💾 {stories_dir / fn}")
 
-            # Deliver → Маяк только для v3.0 с uid
             if parsed.get("child_uid") and book_package and parsed["version"] == "3.0":
                 await _deliver_to_beacon(
                     package=book_package,
@@ -348,6 +370,7 @@ def register_living_book_api(fastapi_app):
             import traceback; traceback.print_exc()
             return BookResponse(status="error", child_name="unknown", error=str(e)).model_dump()
 
+    # ── /api/living_book/status ──────────────────────────────────────────────
     @fastapi_app.get("/api/living_book/status")
     async def living_book_status():
         try:
@@ -364,5 +387,123 @@ def register_living_book_api(fastapi_app):
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    print(f"[API] 📖 Living Book API: /api/living_book/generate")
+    # ── /api/living_book/prepare_book — ЦЕХ РАЗДЕЛКИ ────────────────────────
+    @fastapi_app.post("/api/living_book/prepare_book")
+    async def prepare_book(req: PrepareBookRequest):
+        """
+        Цех разделки: принимает сырой текст книги,
+        режет на главы, прогоняет первую через пайплайн,
+        кладёт готовый JSON в system_registry/ready_books/.
+        Маяк подхватывает автоматически через /api/showcase.
+        """
+        try:
+            from studio.modules.living_book.ui_book_loader import (
+                split_into_chapters,
+                save_raw_chapters,
+                run_pipeline_for_chapter,
+            )
+
+            book_id = req.book_id.strip()
+            if not book_id:
+                return PrepareBookResponse(
+                    status="error", book_id="", error="book_id обязателен"
+                ).model_dump()
+
+            print(f"\n[PREPARE] {'='*50}")
+            print(f"[PREPARE] 📖 Новая книга: {req.title} ({book_id})")
+            print(f"[PREPARE] 📏 Текст: {len(req.text)} символов")
+
+            # 1. Режем на главы
+            chapters = split_into_chapters(req.text, book_id)
+            print(f"[PREPARE] ✂️ Найдено {len(chapters)} глав")
+
+            if not chapters:
+                return PrepareBookResponse(
+                    status="error",
+                    book_id=book_id,
+                    chapters_found=0,
+                    error="Не удалось разбить текст на главы",
+                ).model_dump()
+
+            # 2. Сохраняем сырые главы
+            save_raw_chapters(book_id, chapters)
+
+            # 3. Лог-заглушка для API режима
+            api_log_lines = []
+            async def api_log(msg: str):
+                api_log_lines.append(msg)
+                print(f"[PREPARE] {msg}")
+
+            # 4. Прогоняем пайплайн для первой главы
+            result = await run_pipeline_for_chapter(
+                book_id=book_id,
+                chapter=chapters[0],
+                title=req.title,
+                description=req.description or f"{req.title} — первое приключение",
+                age_group=req.age_group,
+                main_character=req.main_character,
+                home_world=req.home_world,
+                on_log=api_log,
+            )
+
+            if not result:
+                return PrepareBookResponse(
+                    status="error",
+                    book_id=book_id,
+                    chapters_found=len(chapters),
+                    error="Пайплайн завершился без результата",
+                ).model_dump()
+
+            ready_path = f"system_registry/ready_books/{book_id}.json"
+            showcase_path = f"system_registry/showcase/{book_id}.json"
+            chapter_id = result.get("chapter", {}).get("id", "ch01")
+
+            print(f"[PREPARE] ✅ Готово! {ready_path}")
+            print(f"[PREPARE] {'='*50}\n")
+
+            return PrepareBookResponse(
+                status="ready",
+                book_id=book_id,
+                chapters_found=len(chapters),
+                chapter_id=chapter_id,
+                ready_book_path=ready_path,
+                showcase_path=showcase_path,
+            ).model_dump()
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return PrepareBookResponse(
+                status="error",
+                book_id=req.book_id,
+                error=str(e),
+            ).model_dump()
+
+    # ── /api/living_book/showcase — список книг на витрине ───────────────────
+    @fastapi_app.get("/api/living_book/showcase")
+    async def living_book_showcase():
+        """Список готовых книг в system_registry/ready_books/."""
+        ready_dir = Path("system_registry/ready_books")
+        if not ready_dir.exists():
+            return {"books": [], "count": 0}
+        books = []
+        for f in sorted(ready_dir.glob("*.json")):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                books.append({
+                    "book_id": data.get("book_id", f.stem),
+                    "title": data.get("title", f.stem),
+                    "description": data.get("description", ""),
+                    "age_group": data.get("age_group", "7-12"),
+                    "main_character": data.get("main_character", "—"),
+                    "created_at": data.get("created_at", ""),
+                })
+            except Exception:
+                pass
+        return {"books": books, "count": len(books)}
+
+    print(f"[API] 📖 Living Book API:")
+    print(f"[API]   POST /api/living_book/generate")
+    print(f"[API]   POST /api/living_book/prepare_book  ← Цех разделки")
+    print(f"[API]   GET  /api/living_book/showcase")
     print(f"[API] 📡 Deliver callback → {BEACON_URL}/api/package/deliver")
