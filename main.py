@@ -56,7 +56,7 @@ def cartridges():
 
 @ui.page("/living_book_loader")
 def living_book_loader_page():
-    page_book_loader() 
+    page_book_loader()    
 
 from studio.grondheim_memory import run_loka_filter_all
 run_loka_filter_all()

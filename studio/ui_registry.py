@@ -1019,6 +1019,17 @@ BLOCKS = [
             ("Creator_Seal", "textarea", "Секретная фраза, известная только тебе. НЕ экспортируется — остаётся локально.", True),
         ]
     },
+    # 🔥 ⑦ Панель Резервов (НОВЫЙ БЛОК)
+    {
+        "icon": "⑦",
+        "title": "Панель Резервов",
+        "tag": "Экономика",
+        "fields": [
+            ("Balance_GND", "input", "Внутренний Баланс (GND)", False),
+            ("Conversion_Limit", "input", "Лимит Конвертации (подтверждено к выводу)", False),
+            ("Backing_Status", "select", ["", "Обеспечено резервом", "Ожидает ликвидности"], False),
+        ]
+    }
 ]
 
 RARITY_LEVELS = ["Common", "Rare", "Epic", "Mythic"]

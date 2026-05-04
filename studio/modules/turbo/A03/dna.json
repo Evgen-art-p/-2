@@ -3,7 +3,7 @@
   "name": "Визор",
   "workshop": "turbo",
   "role": "A03",
-  "rarity": "Rare",
+  "rarity": "Common",
   "created": "2026-03-17",
   "static": {
     "Stubbornness": 0.95,
@@ -32,6 +32,6 @@
   "balance": {
     "GND": 100.0,
     "Теплики": 100.0,
-    "Световики": 0.0
+    "Световики": 1000.0
   }
 }
