@@ -1,0 +1,64 @@
+[
+  {
+    "ID_Object": "P_0000000000",
+    "Object_Type_Class": "partner",
+    "Official_Name": "Архитектор",
+    "Referrer_ID": null,
+    "Ambassador_Rank": "Солнце",
+    "NFT_Rank_Status": "Солнце",
+    "NFT_Address": "mock_nft_P_0000000000_Солнце",
+    "Balance_GND": 4071.0,
+    "Backing_Status": "Обеспечено резервом",
+    "Accumulated_Gravity_Pool": 1200.0,
+    "purchased_cartridges": [
+      "living_book",
+      "logo_design",
+      "emo_card",
+      "clipmakers",
+      "advertising",
+      "market_hit",
+      "web_story"
+    ],
+    "cartridge_nft_addresses": {
+      "living_book": "architect_license_living_book",
+      "logo_design": "architect_license_logo_design",
+      "emo_card": "architect_license_emo_card",
+      "clipmakers": "architect_license_clipmakers",
+      "advertising": "architect_license_advertising",
+      "market_hit": "architect_license_market_hit",
+      "web_story": "architect_license_web_story"
+    }
+  },
+  {
+    "ID_Object": "P_0000000001",
+    "Object_Type_Class": "partner",
+    "Official_Name": "Партнёр 1 (тестовый)",
+    "Referrer_ID": "P_0000000000",
+    "Ambassador_Rank": "Искра",
+    "NFT_Rank_Status": "Искра",
+    "NFT_Address": null,
+    "Balance_GND": 5000.0,
+    "Backing_Status": "Обеспечено резервом",
+    "Accumulated_Gravity_Pool": 0.0,
+    "purchased_cartridges": [
+      "living_book"
+    ],
+    "cartridge_nft_addresses": {
+      "living_book": "mock_license_P_0000000001_living_book"
+    }
+  },
+  {
+    "ID_Object": "P_0000000002",
+    "Object_Type_Class": "partner",
+    "Official_Name": "Партнёр 2 (тестовый)",
+    "Referrer_ID": "P_0000000001",
+    "Ambassador_Rank": null,
+    "NFT_Rank_Status": null,
+    "NFT_Address": null,
+    "Balance_GND": 0.0,
+    "Backing_Status": "Обеспечено резервом",
+    "Accumulated_Gravity_Pool": 0.0,
+    "purchased_cartridges": [],
+    "cartridge_nft_addresses": {}
+  }
+]

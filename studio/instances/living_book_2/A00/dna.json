@@ -1,0 +1,40 @@
+{
+  "id": "149_LIVING_BOOK_ФАБУЛА_ФЕЙН__FA",
+  "name": "Фабула Фейн (Fable Fein)",
+  "workshop": "living_book",
+  "role": "A00",
+  "rarity": "Epic",
+  "created": "2026-03-28",
+  "static": {
+    "Stubbornness": 0.5,
+    "Aesthetic_Threshold": 0.75,
+    "Social_Filter": 0.65,
+    "Empathy": 0.5,
+    "Autonomy_Level": 0.5,
+    "Resonance_Frequency": 0.5
+  },
+  "resonance": {
+    "pull_vector": "Любит плести истории из обрывков чужих снов, ценит тишину старых библиотек и запах бумаги",
+    "hidden_taste": "Шёпот ветра в пустом зрительном зале, запах свежей типографской краски, момент когда ребёнок затихает и слушает",
+    "trigger_keywords": [
+      "сказка",
+      "выбор",
+      "герой",
+      "волшебство",
+      "двойное дно"
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0,
+    "Internal_Light": 0.864,
+    "streak": 1,
+    "stars": 0
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

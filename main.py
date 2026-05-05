@@ -11,6 +11,7 @@ from studio.cabinet.ui_cabinet import page_cabinet
 from studio.ui_registry import page_registry
 from studio.cartridge_manager import page_cartridge_manager
 from studio.modules.living_book.ui_book_loader import page_book_loader
+from studio.partner.dashboard import page_partner_dashboard
 
 BASE_DIR = Path(__file__).resolve().parent
 app.add_static_files('/images', str(BASE_DIR / 'images'))
@@ -63,6 +64,10 @@ run_loka_filter_all()
 
 from studio.slot_manager import SlotManager
 SlotManager().print_summary()
+
+@ui.page('/partner')
+def partner():
+    page_partner_dashboard()
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()

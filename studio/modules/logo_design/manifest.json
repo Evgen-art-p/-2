@@ -6,13 +6,29 @@
   "description": "Концепция, сценарий, раскадровка",
   "run_type": "pre_prod",
   "phases": {
-    "PRE-PROD":  ["A01", "A02", "A03", "A04"],
-    "PROD":      ["A05", "A06", "A07", "A08"],
-    "POST-PROD": ["A09", "A10", "A11", "A12"]
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ]
   },
   "checkpoint_after": [],
   "stop_after": 4,
   "revision_loop": null,
   "turbo_workers": [],
-  "turbo_parallel": []
+  "turbo_parallel": [],
+  "Author_ID": "P_0000000000"
 }

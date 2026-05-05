@@ -6,13 +6,40 @@
   "description": "Полный цикл: Фабула→Вера(ревизия)→18 агентов→Book Package",
   "run_type": "living_book",
   "phases": {
-    "GENESIS":   ["A00", "A00a"],
-    "PRE-PROD":  ["A01", "A02", "A03", "A04"],
-    "PROD":      ["A05", "A06", "A07", "A08"],
-    "POST-PROD": ["A09", "A10", "A11", "A12"],
-    "DELIVERY":  ["A13", "A14", "A15", "A16"]
+    "GENESIS": [
+      "A00",
+      "A00a"
+    ],
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ],
+    "DELIVERY": [
+      "A13",
+      "A14",
+      "A15",
+      "A16"
+    ]
   },
-  "checkpoint_after": ["A00a", "A08", "A15"],
+  "checkpoint_after": [
+    "A00a",
+    "A08",
+    "A15"
+  ],
   "stop_after": null,
   "revision_loop": {
     "reviewer": "A00a",
@@ -23,5 +50,6 @@
     "max_loops": 3
   },
   "turbo_workers": [],
-  "turbo_parallel": []
+  "turbo_parallel": [],
+  "Author_ID": "P_0000000000"
 }

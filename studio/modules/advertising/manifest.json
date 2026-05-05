@@ -6,13 +6,40 @@
   "description": "Полный цикл рекламных материалов: от идеи до готового креатива",
   "run_type": "social",
   "phases": {
-    "PRE-PROD":  ["A01", "A02", "A03", "A04"],
-    "PROD":      ["A05", "A06", "A07", "A08"],
-    "POST-PROD": ["A09", "A10", "A11", "A12"]
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ]
   },
   "checkpoint_after": [],
   "stop_after": null,
   "revision_loop": null,
-  "turbo_workers": ["A01", "A02", "A03", "A04", "A05"],
-  "turbo_parallel": [["A02", "A03"]]
+  "turbo_workers": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05"
+  ],
+  "turbo_parallel": [
+    [
+      "A02",
+      "A03"
+    ]
+  ],
+  "Author_ID": "P_0000000000"
 }

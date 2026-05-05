@@ -1098,6 +1098,7 @@ def page_cabinet() -> None:
                     web_cls = "cab-btn active" if TAVILY_KEY else "cab-btn"
                     web_title = "Web активен" if TAVILY_KEY else "Вставь TAVILY_KEY"
                     ui.html(f'<div class="{web_cls}" title="{web_title}">🌐 web</div>')
+                    ui.button("💰 дашборд", on_click=lambda: ui.open("/partner")).props("flat dense").style("background:#141722;border:1px solid rgba(212,175,55,0.15);color:rgba(212,175,55,0.7);font-family:JetBrains Mono;font-size:0.65rem;padding:5px 11px;border-radius:6px;")
                     ui.button("💾", on_click=lambda: save_chat()).props("flat dense").style("background:#141722;border:1px solid rgba(99,130,255,0.08);color:rgba(108,140,255,0.6);font-family:JetBrains Mono;font-size:0.7rem;padding:5px 11px;border-radius:6px;min-width:32px;").props('title="Сохранить чат + конспект"')
                     ui.button("📋 реестр", on_click=lambda: ui.run_javascript('window.open("/registry","_blank")')).props("flat dense").style("background:#141722;border:1px solid rgba(201,168,76,0.15);color:rgba(201,168,76,0.7);font-family:JetBrains Mono;font-size:0.65rem;padding:5px 11px;border-radius:6px;")
                     ui.button("✕", on_click=lambda: clear_chat()).props("flat dense").style("background:#141722;border:1px solid rgba(99,130,255,0.08);color:rgba(180,190,220,0.6);font-family:JetBrains Mono;font-size:0.62rem;padding:5px 11px;border-radius:6px;")
