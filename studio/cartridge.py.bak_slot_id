@@ -273,7 +273,6 @@ class CartridgeRunner:
         run_type = self.manifest.run_type or self.manifest.id
         # Сообщаем pipeline.py кто QA-агент этого цеха
         self.state["_qa_agent"] = getattr(self.manifest, "qa_agent", "A12")
-        self.state["_slot_id"] = self.slot_id  # ← slot_id для feedback/reflection
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")
         settings_ctx = build_settings_ctx(self.state)

@@ -185,25 +185,7 @@ def get_reflection(agent_id: str, slot_id: str = "") -> str:
     Если данных мало или агент новый — возвращает пустую строку.
     """
     cache = _load_cache()
-
-    # Если передан slot_id — приоритет слотовым данным
-    agent_data = None
-    if slot_id:
-        try:
-            import json as _json
-            _gf_path = GLOBAL_FEEDBACK_PATH
-            if _gf_path.exists():
-                _gf = _json.loads(_gf_path.read_text(encoding="utf-8"))
-                _slot_agents = _gf.get("slots", {}).get(slot_id, {}).get("agents", {})
-                _raw = _slot_agents.get(agent_id)
-                if _raw and _raw.get("runs", 0) >= MIN_RUNS_FOR_REFLECTION:
-                    agent_data = _extract_patterns(_raw)
-        except Exception:
-            pass
-
-    # Fallback — общие данные из кеша
-    if agent_data is None:
-        agent_data = cache.get("agents", {}).get(agent_id)
+    agent_data = cache.get("agents", {}).get(agent_id)
 
     if not agent_data:
         return ""

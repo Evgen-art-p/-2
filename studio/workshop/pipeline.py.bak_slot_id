@@ -34,16 +34,6 @@ except ImportError:
     def get_feedback(client_slug, worker_id): return ""
     def save_feedback(client_slug, arthur_result): pass
 
-# ══ Strategy Registry — банк успешных стратегий по слотам ══
-try:
-    from studio.strategy_registry import get_strategies, record_strategy
-    _STRATEGY_ENABLED = True
-    print("[STRATEGY] 🏆 Strategy Registry подключён")
-except ImportError:
-    _STRATEGY_ENABLED = False
-    def get_strategies(agent_id, slot_id=""): return ""
-    def record_strategy(**kwargs): pass
-
 # ══ NEW: Гавань Смыслов — RAG внутренних знаний ══
 try:
     from studio.harbor_of_meanings import get_harbor_knowledge
@@ -200,19 +190,9 @@ def build_agent_context(
 
     # Рефлексия — поведенческие паттерны из истории ранов
     if _REFLECTION_ENABLED:
-        _slot_id_for_ref = state.get("_slot_id", "")
-        reflection = get_reflection(worker_id, slot_id=_slot_id_for_ref)
+        reflection = get_reflection(worker_id)
         if reflection:
             context += reflection + "\n\n"
-
-    # ══ Strategy Registry — успешные стратегии по слоту ══
-    if _STRATEGY_ENABLED:
-        _slot_id_for_strat = state.get("_slot_id", "")
-        strategies = get_strategies(worker_id, slot_id=_slot_id_for_strat)
-        if strategies:
-            context += strategies + "\n\n"
-            print(f"[STRATEGY] 🏆 {worker_id}: стратегии загружены ({len(strategies)} симв.)")
-    # ══ end Strategy Registry ══
 
     # Обратная связь от QA (прошлый ран)
     feedback = get_feedback(client_slug, worker_id)
@@ -405,9 +385,6 @@ def process_agent_result(
             _apply_qa_feedback(state, raw_result, qa_agent)
         # ══ SYNC: реальные оценки QA → DNA агентов ══
         _sync_feedback_scores_to_dna(client_slug, state.get("active_dept", ""))
-        # ══ STRATEGY REGISTRY: записываем победы по слотам ══
-        if _STRATEGY_ENABLED:
-            _record_winning_strategies(state, client_slug)
         # ══ REFLECTION: пересчитываем паттерны если пришло время ══
         if _REFLECTION_ENABLED:
             maybe_rebuild()
@@ -518,56 +495,6 @@ def _sync_feedback_scores_to_dna(client_slug: str, dept: str = ""):
             print(f"  {emoji} {agent_id}: score={score} → {event}(i={intensity:.2f})")
         except Exception as e:
             print(f"  ⚠️ {agent_id}: sync_to_dna ошибка — {e}")
-
-
-def _record_winning_strategies(state: dict, client_slug: str):
-    """
-    Читает feedback.json и записывает стратегии победивших агентов
-    в Strategy Registry.
-    Вызывается один раз в конце рана после QA.
-    """
-    from pathlib import Path as _Path
-    import json as _json
-
-    slot_id = state.get("_slot_id", "")
-    run_type = state.get("run_type", "")
-
-    feedback_path = _Path("clients") / client_slug / "feedback.json"
-    if not feedback_path.exists():
-        return
-
-    try:
-        feedback = _json.loads(feedback_path.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"[STRATEGY] Не удалось прочитать feedback: {e}")
-        return
-
-    agents_data = feedback.get("agents", {})
-    results = state.get("results", {})
-
-    for agent_id, fb_data in agents_data.items():
-        score = fb_data.get("score", 0.0)
-        problems = fb_data.get("problems", [])
-
-        # Берём краткое резюме из результата агента
-        result_data = results.get(agent_id, {})
-        if isinstance(result_data, dict):
-            summary = result_data.get("text", "")[:300]
-        else:
-            summary = str(result_data)[:300]
-
-        if not summary:
-            continue
-
-        record_strategy(
-            agent_id=agent_id,
-            slot_id=slot_id,
-            score=score,
-            result_summary=summary,
-            run_type=run_type,
-            client_slug=client_slug,
-            problems=problems,
-        )
 
 
 async def summarize_session(state: dict, client_slug: str, run_date: str, run_type: str):

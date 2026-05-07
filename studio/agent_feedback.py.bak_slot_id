@@ -251,24 +251,6 @@ def _update_global(run_feedback: dict, slot_id: str = ""):
             ga["recurring_problems"], key=lambda x: x["count"], reverse=True
         )[:5]
     
-    # ══ slot_id binding: помним что происходило в каком цехе ══
-    if slot_id:
-        if "slots" not in gf:
-            gf["slots"] = {}
-        if slot_id not in gf["slots"]:
-            gf["slots"][slot_id] = {"runs": 0, "agents": {}}
-        gf["slots"][slot_id]["runs"] = gf["slots"][slot_id].get("runs", 0) + 1
-        for _aid, _rdata in run_feedback.get("agents", {}).items():
-            _sl_agents = gf["slots"][slot_id]["agents"]
-            if _aid not in _sl_agents:
-                _sl_agents[_aid] = {"runs": 0, "avg_score": 0.0, "total_score": 0.0, "last_problems": []}
-            _sla = _sl_agents[_aid]
-            _sla["runs"] += 1
-            _sla["total_score"] = _sla.get("total_score", 0.0) + _rdata.get("score", 5.0)
-            _sla["avg_score"] = round(_sla["total_score"] / _sla["runs"], 1)
-            _sla["last_problems"] = _rdata.get("problems", [])[:3]
-    # ══ end slot binding ══
-
     _save_global(gf)
     print(f"[FEEDBACK] Глобальный обновлён: {gf['total_runs']} ранов")
 
