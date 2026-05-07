@@ -17,16 +17,6 @@ from studio.workshop.memory import (
 )
 from studio.workshop.assets import _load_asset_catalog
 
-# Reflection Engine — поведенческие паттерны из истории ранов
-try:
-    from studio.reflection import get_reflection, maybe_rebuild
-    _REFLECTION_ENABLED = True
-    print("[REFLECTION] 🧠 Reflection Engine подключён")
-except ImportError:
-    _REFLECTION_ENABLED = False
-    def get_reflection(agent_id): return ""
-    def maybe_rebuild(force=False): pass
-
 # Feedback loop — оценки от Артура
 try:
     from studio.agent_feedback import get_feedback, save_feedback
@@ -187,12 +177,6 @@ def build_agent_context(
     catalog = _load_asset_catalog()
     if catalog:
         context += f"\n\n{catalog}\n\n"
-
-    # Рефлексия — поведенческие паттерны из истории ранов
-    if _REFLECTION_ENABLED:
-        reflection = get_reflection(worker_id)
-        if reflection:
-            context += reflection + "\n\n"
 
     # Обратная связь от QA (прошлый ран)
     feedback = get_feedback(client_slug, worker_id)
@@ -384,9 +368,6 @@ def process_agent_result(
             _apply_qa_feedback(state, raw_result, qa_agent)
         # ══ SYNC: реальные оценки QA → DNA агентов ══
         _sync_feedback_scores_to_dna(client_slug, state.get("active_dept", ""))
-        # ══ REFLECTION: пересчитываем паттерны если пришло время ══
-        if _REFLECTION_ENABLED:
-            maybe_rebuild()
     # ══ END UNIVERSAL FEEDBACK ══
 
     # Строим chain для следующего агента
