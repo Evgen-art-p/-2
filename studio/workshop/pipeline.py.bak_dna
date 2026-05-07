@@ -366,8 +366,6 @@ def process_agent_result(
             print(f"[FEEDBACK] Ошибка: {_fb_err}")
         if _GRONDHEIM_ENABLED:
             _apply_qa_feedback(state, raw_result, qa_agent)
-        # ══ SYNC: реальные оценки QA → DNA агентов ══
-        _sync_feedback_scores_to_dna(client_slug, state.get("active_dept", ""))
     # ══ END UNIVERSAL FEEDBACK ══
 
     # Строим chain для следующего агента
@@ -419,63 +417,6 @@ def _apply_qa_feedback(state: dict, raw_result: str, qa_agent: str):
         elif is_positive and is_negative:
             # Смешанная оценка — лёгкая критика
             on_agents_interact(qa_agent, wid, "critique", 0.3, "Смешанная оценка QA", dept)
-
-
-def _sync_feedback_scores_to_dna(client_slug: str, dept: str = ""):
-    """
-    Читает свежий feedback.json и синхронизирует реальные оценки QA
-    в DNA каждого агента через sync_to_dna().
-
-    Вызывается сразу после save_feedback() — один раз в конце рана.
-    Это единственный источник правды для quality_score.
-
-    score 0–4   → bad_work  (intensity = 1 - score/10)
-    score 5–7   → нейтрально, лёгкий good_work
-    score 8–10  → good_work (intensity = score/10)
-    """
-    if not _GRONDHEIM_ENABLED:
-        return
-
-    from pathlib import Path as _Path
-    import json as _json
-
-    feedback_path = _Path("clients") / client_slug / "feedback.json"
-    if not feedback_path.exists():
-        return
-
-    try:
-        feedback = _json.loads(feedback_path.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"[DNA-SYNC] Не удалось прочитать feedback: {e}")
-        return
-
-    agents_data = feedback.get("agents", {})
-    if not agents_data:
-        return
-
-    print(f"[DNA-SYNC] Синхронизируем оценки → DNA ({len(agents_data)} агентов)")
-
-    for agent_id, data in agents_data.items():
-        score = data.get("score", 5.0)       # 0.0–10.0
-        normalized = score / 10.0             # 0.0–1.0
-
-        if score >= 8.0:
-            event = "good_work"
-            intensity = normalized
-        elif score < 5.0:
-            event = "bad_work"
-            intensity = 1.0 - normalized      # чем хуже — тем сильнее
-        else:
-            event = "good_work"
-            intensity = 0.4                   # нейтральная работа
-
-        try:
-            sync_to_dna(agent_id, event, intensity=intensity, dept=dept)
-            emoji = "✅" if score >= 8 else "⚠️" if score >= 5 else "❌"
-            print(f"  {emoji} {agent_id}: score={score} → {event}(i={intensity:.2f})")
-        except Exception as e:
-            print(f"  ⚠️ {agent_id}: sync_to_dna ошибка — {e}")
-
 
 async def summarize_session(state: dict, client_slug: str, run_date: str, run_type: str):
     """Суммаризация сессии — вызывается в конце пайплайна"""
