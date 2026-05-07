@@ -354,19 +354,18 @@ def process_agent_result(
             )
     # ══ END NEW ══
 
-    # ══ UNIVERSAL FEEDBACK ══
-    # qa_agent берётся из state["_qa_agent"] — туда CartridgeRunner кладёт
-    # значение из manifest.json["qa_agent"]. Fallback: "A12".
-    qa_agent = state.get("_qa_agent", "A12")
-    if worker_id == qa_agent and client_slug != "_sandbox":
+    # Feedback loop: если это Артур — сохраняем оценки для следующего рана
+    print(f"[DEBUG FEEDBACK] worker={worker_id}, client='{client_slug}'") 
+    if worker_id == "A12" and client_slug != "_sandbox":
         try:
             save_feedback(client_slug, raw_result)
-            print(f"[FEEDBACK] ✅ {worker_id} → feedback для {client_slug}")
         except Exception as _fb_err:
-            print(f"[FEEDBACK] Ошибка: {_fb_err}")
+            print(f"[FEEDBACK] Ошибка сохранения: {_fb_err}")
+
+        # ══ NEW: Артур оценивает коллег → влияет на их DNA ══
         if _GRONDHEIM_ENABLED:
-            _apply_qa_feedback(state, raw_result, qa_agent)
-    # ══ END UNIVERSAL FEEDBACK ══
+            _apply_arthur_feedback(state, raw_result)
+        # ══ END NEW ══
 
     # Строим chain для следующего агента
     my_output = meta.get("my_output", {})
@@ -385,16 +384,17 @@ def process_agent_result(
     return human_text, previous_output, ghost_ids
 
 
-def _apply_qa_feedback(state: dict, raw_result: str, qa_agent: str):
+# ══ NEW: Артур (A12) → оценки коллегам ══
+def _apply_arthur_feedback(state: dict, raw_result: str):
     """
-    Парсит ответ QA-агента и транслирует оценки в DNA коллег.
-    Универсальная версия — работает для любого qa_agent цеха.
+    Парсит ответ Артура и транслирует оценки в DNA коллег.
+    Артур упоминает агентов — ищем позитивные/негативные маркеры.
     """
     dept = state.get("active_dept", "")
     raw_lower = raw_result.lower()
 
-    # Все рабочие агенты кроме QA
-    worker_ids = [k for k in state.get("results", {}).keys() if k != qa_agent]
+    # Все рабочие агенты кроме Артура
+    worker_ids = [k for k in state.get("results", {}).keys() if k != "A12"]
 
     positive_markers = ["отлично", "хорошо", "качественно", "сильно", "точно", "великолепно", "браво"]
     negative_markers = ["ошибка", "правки", "слабо", "не соответствует", "переделать", "проблема", "критично"]
@@ -411,12 +411,14 @@ def _apply_qa_feedback(state: dict, raw_result: str, qa_agent: str):
         is_negative = any(m in context_window for m in negative_markers)
 
         if is_positive and not is_negative:
-            on_agents_interact(qa_agent, wid, "praise", 0.8, "Положительная оценка QA", dept)
+            on_agents_interact("A12", wid, "praise", 0.8, "Положительная оценка QA", dept)
         elif is_negative and not is_positive:
-            on_agents_interact(qa_agent, wid, "critique", 0.7, "Замечания QA", dept)
+            on_agents_interact("A12", wid, "critique", 0.7, "Замечания QA", dept)
         elif is_positive and is_negative:
             # Смешанная оценка — лёгкая критика
-            on_agents_interact(qa_agent, wid, "critique", 0.3, "Смешанная оценка QA", dept)
+            on_agents_interact("A12", wid, "critique", 0.3, "Смешанная оценка QA", dept)
+# ══ END NEW ══
+
 
 async def summarize_session(state: dict, client_slug: str, run_date: str, run_type: str):
     """Суммаризация сессии — вызывается в конце пайплайна"""

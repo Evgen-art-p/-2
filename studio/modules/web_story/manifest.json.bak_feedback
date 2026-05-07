@@ -1,10 +1,10 @@
 {
-  "id": "advertising",
-  "label": "📢 Реклама",
-  "icon": "📢",
+  "id": "web_story",
+  "label": "🌐 Web Story",
+  "icon": "🌐",
   "version": "1.0",
-  "description": "Полный цикл рекламных материалов: от идеи до готового креатива",
-  "run_type": "social",
+  "description": "Хард-стоп после Рины (A05), затем PROD A06-A12",
+  "run_type": "web_story",
   "phases": {
     "PRE-PROD": [
       "A01",
@@ -25,7 +25,9 @@
       "A12"
     ]
   },
-  "checkpoint_after": [],
+  "checkpoint_after": [
+    "A05"
+  ],
   "stop_after": null,
   "revision_loop": null,
   "turbo_workers": [
@@ -41,6 +43,5 @@
       "A03"
     ]
   ],
-  "Author_ID": "P_0000000000",
-  "qa_agent": "A12"
+  "Author_ID": "P_0000000000"
 }

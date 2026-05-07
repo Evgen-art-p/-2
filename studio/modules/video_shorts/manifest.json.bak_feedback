@@ -1,9 +1,9 @@
 {
-  "id": "advertising",
-  "label": "📢 Реклама",
-  "icon": "📢",
+  "id": "video_shorts",
+  "label": "⚡ Видео Shorts",
+  "icon": "⚡",
   "version": "1.0",
-  "description": "Полный цикл рекламных материалов: от идеи до готового креатива",
+  "description": "Полный цикл: от идеи до постинга",
   "run_type": "social",
   "phases": {
     "PRE-PROD": [
@@ -41,6 +41,5 @@
       "A03"
     ]
   ],
-  "Author_ID": "P_0000000000",
-  "qa_agent": "A12"
+  "Author_ID": "P_0000000000"
 }

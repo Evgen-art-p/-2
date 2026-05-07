@@ -52,7 +52,6 @@ class CartridgeManifest:
     # Режим работы: stop_after, описание
     stop_after: Optional[int] = None
     description: str = ""
-    qa_agent: str = "A12"  # QA-агент цеха, чьи оценки идут в feedback
 
     # Run type — для совместимости с PIPELINE_MODES
     run_type: str = ""
@@ -78,7 +77,6 @@ class CartridgeManifest:
             turbo_parallel=data.get("turbo_parallel", []),
             stop_after=data.get("stop_after"),
             description=data.get("description", ""),
-            qa_agent=data.get("qa_agent", "A12"),
             run_type=data.get("run_type", module_id),
         )
 
@@ -271,8 +269,6 @@ class CartridgeRunner:
                     break
 
         run_type = self.manifest.run_type or self.manifest.id
-        # Сообщаем pipeline.py кто QA-агент этого цеха
-        self.state["_qa_agent"] = getattr(self.manifest, "qa_agent", "A12")
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")
         settings_ctx = build_settings_ctx(self.state)

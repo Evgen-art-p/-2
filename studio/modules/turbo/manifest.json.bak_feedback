@@ -30,6 +30,5 @@
   "checkpoint_after": [],
   "stop_after": null,
   "revision_loop": null,
-  "Author_ID": "P_0000000000",
-  "qa_agent": "A05"
+  "Author_ID": "P_0000000000"
 }
