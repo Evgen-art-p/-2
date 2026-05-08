@@ -13,7 +13,7 @@
 
 import json
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from studio.config import BASE_DIR
@@ -61,7 +61,7 @@ def record(
     model: str,
     prompt_tokens: int,
     completion_tokens: int,
-    call_type: str = "chat",  # chat | chat_with_tools | chat_with_images
+    call_type: str = "chat",
 ) -> dict:
     """
     Записывает один LLM вызов в лог.
@@ -99,7 +99,7 @@ def record(
 
 
 # ═══════════════════════════════════════════════════════════
-# АНАЛИТИКА (только чтение — для Этапа 2 Cost Intuition)
+# АНАЛИТИКА (только чтение)
 # ═══════════════════════════════════════════════════════════
 
 def read_ledger(limit: int = None) -> list[dict]:
@@ -142,9 +142,179 @@ def slot_spent(slot_id: str) -> float:
 
 
 def recent_by_agent(agent_id: str, slot_id: str = None, n: int = 20) -> list[dict]:
-    """Последние N записей агента (для Cost Intuition — Этап 2)."""
+    """Последние N записей агента."""
     entries = read_ledger()
     filtered = [e for e in entries if e["agent_id"] == agent_id]
     if slot_id:
         filtered = [e for e in filtered if e["slot_id"] == slot_id]
     return filtered[-n:]
+
+
+# ═══════════════════════════════════════════════════════════
+# DASHBOARD API (v1.0)
+# ═══════════════════════════════════════════════════════════
+
+def get_economy_data(days: int = 1) -> dict:
+    """
+    Агрегаты за период для дашборда.
+
+    Args:
+        days: 1 (сегодня), 7 (неделя), 30 (месяц)
+
+    Returns:
+        {
+            "total": float,
+            "burn_rate": float,
+            "by_provider": {provider: cost},
+            "by_model": {model: cost},
+            "by_agent": {agent_id: cost},
+            "by_slot": {slot_id: cost}
+        }
+    """
+    entries = read_ledger()
+    if not entries:
+        return {
+            "total": 0, "burn_rate": 0,
+            "by_provider": {}, "by_model": {},
+            "by_agent": {}, "by_slot": {}
+        }
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+
+    total = 0.0
+    by_provider: dict[str, float] = {}
+    by_model: dict[str, float] = {}
+    by_agent: dict[str, float] = {}
+    by_slot: dict[str, float] = {}
+
+    for entry in entries:
+        try:
+            entry_time = datetime.fromisoformat(entry["ts"])
+            if entry_time < cutoff:
+                continue
+
+            cost = entry.get("cost_usd", 0)
+            provider = entry.get("provider", "openrouter")
+            model = entry.get("model", "unknown")
+            agent = entry.get("agent_id", "unknown")
+            slot = entry.get("slot_id", "unknown")
+
+            total += cost
+            by_provider[provider] = by_provider.get(provider, 0) + cost
+            by_model[model] = by_model.get(model, 0) + cost
+            by_agent[agent] = by_agent.get(agent, 0) + cost
+            by_slot[slot] = by_slot.get(slot, 0) + cost
+        except Exception:
+            continue
+
+    minutes = max(days * 24 * 60, 1)
+    burn_rate = total / minutes
+
+    return {
+        "total": round(total, 4),
+        "burn_rate": round(burn_rate, 4),
+        "by_provider": dict(sorted(
+            {k: round(v, 4) for k, v in by_provider.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+        "by_model": dict(sorted(
+            {k: round(v, 4) for k, v in by_model.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+        "by_agent": dict(sorted(
+            {k: round(v, 4) for k, v in by_agent.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+        "by_slot": dict(sorted(
+            {k: round(v, 4) for k, v in by_slot.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+    }
+
+
+def get_agent_stats(agent_id: str, days: int = 1) -> dict:
+    """
+    Детальная статистика по одному агенту за период.
+
+    Args:
+        agent_id: ID агента ("A03", "loka", ...)
+        days: период
+
+    Returns:
+        {
+            "agent_id": str,
+            "total": float,
+            "burn_rate": float,
+            "total_calls": int,
+            "avg_cost": float,
+            "by_provider": {provider: cost},
+            "by_model": {model: cost},
+            "recent": [list of recent entries]
+        }
+    """
+    entries = read_ledger()
+    if not entries:
+        return {
+            "agent_id": agent_id, "total": 0, "burn_rate": 0,
+            "total_calls": 0, "avg_cost": 0,
+            "by_provider": {}, "by_model": {}, "recent": []
+        }
+
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+
+    total = 0.0
+    call_count = 0
+    by_provider: dict[str, float] = {}
+    by_model: dict[str, float] = {}
+    recent: list[dict] = []
+
+    for entry in entries:
+        try:
+            if entry.get("agent_id") != agent_id:
+                continue
+
+            entry_time = datetime.fromisoformat(entry["ts"])
+            if entry_time < cutoff:
+                continue
+
+            cost = entry.get("cost_usd", 0)
+            provider = entry.get("provider", "openrouter")
+            model = entry.get("model", "unknown")
+
+            total += cost
+            call_count += 1
+            by_provider[provider] = by_provider.get(provider, 0) + cost
+            by_model[model] = by_model.get(model, 0) + cost
+
+            recent.append({
+                "ts": entry["ts"],
+                "model": model,
+                "cost": cost,
+                "tokens": entry.get("total_tokens", 0),
+            })
+        except Exception:
+            continue
+
+    minutes = max(days * 24 * 60, 1)
+    burn_rate = total / minutes
+    avg_cost = round(total / call_count, 6) if call_count > 0 else 0
+    recent = sorted(recent, key=lambda x: x["ts"], reverse=True)[:10]
+
+    return {
+        "agent_id": agent_id,
+        "total": round(total, 4),
+        "burn_rate": round(burn_rate, 4),
+        "total_calls": call_count,
+        "avg_cost": avg_cost,
+        "by_provider": dict(sorted(
+            {k: round(v, 4) for k, v in by_provider.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+        "by_model": dict(sorted(
+            {k: round(v, 4) for k, v in by_model.items()}.items(),
+            key=lambda x: x[1], reverse=True
+        )),
+        "recent": recent,
+    }

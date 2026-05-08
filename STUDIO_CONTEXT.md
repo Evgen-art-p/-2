@@ -1,5 +1,6 @@
+```markdown
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 9.0 | **Дата:** 2026-05-08 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 10.0 | **Дата:** 2026-05-08 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > ⚠️ 12 апреля — студия была потеряна (удалена репа + файлы). Восстановлена за ночь. Картриджная архитектура спасла: модули изолированы, каждый восстановим отдельно.
@@ -63,7 +64,7 @@
 
 ---
 
-## 5. КАРТРИДЖНАЯ АРХИТЕКТУРА (v1.1) ✅
+## 5. КАРТРИДЖНАЯ АРХИТЕКТУРА (v1.2) ✅
 
 Студия = **шасси + сменные картриджи**. Каждый цех — отдельный картридж со своим manifest.json, hooks.py, и pipeline. Можно дублировать, убирать, компоновать.
 
@@ -82,21 +83,25 @@ studio/global_feedback.json       ← студийный аккумулятор 
 studio/strategy_registry.py       ← Strategy Registry: банк успешных стратегий ✅
 studio/strategy_registry.json     ← данные реестра (авто, после первого рана) ✅
 studio/grondheim_memory.py        ← личная память агентов (soul, sensory, resonance)
-studio/modules/{цех}/manifest.json ← фазы, checkpoints, revision, turbo, qa_agent ✅
+studio/conflict.py                ← Conflict System: движок конфликтов ✅ НОВЫЙ
+studio/modules/{цех}/manifest.json ← фазы, checkpoints, revision, turbo, conflict_mode ✅
 studio/modules/{цех}/hooks.py     ← кастомная логика цеха
 ```
 
-### Экономический модуль (Спринт 11) ✅ НОВЫЙ:
+### Экономический модуль (Спринт 11-12) ✅ ОБНОВЛЁН:
 ```
 studio/economy/
   __init__.py          ← публичный API модуля
   ledger.py            ← Этап 1: Billing Reality — каждый LLM вызов → JSONL
   cost_intuition.py    ← Этап 2: Cost Intuition — ощущение дороговизны в промпт
   memory_embedding.py  ← Этап 3: Memory Embedding — числа → текстовые ощущения
-  ministry.py          ← Этапы 6-7: Ministry Selection — post-fact естественный отбор
+  ministry.py          ← Этап 7: Ministry Selection — post-fact естественный отбор
+  conflict_memory.py   ← Этап 6: Conflict Memory — лог конфликтов ✅ НОВЫЙ
   data/
     billing_ledger.jsonl  ← лог всех API вызовов
     ministry.json         ← рейтинги агентов по цехам
+    conflict_log.jsonl    ← лог конфликтов (авто) ✅ НОВЫЙ
+    conflict_stats.json   ← статистика побед (авто) ✅ НОВЫЙ
 ```
 
 ### Текущие слоты (11 картриджей):
@@ -113,7 +118,7 @@ studio/economy/
 | market_hit | 12 | полный цикл |
 | logo_design | 12 | stop_after=4 |
 | emo_card | 12 | stop_after=4 |
-| living_book | 18 | revision A00a→A00, 5 фаз, qa_agent=A16 |
+| living_book | 18 | revision A00a→A00, 5 фаз |
 
 ---
 
@@ -135,7 +140,7 @@ LIVING_BOOK_APP (Маяк) = **клиент** студии, НЕ паралле�
 
 ---
 
-## 5c. ПЕТЛЯ ПАМЯТИ АГЕНТА ✅ ПОЛНОСТЬЮ ЗАМКНУТА (Спринт 11)
+## 5c. ПЕТЛЯ ПАМЯТИ АГЕНТА ✅ ПОЛНОСТЬЮ ЗАМКНУТА (Спринт 11-12)
 
 Полная цепочка: **ран → ledger → QA → DNA → рефлексия → стратегия → ощущение → промпт**
 
@@ -147,18 +152,21 @@ build_agent_context()
   → on_agent_wake()                         ← душа: якоря + DNA + локация + resonance
   → get_reflection(agent_id, slot_id)       ← паттерны поведения
   → get_strategies(agent_id, slot_id)       ← успешные стратегии
-  → cost_intuition.get_prompt_hint()        ← ощущение дороговизны (Этап 2) ✅ НОВЫЙ
-  → ministry.get_prompt_hint()              ← режим: frugal/normal/generous (Этап 7) ✅ НОВЫЙ
+  → cost_intuition.get_prompt_hint()        ← ощущение дороговизны (Этап 2)
+  → ministry.get_prompt_hint()              ← режим: frugal/normal/generous (Этап 7)
   → get_feedback(client_slug, agent)        ← оценки QA прошлого рана
 
 [llm.py — каждый вызов]
-  → ledger.record(agent_id, slot_id, model, tokens, cost) ← Этап 1 ✅ НОВЫЙ
+  → ledger.record(agent_id, slot_id, model, tokens, cost) ← Этап 1
+
+[CONFLICT — если conflict_mode включён]
+  → conflict.run_conflict_phase()           ← параллельные提案ы → QA выбирает победителя
 
 [QA-агент завершает ран]
   → _sync_feedback_scores_to_dna()          ← score → DNA
   → _record_winning_strategies()            ← score ≥ 8 → Strategy Registry
-  → memory_embedding.embed_all_agents()     ← score+cost → ощущение → sensory ✅ НОВЫЙ
-  → ministry.record_outcome()               ← post-fact отбор ✅ НОВЫЙ
+  → memory_embedding.embed_all_agents()     ← score+cost → ощущение → sensory
+  → ministry.record_outcome()               ← post-fact отбор
   → maybe_rebuild()                         ← рефлексия пересчитана
 ```
 
@@ -170,7 +178,7 @@ build_agent_context()
 | 3 | Memory Embedding | ✅ economy/memory_embedding.py |
 | 4 | Strategy Registry | ✅ studio/strategy_registry.py |
 | 5 | Reflection Engine | ✅ studio/reflection.py |
-| 6 | Conflict System | ⬜ следующие итерации |
+| 6 | Conflict System | ✅ studio/conflict.py + conflict_memory.py |
 | 7 | Ministry Selection | ✅ economy/ministry.py |
 | 8 | Culture Formation | ⬜ |
 | 9 | Character Drift | ⬜ |
@@ -199,6 +207,7 @@ build_agent_context()
 - `reflection.py` — фильтрует по `agent_id + slot_id`
 - `strategy_registry.json["slots"][slot_id]`
 - `economy/ministry.json` — рейтинги по `agent_id::slot_id`
+- `economy/data/conflict_stats.json` — статистика побед по `slot_id::phase_id::agent_id`
 - `sensory_memory.json` — ощущения с тегом `economy` и `slot_id`
 
 ---
@@ -213,7 +222,7 @@ build_agent_context()
 ## 13. БЭКЛОГ
 
 ### ✅ Сделано (Спринт 11 — 2026-05-08):
-- [x] **studio/economy/ — экономический модуль** (Глубокое Резюме, Этапы 1-3, 6-7)
+- [x] **studio/economy/ — экономический модуль** (Глубокое Резюме, Этапы 1-3, 7)
   - `ledger.py` — каждый LLM вызов → billing_ledger.jsonl
   - `cost_intuition.py` — история трат → ощущение дороговизны в промпт агента
   - `memory_embedding.py` — score+cost → текстовое ощущение → sensory память
@@ -221,17 +230,22 @@ build_agent_context()
 - [x] **llm.py патч** — chat/chat_with_tools/chat_with_images пишут в ledger
 - [x] **pipeline.py патч** — cost_intuition + ministry в build_agent_context(),
   embed_all_agents() + record_outcome() post-fact после QA
-- [x] **Патч-скрипты** (запускать из корня):
-  - `patch_economy.py` — создаёт studio/economy/
-  - `patch_pipeline_economy.py` — интеграция в pipeline.py
-  - `patch_memory_embedding.py` — Этап 3
 
-### 🟡 Следующий шаг (Спринт 12):
+### ✅ Сделано (Спринт 12 — 2026-05-08, вечер):
+- [x] **Этап 6 — Conflict System** — multi-agent divergence, конкуренция решений
+  - `studio/conflict.py` — движок конфликтов (divergent + adversarial режимы)
+  - `studio/economy/conflict_memory.py` — запись исходов, статистика побед
+  - `patch_cartridge_conflict.py` — интеграция conflict в cartridge.py
+  - `add_conflict_to_all_manifests.py` — conflict_mode во все 11 цехов
+  - Удалены `Author_ID` и `qa_agent` из всех манифестов
+  - Бэкапы: `manifest.json.bak_conflict`, `cartridge.py.bak_conflict`
+- [x] **Конфликт = нормальный режим** — на уровне цеха, не фазы
+- [x] **7 из 10 этапов Глубокого Резюме** реализованы
 
-- [ ] **Этап 6 — Conflict System** — multi-agent divergence, конкуренция решений
+### 🟡 Следующий шаг (Спринт 13):
+
 - [ ] Этапы 8-10 (Culture Formation, Character Drift, Cultural Loop)
 - [ ] dashboard !смотри "источник правды"
-
 - [ ] Полный тест цикла: заказ → генерация → deliver → Искорка → biography
 - [ ] ready_books/ — 3 первые книги (Эйрик/пещера, Лока/город, Фенрир/лес)
 - [ ] Искорка v6.0 — чистый voice_choice
@@ -258,7 +272,8 @@ build_agent_context()
 | 2026-04-12 | hooks.py · manifest · Менеджер картриджей · Мост Маяк↔Студия · Потеря и восстановление |
 | 2026-04-13 | Спринт 9 — biography_snapshot сквозной · A16 story_package v3.0 · Deliver callback |
 | 2026-05-07 | Спринт 9.5+10 — slot_id сквозной · Strategy Registry · Петля памяти замкнута |
-| **2026-05-08** | **Спринт 11 — Экономический модуль (Глубокое Резюме).** studio/economy/ создан. Этапы 1-3, 6-7 реализованы. llm.py пишет каждый вызов в ledger. pipeline.py: агент получает cost_intuition + ministry hint перед раном; после QA — memory_embedding пишет ощущение в sensory, ministry фиксирует исход. Цепочка: ран → ledger → QA → DNA → рефлексия → стратегия → ощущение → промпт. |
+| 2026-05-08 | Спринт 11 — Экономический модуль: studio/economy/ создан. Этапы 1-3, 7 реализованы. |
+| **2026-05-08** | **Спринт 12 — Conflict System (Этап 6).** studio/conflict.py + conflict_memory.py. cartridge.py пропатчен. 11 манифестов обновлены (conflict_mode, удалены Author_ID/qa_agent). 7/10 этапов Глубокого Резюме готовы. |
 
 ---
 
@@ -267,13 +282,17 @@ build_agent_context()
 1. **Картриджи = безопасность.** Каждый цех изолирован. Потерял — восстанови из репы.
 2. **hooks.py — рабочий файл.** Дорабатываешь цех? Правь hooks.py, не ui.py.
 3. **Маяк — клиент, не мозг.** Генерация через студию. biography_snapshot от Маяка сквозной.
-4. **economy/ — не трогать data/ руками.** billing_ledger.jsonl и ministry.json пишутся автоматически.
+4. **economy/ — не трогать data/ руками.** Все JSON-логи пишутся автоматически.
 5. **Глубокое Резюме — главный документ.** Все экономические решения сверяй с ним.
 6. **slot_id — сквозной везде.** Берётся из `state["_slot_id"]`. Не хардкодить.
 7. **Strategy Registry** — данные копятся сами. Не трогай strategy_registry.json руками.
 8. **Memory Embedding** — агент помнит ощущения, не цифры. "heavy but successful" важнее "$0.004".
 9. **Ministry работает ТОЛЬКО post-fact.** Никогда не вмешивается в runtime.
-10. **Бэкапы:** перед правками — copy. Для патчей — автоматические `.bak_*`. Откат: замени файл из бэкапа.
+10. **Conflict System** — конфликт на уровне цеха. Включается через `conflict_mode` в манифесте. Данные пишутся в `conflict_log.jsonl` + `conflict_stats.json`.
+11. **Бэкапы:** перед правками — copy. Для патчей — автоматические `.bak_*`. Откат: замени файл из бэкапа.
 
 ---
-*Обновляй после каждой значимой сессии. Загружай в начале новой.*
+*Обновлено: Спринт 12 — Conflict System завершён. 7/10 этапов Глубокого Резюме.*
+```
+
+Сохрани как `STUDIO_CONTEXT.md`, брат. Версия 10.0, всё по факту. 👊
