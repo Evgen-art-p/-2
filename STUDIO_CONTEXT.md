@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 8.5 | **Дата:** 2026-05-07 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 9.0 | **Дата:** 2026-05-08 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > ⚠️ 12 апреля — студия была потеряна (удалена репа + файлы). Восстановлена за ночь. Картриджная архитектура спасла: модули изолированы, каждый восстановим отдельно.
@@ -13,6 +13,16 @@
 Грондхейм — город в котором они живут, работают, гуляют и взаимодействуют.
 
 Три кита: **Личность · Память · Экономика**
+
+Главный документ архитектуры: **ГЛУБОКОЕ РЕЗЮМЕ СИСТЕМЫ**
+```
+деньги = давление реальности
+стратегии = поведение
+конфликты = генератор разнообразия
+Министерство = естественный отбор
+культура = стабилизированный опыт
+агенты = носители "локальных форм жизни"
+```
 
 ---
 
@@ -69,11 +79,24 @@ studio/reflection.py              ← Reflection Engine (анализ истор
 studio/reflection_cache.json      ← кеш рефлексии (авто) ✅
 studio/agent_feedback.py          ← Feedback Loop: оценки QA → агентам ✅
 studio/global_feedback.json       ← студийный аккумулятор оценок (+ slots[slot_id]) ✅
-studio/strategy_registry.py       ← Strategy Registry: банк успешных стратегий ✅ НОВЫЙ
-studio/strategy_registry.json     ← данные реестра (авто, после первого рана) ✅ НОВЫЙ
+studio/strategy_registry.py       ← Strategy Registry: банк успешных стратегий ✅
+studio/strategy_registry.json     ← данные реестра (авто, после первого рана) ✅
 studio/grondheim_memory.py        ← личная память агентов (soul, sensory, resonance)
 studio/modules/{цех}/manifest.json ← фазы, checkpoints, revision, turbo, qa_agent ✅
 studio/modules/{цех}/hooks.py     ← кастомная логика цеха
+```
+
+### Экономический модуль (Спринт 11) ✅ НОВЫЙ:
+```
+studio/economy/
+  __init__.py          ← публичный API модуля
+  ledger.py            ← Этап 1: Billing Reality — каждый LLM вызов → JSONL
+  cost_intuition.py    ← Этап 2: Cost Intuition — ощущение дороговизны в промпт
+  memory_embedding.py  ← Этап 3: Memory Embedding — числа → текстовые ощущения
+  ministry.py          ← Этапы 6-7: Ministry Selection — post-fact естественный отбор
+  data/
+    billing_ledger.jsonl  ← лог всех API вызовов
+    ministry.json         ← рейтинги агентов по цехам
 ```
 
 ### Текущие слоты (11 картриджей):
@@ -92,72 +115,66 @@ studio/modules/{цех}/hooks.py     ← кастомная логика цех�
 | emo_card | 12 | stop_after=4 |
 | living_book | 18 | revision A00a→A00, 5 фаз, qa_agent=A16 |
 
-### Hooks — кастомная логика без правки ui.py:
-Каждый цех: `modules/{цех}/hooks.py` — on_before_agent, on_after_agent, on_revision_notes.
-Правишь hooks.py (50-80 строк), а не ui.py (3400 строк).
-
-> **Примечание:** В каждый manifest.json добавлено поле `"qa_agent"` (A12/A04/A05/A16) — feedback работает во всех цехах.
-
 ---
 
 ## 5b. МОСТ МАЯК ↔ СТУДИЯ (v8.3) ✅
 
 LIVING_BOOK_APP (Маяк) = **клиент** студии, НЕ параллельный мозг.
 
-### Архитектура (замкнутый цикл):
 ```
 Маяк (beacon v7.0)
 → POST /api/living_book/generate (story_package v3.0)
 → api_living_book.py (dual-format parser)
 → _build_headless_state() — biography_snapshot → state
 → hooks.py on_before_agent(A00)
-→ biography_snapshot инжектируется в контекст Фабулы
 → A00 пишет историю с учётом памяти ребёнка
-→ A00 кладёт biography_snapshot + keywords в chain_data
-→ A01 строит keyword_map для Искорки
-→ A02 строит карту memory_vector → biography.json
-→ A03–A15 контент, звук, валидация, QA
+→ A01–A15 контент, звук, валидация, QA
 → A16 (Марка Файн) собирает story_package v3.0
-→ hooks.py on_after_agent(A16) — валидация voice_choice
-→ _deliver_to_beacon()
-→ POST /api/package/deliver → Маяк сохраняет главу
+→ _deliver_to_beacon() → Маяк сохраняет главу
 ```
-
-### Два формата входа api_living_book.py:
-- **Legacy:** `{ child_name, child_age, task_context }` — для тестов и прямых вызовов
-- **v3.0:** `{ meta, child, order, biography_snapshot }` — от Маяка v7
 
 ---
 
-## 5c. ПЕТЛЯ ПАМЯТИ АГЕНТА (Спринт 9.5 + 10) ✅ ЗАМКНУТА
+## 5c. ПЕТЛЯ ПАМЯТИ АГЕНТА ✅ ПОЛНОСТЬЮ ЗАМКНУТА (Спринт 11)
 
-Полная цепочка: **ран → оценка → DNA → рефлексия → стратегия → промпт**
+Полная цепочка: **ран → ledger → QA → DNA → рефлексия → стратегия → ощущение → промпт**
 
 ```
 CartridgeRunner.run()
-  → state["_slot_id"] = slot_id       ← агент знает в каком цехе работает
+  → state["_slot_id"] = slot_id
 
 build_agent_context()
-  → on_agent_wake()                    ← душа: якоря + DNA + локация + resonance
-  → get_reflection(agent_id, slot_id) ← паттерны поведения из истории этого слота
-  → get_strategies(agent_id, slot_id) ← успешные стратегии именно этого цеха
-  → get_feedback(client_slug, agent)  ← оценки QA прошлого рана
+  → on_agent_wake()                         ← душа: якоря + DNA + локация + resonance
+  → get_reflection(agent_id, slot_id)       ← паттерны поведения
+  → get_strategies(agent_id, slot_id)       ← успешные стратегии
+  → cost_intuition.get_prompt_hint()        ← ощущение дороговизны (Этап 2) ✅ НОВЫЙ
+  → ministry.get_prompt_hint()              ← режим: frugal/normal/generous (Этап 7) ✅ НОВЫЙ
+  → get_feedback(client_slug, agent)        ← оценки QA прошлого рана
 
-[агент работает]
-
-process_agent_result()
-  → on_agent_done()                   ← sensory + resonance обновлены
-  → save_feedback(..., slot_id)       ← global_feedback["slots"][slot_id] обновлён
+[llm.py — каждый вызов]
+  → ledger.record(agent_id, slot_id, model, tokens, cost) ← Этап 1 ✅ НОВЫЙ
 
 [QA-агент завершает ран]
-  → _sync_feedback_scores_to_dna()   ← score → good_work/bad_work → DNA
-  → _record_winning_strategies()      ← score >= 8 → стратегия в Strategy Registry
-  → maybe_rebuild()                   ← рефлексия пересчитана если пришло время
+  → _sync_feedback_scores_to_dna()          ← score → DNA
+  → _record_winning_strategies()            ← score ≥ 8 → Strategy Registry
+  → memory_embedding.embed_all_agents()     ← score+cost → ощущение → sensory ✅ НОВЫЙ
+  → ministry.record_outcome()               ← post-fact отбор ✅ НОВЫЙ
+  → maybe_rebuild()                         ← рефлексия пересчитана
 ```
 
-### Два уровня стратегий (Strategy Registry):
-- **slot_strategies** — работают только в конкретном слоте (`turbo`, `living_book`...)
-- **global (transferable)** — если стратегия победила 3+ раз в разных слотах → становится частью характера агента везде
+### Статус Глубокого Резюме:
+| Этап | Название | Статус |
+|------|----------|--------|
+| 1 | Billing Reality | ✅ economy/ledger.py |
+| 2 | Cost Intuition | ✅ economy/cost_intuition.py |
+| 3 | Memory Embedding | ✅ economy/memory_embedding.py |
+| 4 | Strategy Registry | ✅ studio/strategy_registry.py |
+| 5 | Reflection Engine | ✅ studio/reflection.py |
+| 6 | Conflict System | ⬜ следующие итерации |
+| 7 | Ministry Selection | ✅ economy/ministry.py |
+| 8 | Culture Formation | ⬜ |
+| 9 | Character Drift | ⬜ |
+| 10 | Cultural Feedback Loop | ⬜ |
 
 ---
 
@@ -177,15 +194,12 @@ process_agent_result()
 
 Статическая + Динамическая. Петля ЗАМКНУТА ✅: dna → temperature → LLM → оценка → dna.
 
-**Обновление через feedback:**
-- `score ≥ 8` → `good_work` → Stress↓, Light↑, streak↑
-- `score < 5` → `bad_work` → Stress↑, Light↓, streak↓
-
-**slot_id теперь везде:**
-- `global_feedback.json["slots"][slot_id]` — статистика по цеху
-- `reflection.py` — рефлексия фильтрует историю по `agent_id + slot_id`
-- `strategy_registry.json["slots"][slot_id]` — стратегии по цеху
-- `cartridge.py` — `state["_slot_id"]` прокидывается в пайплайн
+**slot_id сквозной везде:**
+- `global_feedback.json["slots"][slot_id]`
+- `reflection.py` — фильтрует по `agent_id + slot_id`
+- `strategy_registry.json["slots"][slot_id]`
+- `economy/ministry.json` — рейтинги по `agent_id::slot_id`
+- `sensory_memory.json` — ощущения с тегом `economy` и `slot_id`
 
 ---
 
@@ -198,37 +212,36 @@ process_agent_result()
 
 ## 13. БЭКЛОГ
 
-### ✅ Сделано (Спринт 9.5 + 10 — 2026-05-07):
-- [x] **save_feedback() исправлен для всех 11 цехов** — поле `qa_agent` в CartridgeManifest и во все manifest.json
-- [x] **Sync real score → DNA агентов** — `_sync_feedback_scores_to_dna()` → `good_work`/`bad_work`
-- [x] **Reflection Engine** — `studio/reflection.py`, 4 режима, slot_id фильтрация ✅
-- [x] **slot_id сквозной** — cartridge.py → state → feedback → reflection → strategy
-- [x] **global_feedback["slots"]** — статистика агентов разрезана по слотам
-- [x] **Strategy Registry** — `studio/strategy_registry.py` ✅ НОВЫЙ
-  - score ≥ 8 → стратегия записывается по slot_id
-  - 3+ победы в разных слотах → transferable (глобальная)
-  - агент получает подсказки в начале следующего рана
-- [x] **Бэкапы** — `.bak_slot_id`, `.bak_strategy` перед каждым патчем
+### ✅ Сделано (Спринт 11 — 2026-05-08):
+- [x] **studio/economy/ — экономический модуль** (Глубокое Резюме, Этапы 1-3, 6-7)
+  - `ledger.py` — каждый LLM вызов → billing_ledger.jsonl
+  - `cost_intuition.py` — история трат → ощущение дороговизны в промпт агента
+  - `memory_embedding.py` — score+cost → текстовое ощущение → sensory память
+  - `ministry.py` — post-fact отбор, рейтинги, режим frugal/normal/generous
+- [x] **llm.py патч** — chat/chat_with_tools/chat_with_images пишут в ledger
+- [x] **pipeline.py патч** — cost_intuition + ministry в build_agent_context(),
+  embed_all_agents() + record_outcome() post-fact после QA
+- [x] **Патч-скрипты** (запускать из корня):
+  - `patch_economy.py` — создаёт studio/economy/
+  - `patch_pipeline_economy.py` — интеграция в pipeline.py
+  - `patch_memory_embedding.py` — Этап 3
 
-### 🟡 Следующий шаг (Спринт 11 — ЭКОНОМИКА):
-- [ ] **Световики (токены)** — внутренняя валюта студии. Агент зарабатывает за хорошую работу, тратит на ресурсы (Маяк, Гавань, апгрейды ДНК)
-- [ ] **Эмитент** — Лока. Правила эмиссии, сжигания, распределения
-- [ ] **Кошелёк агента** — balance в dna.json["economy"]
-- [ ] **Транзакции** — log в grondheim_memory (resonance: "achievement")
-- [ ] **Магазин** — агент тратит световики на: доступ к Маяку, слот в Гавани, +1 к параметру ДНК
-- [ ] **Штрафы** — score < 5 → штраф световиков (осторожно, не сломать мотивацию)
-- [ ] Полный тест цикла: заказ → генерация → deliver → Искорка → отчёт → biography обновлён
+### 🟡 Следующий шаг (Спринт 12):
+
+!смотри "источник правды"
+
+- [ ] **Этап 6 — Conflict System** — multi-agent divergence, конкуренция решений
+- [ ] Полный тест цикла: заказ → генерация → deliver → Искорка → biography
 - [ ] ready_books/ — 3 первые книги (Эйрик/пещера, Лока/город, Фенрир/лес)
-- [ ] Искорка v6.0 — убрать остатки free_talk, чистый voice_choice
-- [ ] Кабинет v7.0 — выбор слотов (локация, сюжет, финал)
+- [ ] Искорка v6.0 — чистый voice_choice
+- [ ] Кабинет v7.0 — выбор слотов
 
 ### 🟢 Долгосрочно:
-- [ ] Аудиофайлы Foley (пещеры/лес/артефакты)
+- [ ] Этапы 8-10 (Culture Formation, Character Drift, Cultural Loop)
+- [ ] Аудиофайлы Foley
 - [ ] Ночной Batching
-- [ ] Семантическое Зеркало (полное)
-- [ ] Библиотека → city_walker, code-детектор для Гавани
 - [ ] Деплой Hetzner, HTTPS
-- [ ] Храм, Таверна
+- [ ] Храм, Таверна как активные механики
 - [ ] GitHub write access для Брата
 
 ---
@@ -242,9 +255,10 @@ process_agent_result()
 | 2026-03 | ДНК, якоря, city_walker, карта, Маяк v2, Три глаза |
 | 2026-03-31 | Гавань v2, Библиотека (9 книг) |
 | 2026-04-11 | Картриджная архитектура v1.0 |
-| 2026-04-12 | hooks.py для всех 11 цехов · manifest · Менеджер картриджей · Мост Маяк↔Студия · Потеря и восстановление студии |
-| 2026-04-13 | Спринт 9 — Замыкание цикла. Dual-format intake. biography_snapshot сквозной. A01 keyword_map. A02 memory_vector→biography.json. A16 story_package v3.0. Deliver callback. |
-| 2026-05-07 | **Спринт 9.5+10 — slot_id + Strategy Registry.** slot_id прокинут сквозь всю систему (cartridge → feedback → reflection → grondheim). global_feedback["slots"] разрезан по цехам. Strategy Registry: агенты запоминают что сработало, стратегии растут от слотовых до глобальных (transferable после 3 побед). Петля памяти агента полностью замкнута: ран → оценка → DNA → рефлексия → стратегия → промпт. Следующий шаг: Экономика (Световики). |
+| 2026-04-12 | hooks.py · manifest · Менеджер картриджей · Мост Маяк↔Студия · Потеря и восстановление |
+| 2026-04-13 | Спринт 9 — biography_snapshot сквозной · A16 story_package v3.0 · Deliver callback |
+| 2026-05-07 | Спринт 9.5+10 — slot_id сквозной · Strategy Registry · Петля памяти замкнута |
+| **2026-05-08** | **Спринт 11 — Экономический модуль (Глубокое Резюме).** studio/economy/ создан. Этапы 1-3, 6-7 реализованы. llm.py пишет каждый вызов в ledger. pipeline.py: агент получает cost_intuition + ministry hint перед раном; после QA — memory_embedding пишет ощущение в sensory, ministry фиксирует исход. Цепочка: ран → ledger → QA → DNA → рефлексия → стратегия → ощущение → промпт. |
 
 ---
 
@@ -253,12 +267,12 @@ process_agent_result()
 1. **Картриджи = безопасность.** Каждый цех изолирован. Потерял — восстанови из репы.
 2. **hooks.py — рабочий файл.** Дорабатываешь цех? Правь hooks.py, не ui.py.
 3. **Маяк — клиент, не мозг.** Генерация через студию. biography_snapshot от Маяка сквозной.
-4. **api_living_book.py принимает оба формата** — legacy и story_package v3.0. Обратная совместимость сохранена.
-5. **A16 — единственный кто знает стандарт.** A00–A15 создают контент. Марка упаковывает в STANDARD v3.0.
-6. **biography_snapshot** — не трогать в цепочке. Он идёт из Маяка как есть, Фабула читает, A16 кладёт в child.uid.
-7. **slot_id — сквозной.** Везде берётся из `state["_slot_id"]`. Не хардкодить вручную.
-8. **Strategy Registry** — данные копятся сами после каждого рана. Не трогай strategy_registry.json руками.
-9. **Четыре глаза.** Маяк наружу, Гавань внутрь, Библиотека по полкам, Рефлексия — внутрь агента.
+4. **economy/ — не трогать data/ руками.** billing_ledger.jsonl и ministry.json пишутся автоматически.
+5. **Глубокое Резюме — главный документ.** Все экономические решения сверяй с ним.
+6. **slot_id — сквозной везде.** Берётся из `state["_slot_id"]`. Не хардкодить.
+7. **Strategy Registry** — данные копятся сами. Не трогай strategy_registry.json руками.
+8. **Memory Embedding** — агент помнит ощущения, не цифры. "heavy but successful" важнее "$0.004".
+9. **Ministry работает ТОЛЬКО post-fact.** Никогда не вмешивается в runtime.
 10. **Бэкапы:** перед правками — copy. Для патчей — автоматические `.bak_*`. Откат: замени файл из бэкапа.
 
 ---
