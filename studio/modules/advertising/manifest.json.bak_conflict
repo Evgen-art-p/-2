@@ -1,10 +1,10 @@
 {
-  "id": "video_long",
-  "label": "🎥 Видео Long",
-  "icon": "🎥",
+  "id": "advertising",
+  "label": "📢 Реклама",
+  "icon": "📢",
   "version": "1.0",
-  "description": "Все агенты, checkpoint после A03 (сценарий)",
-  "run_type": "full",
+  "description": "Полный цикл рекламных материалов: от идеи до готового креатива",
+  "run_type": "social",
   "phases": {
     "PRE-PROD": [
       "A01",
@@ -25,9 +25,7 @@
       "A12"
     ]
   },
-  "checkpoint_after": [
-    "A03"
-  ],
+  "checkpoint_after": [],
   "stop_after": null,
   "revision_loop": null,
   "turbo_workers": [
@@ -43,5 +41,6 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "Author_ID": "P_0000000000",
+  "qa_agent": "A12"
 }

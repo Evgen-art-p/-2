@@ -228,16 +228,16 @@ build_agent_context()
 
 ### 🟡 Следующий шаг (Спринт 12):
 
-!смотри "источник правды"
-
 - [ ] **Этап 6 — Conflict System** — multi-agent divergence, конкуренция решений
+- [ ] Этапы 8-10 (Culture Formation, Character Drift, Cultural Loop)
+- [ ] dashboard !смотри "источник правды"
+
 - [ ] Полный тест цикла: заказ → генерация → deliver → Искорка → biography
 - [ ] ready_books/ — 3 первые книги (Эйрик/пещера, Лока/город, Фенрир/лес)
 - [ ] Искорка v6.0 — чистый voice_choice
 - [ ] Кабинет v7.0 — выбор слотов
 
 ### 🟢 Долгосрочно:
-- [ ] Этапы 8-10 (Culture Formation, Character Drift, Cultural Loop)
 - [ ] Аудиофайлы Foley
 - [ ] Ночной Batching
 - [ ] Деплой Hetzner, HTTPS

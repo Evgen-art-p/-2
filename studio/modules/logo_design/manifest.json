@@ -30,6 +30,5 @@
   "revision_loop": null,
   "turbo_workers": [],
   "turbo_parallel": [],
-  "Author_ID": "P_0000000000",
-  "qa_agent": "A04"
+  "conflict_mode": "divergent"
 }

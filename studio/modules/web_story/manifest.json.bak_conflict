@@ -1,10 +1,10 @@
 {
-  "id": "video_long",
-  "label": "🎥 Видео Long",
-  "icon": "🎥",
+  "id": "web_story",
+  "label": "🌐 Web Story",
+  "icon": "🌐",
   "version": "1.0",
-  "description": "Все агенты, checkpoint после A03 (сценарий)",
-  "run_type": "full",
+  "description": "Хард-стоп после Рины (A05), затем PROD A06-A12",
+  "run_type": "web_story",
   "phases": {
     "PRE-PROD": [
       "A01",
@@ -26,7 +26,7 @@
     ]
   },
   "checkpoint_after": [
-    "A03"
+    "A05"
   ],
   "stop_after": null,
   "revision_loop": null,
@@ -43,5 +43,6 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "Author_ID": "P_0000000000",
+  "qa_agent": "A12"
 }

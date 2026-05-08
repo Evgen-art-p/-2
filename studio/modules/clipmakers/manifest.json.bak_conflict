@@ -1,9 +1,9 @@
 {
-  "id": "video_long",
-  "label": "🎥 Видео Long",
-  "icon": "🎥",
+  "id": "clipmakers",
+  "label": "🎵 Клипмейкеры",
+  "icon": "🎵",
   "version": "1.0",
-  "description": "Все агенты, checkpoint после A03 (сценарий)",
+  "description": "Полный цикл: от концепта клипа до финального монтажа",
   "run_type": "full",
   "phases": {
     "PRE-PROD": [
@@ -43,5 +43,6 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "Author_ID": "P_0000000000",
+  "qa_agent": "A12"
 }

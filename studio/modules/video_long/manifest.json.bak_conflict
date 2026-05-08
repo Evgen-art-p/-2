@@ -43,5 +43,6 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "Author_ID": "P_0000000000",
+  "qa_agent": "A12"
 }

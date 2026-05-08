@@ -51,5 +51,6 @@
   },
   "turbo_workers": [],
   "turbo_parallel": [],
-  "conflict_mode": "divergent"
+  "Author_ID": "P_0000000000",
+  "qa_agent": "A16"
 }
