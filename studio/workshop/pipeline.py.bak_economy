@@ -44,24 +44,6 @@ except ImportError:
     def get_strategies(agent_id, slot_id=""): return ""
     def record_strategy(**kwargs): pass
 
-# ══ Economy — экономический модуль (Глубокое Резюме Системы) ══
-try:
-    from studio.economy import cost_intuition as _cost_intuition
-    from studio.economy import ministry as _ministry
-    _ECONOMY_ENABLED = True
-    print("[ECONOMY] 💰 Экономический модуль подключён")
-except ImportError:
-    _ECONOMY_ENABLED = False
-    class _cost_intuition:
-        @staticmethod
-        def get_prompt_hint(agent_id, slot_id=None): return ""
-    class _ministry:
-        @staticmethod
-        def get_prompt_hint(agent_id, slot_id): return ""
-        @staticmethod
-        def record_outcome(agent_id, slot_id, score, cost_usd): pass
-# ══ END Economy ══
-
 # ══ NEW: Гавань Смыслов — RAG внутренних знаний ══
 try:
     from studio.harbor_of_meanings import get_harbor_knowledge
@@ -231,17 +213,6 @@ def build_agent_context(
             context += strategies + "\n\n"
             print(f"[STRATEGY] 🏆 {worker_id}: стратегии загружены ({len(strategies)} симв.)")
     # ══ end Strategy Registry ══
-
-    # ══ Economy: Cost Intuition + Ministry (Этапы 2, 6-7) ══
-    if _ECONOMY_ENABLED:
-        _ec_slot = state.get("_slot_id", "")
-        _ec_cost  = _cost_intuition.get_prompt_hint(worker_id, slot_id=_ec_slot)
-        _ec_min   = _ministry.get_prompt_hint(worker_id, _ec_slot)
-        if _ec_cost:
-            context += _ec_cost + "\n\n"
-        if _ec_min:
-            context += _ec_min + "\n\n"
-    # ══ END Economy ══
 
     # Обратная связь от QA (прошлый ран)
     feedback = get_feedback(client_slug, worker_id)
@@ -440,68 +411,6 @@ def process_agent_result(
         # ══ REFLECTION: пересчитываем паттерны если пришло время ══
         if _REFLECTION_ENABLED:
             maybe_rebuild()
-        # ══ Memory Embedding: числа → ощущения (Этап 3) ══
-        if _ECONOMY_ENABLED:
-            try:
-                from studio.economy import memory_embedding as _membed
-                _fb_agents_scores = {
-                    _wid: float(_wdata.get("score", 5.0))
-                    for _wid, _wdata in _agents_fb.items()
-                } if "_agents_fb" in dir() and _agents_fb else {}
-                if not _fb_agents_scores:
-                    # Fallback: читаем feedback напрямую
-                    try:
-                        from pathlib import Path as _P
-                        import json as _J
-                        _fp = _P("clients") / client_slug / "feedback.json"
-                        if _fp.exists():
-                            _fd = _J.loads(_fp.read_text(encoding="utf-8"))
-                            _fb_agents_scores = {
-                                _w: float(_d.get("score", 5.0))
-                                for _w, _d in _fd.get("agents", {}).items()
-                            }
-                    except Exception:
-                        pass
-                if _fb_agents_scores:
-                    _membed.embed_all_agents(
-                        agents_scores=_fb_agents_scores,
-                        slot_id=state.get("_slot_id", ""),
-                        dept=state.get("active_dept", ""),
-                    )
-            except Exception as _emb_err:
-                print(f"[EMBEDDING] Ошибка: {_emb_err}")
-        # ══ END Memory Embedding ══
-
-        # ══ Ministry: фиксируем исходы post-fact (Этапы 6-7) ══
-        if _ECONOMY_ENABLED:
-            _results_data = state.get("results", {})
-            _agents_fb    = {}
-            try:
-                from pathlib import Path as _Path
-                import json as _json
-                _fb_path = _Path("clients") / client_slug / "feedback.json"
-                if _fb_path.exists():
-                    _agents_fb = _json.loads(_fb_path.read_text(encoding="utf-8")).get("agents", {})
-            except Exception:
-                pass
-            _ec_slot = state.get("_slot_id", "")
-            for _wid, _wdata in _agents_fb.items():
-                _wscore = float(_wdata.get("score", 5.0))
-                try:
-                    from studio.economy import ledger as _ledger
-                    _wcost = _ledger.agent_spent(_wid, slot_id=_ec_slot)
-                except Exception:
-                    _wcost = 0.0
-                try:
-                    _ministry.record_outcome(
-                        agent_id=_wid,
-                        slot_id=_ec_slot,
-                        score=_wscore,
-                        cost_usd=_wcost,
-                    )
-                except Exception as _me:
-                    print(f"[MINISTRY] record_outcome ошибка: {_me}")
-        # ══ END Ministry ══
     # ══ END UNIVERSAL FEEDBACK ══
 
     # Строим chain для следующего агента

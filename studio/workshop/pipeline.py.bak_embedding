@@ -440,38 +440,6 @@ def process_agent_result(
         # ══ REFLECTION: пересчитываем паттерны если пришло время ══
         if _REFLECTION_ENABLED:
             maybe_rebuild()
-        # ══ Memory Embedding: числа → ощущения (Этап 3) ══
-        if _ECONOMY_ENABLED:
-            try:
-                from studio.economy import memory_embedding as _membed
-                _fb_agents_scores = {
-                    _wid: float(_wdata.get("score", 5.0))
-                    for _wid, _wdata in _agents_fb.items()
-                } if "_agents_fb" in dir() and _agents_fb else {}
-                if not _fb_agents_scores:
-                    # Fallback: читаем feedback напрямую
-                    try:
-                        from pathlib import Path as _P
-                        import json as _J
-                        _fp = _P("clients") / client_slug / "feedback.json"
-                        if _fp.exists():
-                            _fd = _J.loads(_fp.read_text(encoding="utf-8"))
-                            _fb_agents_scores = {
-                                _w: float(_d.get("score", 5.0))
-                                for _w, _d in _fd.get("agents", {}).items()
-                            }
-                    except Exception:
-                        pass
-                if _fb_agents_scores:
-                    _membed.embed_all_agents(
-                        agents_scores=_fb_agents_scores,
-                        slot_id=state.get("_slot_id", ""),
-                        dept=state.get("active_dept", ""),
-                    )
-            except Exception as _emb_err:
-                print(f"[EMBEDDING] Ошибка: {_emb_err}")
-        # ══ END Memory Embedding ══
-
         # ══ Ministry: фиксируем исходы post-fact (Этапы 6-7) ══
         if _ECONOMY_ENABLED:
             _results_data = state.get("results", {})
