@@ -23,6 +23,22 @@
       "content": "Выполнил задачу: ```json",
       "tags": [],
       "emotional_weight": 0.8
+    },
+    {
+      "ts": "2026-05-09T06:04:27.935899",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.5
+    },
+    {
+      "ts": "2026-05-09T06:53:33.912470",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.8
     }
   ],
   "summary": "\n[Затухло 2 записей]: Выполнил задачу: ```json; Сейчас... свободное время, значит. Нечастый гость. Внутренни",

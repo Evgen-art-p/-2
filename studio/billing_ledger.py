@@ -37,9 +37,24 @@ MODEL_PRICES: dict[str, dict[str, float]] = {
     "_default":                         {"input": 0.50,  "output": 2.00},
 }
 
+# Модели с фиксированной ценой за вызов (не per-token)
+# Используется когда prompt_tokens=0 и completion_tokens=0
+MODEL_FLAT_PRICES: dict[str, float] = {
+    "fal/Nano Banana Pro":   0.04,
+    "fal/Seedream 4.5":      0.04,
+    # Suno, ElevenLabs, SiliconFlow — добавишь позже
+    # "suno/...":            0.05,
+    # "elevenlabs/...":      0.03,
+    # "siliconflow/...":     0.02,
+}
+
 
 def _calc_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """Считает стоимость в USD по токенам."""
+    """Считает стоимость в USD по токенам или фиксированной цене."""
+    # Flat-price модели (FAL, Suno, ElevenLabs и т.д.)
+    if model in MODEL_FLAT_PRICES:
+        return MODEL_FLAT_PRICES[model]
+    # Per-token модели
     prices = MODEL_PRICES.get(model, MODEL_PRICES["_default"])
     cost = (
         prompt_tokens     / 1_000_000 * prices["input"] +

@@ -287,6 +287,7 @@ class CartridgeRunner:
         files_ctx = build_files_ctx(self.state)
         previous_output = ""
 
+        self.state["_slot_id"] = self.slot_id
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
 
         i = start_index

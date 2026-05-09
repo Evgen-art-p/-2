@@ -22,5 +22,13 @@
     "significance": 0.8,
     "related_agents": [],
     "tags": []
+  },
+  {
+    "ts": "2026-05-09T06:53:33.914470",
+    "type": "achievement",
+    "content": "Отличная работа: ",
+    "significance": 0.8,
+    "related_agents": [],
+    "tags": []
   }
 ]

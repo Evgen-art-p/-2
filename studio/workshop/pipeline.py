@@ -315,18 +315,22 @@ async def call_agent(
         except Exception as e:
             print(f"[DNA→T°] {worker_id}: не удалось — {e}")
 
+    slot_id = state.get("_slot_id", "unknown")
+
     if vision_images:
         print(f"[PIPELINE] Vision для {worker_id}: {len(vision_images)} изображений")
         raw_result = await asyncio.get_event_loop().run_in_executor(
             None,
             lambda sp=system_prompt, ctx=context, wk=worker_knowledge, vi=vision_images, t=agent_temp:
-                chat_with_images(sp, ctx, images=vi, knowledge=wk, temperature=t)
+                chat_with_images(sp, ctx, images=vi, knowledge=wk, temperature=t,
+                                 agent_id=worker_id, slot_id=slot_id)
         )
     else:
         raw_result = await asyncio.get_event_loop().run_in_executor(
             None,
             lambda sp=system_prompt, ctx=context, wk=worker_knowledge, t=agent_temp:
-                chat(sp, ctx, wk, temperature=t)
+                chat(sp, ctx, wk, temperature=t,
+                     agent_id=worker_id, slot_id=slot_id)
         )
 
     human_text, meta = parse_agent_response(raw_result)
@@ -702,7 +706,9 @@ async def summarize_session(state: dict, client_slug: str, run_date: str, run_ty
             lambda: chat(
                 "Ты — архивариус студии. Твоя задача — сжать рабочую сессию в краткий конспект для будущих проектов.",
                 summary_prompt,
-                ""
+                "",
+                agent_id="archiver",
+                slot_id=state.get("_slot_id", "unknown"),
             )
         )
 

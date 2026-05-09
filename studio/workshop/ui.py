@@ -475,7 +475,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         label = info.get("label", worker_id) if info else worker_id
         
         if status_ref['element']:
-            status_ref['element'].clear()
+            try:
+                status_ref['element'].clear()
+            except Exception:
+                return  # элемент удалён после hot-reload — выходим тихо
             with status_ref['element']:
                 ui.html(f'''
                     <div style="position: relative; width: 100%; height: 100%; min-height: 200px;">

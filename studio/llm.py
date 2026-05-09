@@ -92,6 +92,8 @@ def chat_with_tools(
     max_tool_rounds: int = 3,
     temperature: float = None,
     on_tool_call: callable = None,
+    agent_id: str = "unknown",
+    slot_id: str = "unknown",
 ) -> str:
     """Вызов LLM с поддержкой Tool Use (синхронный).
 
@@ -174,11 +176,9 @@ def chat_with_tools(
             
             # ── BillingLedger: запись реальности (Этап 1) ── ДОБАВЛЕНО
             usage = data.get("usage", {})
-            _agent_id = "unknown"
-            _slot_id  = "unknown"
             _ledger.record(
-                agent_id=_agent_id,
-                slot_id=_slot_id,
+                agent_id=agent_id,
+                slot_id=slot_id,
                 model=payload["model"],
                 prompt_tokens=usage.get("prompt_tokens", 0),
                 completion_tokens=usage.get("completion_tokens", 0),
@@ -247,11 +247,9 @@ def chat_with_tools(
         
         # ── BillingLedger: запись реальности (Этап 1) ── ДОБАВЛЕНО
         usage = data.get("usage", {})
-        _agent_id = "unknown"
-        _slot_id  = "unknown"
         _ledger.record(
-            agent_id=_agent_id,
-            slot_id=_slot_id,
+            agent_id=agent_id,
+            slot_id=slot_id,
             model=payload_final["model"],
             prompt_tokens=usage.get("prompt_tokens", 0),
             completion_tokens=usage.get("completion_tokens", 0),
@@ -264,7 +262,8 @@ def chat_with_tools(
         raise RuntimeError(f"Финальный вызов после tools: {e}")
 
 
-def chat(system: str, user: str, knowledge: str = "", history: list = None, temperature: float = None) -> str:
+def chat(system: str, user: str, knowledge: str = "", history: list = None, temperature: float = None,
+         agent_id: str = "unknown", slot_id: str = "unknown") -> str:
     """
     Отправляет запрос к LLM.
     
@@ -350,11 +349,9 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
 
     # ── BillingLedger: запись реальности (Этап 1) ── ДОБАВЛЕНО
     usage = data.get("usage", {})
-    _agent_id = "unknown"
-    _slot_id  = "unknown"
     _ledger.record(
-        agent_id=_agent_id,
-        slot_id=_slot_id,
+        agent_id=agent_id,
+        slot_id=slot_id,
         model=payload["model"],
         prompt_tokens=usage.get("prompt_tokens", 0),
         completion_tokens=usage.get("completion_tokens", 0),
@@ -373,7 +370,8 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
 
 
 def chat_with_images(system: str, user_text: str, images: list = None,
-                     knowledge: str = "", history: list = None, temperature: float = None) -> str:
+                     knowledge: str = "", history: list = None, temperature: float = None,
+                     agent_id: str = "unknown", slot_id: str = "unknown") -> str:
     """
     Отправляет запрос с изображениями (vision).
     
@@ -482,11 +480,9 @@ def chat_with_images(system: str, user_text: str, images: list = None,
     
     # ── BillingLedger: запись реальности (Этап 1) ── ДОБАВЛЕНО
     usage = data.get("usage", {})
-    _agent_id = "unknown"
-    _slot_id  = "unknown"
     _ledger.record(
-        agent_id=_agent_id,
-        slot_id=_slot_id,
+        agent_id=agent_id,
+        slot_id=slot_id,
         model=payload["model"],
         prompt_tokens=usage.get("prompt_tokens", 0),
         completion_tokens=usage.get("completion_tokens", 0),

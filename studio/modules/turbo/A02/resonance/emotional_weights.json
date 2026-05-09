@@ -1,1 +1,18 @@
-{}
+{
+  "A01": {
+    "warmth": 0.52,
+    "trust": 0.512,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-05-09T06:52:28.961201",
+    "memory": "Передача работы в пайплайне turbo"
+  },
+  "A03": {
+    "warmth": 0.53,
+    "trust": 0.518,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-05-09T06:52:28.999214",
+    "memory": "Передача работы в пайплайне turbo"
+  }
+}

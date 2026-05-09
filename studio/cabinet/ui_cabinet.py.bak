@@ -212,9 +212,7 @@ def page_cabinet() -> None:
                             ui.html('<div style="text-align:center;padding:12px;font-family:JetBrains Mono;font-size:0.52rem;color:rgba(140,150,180,0.3)">пусто</div>')
                         else:
                             for agent in agents:
-                                is_active = (state["selected_agent"] and
-                                             state["selected_agent"]["id"] == agent["id"] and
-                                             state["selected_agent"].get("dept") == agent.get("dept"))
+                                is_active = state["selected_agent"] and state["selected_agent"]["id"] == agent["id"]
                                 render_agent_card(agent, is_active, on_click=select_agent)
 
     def update_search_results():
@@ -242,9 +240,7 @@ def page_cabinet() -> None:
                 ui.html('<div style="text-align:center;padding:16px;font-family:JetBrains Mono;font-size:0.56rem;color:rgba(140,150,180,0.3)">ничего не найдено</div>')
             else:
                 for agent in results[:20]:
-                    is_active = (state["selected_agent"] and
-                                 state["selected_agent"]["id"] == agent["id"] and
-                                 state["selected_agent"].get("dept") == agent.get("dept"))
+                    is_active = state["selected_agent"] and state["selected_agent"]["id"] == agent["id"]
                     render_agent_card(agent, is_active, on_click=select_agent)
 
     def on_search_change(e):
@@ -451,9 +447,7 @@ def page_cabinet() -> None:
                     dna = _get_agent_dna(aid, dept_id)
                     dynamic = dna.get("dynamic", {})
                     stress = float(dynamic.get("Stress", 0))
-                    selected = (state.get("selected_agent") and
-                                state["selected_agent"]["id"] == aid and
-                                state["selected_agent"].get("dept") == dept_id)
+                    selected = state.get("selected_agent") and state["selected_agent"]["id"] == aid
 
                     # Последняя локация из sensory memory
                     last_walk = ""
@@ -1104,7 +1098,7 @@ def page_cabinet() -> None:
                     web_cls = "cab-btn active" if TAVILY_KEY else "cab-btn"
                     web_title = "Web активен" if TAVILY_KEY else "Вставь TAVILY_KEY"
                     ui.html(f'<div class="{web_cls}" title="{web_title}">🌐 web</div>')
-                    ui.button("💰 дашборд", on_click=lambda: ui.open("/dashboard")).props("flat dense").style("background:#141722;border:1px solid rgba(212,175,55,0.15);color:rgba(212,175,55,0.7);font-family:JetBrains Mono;font-size:0.65rem;padding:5px 11px;border-radius:6px;")
+                    ui.button("💰 дашборд", on_click=lambda: ui.open("/partner")).props("flat dense").style("background:#141722;border:1px solid rgba(212,175,55,0.15);color:rgba(212,175,55,0.7);font-family:JetBrains Mono;font-size:0.65rem;padding:5px 11px;border-radius:6px;")
                     ui.button("💾", on_click=lambda: save_chat()).props("flat dense").style("background:#141722;border:1px solid rgba(99,130,255,0.08);color:rgba(108,140,255,0.6);font-family:JetBrains Mono;font-size:0.7rem;padding:5px 11px;border-radius:6px;min-width:32px;").props('title="Сохранить чат + конспект"')
                     ui.button("📋 реестр", on_click=lambda: ui.run_javascript('window.open("/registry","_blank")')).props("flat dense").style("background:#141722;border:1px solid rgba(201,168,76,0.15);color:rgba(201,168,76,0.7);font-family:JetBrains Mono;font-size:0.65rem;padding:5px 11px;border-radius:6px;")
                     ui.button("✕", on_click=lambda: clear_chat()).props("flat dense").style("background:#141722;border:1px solid rgba(99,130,255,0.08);color:rgba(180,190,220,0.6);font-family:JetBrains Mono;font-size:0.62rem;padding:5px 11px;border-radius:6px;")

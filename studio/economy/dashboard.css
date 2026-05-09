@@ -1,0 +1,290 @@
+/* ============================================
+   ECONOMY DASHBOARD STYLES
+   ============================================ */
+
+/* ── Empty State ── */
+.dashboard-empty-state {
+    text-align: center;
+    padding: 40px;
+    color: rgba(140, 150, 180, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+}
+
+/* ── Header ── */
+.dashboard-header-back-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #6c8cff;
+}
+.dashboard-header-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.0rem;
+    color: rgba(180, 190, 220, 0.6);
+}
+.dashboard-header-spacer {
+    width: 80px;
+}
+
+/* ── Panel Titles ── */
+.dashboard-panel-title {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Period Buttons ── */
+.dashboard-period-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+}
+.dashboard-period-btn.active {
+    color: #6c8cff;
+    border-color: #6c8cff;
+}
+.dashboard-period-btn.inactive {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Agent List Container ── */
+.dashboard-agent-list-container {
+    padding: 6px 0;
+    overflow-y: auto;
+}
+
+/* ── Slot Header ── */
+.dashboard-slot-header-left {
+    display: flex;
+    align-items: center;
+}
+.dashboard-slot-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+.dashboard-slot-arrow.open {
+    transform: rotate(90deg);
+}
+.dashboard-slot-name {
+    color: rgba(255, 255, 255, 0.85);
+}
+.dashboard-slot-count {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Agent Card ── */
+.dashboard-agent-top {
+    display: flex;
+    align-items: center;
+}
+.dashboard-agent-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #141722;
+    background-size: cover;
+    background-position: center top;
+    border: 1.5px solid rgba(99, 130, 255, 0.12);
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+.dashboard-agent-name {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: rgba(200, 210, 230, 0.9);
+}
+.dashboard-agent-cost {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #6c8cff;
+}
+
+/* ── Stat Cards ── */
+.dashboard-stat-card {
+    background: #0e1018;
+    border: 1px solid rgba(99, 130, 255, 0.08);
+    padding: 16px;
+    min-width: 150px;
+}
+.dashboard-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(140, 150, 180, 0.5);
+}
+.dashboard-stat-value-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    color: #6c8cff;
+    font-weight: bold;
+}
+.dashboard-stat-value-burn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    color: #f87171;
+    font-weight: bold;
+}
+
+/* ── Chart Container ── */
+.dashboard-chart-row {
+    height: 33vh;
+    padding: 0 20px 20px;
+    display: flex;
+    gap: 20px;
+}
+.dashboard-chart-box {
+    flex: 1;
+    background: #0e1018;
+    border: 1px solid rgba(99, 130, 255, 0.08);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+.dashboard-chart-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(180, 190, 220, 0.7);
+    margin-bottom: 12px;
+}
+
+/* ── Detail Panel ── */
+.dashboard-detail-avatar {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: #141722;
+    background-size: cover;
+    background-position: center top;
+    border: 2px solid rgba(99, 130, 255, 0.15);
+    margin: 0 auto 6px;
+    display: block;
+}
+.dashboard-detail-name {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    color: rgba(220, 225, 240, 0.95);
+}
+.dashboard-detail-id {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(140, 150, 180, 0.4);
+    margin-bottom: 12px;
+}
+.dashboard-detail-divider {
+    border-color: rgba(99, 130, 255, 0.08);
+    margin: 12px 0;
+}
+.dashboard-detail-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(180, 190, 220, 0.6);
+}
+
+/* ── Metric Row ── */
+.dashboard-metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+.dashboard-metric-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(140, 150, 180, 0.5);
+}
+.dashboard-metric-value-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #6c8cff;
+    font-weight: bold;
+}
+.dashboard-metric-value-burn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #f87171;
+    font-weight: bold;
+}
+.dashboard-metric-value-default {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(220, 225, 240, 0.8);
+}
+.dashboard-metric-value-gold {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #c9a84c;
+}
+
+/* ── Provider/Model Row ── */
+.dashboard-provider-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+}
+.dashboard-provider-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: rgba(140, 150, 180, 0.5);
+}
+.dashboard-provider-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #6c8cff;
+}
+
+/* ── No Data ── */
+.dashboard-no-data {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(140, 150, 180, 0.25);
+    padding: 4px 0;
+}
+
+/* ── Transaction List ── */
+.dashboard-tx-list {
+    max-height: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-right: 4px;
+}
+.dashboard-tx-row {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(99, 130, 255, 0.06);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+.dashboard-tx-time {
+    color: rgba(140, 150, 180, 0.45);
+    flex-shrink: 0;
+}
+.dashboard-tx-model {
+    color: rgba(180, 190, 220, 0.65);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dashboard-tx-tokens {
+    color: rgba(140, 150, 180, 0.4);
+    flex-shrink: 0;
+}
+.dashboard-tx-cost {
+    color: #6c8cff;
+    flex-shrink: 0;
+}
+
+/* ── Period Button Row ── */
+.dashboard-period-row {
+    padding: 6px 10px;
+    gap: 6px;
+}
+
+/* ── Stats Row ── */
+.dashboard-stats-row {
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}

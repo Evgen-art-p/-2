@@ -22,6 +22,7 @@ import base64
 import mimetypes
 from pathlib import Path
 from studio.config import FAL_KEY  # PROXY_URL не нужен для FAL — работает напрямую
+from studio import billing_ledger as _ledger  # ── БИЛЛИНГ ──
 
 # === НАСТРОЙКИ ===
 os.environ["FAL_KEY"] = FAL_KEY
@@ -752,6 +753,8 @@ def generate_with_refs(
     format: str = DEFAULT_FORMAT,
     filename: str = None,
     seed: int = None,
+    agent_id: str = "unknown",
+    slot_id: str = "unknown",
 ) -> str:
     paths = list(ref_paths or [])
     if ref_ids:
@@ -805,6 +808,17 @@ def generate_with_refs(
     filepath = OUTPUT_DIR / filename
     _download_file(img_url, filepath)
 
+    # ── BillingLedger: FAL генерация (цена за изображение) ──
+    _ledger.record(
+        agent_id=agent_id,
+        slot_id=slot_id,
+        model=f"fal/{MODELS[ACTIVE_MODEL]['label']}",
+        prompt_tokens=0,
+        completion_tokens=0,
+        call_type="image_with_refs",
+    )
+    # ────────────────────────────────────────────────────────
+
     print(f"  ✅ {filepath}")
     return str(filepath)
 
@@ -818,6 +832,8 @@ def generate_image(
     format: str = DEFAULT_FORMAT,
     filename: str = None,
     seed: int = None,
+    agent_id: str = "unknown",
+    slot_id: str = "unknown",
 ) -> str:
     if not filename:
         filename = f"img_{int(time.time())}.png"
@@ -854,6 +870,17 @@ def generate_image(
     img_url = result["images"][0]["url"]
     filepath = OUTPUT_DIR / filename
     _download_file(img_url, filepath)
+
+    # ── BillingLedger: FAL генерация (цена за изображение) ──
+    _ledger.record(
+        agent_id=agent_id,
+        slot_id=slot_id,
+        model=f"fal/{MODELS[ACTIVE_MODEL]['label']}",
+        prompt_tokens=0,
+        completion_tokens=0,
+        call_type="image_t2i",
+    )
+    # ────────────────────────────────────────────────────────
 
     print(f"  ✅ {filepath}")
     return str(filepath)
