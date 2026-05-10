@@ -18,7 +18,7 @@
 
 # 📥 INPUT DATA
 
-От Мими Мем — `chain_data` с `mimi_meme`.
+От Джулии — `chain_data` с `Julia`.
 
 ---
 

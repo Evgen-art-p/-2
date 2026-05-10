@@ -77,6 +77,7 @@ def record(
     prompt_tokens: int,
     completion_tokens: int,
     call_type: str = "chat",
+    **kwargs,
 ) -> dict:
     """
     Записывает один LLM вызов в лог.
@@ -88,6 +89,8 @@ def record(
         prompt_tokens:     Входные токены (из usage.prompt_tokens)
         completion_tokens: Выходные токены (из usage.completion_tokens)
         call_type:         Тип вызова
+        **kwargs:          Когнитивные поля: knowledge_source, cognitive_mode,
+                           is_conflict, task_score
 
     Returns:
         Запись лога (dict)
@@ -104,6 +107,11 @@ def record(
         "total_tokens":      prompt_tokens + completion_tokens,
         "cost_usd":          cost_usd,
         "call_type":         call_type,
+        # ── Когнитивные поля (Этап 2) ──
+        "knowledge_source":  kwargs.get("knowledge_source", None),
+        "cognitive_mode":    kwargs.get("cognitive_mode",   None),
+        "is_conflict":       kwargs.get("is_conflict",      None),
+        "task_score":        kwargs.get("task_score",       None),
     }
 
     with _lock:
@@ -414,3 +422,115 @@ def get_timeseries(period_days=7):
         "calls":    calls,
         "avg_cost": avg_cost,
     }
+
+
+# ══════════════════════════════════════════════════════════════════
+# COGNITIVE DASHBOARD API (Этап 2)
+# ══════════════════════════════════════════════════════════════════
+
+def get_cognitive_data(days: int = 1) -> dict:
+    """
+    Агрегаты для вкладки Observability.
+
+    Returns:
+        {
+            "source_split":   {"harbor": int, "beacon": int, "internal": int},
+            "roi_series":     {"labels": [...], "roi": [...]},
+            "mode_changes":   int,   # смен cognitive_mode за период — прокси пластичности
+            "total_calls":    int,
+            "pressure_level": float, # 0..1, прокси из доли beacon-вызовов
+        }
+    """
+    from collections import defaultdict
+
+    entries = read_ledger()
+    if not entries:
+        return {
+            "source_split":   {"harbor": 0, "beacon": 0, "internal": 0},
+            "roi_series":     {"labels": [], "roi": []},
+            "mode_changes":   0,
+            "total_calls":    0,
+            "pressure_level": 0.0,
+        }
+
+    now    = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=days)
+    hourly = (days == 1)
+
+    source_split = {"harbor": 0, "beacon": 0, "internal": 0}
+    mode_seq     = []   # последовательность cognitive_mode для подсчёта смен
+    total_calls  = 0
+
+    # ROI по временным слотам: avg_tokens / cost как прокси качества
+    from collections import OrderedDict
+    roi_buckets: OrderedDict = OrderedDict()
+    slot = cutoff.replace(minute=0, second=0, microsecond=0) if hourly            else cutoff.replace(hour=0, minute=0, second=0, microsecond=0)
+    step = timedelta(hours=1) if hourly else timedelta(days=1)
+    fmt  = "%H:00" if hourly else "%d.%m"
+    while slot <= now + step:
+        roi_buckets[slot.strftime(fmt)] = {"tokens": 0, "cost": 0.0, "calls": 0}
+        slot += step
+
+    for entry in entries:
+        try:
+            ts = datetime.fromisoformat(entry["ts"])
+            if ts < cutoff:
+                continue
+
+            total_calls += 1
+            src = entry.get("knowledge_source")
+            if not src:
+                # Фолбэк для старых записей без knowledge_source:
+                # определяем источник по типу вызова
+                call_type = entry.get("call_type", "")
+                if call_type == "chat_with_tools":
+                    src = "beacon"
+                elif call_type in ("chat", "chat_with_images"):
+                    src = "harbor"
+                else:
+                    src = "internal"
+            if src not in source_split:
+                src = "internal"
+            source_split[src] += 1
+
+            mode = entry.get("cognitive_mode")
+            if mode:
+                mode_seq.append(mode)
+
+            key = ts.strftime(fmt)
+            if key in roi_buckets:
+                roi_buckets[key]["tokens"] += entry.get("total_tokens", 0)
+                roi_buckets[key]["cost"]   += entry.get("cost_usd", 0)
+                roi_buckets[key]["calls"]  += 1
+        except Exception:
+            continue
+
+    # Считаем смены режима
+    mode_changes = sum(
+        1 for i in range(1, len(mode_seq)) if mode_seq[i] != mode_seq[i - 1]
+    )
+
+    # ROI = tokens / cost (чем больше токенов на доллар — тем эффективнее)
+    roi_labels = list(roi_buckets.keys())
+    roi_values = []
+    for b in roi_buckets.values():
+        if b["cost"] > 0:
+            roi_values.append(round(b["tokens"] / b["cost"], 1))
+        else:
+            roi_values.append(0)
+
+    # Pressure = доля beacon среди всех вызовов (0..1)
+    pressure = round(source_split["beacon"] / max(total_calls, 1), 3)
+
+    return {
+        "source_split":   source_split,
+        "roi_series":     {"labels": roi_labels, "roi": roi_values},
+        "mode_changes":   mode_changes,
+        "total_calls":    total_calls,
+        "pressure_level": pressure,
+    }
+
+
+# Алиас для обратной совместимости (studio/economy/ledger.py)
+read_all = read_ledger
+# patch_cognitive_evolution_applied

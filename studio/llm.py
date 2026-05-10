@@ -94,6 +94,7 @@ def chat_with_tools(
     on_tool_call: callable = None,
     agent_id: str = "unknown",
     slot_id: str = "unknown",
+    knowledge_source: str = "internal",
 ) -> str:
     """Вызов LLM с поддержкой Tool Use (синхронный).
 
@@ -183,9 +184,10 @@ def chat_with_tools(
                 prompt_tokens=usage.get("prompt_tokens", 0),
                 completion_tokens=usage.get("completion_tokens", 0),
                 call_type="chat_with_tools",
+                knowledge_source="beacon" if tool_calls_made > 0 else knowledge_source,
             )
             # ───────────────────────────────────────────────
-            
+
             return content
 
         # Модель вызвала tools — исполняем
@@ -254,6 +256,7 @@ def chat_with_tools(
             prompt_tokens=usage.get("prompt_tokens", 0),
             completion_tokens=usage.get("completion_tokens", 0),
             call_type="chat_with_tools",
+            knowledge_source="beacon" if tool_calls_made > 0 else knowledge_source,
         )
         # ───────────────────────────────────────────────
         
@@ -263,7 +266,8 @@ def chat_with_tools(
 
 
 def chat(system: str, user: str, knowledge: str = "", history: list = None, temperature: float = None,
-         agent_id: str = "unknown", slot_id: str = "unknown") -> str:
+         agent_id: str = "unknown", slot_id: str = "unknown",
+         knowledge_source: str = "internal") -> str:
     """
     Отправляет запрос к LLM.
     
@@ -356,6 +360,7 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
         prompt_tokens=usage.get("prompt_tokens", 0),
         completion_tokens=usage.get("completion_tokens", 0),
         call_type="chat",
+        knowledge_source=knowledge_source,
     )
     # ───────────────────────────────────────────────
 
@@ -371,7 +376,8 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
 
 def chat_with_images(system: str, user_text: str, images: list = None,
                      knowledge: str = "", history: list = None, temperature: float = None,
-                     agent_id: str = "unknown", slot_id: str = "unknown") -> str:
+                     agent_id: str = "unknown", slot_id: str = "unknown",
+                     knowledge_source: str = "internal") -> str:
     """
     Отправляет запрос с изображениями (vision).
     
@@ -487,9 +493,10 @@ def chat_with_images(system: str, user_text: str, images: list = None,
         prompt_tokens=usage.get("prompt_tokens", 0),
         completion_tokens=usage.get("completion_tokens", 0),
         call_type="chat_with_images",
+        knowledge_source=knowledge_source,
     )
     # ───────────────────────────────────────────────
-    
+
     if not content or not content.strip():
         raise RuntimeError("Модель вернула пустой ответ")
 

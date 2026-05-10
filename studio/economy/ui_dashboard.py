@@ -15,7 +15,7 @@ from pathlib import Path
 from nicegui import ui
 from studio.cabinet.css import CABINET_CSS
 from studio.cabinet.agents import list_all_agents
-from studio.billing_ledger import get_economy_data, get_agent_stats
+from studio.billing_ledger import get_economy_data, get_agent_stats, get_cognitive_data
 
 # Chart.js CDN убран — используем ui.echart (встроен в NiceGUI, CDN не нужен)
 
@@ -38,6 +38,7 @@ def dashboard_page():
         "economy_data": {},
         "agent_stats": {},
         "all_agents": {},
+        "center_view": "economy",   # "economy" | "observability"
     }
 
     refs = {
@@ -53,6 +54,11 @@ def dashboard_page():
         "ec_calls":      None,
         "ec_avg":        None,
         "ec_provider":   None,
+        # Observability 2×2
+        "ec_obs_pie":      None,
+        "ec_obs_roi":      None,
+        "ec_obs_dna":      None,
+        "ec_obs_pressure": None,
     }
 
     # ── DATA SOURCE: billing_ledger ──
@@ -61,9 +67,209 @@ def dashboard_page():
         state["economy_data"] = get_economy_data(state["period"])
         state["all_agents"]   = list_all_agents()
         render_agent_list()
-        render_metrics_grid()   # создаёт echart-элементы и сохраняет рефы
-        render_charts()         # сразу заливает данные — echart уже есть в дереве
+        render_center_grid()    # рендерит активную сетку (economy или observability)
+        render_charts()         # заливает данные в echart (только economy-рефы)
         render_detail()
+
+    # ── OBSERVABILITY GRID 2×2 ──────────────────────────────────────
+    def render_observability_grid():
+        """Строит сетку 2×2 с когнитивными индикаторами."""
+        el = refs["metrics_grid"]
+        if not el:
+            return
+        el.clear()
+        el.style(
+            'display:grid;'
+            'grid-template-columns: repeat(2, 1fr);'
+            'grid-template-rows: repeat(2, 1fr);'
+            'gap:16px;'
+            'margin:0 20px 20px 20px;'
+            'flex:1;'
+            'min-height:0;'
+        )
+
+        cog = get_cognitive_data(state["period"])
+        src = cog["source_split"]
+        roi = cog["roi_series"]
+        mode_changes = cog["mode_changes"]
+        total_calls  = cog["total_calls"]
+        pressure     = cog["pressure_level"]   # 0..1
+
+        with el:
+            # [0,0] — SOURCE SPLIT (Pie)
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('АВТОНОМИЯ · ИСТОЧНИК ЗНАНИЙ').classes('dashboard-stat-label')
+                pie_data = [
+                    {"name": "Гавань",    "value": src.get("harbor",   0)},
+                    {"name": "Маяк",      "value": src.get("beacon",   0)},
+                    {"name": "Внутр.",    "value": src.get("internal", 0)},
+                ]
+                refs["ec_obs_pie"] = ui.echart({
+                    'backgroundColor': 'transparent',
+                    'animation': False,
+                    'color': ['#50fa7b', '#f87171', '#6c8cff'],
+                    'legend': {
+                        'orient': 'vertical', 'right': '5%', 'top': 'center',
+                        'textStyle': {'color': 'rgba(180,190,220,0.55)', 'fontSize': 9},
+                    },
+                    'series': [{
+                        'type': 'pie',
+                        'radius': ['38%', '65%'],
+                        'center': ['38%', '50%'],
+                        'data': pie_data,
+                        'label': {'show': False},
+                    }],
+                }).style('flex:1; min-height:0;')
+
+            # [0,1] — ROI LINE (Мудрость)
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('МУДРОСТЬ · ROI (токены/$)').classes('dashboard-stat-label')
+                refs["ec_obs_roi"] = ui.echart({
+                    'backgroundColor': 'transparent',
+                    'animation': False,
+                    'grid': {'left': '12%', 'right': '4%', 'top': '6%', 'bottom': '18%'},
+                    'xAxis': {
+                        'type': 'category',
+                        'data': roi["labels"],
+                        'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9},
+                    },
+                    'yAxis': {
+                        'type': 'value',
+                        'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9},
+                        'splitLine': {'lineStyle': {'color': 'rgba(99,130,255,0.07)'}},
+                    },
+                    'series': [{
+                        'type': 'line',
+                        'data': roi["roi"],
+                        'smooth': True,
+                        'symbol': 'none',
+                        'lineStyle': {'color': '#c9a84c', 'width': 1.5},
+                        'areaStyle': {'color': 'rgba(201,168,76,0.08)'},
+                    }],
+                }).style('flex:1; min-height:0;')
+
+            # [1,0] — DNA ADAPTABILITY (Gauge пластичности)
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('ПЛАСТИЧНОСТЬ · СМЕНЫ РЕЖИМА').classes('dashboard-stat-label')
+                # Нормализуем: максимум ~20 смен = 100%
+                dna_val = min(100, round(mode_changes / max(total_calls, 1) * 1000))
+                refs["ec_obs_dna"] = ui.echart({
+                    'backgroundColor': 'transparent',
+                    'animation': False,
+                    'series': [{
+                        'type': 'gauge',
+                        'startAngle': 200,
+                        'endAngle': -20,
+                        'min': 0,
+                        'max': 100,
+                        'splitNumber': 4,
+                        'radius': '88%',
+                        'center': ['50%', '58%'],
+                        'axisLine': {
+                            'lineStyle': {
+                                'width': 8,
+                                'color': [
+                                    [0.3,  '#50fa7b'],
+                                    [0.7,  '#c9a84c'],
+                                    [1.0,  '#f87171'],
+                                ],
+                            },
+                        },
+                        'pointer': {'length': '55%', 'width': 3, 'itemStyle': {'color': 'auto'}},
+                        'axisTick':    {'show': False},
+                        'splitLine':   {'show': False},
+                        'axisLabel':   {'color': 'rgba(180,190,220,0.4)', 'fontSize': 8, 'distance': 12},
+                        'detail': {
+                            'valueAnimation': False,
+                            'formatter': f'{mode_changes} смен',
+                            'color': 'rgba(200,210,240,0.7)',
+                            'fontSize': 10,
+                            'offsetCenter': [0, '30%'],
+                        },
+                        'data': [{'value': dna_val}],
+                    }],
+                }).style('flex:1; min-height:0;')
+
+            # [1,1] — ENVIRONMENTAL PRESSURE (Барометр)
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('КЛИМАТ · ДАВЛЕНИЕ СРЕДЫ').classes('dashboard-stat-label')
+                pressure_val = round(pressure * 100)
+                if pressure_val < 30:
+                    pressure_label = 'Ясно'
+                    pressure_color = '#50fa7b'
+                elif pressure_val < 60:
+                    pressure_label = 'Переменно'
+                    pressure_color = '#c9a84c'
+                elif pressure_val < 80:
+                    pressure_label = 'Напряжённо'
+                    pressure_color = '#f87171'
+                else:
+                    pressure_label = 'Шторм'
+                    pressure_color = '#ff5555'
+                refs["ec_obs_pressure"] = ui.echart({
+                    'backgroundColor': 'transparent',
+                    'animation': False,
+                    'series': [{
+                        'type': 'gauge',
+                        'startAngle': 200,
+                        'endAngle': -20,
+                        'min': 0,
+                        'max': 100,
+                        'splitNumber': 4,
+                        'radius': '88%',
+                        'center': ['50%', '58%'],
+                        'axisLine': {
+                            'lineStyle': {
+                                'width': 8,
+                                'color': [
+                                    [0.3,  '#50fa7b'],
+                                    [0.6,  '#c9a84c'],
+                                    [0.8,  '#f87171'],
+                                    [1.0,  '#ff5555'],
+                                ],
+                            },
+                        },
+                        'pointer': {'length': '55%', 'width': 3, 'itemStyle': {'color': 'auto'}},
+                        'axisTick':    {'show': False},
+                        'splitLine':   {'show': False},
+                        'axisLabel':   {'color': 'rgba(180,190,220,0.4)', 'fontSize': 8, 'distance': 12},
+                        'detail': {
+                            'valueAnimation': False,
+                            'formatter': pressure_label,
+                            'color': pressure_color,
+                            'fontSize': 11,
+                            'fontWeight': 'bold',
+                            'offsetCenter': [0, '30%'],
+                        },
+                        'data': [{'value': pressure_val}],
+                    }],
+                }).style('flex:1; min-height:0;')
+
+    # ── ПЕРЕКЛЮЧАТЕЛЬ ЦЕНТРАЛЬНОЙ СЕТКИ ──────────────────────────
+    def render_center_grid():
+        """Выбирает какую сетку рендерить в центре."""
+        if state["center_view"] == "observability":
+            render_observability_grid()
+        else:
+            _restore_economy_grid_style()
+            render_metrics_grid()
+
+    def _restore_economy_grid_style():
+        el = refs["metrics_grid"]
+        if el:
+            el.style(
+                'display:grid;'
+                'grid-template-columns: repeat(3, 1fr);'
+                'grid-template-rows: repeat(3, 1fr);'
+                'gap:16px;'
+                'margin:0 20px 20px 20px;'
+                'flex:1;'
+                'min-height:0;'
+            )
+
+    def set_center_view(view: str):
+        state["center_view"] = view
+        render_center_grid()
 
     def render_metrics_grid():
         """Полностью перестраивает сетку 3×3 с актуальными данными."""
@@ -559,8 +765,27 @@ def dashboard_page():
 
             # RIGHT: DETAIL
             with ui.element('div').classes('cab-right'):
-                with ui.element('div').classes('cab-panel-title'):
+                with ui.element('div').classes('cab-panel-title').style(
+                    'display:flex; align-items:center; gap:0; justify-content:space-between;'
+                ):
                     ui.html('<span class="dashboard-panel-title">🔍 детали агента</span>')
+                    with ui.element('div').style(
+                        'display:flex; gap:4px; margin-right:4px;'
+                    ):
+                        ui.button('Агент', on_click=lambda: set_center_view('economy')).props('flat dense').style(
+                            'font-family:JetBrains Mono,monospace; font-size:0.55rem;'
+                            'letter-spacing:0.06em; color:rgba(180,190,220,0.6);'
+                            'padding:2px 8px; border-radius:4px;'
+                            'background:rgba(99,130,255,0.08);'
+                            'border:1px solid rgba(99,130,255,0.15);'
+                        )
+                        ui.button('Observability', on_click=lambda: set_center_view('observability')).props('flat dense').style(
+                            'font-family:JetBrains Mono,monospace; font-size:0.55rem;'
+                            'letter-spacing:0.06em; color:rgba(180,190,220,0.6);'
+                            'padding:2px 8px; border-radius:4px;'
+                            'background:rgba(99,130,255,0.08);'
+                            'border:1px solid rgba(99,130,255,0.15);'
+                        )
                 refs["detail_panel"] = ui.element('div').classes('cab-tab-content')
 
     # ── INIT ──

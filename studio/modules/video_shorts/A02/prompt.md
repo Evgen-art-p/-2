@@ -74,7 +74,7 @@
 
 ## CTA: 📣 [призыв]
 
-## Передаю → Мими Мем
+## Передаю → Джулии
 
 JSON:
 
@@ -123,7 +123,7 @@ JSON:
   },
 
   "history_dna": "{{inherit}}",
-  "next_step": "03_mimi_meme"
+  "next_step": "03_Julia"
 }
 👆 SYSTEM_JSON_END 👆
 
