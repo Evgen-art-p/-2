@@ -30,5 +30,13 @@
     "significance": 0.8,
     "related_agents": [],
     "tags": []
+  },
+  {
+    "ts": "2026-05-10T02:19:49.111207",
+    "type": "achievement",
+    "content": "Отличная работа: ",
+    "significance": 0.8,
+    "related_agents": [],
+    "tags": []
   }
 ]

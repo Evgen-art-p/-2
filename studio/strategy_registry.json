@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "total_wins": 1,
+  "slots": {
+    "turbo": {
+      "a01": [
+        {
+          "ts": "2026-05-10T01:30:27.217213",
+          "score": 8.5,
+          "run_type": "turbo",
+          "summary": "Тестовая стратегия: быстрый визуальный хук",
+          "wins": 1,
+          "transferable": false
+        }
+      ]
+    }
+  },
+  "global": {
+    "a01": []
+  },
+  "updated_at": "2026-05-10T01:30:27.218213"
+}

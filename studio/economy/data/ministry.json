@@ -1,0 +1,74 @@
+{
+  "A01::": {
+    "agent_id": "A01",
+    "slot_id": "",
+    "runs_total": 3,
+    "runs_success": 3,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 21.0,
+    "economy_rating": 2.0,
+    "mode": "generous"
+  },
+  "A02::": {
+    "agent_id": "A02",
+    "slot_id": "",
+    "runs_total": 3,
+    "runs_success": 3,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 21.0,
+    "economy_rating": 2.0,
+    "mode": "generous"
+  },
+  "A03::": {
+    "agent_id": "A03",
+    "slot_id": "",
+    "runs_total": 3,
+    "runs_success": 3,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 21.0,
+    "economy_rating": 2.0,
+    "mode": "generous"
+  },
+  "A04::": {
+    "agent_id": "A04",
+    "slot_id": "",
+    "runs_total": 3,
+    "runs_success": 3,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 21.0,
+    "economy_rating": 2.0,
+    "mode": "generous"
+  },
+  "A05::": {
+    "agent_id": "A05",
+    "slot_id": "",
+    "runs_total": 3,
+    "runs_success": 3,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 21.0,
+    "economy_rating": 2.0,
+    "mode": "generous"
+  },
+  "a01::turbo": {
+    "agent_id": "a01",
+    "slot_id": "turbo",
+    "runs_total": 1,
+    "runs_success": 1,
+    "runs_fail": 0,
+    "cost_success": 0.05,
+    "cost_fail": 0.0,
+    "score_sum": 7.0,
+    "economy_rating": 2.0,
+    "mode": "normal"
+  }
+}

@@ -3,5 +3,42 @@
   "studio": "Six Fingers",
   "visual_code": "Stylized 3D Realism (Pixar-like)",
   "total_assets": 0,
-  "assets": []
+  "assets": [
+    {
+      "id": "шесть_пальцев_1778366611_GRONDHEM",
+      "name": "Grondhem",
+      "category": "location",
+      "visual_anchor": "Загруженный файл: GRONDHEM.png",
+      "mood": [],
+      "file_path": "C:\\Users\\Евгений\\Desktop\\студия 2\\runs\\2026-05-10_шесть_пальцев_turbo_014322\\assets\\locations\\GRONDHEM.png",
+      "file_name": "GRONDHEM.png",
+      "subfolder": "locations",
+      "source": "upload",
+      "client": "шесть_пальцев"
+    },
+    {
+      "id": "шесть_пальцев_1778366683_LOKA",
+      "name": "Loka",
+      "category": "character",
+      "visual_anchor": "Загруженный файл: LOKA.png",
+      "mood": [],
+      "file_path": "C:\\Users\\Евгений\\Desktop\\студия 2\\runs\\2026-05-10_шесть_пальцев_turbo_014322\\assets\\characters\\LOKA.png",
+      "file_name": "LOKA.png",
+      "subfolder": "characters",
+      "source": "upload",
+      "client": "шесть_пальцев"
+    },
+    {
+      "id": "шесть_пальцев_1778366643_оле",
+      "name": "Оле",
+      "category": "character",
+      "visual_anchor": "Загруженный файл: оле.png",
+      "mood": [],
+      "file_path": "C:\\Users\\Евгений\\Desktop\\студия 2\\runs\\2026-05-10_шесть_пальцев_turbo_014322\\assets\\characters\\оле.png",
+      "file_name": "оле.png",
+      "subfolder": "characters",
+      "source": "upload",
+      "client": "шесть_пальцев"
+    }
+  ]
 }

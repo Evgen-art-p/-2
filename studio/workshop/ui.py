@@ -471,7 +471,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     
     def update_status():
         worker_id = state['active_worker']
-        info = get_worker_info(worker_id)
+        info = get_worker_info(worker_id, state.get("active_dept", ""))
         label = info.get("label", worker_id) if info else worker_id
         
         if status_ref['element']:
@@ -933,11 +933,11 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             else:
                 text = result
             
-            info = get_worker_info(worker_id)
+            info = get_worker_info(worker_id, state.get("active_dept", ""))
             label = info.get("label", worker_id) if info else worker_id
             update_viewer(f"# {label} ({worker_id})\n\n{text}")
         else:
-            info = get_worker_info(worker_id)
+            info = get_worker_info(worker_id, state.get("active_dept", ""))
             label = info.get("label", worker_id) if info else worker_id
             update_viewer(f"# {label} ({worker_id})\n\n*Отчёт пока не создан. Запустите пайплайн или напишите агенту напрямую.*")
         
@@ -973,8 +973,8 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                 system = state["set_system"] + _live_settings
                 knowledge = state["knowledge"]
             else:
-                system = get_worker_prompt(worker_id)
-                knowledge = get_worker_knowledge(worker_id)
+                system = get_worker_prompt(worker_id, state.get("active_dept", ""))
+                knowledge = get_worker_knowledge(worker_id, state.get("active_dept", ""))
             
             # Формируем контекст клиента — добавляем в системный промпт
             client_slug = state["current_client"]
@@ -1156,7 +1156,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             res = state["results"][wid]
             text = res.get("text", "") if isinstance(res, dict) else str(res)
             meta = res.get("meta", {}) if isinstance(res, dict) else {}
-            info = get_worker_info(wid)
+            info = get_worker_info(wid, state.get("active_dept", ""))
             label = info.get("label", wid) if info else wid
             my_output = meta.get("my_output", {})
             chain_json = ""
@@ -1282,7 +1282,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             res = state["results"][wid]
             text = res.get("text", "") if isinstance(res, dict) else str(res)
             meta = res.get("meta", {}) if isinstance(res, dict) else {}
-            info = get_worker_info(wid)
+            info = get_worker_info(wid, state.get("active_dept", ""))
             label = info.get("label", wid) if info else wid
             my_output = meta.get("my_output", {})
             chain_json = ""
@@ -1355,12 +1355,12 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                     avatars_ref['elements'][worker_id].classes(remove='done')
                     avatars_ref['elements'][worker_id].classes(add='working')
 
-                info = get_worker_info(worker_id)
+                info = get_worker_info(worker_id, state.get("active_dept", ""))
                 label = info.get("label", worker_id) if info else worker_id
                 ui.notify(f"🤖 {label}{tag}...", type='info')
 
-            system_prompt = get_worker_prompt(worker_id)
-            worker_knowledge = get_worker_knowledge(worker_id)
+            system_prompt = get_worker_prompt(worker_id, state.get("active_dept", ""))
+            worker_knowledge = get_worker_knowledge(worker_id, state.get("active_dept", ""))
 
             context = f"=== RUN MODE ===\nrun_type: turbo\n\n"
             context += f"=== MASTER BRIEF ===\n{state['master_brief']}\n\n"
@@ -1379,12 +1379,12 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                 context += session_ctx + "\n\n"
 
             # Домашний контекст агента (личная история, вектор тяги)
-            home_ctx = get_worker_home(worker_id)
+            home_ctx = get_worker_home(worker_id, state.get("active_dept", ""))
             if home_ctx:
                 context += f"=== ЛИЧНЫЙ КОНТЕКСТ ===\n{home_ctx}\n\n"
 
             # Текущее состояние агента из dna.json (Stress, Respect и др.)
-            dna_state = format_worker_state(worker_id)
+            dna_state = format_worker_state(worker_id, state.get("active_dept", ""))
             if dna_state:
                 context += dna_state + "\n\n"
 
@@ -1700,13 +1700,13 @@ Style: {state['settings']['style']}
                     avatars_ref['elements'][worker_id].classes(remove='done')
                     avatars_ref['elements'][worker_id].classes(add='working')
                 
-                info = get_worker_info(worker_id)
+                info = get_worker_info(worker_id, state.get("active_dept", ""))
                 label = info.get("label", worker_id) if info else worker_id
                 
                 ui.notify(f"🤖 {label} работает...", type='info')
                 
-                system_prompt = get_worker_prompt(worker_id)
-                worker_knowledge = get_worker_knowledge(worker_id)
+                system_prompt = get_worker_prompt(worker_id, state.get("active_dept", ""))
+                worker_knowledge = get_worker_knowledge(worker_id, state.get("active_dept", ""))
                 
                 # Контекст: brief + settings + файлы + клиент memory + предыдущие результаты
                 # ══════ ANCHOR: контекст чата ══════
@@ -1748,12 +1748,12 @@ Style: {state['settings']['style']}
                     context += session_ctx + "\n\n"
 
                 # Домашний контекст агента (личная история, вектор тяги)
-                home_ctx = get_worker_home(worker_id)
+                home_ctx = get_worker_home(worker_id, state.get("active_dept", ""))
                 if home_ctx:
                     context += f"=== ЛИЧНЫЙ КОНТЕКСТ ===\n{home_ctx}\n\n"
 
                 # Текущее состояние агента из dna.json (Stress, Respect и др.)
-                dna_state = format_worker_state(worker_id)
+                dna_state = format_worker_state(worker_id, state.get("active_dept", ""))
                 if dna_state:
                     context += dna_state + "\n\n"
                 

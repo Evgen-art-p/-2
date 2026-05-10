@@ -22,6 +22,13 @@ from studio.modules_registry import (
     get_dept_workers, get_dept_all_workers,
     DEPT_PIPELINE_CONFIG,
 )
+# ══ Conflict System (Этап 6) ══
+try:
+    from studio import conflict as _conflict
+    _CONFLICT_ENABLED = True
+except ImportError:
+    _CONFLICT_ENABLED = False
+
 
 
 # ═══════════════════════════════════════════════════════════
@@ -52,6 +59,7 @@ class CartridgeManifest:
     # Режим работы: stop_after, описание
     stop_after: Optional[int] = None
     description: str = ""
+    qa_agent: str = "A12"  # QA-агент цеха, чьи оценки идут в feedback
 
     # Run type — для совместимости с PIPELINE_MODES
     run_type: str = ""
@@ -77,6 +85,7 @@ class CartridgeManifest:
             turbo_parallel=data.get("turbo_parallel", []),
             stop_after=data.get("stop_after"),
             description=data.get("description", ""),
+            qa_agent=data.get("qa_agent", "A12"),
             run_type=data.get("run_type", module_id),
         )
 
@@ -269,12 +278,16 @@ class CartridgeRunner:
                     break
 
         run_type = self.manifest.run_type or self.manifest.id
+        # Сообщаем pipeline.py кто QA-агент этого цеха
+        self.state["_qa_agent"] = getattr(self.manifest, "qa_agent", "A12")
+        self.state["_slot_id"] = self.slot_id  # ← slot_id для feedback/reflection
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")
         settings_ctx = build_settings_ctx(self.state)
         files_ctx = build_files_ctx(self.state)
         previous_output = ""
 
+        self.state["_slot_id"] = self.slot_id
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
 
         i = start_index
@@ -327,10 +340,30 @@ class CartridgeRunner:
                 # ═══ HOOK: on_before_agent ═══
                 context = self._call_hook("on_before_agent", self.state, worker_id, context) or context
 
-                # Вызываем агента
-                human_text, meta, raw_result = await call_agent(
-                    self.state, worker_id, context
-                )
+                # ═══ Conflict System: divergent/adversarial режим ═══
+                conflict_result = None
+                if _CONFLICT_ENABLED and hasattr(self.manifest, 'conflict_mode'):
+                    conflict_mode = getattr(self.manifest, 'conflict_mode', 'none')
+                    if conflict_mode != 'none':
+                        conflict_result = await _conflict.run_conflict_phase(
+                            state=self.state,
+                            phase_config={
+                                "id": phase,
+                                "conflict_mode": conflict_mode,
+                                "agents": self.manifest.phases.get(phase, [worker_id]),
+                            },
+                            build_context_fn=build_agent_context,
+                            call_agent_fn=call_agent,
+                            slot_id=self.slot_id,
+                        )
+
+                # Вызываем агента (или берём победителя конфликта)
+                if conflict_result:
+                    human_text, meta, raw_result = conflict_result["winner_result"]
+                else:
+                    human_text, meta, raw_result = await call_agent(
+                        self.state, worker_id, context
+                    )
 
                 # Ревизионный цикл
                 if self.manifest.revision_loop and self._handle_revision(

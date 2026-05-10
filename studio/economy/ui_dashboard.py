@@ -17,7 +17,7 @@ from studio.cabinet.css import CABINET_CSS
 from studio.cabinet.agents import list_all_agents
 from studio.billing_ledger import get_economy_data, get_agent_stats
 
-ui.add_head_html('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>')
+# Chart.js CDN убран — используем ui.echart (встроен в NiceGUI, CDN не нужен)
 
 # ── Подключаем CSS ──
 _css_path = Path(__file__).parent / "dashboard.css"
@@ -41,30 +41,158 @@ def dashboard_page():
     }
 
     refs = {
-        "agent_list": None,
-        "detail_panel": None,
-        "total_label": None,
-        "burn_label": None,
+        "agent_list":    None,
+        "detail_panel":  None,
+        "metrics_grid":  None,
+        "total_label":   None,
+        "burn_label":    None,
         "provider_chart": None,
-        "agent_chart": None,
+        "agent_chart":   None,
+        # ECharts — встроены в NiceGUI, создаются в render_metrics_grid
+        "ec_cost":       None,
+        "ec_calls":      None,
+        "ec_avg":        None,
+        "ec_provider":   None,
     }
 
     # ── DATA SOURCE: billing_ledger ──
 
     def update_all():
         state["economy_data"] = get_economy_data(state["period"])
-        state["all_agents"] = list_all_agents()
-        update_header_stats()
+        state["all_agents"]   = list_all_agents()
         render_agent_list()
-        render_charts()
+        render_metrics_grid()   # создаёт echart-элементы и сохраняет рефы
+        render_charts()         # сразу заливает данные — echart уже есть в дереве
         render_detail()
 
-    def update_header_stats():
+    def render_metrics_grid():
+        """Полностью перестраивает сетку 3×3 с актуальными данными."""
+        el = refs["metrics_grid"]
+        if not el:
+            return
+        el.clear()
         eco = state["economy_data"]
-        if refs["total_label"]:
-            refs["total_label"].set_text(f'${eco["total"]:.4f}')
-        if refs["burn_label"]:
-            refs["burn_label"].set_text(f'${eco["burn_rate"]:.4f}/m')
+
+        with el:
+            # ── 1. TOTAL SPEND ──
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden;'):
+                ui.label('TOTAL SPEND').classes('dashboard-stat-label')
+                ui.label(f'${eco.get("total", 0):.4f}').classes('dashboard-stat-value-total')
+                ui.html('<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;'
+                        'color:rgba(140,150,180,0.4);margin-top:4px;">за период</div>')
+
+            # ── 2. BURN RATE ──
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden;'):
+                ui.label('BURN RATE').classes('dashboard-stat-label')
+                burn_hr = eco.get("burn_rate", 0) * 60
+                ui.label(f'${burn_hr:.4f}/hr').classes('dashboard-stat-value-burn')
+                ui.html('<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;'
+                        'color:rgba(140,150,180,0.4);margin-top:4px;">$/час</div>')
+
+            # ── 3. RUNWAY ──
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden;'):
+                ui.label('RUNWAY').classes('dashboard-stat-label')
+                _burn_day = eco.get("burn_rate", 0) * 60 * 24
+                _budget   = eco.get("budget", 0)
+                if _budget and _burn_day > 0:
+                    _days = _budget / _burn_day
+                    ui.label(f'{_days:.1f} дн').classes('dashboard-stat-value-total').style('color:#f87171;')
+                    ui.html(f'<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;'
+                            f'color:rgba(140,150,180,0.4);margin-top:4px;">бюджет ${_budget:.2f}</div>')
+                elif _burn_day > 0:
+                    ui.label(f'${_burn_day:.4f}/d').classes('dashboard-stat-value-burn')
+                    ui.html('<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;'
+                            'color:rgba(140,150,180,0.4);margin-top:4px;">бюджет не задан</div>')
+                else:
+                    ui.label('—').classes('dashboard-stat-value-total')
+
+            # 4. COST OVER TIME
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('COST OVER TIME').classes('dashboard-stat-label')
+                refs["ec_cost"] = ui.echart({
+                    'backgroundColor': 'transparent', 'animation': False,
+                    'grid': {'left': '12%', 'right': '4%', 'top': '6%', 'bottom': '18%'},
+                    'xAxis': {'type': 'category', 'data': [], 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9}},
+                    'yAxis': {'type': 'value', 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9},
+                              'splitLine': {'lineStyle': {'color': 'rgba(99,130,255,0.07)'}}},
+                    'series': [{'type': 'line', 'data': [], 'smooth': True, 'symbol': 'none',
+                                'lineStyle': {'color': '#6c8cff', 'width': 1.5},
+                                'areaStyle': {'color': 'rgba(108,140,255,0.1)'}}],
+                }).style('flex:1; min-height:0;')
+            # 5. CALLS VOLUME
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('CALLS VOLUME').classes('dashboard-stat-label')
+                refs["ec_calls"] = ui.echart({
+                    'backgroundColor': 'transparent', 'animation': False,
+                    'grid': {'left': '12%', 'right': '4%', 'top': '6%', 'bottom': '18%'},
+                    'xAxis': {'type': 'category', 'data': [], 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9}},
+                    'yAxis': {'type': 'value', 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9},
+                              'splitLine': {'lineStyle': {'color': 'rgba(99,130,255,0.07)'}}},
+                    'series': [{'type': 'bar', 'data': [],
+                                'itemStyle': {'color': '#c9a84c', 'borderRadius': 2}}],
+                }).style('flex:1; min-height:0;')
+            # 6. AVG COST / CALL
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('AVG COST / CALL').classes('dashboard-stat-label')
+                refs["ec_avg"] = ui.echart({
+                    'backgroundColor': 'transparent', 'animation': False,
+                    'grid': {'left': '12%', 'right': '4%', 'top': '6%', 'bottom': '18%'},
+                    'xAxis': {'type': 'category', 'data': [], 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9}},
+                    'yAxis': {'type': 'value', 'axisLabel': {'color': 'rgba(180,190,220,0.4)', 'fontSize': 9},
+                              'splitLine': {'lineStyle': {'color': 'rgba(99,130,255,0.07)'}}},
+                    'series': [{'type': 'line', 'data': [], 'smooth': True, 'symbol': 'none',
+                                'lineStyle': {'color': '#50fa7b', 'width': 1.5},
+                                'areaStyle': {'color': 'rgba(80,250,123,0.08)'}}],
+                }).style('flex:1; min-height:0;')
+            # 7. PROVIDER BREAKDOWN
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden; display:flex; flex-direction:column;'):
+                ui.label('PROVIDER BREAKDOWN').classes('dashboard-stat-label')
+                refs["ec_provider"] = ui.echart({
+                    'backgroundColor': 'transparent', 'animation': False,
+                    'color': ['#6c8cff', '#c9a84c', '#a78bfa', '#f87171', '#50fa7b', '#38bdf8'],
+                    'legend': {'orient': 'vertical', 'right': '5%', 'top': 'center',
+                               'textStyle': {'color': 'rgba(180,190,220,0.55)', 'fontSize': 9}},
+                    'series': [{'type': 'pie', 'radius': ['38%', '65%'], 'center': ['38%', '50%'],
+                                'data': [], 'label': {'show': False}}],
+                }).style('flex:1; min-height:0;')
+            # ── 8. TOP SPENDERS ──
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden;'):
+                ui.label('TOP SPENDERS').classes('dashboard-stat-label')
+                _agent_items = sorted(
+                    eco.get("by_agent", {}).items(),
+                    key=lambda x: x[1], reverse=True
+                )[:5]
+                for _aname, _aval in _agent_items:
+                    _short = _aname[:14] + '…' if len(_aname) > 14 else _aname
+                    ui.html(
+                        f'<div style="display:flex;justify-content:space-between;align-items:center;'
+                        f'font-family:JetBrains Mono,monospace;font-size:0.58rem;'
+                        f'color:rgba(200,210,240,0.75);margin-top:5px;border-bottom:1px solid rgba(99,130,255,0.06);padding-bottom:4px;gap:8px;">'
+                        f'<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{_short}</span>'
+                        f'<span style="color:#c9a84c;flex-shrink:0;white-space:nowrap;">${_aval:.4f}</span></div>'
+                    )
+                if not _agent_items:
+                    ui.html('<div style="font-size:0.6rem;color:rgba(180,190,220,0.3);margin-top:8px;">— нет данных —</div>')
+
+            # ── 9. TRENDS ──
+            with ui.card().classes('dashboard-stat-card').style('overflow:hidden;'):
+                ui.label('TRENDS').classes('dashboard-stat-label')
+                _curr = eco.get("total", 0)
+                _prev = eco.get("prev_total", 0)
+                if _prev and _prev > 0:
+                    _dpct = ((_curr - _prev) / _prev) * 100
+                    _arrow = '↑' if _dpct >= 0 else '↓'
+                    _clr   = '#f87171' if _dpct >= 0 else '#50fa7b'
+                    ui.label(f'{_arrow} {abs(_dpct):.1f}%').classes('dashboard-stat-value-total').style(f'color:{_clr};')
+                    ui.html(
+                        f'<div style="font-family:JetBrains Mono,monospace;font-size:0.55rem;'
+                        f'color:rgba(140,150,180,0.4);margin-top:4px;">'
+                        f'vs прошлый период ${_prev:.4f}</div>'
+                    )
+                else:
+                    ui.label(f'${_curr:.4f}').classes('dashboard-stat-value-total').style('color:#6c8cff;')
+                    ui.html('<div style="font-family:JetBrains Mono,monospace;font-size:0.52rem;'
+                            'color:rgba(140,150,180,0.2);margin-top:6px;">нет данных за прошлый период</div>')
 
     # ── LEFT PANEL: слоты и агенты ──
 
@@ -168,82 +296,32 @@ def dashboard_page():
     # ── CENTER: чарты ──
 
     def render_charts():
+        """Заливает данные в ECharts (встроены в NiceGUI, CDN не нужен)."""
+        from studio.billing_ledger import get_timeseries
         eco = state["economy_data"]
+        ts  = get_timeseries(state["period"])
+        lbl = ts["labels"]
 
-        p_labels = list(eco.get("by_provider", {}).keys())
-        p_data = list(eco.get("by_provider", {}).values())
+        if refs["ec_cost"]:
+            refs["ec_cost"].options["xAxis"]["data"] = lbl
+            refs["ec_cost"].options["series"][0]["data"] = ts["cost"]
+            refs["ec_cost"].update()
 
-        top_agents = dict(list(eco.get("by_agent", {}).items())[:5])
-        a_labels = list(top_agents.keys())
-        a_data = list(top_agents.values())
+        if refs["ec_calls"]:
+            refs["ec_calls"].options["xAxis"]["data"] = lbl
+            refs["ec_calls"].options["series"][0]["data"] = ts["calls"]
+            refs["ec_calls"].update()
 
-        js = f"""
-        try {{
-            const pCtx = document.getElementById('providerChart');
-            if (pCtx) {{
-                if (window.myProviderChart) window.myProviderChart.destroy();
-                window.myProviderChart = new Chart(pCtx, {{
-                    type: 'bar',
-                    data: {{
-                        labels: {json.dumps(p_labels)},
-                        datasets: [{{
-                            label: 'USD',
-                            data: {json.dumps(p_data)},
-                            backgroundColor: '#6c8cff',
-                            borderRadius: 4
-                        }}]
-                    }},
-                    options: {{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {{ legend: {{ display: false }} }},
-                        scales: {{
-                            y: {{ 
-                                grid: {{ color: 'rgba(99,130,255,0.06)' }}, 
-                                ticks: {{ color: 'rgba(180,190,220,0.5)', font: {{ size: 10 }} }} 
-                            }},
-                            x: {{ 
-                                ticks: {{ color: 'rgba(180,190,220,0.5)', font: {{ size: 10 }} }} 
-                            }}
-                        }}
-                    }}
-                }});
-            }}
+        if refs["ec_avg"]:
+            refs["ec_avg"].options["xAxis"]["data"] = lbl
+            refs["ec_avg"].options["series"][0]["data"] = ts["avg_cost"]
+            refs["ec_avg"].update()
 
-            const aCtx = document.getElementById('agentChart');
-            if (aCtx) {{
-                if (window.myAgentChart) window.myAgentChart.destroy();
-                window.myAgentChart = new Chart(aCtx, {{
-                    type: 'doughnut',
-                    data: {{
-                        labels: {json.dumps(a_labels)},
-                        datasets: [{{
-                            data: {json.dumps(a_data)},
-                            backgroundColor: ['#6c8cff', '#c9a84c', '#a78bfa', '#f87171', '#50fa7b'],
-                            borderWidth: 0
-                        }}]
-                    }},
-                    options: {{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {{ 
-                            legend: {{ 
-                                position: 'right', 
-                                labels: {{ 
-                                    color: 'rgba(180,190,220,0.7)', 
-                                    font: {{ size: 10 }},
-                                    boxWidth: 10,
-                                    padding: 8
-                                }} 
-                            }} 
-                        }}
-                    }}
-                }});
-            }}
-        }} catch(e) {{ console.log('Chart error', e); }}
-        """
-        ui.run_javascript(js)
-
+        if refs["ec_provider"]:
+            items = [{"name": k, "value": round(v, 4)}
+                     for k, v in eco.get("by_provider", {}).items()]
+            refs["ec_provider"].options["series"][0]["data"] = items or [{"name": "нет данных", "value": 1}]
+            refs["ec_provider"].update()
     # ── RIGHT PANEL: детали агента ──
 
     def render_detail():
@@ -407,22 +485,22 @@ def dashboard_page():
                 refs["agent_list"] = ui.element('div').classes('dashboard-agent-list-container')
 
             # CENTER: CHARTS
-            with ui.element('div').classes('cab-center').style('padding-left: 0; margin-left: 0;'):
-                # ── Верхняя полоса: статы + кнопки провайдеров ──
+            with ui.element('div').classes('cab-center').style(
+                'padding-left:0; margin-left:0; display:flex; flex-direction:column; height:100%;'
+            ):
+                # ── Верхняя полоса: статы (refs) + кнопки провайдеров — НЕ ТРОГАТЬ ──
                 with ui.element('div').style(
-                    'display:flex; align-items:stretch; gap:20px; margin:20px; width:calc(100% - 40px);'
+                    'display:flex; align-items:stretch; gap:20px; margin:20px; width:calc(100% - 40px); flex-shrink:0;'
                 ):
-                    # Левая часть: Total Spend, Burn Rate, пустое пространство (три колонки внутри левой половины)
+                    # Левая часть: Total Spend, Burn Rate, заглушка
                     with ui.element('div').style(
                         'display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; flex:1;'
                     ):
                         with ui.card().classes('dashboard-stat-card'):
-                            ui.label('TOTAL SPEND').classes('dashboard-stat-label')
-                            refs["total_label"] = ui.label('$0.0000').classes('dashboard-stat-value-total')
+                            ui.label('').classes('dashboard-stat-label')
                         with ui.card().classes('dashboard-stat-card'):
-                            ui.label('BURN RATE').classes('dashboard-stat-label')
-                            refs["burn_label"] = ui.label('$0.0000/m').classes('dashboard-stat-value-burn')
-                        # Пустая карточка-заглушка для симметрии с кнопками
+                            ui.label('').classes('dashboard-stat-label')
+                        # Заглушка — симметрия с кнопками
                         with ui.card().classes('dashboard-stat-card'):
                             ui.label('').classes('dashboard-stat-label')
                             ui.label('').classes('dashboard-stat-value-total')
@@ -466,15 +544,18 @@ def dashboard_page():
                                     )
                                 )
 
-                # ── Графики ──
-                with ui.element('div').classes('dashboard-chart-row').style('gap: 20px;'):
-                    with ui.element('div').classes('dashboard-chart-box'):
-                        ui.label('PROVIDERS BREAKDOWN').classes('dashboard-chart-title')
-                        ui.html('<canvas id="providerChart" style="width:100%;height:100%;"></canvas>')
+                # ── METRICS GRID 3×3 — динамический контейнер, перестраивается через render_metrics_grid() ──
+                refs["metrics_grid"] = ui.element('div').style(
+                    'display:grid;'
+                    'grid-template-columns: repeat(3, 1fr);'
+                    'grid-template-rows: repeat(3, 1fr);'
+                    'gap:16px;'
+                    'margin:0 20px 20px 20px;'
+                    'flex:1;'
+                    'min-height:0;'
+                )
 
-                    with ui.element('div').classes('dashboard-chart-box'):
-                        ui.label('TOP SPENDERS').classes('dashboard-chart-title')
-                        ui.html('<canvas id="agentChart" style="width:100%;height:100%;"></canvas>')
+
 
             # RIGHT: DETAIL
             with ui.element('div').classes('cab-right'):
@@ -484,4 +565,10 @@ def dashboard_page():
 
     # ── INIT ──
     ui.timer(30, update_all)
-    update_all()
+    ui.timer(0.3, update_all, once=True)   # первый запуск после установки WS соединения
+# patch_dashboard_2_applied
+
+# patch_dashboard_3_applied
+
+# patch_dashboard_final_applied
+# patch_top_stubs_applied

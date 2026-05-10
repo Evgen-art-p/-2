@@ -58,15 +58,14 @@ def get_dept_path() -> Path:
     return MODULES_DIR / CURRENT_DEPT
 
 
-def get_worker_path(worker_id: str, dept: str = "") -> Path:
-    """Путь к папке воркера: modules/{dept}/A01/ (dept-aware)"""
-    target = dept or CURRENT_DEPT
-    return MODULES_DIR / target / worker_id
+def get_worker_path(worker_id: str) -> Path:
+    """Путь к папке воркера: modules/social_mix/A01/"""
+    return get_dept_path() / worker_id
 
 
-def get_worker_info(worker_id: str, dept: str = "") -> dict | None:
-    """Инфа о воркере из info.json (dept-aware)"""
-    info_path = get_worker_path(worker_id, dept) / "info.json"
+def get_worker_info(worker_id: str) -> dict | None:
+    """Инфа о воркере из info.json"""
+    info_path = get_worker_path(worker_id) / "info.json"
     data = _read_json(info_path)
     
     if not data:
@@ -84,14 +83,14 @@ def get_worker_info(worker_id: str, dept: str = "") -> dict | None:
     }
 
 
-def get_worker_prompt(worker_id: str, dept: str = "") -> str:
+def get_worker_prompt(worker_id: str) -> str:
     """
     Собирает system prompt агента из трёх слоёв:
     1. core/anchor_points.md  — якоря, ДНК (грузится первым, неизменяемое)
     2. forge/prompt.md        — рабочие инструкции (основной промпт)
     3. prompt.md              — старый формат (совместимость)
     """
-    worker_path = get_worker_path(worker_id, dept)
+    worker_path = get_worker_path(worker_id)
     parts = []
 
     # 1. Ядро — якоря и статическая ДНК
@@ -127,13 +126,13 @@ def get_worker_prompt(worker_id: str, dept: str = "") -> str:
     return "\n\n".join(parts)
 
 
-def get_worker_home(worker_id: str, dept: str = "") -> str:
+def get_worker_home(worker_id: str) -> str:
     """
     Читает домашний контекст агента: home/home_prompt.md
     Используется в Храме и личных сессиях.
     Подаётся в начало user context (не в system prompt).
     """
-    home_path = get_worker_path(worker_id, dept) / "home" / "home_prompt.md"
+    home_path = get_worker_path(worker_id) / "home" / "home_prompt.md"
     if home_path.exists():
         try:
             return home_path.read_text(encoding="utf-8")
@@ -142,16 +141,16 @@ def get_worker_home(worker_id: str, dept: str = "") -> str:
     return ""
 
 
-def get_worker_dna(worker_id: str, dept: str = "") -> dict:
+def get_worker_dna(worker_id: str) -> dict:
     """
     Читает dna.json агента.
     Возвращает полный словарь или пустой dict если файла нет.
     """
-    dna_path = get_worker_path(worker_id, dept) / "dna.json"
+    dna_path = get_worker_path(worker_id) / "dna.json"
     return _read_json(dna_path)
 
 
-def format_worker_state(worker_id: str, dept: str = "") -> str:
+def format_worker_state(worker_id: str) -> str:
     """
     Форматирует текущее состояние агента из dna.json dynamic блока.
     Подаётся в user context чтобы агент знал своё состояние.
@@ -161,7 +160,7 @@ def format_worker_state(worker_id: str, dept: str = "") -> str:
     - Patience == 0  → режим Тишина
     - Stress > 0.8   → агент идёт исправлять ошибки сам
     """
-    dna = get_worker_dna(worker_id, dept)
+    dna = get_worker_dna(worker_id)
     if not dna:
         return ""
 
@@ -212,14 +211,14 @@ def format_worker_state(worker_id: str, dept: str = "") -> str:
     return "\n".join(lines)
 
 
-def get_worker_knowledge(worker_id: str, dept: str = "") -> str:
+def get_worker_knowledge(worker_id: str) -> str:
     """
     Читает базу знаний агента.
     Ищет в двух местах (новая структура и старая):
     - forge/knowledge/*.md / *.txt
     - knowledge/*.md / *.txt
     """
-    worker_path = get_worker_path(worker_id, dept)
+    worker_path = get_worker_path(worker_id)
     texts = []
 
     for knowledge_dir in [

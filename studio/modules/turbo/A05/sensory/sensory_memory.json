@@ -39,6 +39,38 @@
       "content": "Выполнил задачу: ",
       "tags": [],
       "emotional_weight": 0.8
+    },
+    {
+      "ts": "2026-05-09T21:40:37.568660",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.5
+    },
+    {
+      "ts": "2026-05-10T01:26:06.439774",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.5
+    },
+    {
+      "ts": "2026-05-10T01:55:09.988127",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.5
+    },
+    {
+      "ts": "2026-05-10T02:19:49.109206",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.8
     }
   ],
   "summary": "\n[Затухло 2 записей]: Выполнил задачу: ```json; Сейчас... свободное время, значит. Нечастый гость. Внутренни",

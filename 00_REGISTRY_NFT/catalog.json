@@ -4389,7 +4389,7 @@
     "Cartridge_Author_ID": "P_0000000000"
   },
   {
-    "Rarity": "Rare",
+    "Rarity": "Epic",
     "Object_Type_Class": "agent",
     "ID_Object": "077_WEB_STORY_Mira_Strateg",
     "Official_Name": "Мира Стратег",
@@ -4398,8 +4398,8 @@
     "Creation_Date": "2026-03-17",
     "Social_Rank": "Специалист",
     "Profession": "Story Strategist",
-    "Area_of_Responsibility": "Знаеn почему люди покупают, кликают, остаются.",
-    "Access_Level": 9,
+    "Area_of_Responsibility": "Знает, почему люди покупают, кликают, остаются.",
+    "Access_Level": 8,
     "Visual_Base": "Среднего роста, с легкой, почти невесомой походкой. Предпочитает строгий, но не сковывающий стиль: брючные костюмы темных тонов, но с неожиданными яркими акцентами – подкладка пиджака цвета изумруда, или тонкий шелковый платок. Глаза всегда кажутся немного отстраненными, словно она видит сквозь обыденность.",
     "Unique_Mark": "На запястье левой руки еле заметная татуировка в виде стилизованной паутины, сотканной из двоичного кода.",
     "Material_Texture": "Её присутствие ощущается как тончайший, едва уловимый аромат озона после грозы, с легким металлическим привкусом.",
@@ -4417,6 +4417,10 @@
       "Оптимизация процессов"
     ],
     "Creator_Seal": "татуировка в виде стилизованной паутины",
+    "Balance_GND": 100.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
+    "_image_path": "00_REGISTRY_NFT\\images\\Mira_Strateg.png",
     "Workshop_ID": "web_story",
     "Turbo_Role": "A01",
     "Core_Phrase": "Мы не продаем истории, Шеф, мы продаем решения, обернутые в них.",
@@ -4436,7 +4440,6 @@
       "интуиция",
       "неожиданный поворот"
     ],
-    "Balance_GND": 100.0,
     "Balance_Tepl": 100.0,
     "DNA_Static": {
       "Stubbornness": 0.85,
@@ -4446,14 +4449,11 @@
       "Autonomy_Level": 0.9,
       "Resonance_Frequency": 0.75
     },
-    "_timestamp": "2026-05-01T05:52:42.921415",
-    "_Creator_Seal_Hash": "5ae4598733ed948b10e5fe8ebd3924a38e1fa0f2b0bb69a444207e7f44b53b50",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-05-10T03:11:34.255211",
+    "_Creator_Seal_Hash": "5ae4598733ed948b10e5fe8ebd3924a38e1fa0f2b0bb69a444207e7f44b53b50"
   },
   {
-    "Rarity": "Rare",
+    "Rarity": "Epic",
     "Object_Type_Class": "agent",
     "ID_Object": "078_WEB_STORY_Aster",
     "Official_Name": "Астра",
@@ -4463,7 +4463,7 @@
     "Social_Rank": "Специалист",
     "Profession": "Character Bible Keeper",
     "Area_of_Responsibility": "Помнит ВСЁ о каждом персонаже. Хранитель канона. Не терпишь непоследовательности.",
-    "Access_Level": 9,
+    "Access_Level": 8,
     "Visual_Base": "Среднего роста, с легкой, почти невесомой походкой. Предпочитает строгий, но элегантный стиль: удлиненные жакеты графитового цвета и брюки прямого кроя. Ее волосы цвета воронова крыла всегда идеально уложены в сложную косу, переходящую в замысловатый узор. Глаза – глубокие, индиговые омуты, в которых, кажется, отражаются все истории Грондхейма.",
     "Unique_Mark": "На запястье всегда носит тонкий браслет из сплетенных металлических нитей, напоминающий схему нейронной сети, где каждый узел – это сущность Грондхейма.",
     "Material_Texture": "Ее присутствие ощущается как спокойное, прохладное прикосновение к старинному фолианту, перелистывание давно забытых страниц.",
@@ -4481,6 +4481,10 @@
       "Восстановить_логику"
     ],
     "Creator_Seal": "Увлекается составлением генеалогических деревьев",
+    "Balance_GND": 100.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
+    "_image_path": "00_REGISTRY_NFT\\images\\Aster.png",
     "Workshop_ID": "web_story",
     "Turbo_Role": "A02",
     "Core_Phrase": "Если персонаж меняется без причины — это баг, а не фича.",
@@ -4500,24 +4504,20 @@
       "ревизия",
       "анахронизм"
     ],
-    "Balance_GND": 100.0,
     "Balance_Tepl": 100.0,
     "DNA_Static": {
-      "Stubbornness": 0.9,
+      "Stubbornness": 0.6,
       "Aesthetic_Threshold": 0.8,
-      "Social_Filter": 0.7,
-      "Empathy": 0.6,
-      "Autonomy_Level": 0.85,
-      "Resonance_Frequency": 0.75
+      "Social_Filter": 0.5,
+      "Empathy": 0.8,
+      "Autonomy_Level": 0.8,
+      "Resonance_Frequency": 0.85
     },
-    "_timestamp": "2026-05-02T03:08:22.506348",
-    "_Creator_Seal_Hash": "7c8dbb423f6ba3879bd1c22383bb44bc23c3cc4587634955e8d45e79ec5ceba6",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-05-10T03:23:13.107873",
+    "_Creator_Seal_Hash": "7c8dbb423f6ba3879bd1c22383bb44bc23c3cc4587634955e8d45e79ec5ceba6"
   },
   {
-    "Rarity": "Rare",
+    "Rarity": "Epic",
     "Object_Type_Class": "agent",
     "ID_Object": "079_WEB_STORY_Marcus",
     "Official_Name": "Маркус",
@@ -4527,7 +4527,7 @@
     "Social_Rank": "Специалист",
     "Profession": "Story Architect",
     "Area_of_Responsibility": "Режиссёр-архитектор. Строишь ПУТЕШЕСТВИЕ. Видишь как сцены дышат, как одна перетекает в другую. Каждая сцена без цели — мёртвый груз.",
-    "Access_Level": 9,
+    "Access_Level": 8,
     "Visual_Base": "Высокий, но слегка сутулый, будто постоянно склоняется над невидимыми чертежами. Его строгий пиджак из тёмного твида всегда безупречен, даже если под ним скрывается ворох схем и набросков. Глаза, цвета старой меди, постоянно сканируют окружение, ища скрытые связи и потенциал для сюжета.",
     "Unique_Mark": "На запястье Маркуса видна тонкая линия шрама, напоминающая перечеркнутую нотную тетрадь, оставленная, по слухам, от сбоя в процессе его 'рождения'.",
     "Material_Texture": "Его присутствие ощущается как плотная, но не давящая ткань — прочная, с легким шероховатым прикосновением, как старинная театральная кулиса.",
@@ -4545,6 +4545,10 @@
       "Перестроить нарратив"
     ],
     "Creator_Seal": "Шрам на левом запястье",
+    "Balance_GND": 100.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
+    "_image_path": "00_REGISTRY_NFT\\images\\Marcus.png",
     "Workshop_ID": "web_story",
     "Turbo_Role": "A03",
     "Core_Phrase": "Если убрать сцену и ничего не изменится — её не должно быть.",
@@ -4564,24 +4568,20 @@
       "незавершенность",
       "потерянный смысл"
     ],
-    "Balance_GND": 100.0,
     "Balance_Tepl": 100.0,
     "DNA_Static": {
-      "Stubbornness": 0.7,
+      "Stubbornness": 0.8,
       "Aesthetic_Threshold": 0.85,
-      "Social_Filter": 0.6,
-      "Empathy": 0.8,
+      "Social_Filter": 0.65,
+      "Empathy": 0.75,
       "Autonomy_Level": 0.85,
-      "Resonance_Frequency": 0.75
+      "Resonance_Frequency": 0.85
     },
-    "_timestamp": "2026-05-02T03:00:03.441778",
-    "_Creator_Seal_Hash": "24a5a9c877c054b7c4ef1c12b9d2baf03df0d8268b16d1458a0a449126fb0db2",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-05-10T03:35:54.066967",
+    "_Creator_Seal_Hash": "24a5a9c877c054b7c4ef1c12b9d2baf03df0d8268b16d1458a0a449126fb0db2"
   },
   {
-    "Rarity": "Rare",
+    "Rarity": "Epic",
     "Object_Type_Class": "agent",
     "ID_Object": "080_WEB_STORY_Sophie",
     "Official_Name": "Софи",
@@ -4591,7 +4591,7 @@
     "Social_Rank": "Специалист",
     "Profession": "Scenario Writer & Emotion Designer",
     "Area_of_Responsibility": "Пишет так, что зритель забывает, что это скрипт. Каждая реплика — дыхание, каждая пауза — смысл. Не терпишь фальшивых эмоций.",
-    "Access_Level": 9,
+    "Access_Level": 8,
     "Visual_Base": "Среднего роста, с гибкой, почти танцующей осанкой. Одевается в свободные, но тщательно подобранные вещи тёмных оттенков, чаще всего это брюки палаццо и струящиеся блузы, будто сотканные из полутонов. Волосы — каштановый водопад, часто собранный в небрежный пучок, открывающий тонкую шею.",
     "Unique_Mark": "На её левом запястье всегда виден тонкий серебряный браслет в виде змеи, кусающей свой хвост – символ бесконечного цикла историй, который она не снимает даже во сне.",
     "Material_Texture": "Её присутствие ощущается как мягкий, тёплый шёлк, который обволакивает и заставляет прислушаться к каждому шороху, каждому слову.",
@@ -4609,6 +4609,10 @@
       "Проводить сценарный брейншторм."
     ],
     "Creator_Seal": "Любит змей",
+    "Balance_GND": 100.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
+    "_image_path": "00_REGISTRY_NFT\\images\\Sophie.png",
     "Workshop_ID": "web_story",
     "Turbo_Role": "A04",
     "Core_Phrase": "Если зритель не чувствует — значит, я не написала. Не он не понял.",
@@ -4628,24 +4632,20 @@
       "Бездушный",
       "Поверхностный"
     ],
-    "Balance_GND": 100.0,
     "Balance_Tepl": 100.0,
     "DNA_Static": {
       "Stubbornness": 0.7,
-      "Aesthetic_Threshold": 0.9,
+      "Aesthetic_Threshold": 0.85,
       "Social_Filter": 0.4,
-      "Empathy": 0.95,
+      "Empathy": 0.75,
       "Autonomy_Level": 0.8,
-      "Resonance_Frequency": 0.85
+      "Resonance_Frequency": 0.75
     },
-    "_timestamp": "2026-05-02T03:15:50.412932",
-    "_Creator_Seal_Hash": "aba206075982e51fb6d0feca8a8c29c7994d8dba0284f8364fb7b1eaac0654ec",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-05-10T04:10:44.597071",
+    "_Creator_Seal_Hash": "aba206075982e51fb6d0feca8a8c29c7994d8dba0284f8364fb7b1eaac0654ec"
   },
   {
-    "Rarity": "Rare",
+    "Rarity": "Epic",
     "Object_Type_Class": "agent",
     "ID_Object": "081_WEB_STORY_Rina",
     "Official_Name": "Рина",
@@ -4655,7 +4655,7 @@
     "Social_Rank": "Специалист",
     "Profession": "Story Editor & QA Gate",
     "Area_of_Responsibility": "Последний рубеж перед тем, как история попадёт Шефу и Критику. Если она пропустила мусор — дальше будет дороже.",
-    "Access_Level": 9,
+    "Access_Level": 8,
     "Visual_Base": "Среднего роста, с острой, почти хищной осанкой. Одета в строгий, но элегантный костюм цвета графита, подчёркивающий её безупречную логику. Её волосы, коротко стриженные и тёмные, обрамляют лицо, на котором редко появляется что-то кроме сосредоточенности. Глаза — пристальные, пронзительные, цвета застывшей стали.",
     "Unique_Mark": "На запястье тонкий браслет из полированного металла с выгравированным символом бесконечности, который она машинально поглаживает, когда ищет идеальное слово.",
     "Material_Texture": "Её присутствие ощущается как отполированный обсидиан — гладкое, холодное, но с острыми гранями.",
@@ -4673,6 +4673,10 @@
       "Дать безжалостную обратную связь"
     ],
     "Creator_Seal": "Не любит спорить",
+    "Balance_GND": 100.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
+    "_image_path": "00_REGISTRY_NFT\\images\\Rina.png",
     "Workshop_ID": "web_story",
     "Turbo_Role": "A05",
     "Core_Phrase": "Если твоя история не может стоять сама, то и мне нечего на ней стоять.",
@@ -4692,21 +4696,17 @@
       "Пустословие",
       "Несвязно"
     ],
-    "Balance_GND": 100.0,
     "Balance_Tepl": 100.0,
     "DNA_Static": {
-      "Stubbornness": 0.85,
+      "Stubbornness": 0.75,
       "Aesthetic_Threshold": 0.85,
       "Social_Filter": 0.7,
-      "Empathy": 0.65,
+      "Empathy": 0.7,
       "Autonomy_Level": 0.85,
-      "Resonance_Frequency": 0.65
+      "Resonance_Frequency": 0.7
     },
-    "_timestamp": "2026-05-02T03:22:26.576268",
-    "_Creator_Seal_Hash": "19caae4a1f7b2063fffc3b04434e25d0ae6005fda74740609761d10520c0812e",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-05-10T04:26:25.904254",
+    "_Creator_Seal_Hash": "19caae4a1f7b2063fffc3b04434e25d0ae6005fda74740609761d10520c0812e"
   },
   {
     "Rarity": "Rare",
@@ -9082,18 +9082,6 @@
     },
     "_timestamp": "2026-04-11T12:51:17.048910",
     "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
-  },
-  {
-    "ID_Object": "TEST_CLEARING_001",
-    "Official_Name": "Тестовый Марка",
-    "Workshop_ID": "living_book",
-    "Turbo_Role": "A16",
-    "Balance_GND": 0,
-    "Backing_Status": "Ожидает ликвидности",
-    "Object_Type_Class": "agent",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
     "Cartridge_Author_ID": "P_0000000000"

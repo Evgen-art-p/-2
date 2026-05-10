@@ -564,8 +564,7 @@ def page_cabinet() -> None:
         if not agent:
             ui.html('<div style="text-align:center;padding:32px;font-family:JetBrains Mono;font-size:0.56rem;color:rgba(140,150,180,0.3)">выбери агента слева</div>')
             return
-        _dept = agent.get("dept", "")
-        render_agent_detail(agent, on_talk=lambda aid, _d=_dept: talk_to_agent(aid, _d))
+        render_agent_detail(agent, on_talk=talk_to_agent)
 
     def _render_matrix_tab():
         """Живая матрица ДНК — все агенты всех цехов."""
@@ -804,25 +803,17 @@ def page_cabinet() -> None:
             reload_all_agents()
             update_right_panel("matrix")
 
-    def talk_to_agent(agent_id, agent_dept=""):
+    def talk_to_agent(agent_id):
         """Начать разговор с агентом — полноценный режим диалога."""
         if state["talking_agent"] and len(state["chat_history"]) >= 2:
             ui.timer(0, lambda: _finalize_current_dialog(), once=True)
 
         agent = None
-        # Сначала ищем в конкретном цехе если dept передан
-        if agent_dept:
-            for a in state["all_agents"].get(agent_dept, []):
-                if a["id"] == agent_id:
-                    agent = a
-                    break
-        # Фоллбэк: поиск по всем цехам
-        if not agent:
-            for dept_id, agents in state["all_agents"].items():
-                found = next((a for a in agents if a["id"] == agent_id), None)
-                if found:
-                    agent = found
-                    break
+        for dept_id, agents in state["all_agents"].items():
+            found = next((a for a in agents if a["id"] == agent_id), None)
+            if found:
+                agent = found
+                break
         if not agent:
             return
 

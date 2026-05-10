@@ -288,10 +288,10 @@ async def call_agent(
     Поддерживает vision если есть изображения.
     Temperature рассчитывается из ДНК агента (Stress + Internal_Light).
     """
-    system_prompt = get_worker_prompt(worker_id)
-    worker_knowledge = get_worker_knowledge(worker_id)
-    vision_images = _collect_images_for_vision(state)
     dept = state.get("active_dept", "")
+    system_prompt = get_worker_prompt(worker_id, dept)
+    worker_knowledge = get_worker_knowledge(worker_id, dept)
+    vision_images = _collect_images_for_vision(state)
 
     # ══ Temperature из ДНК агента ══
     agent_temp = None
@@ -309,7 +309,7 @@ async def call_agent(
                         stress=float(dynamic.get("Stress", 0)),
                         light=float(dynamic.get("Internal_Light", 0.8)),
                     )
-                    info = get_worker_info(worker_id)
+                    info = get_worker_info(worker_id, dept)
                     label = info.get("label", worker_id) if info else worker_id
                     print(f"[DNA→T°] {worker_id} {label}: Stress={dynamic.get('Stress',0)} Light={dynamic.get('Internal_Light',0.8)} → temp={agent_temp}")
         except Exception as e:
@@ -361,7 +361,7 @@ def process_agent_result(
 
     Возвращает (human_text_cleaned, updated_previous_output)
     """
-    info = get_worker_info(worker_id)
+    info = get_worker_info(worker_id, state.get("active_dept", ""))
     label = info.get("label", worker_id) if info else worker_id
 
     # Валидация asset_ids
@@ -387,6 +387,19 @@ def process_agent_result(
         "meta": meta,
         "raw": raw_result
     }
+
+        # ═══ STRATEGY: запись стратегии агента ═══
+    if _STRATEGY_ENABLED:
+        _slot_id = state.get("_slot_id") or state.get("active_dept") or ""
+        print(f"[STRATEGY] Вызываю record_strategy: {worker_id} slot={_slot_id}")
+        record_strategy(
+            agent_id=worker_id,
+            slot_id=_slot_id,
+            score=7.0,
+            result_summary=human_text[:300],
+            run_type=run_type,
+            client_slug=client_slug,
+        )
 
     # ══ NEW: Личная память агента (Грондхейм) ══
     if _GRONDHEIM_ENABLED:
@@ -423,10 +436,46 @@ def process_agent_result(
             )
     # ══ END NEW ══
 
-    # ══ UNIVERSAL FEEDBACK ══
-    # qa_agent берётся из state["_qa_agent"] — туда CartridgeRunner кладёт
-    # значение из manifest.json["qa_agent"]. Fallback: "A12".
+        # ═══ UNIVERSAL FEEDBACK ═══
     qa_agent = state.get("_qa_agent", "A12")
+    
+    # Запись стратегий и ministry — для КАЖДОГО агента, не только QA
+    if client_slug != "_sandbox":
+        _slot_id = state.get("_slot_id", "")
+        _run_type = state.get("run_type", state.get("active_dept", ""))
+        
+        # Strategy Registry: записываем стратегию агента
+        if _STRATEGY_ENABLED:
+            try:
+                record_strategy(
+                    agent_id=worker_id,
+                    slot_id=_slot_id,
+                    score=7.0,  # базовая оценка, QA уточнит позже
+                    result_summary=human_text[:300],
+                    run_type=_run_type,
+                    client_slug=client_slug,
+                )
+            except Exception as _e:
+                print(f"[STRATEGY] Ошибка записи для {worker_id}: {_e}")
+        
+        # Ministry: фиксируем исход
+        if _ECONOMY_ENABLED:
+            try:
+                from studio.economy import ledger as _ledger
+                _wcost = _ledger.agent_spent(worker_id, slot_id=_slot_id)
+            except Exception:
+                _wcost = 0.0
+            try:
+                _ministry.record_outcome(
+                    agent_id=worker_id,
+                    slot_id=_slot_id,
+                    score=7.0,  # базовая оценка
+                    cost_usd=_wcost,
+                )
+            except Exception as _e:
+                print(f"[MINISTRY] Ошибка записи для {worker_id}: {_e}")
+    
+    # QA-специфичная логика: feedback, DNA-sync, memory_embedding, winning_strategies
     if worker_id == qa_agent and client_slug != "_sandbox":
         try:
             _slot_id_for_fb = state.get("_slot_id", "")

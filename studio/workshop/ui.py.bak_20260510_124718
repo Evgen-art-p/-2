@@ -20,6 +20,11 @@ app.add_static_files("/nft_registry", "00_REGISTRY_NFT")
 app.add_static_files("/runs", "runs")
 app.add_static_files("/clients", "clients")
 
+# Глобальные переменные для API
+_current_state = None
+_current_run_pipeline = None
+_auto_run_requested = False
+
 # --- Вынесенные модули ---
 from studio.workshop.styles import IDENTITY_BUREAU_CSS
 from studio.workshop.export import _get_viewer_text, _export_docx, _export_pdf
@@ -44,6 +49,8 @@ from studio.workshop.assets import (
     unregister_asset,
 )
 from studio.workshop.ref_indexer import convert_to_png, index_asset
+from studio.cartridge import CartridgeManifest, CartridgeRunner
+from studio.workshop.nicegui_callbacks import NiceGUICallbacks
 
 # --- Грондхейм: память города ---
 try:
@@ -278,7 +285,8 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     global WORKERS, ALL_WORKERS
     WORKERS, ALL_WORKERS = _build_workers_for_dept(dept)
     print(f"[WORKSHOP] Цех={dept}: {sum(len(v) for v in WORKERS.values())} агентов, фазы: {list(WORKERS.keys())}")
-    
+    _page_client = ui.context.client
+
     state = {
         "active_worker": "SET",
         "chat_history": [],
@@ -306,7 +314,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         "paused_output": "",      # previous_output для продолжения
         "paused_context": {},     # сохранённый контекст
     }
-    
+
+    global _current_state
+    _current_state = state
+
     # project_dir — будет создан при запуске пайплайна
     state["project_dir"] = None
     state["file_processor"] = None
@@ -464,7 +475,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         label = info.get("label", worker_id) if info else worker_id
         
         if status_ref['element']:
-            status_ref['element'].clear()
+            try:
+                status_ref['element'].clear()
+            except Exception:
+                return  # элемент удалён после hot-reload — выходим тихо
             with status_ref['element']:
                 ui.html(f'''
                     <div style="position: relative; width: 100%; height: 100%; min-height: 200px;">
@@ -1166,7 +1180,128 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             from_worker=resume_from,
             with_chat_context=ctx.get("with_chat_context", False)
         )
+     # ─── CARTRIDGE PIPELINE (новая система) ──────────────
+    async def run_cartridge_pipeline(from_worker=None, with_chat_context=False):
+        """Запуск пайплайна через картриджную систему."""
+        global _current_run_pipeline
+        _current_run_pipeline = run_cartridge_pipeline
 
+        if not state["master_brief"]:
+            ui.notify("Сначала соберите бриф!", type='warning')
+            return
+
+        if state["pipeline_running"]:
+            ui.notify("Пайплайн уже запущен!", type='warning')
+            return
+
+        # Подготовка project_dir
+        if not state["project_dir"] or not state["project_dir"].exists():
+            _update_project_dir(create=True)
+        elif not state["file_processor"]:
+            assets_dir = state["project_dir"] / "assets"
+            assets_dir.mkdir(exist_ok=True)
+            state["file_processor"] = FileProcessor(assets_dir)
+            app.add_static_files('/files', str(assets_dir))
+
+        # Загружаем картридж по текущему dept
+        manifest = CartridgeManifest.load(dept)
+
+        # Создаём callbacks для NiceGUI
+        _client = ui.context.client
+        callbacks = NiceGUICallbacks(
+            state=state,
+            avatars_ref=avatars_ref,
+            ui_client=_client,
+            update_viewer_fn=update_viewer,
+            update_status_fn=update_status,
+            update_runs_display_fn=update_runs_display,
+        )
+
+        # Запускаем через CartridgeRunner
+        runner = CartridgeRunner(manifest, state, callbacks, slot_id=dept)
+        await runner.run(from_worker=from_worker, with_chat_context=with_chat_context)
+
+    async def run_cartridge_turbo():
+        """TURBO через картриджную систему."""
+        if not state["master_brief"]:
+            ui.notify("Сначала соберите бриф!", type='warning')
+            return
+
+        if state["pipeline_running"]:
+            ui.notify("Пайплайн уже запущен!", type='warning')
+            return
+
+        # Подготовка project_dir
+        if not state["project_dir"] or not state["project_dir"].exists():
+            _update_project_dir(create=True)
+        elif not state["file_processor"]:
+            assets_dir = state["project_dir"] / "assets"
+            assets_dir.mkdir(exist_ok=True)
+            state["file_processor"] = FileProcessor(assets_dir)
+            app.add_static_files('/files', str(assets_dir))
+
+        # Загружаем картридж
+        manifest = CartridgeManifest.load(dept)
+
+        # Callbacks
+        _client = ui.context.client
+        callbacks = NiceGUICallbacks(
+            state=state,
+            avatars_ref=avatars_ref,
+            ui_client=_client,
+            update_viewer_fn=update_viewer,
+            update_status_fn=update_status,
+            update_runs_display_fn=update_runs_display,
+        )
+
+        # Запуск TURBO
+        runner = CartridgeRunner(manifest, state, callbacks, slot_id=dept)
+        await runner.run_turbo()
+
+    # ─── CARTRIDGE CONTINUE ──────────────────────────────
+    async def continue_cartridge_pipeline():
+        """Продолжить пайплайн после checkpoint (картриджная версия)."""
+        if not state["paused_at"]:
+            ui.notify("Нет паузы — нечего продолжать!", type="warning")
+            return
+
+        resume_from = state["paused_at"]
+
+        # Очищаем checkpoint
+        state["paused_at"] = None
+
+        # Пересобираем previous_output из актуальных results
+        all_agents_flat = [w for workers in WORKERS.values() for w in workers]
+        rebuilt_output = ""
+
+        for wid in all_agents_flat:
+            if wid == resume_from:
+                break
+            if wid not in state["results"]:
+                continue
+            res = state["results"][wid]
+            text = res.get("text", "") if isinstance(res, dict) else str(res)
+            meta = res.get("meta", {}) if isinstance(res, dict) else {}
+            info = get_worker_info(wid)
+            label = info.get("label", wid) if info else wid
+            my_output = meta.get("my_output", {})
+            chain_json = ""
+            if my_output:
+                try:
+                    chain_json = f"\n```json\n{json.dumps(my_output, ensure_ascii=False, indent=2)}\n```"
+                except Exception:
+                    pass
+            chunk = meta.get("next_input") or (text[:800] + chain_json)
+            rebuilt_output += f"\n\n--- {label} ({wid}) ---\n{chunk}"
+
+        state["paused_output"] = rebuilt_output
+        print(f"[CONTINUE] Пересобран previous_output: {len(rebuilt_output)} символов")
+
+        ui.notify(f"▶ Продолжаю с {resume_from}...", type="positive")
+        await run_cartridge_pipeline(
+            from_worker=resume_from,
+            with_chat_context=False
+        )
 
     # ─── TURBO PIPELINE (A02∥A03 параллельно) ────────────
     async def turbo_pipeline():
@@ -1473,6 +1608,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     # ─── TURBO PIPELINE (A02∥A03 параллельно) ────────────
     async def run_pipeline(from_worker=None, with_chat_context=False):
         """Запуск пайплайна"""
+        global _current_run_pipeline        # ← добавить
+        _current_run_pipeline = run_pipeline  # ← добавить
+
         if not state["master_brief"]:
             ui.notify("Сначала соберите бриф!", type='warning')
             return
@@ -1497,8 +1635,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         update_status()
         ui.notify("🚀 Пайплайн запущен!", type='info')
         
+        _workers_snapshot = {k: list(v) for k, v in WORKERS.items()}  # снимок до старта
         all_agents = []
-        for shop_name, workers in WORKERS.items():
+        for shop_name, workers in _workers_snapshot.items():
             all_agents.extend([(shop_name, w) for w in workers])
         
         start_index = 0
@@ -1546,7 +1685,16 @@ Style: {state['settings']['style']}
         for i, (shop_name, worker_id) in enumerate(all_agents):
             if i < start_index:
                 continue
-            
+
+            # ══ REWIND: ревизионная петля вернула нас назад ══
+            if state.get("_rewind_to"):
+                target = state["_rewind_to"]
+                if worker_id != target:
+                    continue  # Пропускаем пока не дойдём до целевого агента
+                # Дошли — очищаем маркер и продолжаем нормально
+                state.pop("_rewind_to")
+                print(f"[REWIND] ✅ Дошли до {target}, продолжаем пайплайн")
+
             try:
                 if worker_id in avatars_ref['elements']:
                     avatars_ref['elements'][worker_id].classes(remove='done')
@@ -1610,6 +1758,7 @@ Style: {state['settings']['style']}
                     context += dna_state + "\n\n"
                 
                 # Грондхейм: инжект души перед работой
+                _soul = ""  # ← ДОБАВИТЬ: гарантия что _soul всегда bound
                 if _GRONDHEIM_ENABLED:
                     _dept = state.get("active_dept", "")
                     _soul = on_agent_wake(worker_id, _dept)
@@ -1657,7 +1806,61 @@ Style: {state['settings']['style']}
                 # Парсим ответ
                 human_text, meta = parse_agent_response(raw_result)
                 human_text = _clean_response(human_text)
-                
+
+                # ══ REVISION LOOP: A00a (Вера Душа) → возврат на A00 ══
+                if worker_id == "A00a" and state.get("run_type") == "living_book":
+                    verdict = (meta.get("verdict") or meta.get("my_output", {}).get("verdict", "")).upper().strip()
+                    revision_count = state.get("_revision_count", 0)
+                    _max_rev = 3
+
+                    if verdict == "REVISION" and revision_count < _max_rev:
+                        state["_revision_count"] = revision_count + 1
+                        _rev_notes = (
+                            meta.get("revision_notes")
+                            or meta.get("my_output", {}).get("revision_notes", "")
+                            or human_text[:500]
+                        )
+
+                        ui.notify(
+                            f"🔄 Вера Душа: РЕВИЗИЯ #{revision_count + 1}/{_max_rev}. Возврат к Фабуле.",
+                            type="warning", timeout=8000
+                        )
+                        print(f"[REVISION] A00a → A00: loop {revision_count + 1}/{_max_rev}")
+                        print(f"[REVISION] Замечания: {_rev_notes[:200]}")
+
+                        # Сохраняем результат Веры
+                        state["results"]["A00a"] = {
+                            "text": human_text, "meta": meta, "raw": raw_result
+                        }
+                        if worker_id in avatars_ref['elements']:
+                            avatars_ref['elements'][worker_id].classes(remove='working')
+                            avatars_ref['elements'][worker_id].classes(add='done')
+
+                        # Добавляем замечания в previous_output для Фабулы
+                        previous_output += (
+                            f"\n\n--- Вера Душа (A00a) — РЕВИЗИЯ #{revision_count + 1} ---\n"
+                            f"СТАТУС: REVISION\n"
+                            f"ЗАМЕЧАНИЯ:\n{_rev_notes}\n"
+                            f"ИНСТРУКЦИЯ: Переработай сценарий с учётом замечаний выше.\n"
+                        )
+
+                        # Ставим маркер rewind → цикл вернётся на A00
+                        state["_rewind_to"] = "A00"
+                        continue  # Следующая итерация for — перехватит rewind
+
+                    elif verdict == "APPROVED" or revision_count >= _max_rev:
+                        if revision_count >= _max_rev and verdict != "APPROVED":
+                            ui.notify(
+                                f"⚠️ Вера Душа: {_max_rev} ревизий исчерпано. Принудительно продолжаем.",
+                                type="warning", timeout=5000
+                            )
+                            print(f"[REVISION] A00a: max loops reached, forcing APPROVED")
+                        else:
+                            ui.notify("✅ Вера Душа: ОДОБРЕНО!", type="positive")
+                            print(f"[REVISION] A00a: APPROVED")
+                        state["_revision_count"] = 0
+                # ══ END REVISION LOOP ══
+
                 # ── Этап 5: валидация asset_ids ──
                 _ghost_ids = _validate_asset_ids(meta, worker_id)
                 if _ghost_ids:
@@ -1892,6 +2095,11 @@ Style: {state['settings']['style']}
         
         # Финальное обновление runs (после всех записей)
         update_runs_display()
+
+          # Регистрируем run_pipeline для API
+    global _current_run_pipeline
+    _current_run_pipeline = run_pipeline
+
     
     # --- Буфер для pending-загрузок (до подтверждения категории) ---
     _pending_uploads: list = []
@@ -2939,7 +3147,7 @@ Style: {state['settings']['style']}
 
                     # ── ЦЕНТРАЛЬНАЯ ГРУППА: CONTINUE | 🏭 ────────────────
                     with ui.element('div').style('display:flex; gap:6px; align-items:center; justify-content:center;'):
-                        ui.button('▶ CONTINUE', on_click=lambda: continue_pipeline()).props('flat no-caps').style(
+                        ui.button('▶ CONTINUE', on_click=lambda: continue_cartridge_pipeline()).props('flat no-caps').style(
                             'padding:6px 14px; border-radius:8px; font-size:0.72rem; font-weight:700; '
                             'letter-spacing:0.06em; border:1px solid rgba(255,210,0,0.35); '
                             'color:rgba(255,210,0,0.85); background:rgba(255,210,0,0.07);'
@@ -2949,6 +3157,11 @@ Style: {state['settings']['style']}
                             'border:1px solid rgba(255,140,0,0.3); '
                             'color:rgba(255,140,0,0.8); background:rgba(255,140,0,0.07);'
                         ).tooltip('Сборочный цех')
+                        ui.button('🔌', on_click=lambda: ui.navigate.to('/cartridges', new_tab=True)).props('flat').style(
+                            'padding:6px 10px; border-radius:8px; font-size:1rem; '
+                            'border:1px solid rgba(140,108,255,0.3); '
+                            'color:rgba(140,108,255,0.8); background:rgba(140,108,255,0.07);'
+                        ).tooltip('Менеджер картриджей')
 
                     # ── ПРАВАЯ ГРУППА: WORD | PDF ─────────────────────────
                     with ui.row().style('gap: 8px; justify-content: flex-end;'):
@@ -3100,7 +3313,50 @@ Style: {state['settings']['style']}
                 # --- ACTION BUTTONS (3 старта) ---
                 ui.button(
                     '⚡ TURBO' if is_turbo else '▶ FULL PIPELINE',
-                    on_click=lambda: turbo_pipeline() if is_turbo else run_pipeline()
+                    on_click=lambda: run_cartridge_turbo() if is_turbo else run_cartridge_pipeline()
                 ).classes('neon-btn g').props('flat')
-                ui.button('▶ FROM CURRENT', on_click=lambda: run_pipeline(state["active_worker"])).classes('neon-btn b').props('flat')
-                ui.button('⚓ ANCHOR', on_click=lambda: run_pipeline(from_worker=state["active_worker"], with_chat_context=True)).classes('neon-btn p').props('flat')
+                ui.button('▶ FROM CURRENT', on_click=lambda: run_cartridge_pipeline(state["active_worker"])).classes('neon-btn b').props('flat')
+                ui.button('⚓ ANCHOR', on_click=lambda: run_cartridge_pipeline(from_worker=state["active_worker"], with_chat_context=True)).classes('neon-btn p').props('flat')
+
+                async def _check_auto_run():
+                    global _auto_run_requested
+                    if _auto_run_requested and not state["pipeline_running"]:
+                        _auto_run_requested = False
+                        with _page_client:
+                            await run_cartridge_pipeline()  # <- добавить отступ (4 пробела)
+
+                ui.timer(1.0, _check_auto_run)
+
+# ═══════════════════════════════════════════════════════════
+# API ДЛЯ РОДИТЕЛЬСКОГО КАБИНЕТА
+# ═══════════════════════════════════════════════════════════
+from pydantic import BaseModel
+from typing import Optional
+
+class _AutoRequest(BaseModel):
+    child_name: str
+    child_age: str
+    task_context: str
+    parent_email: Optional[str] = None
+
+@app.post("/api/studio/generate")
+async def _auto_generate(request: _AutoRequest):
+    global _current_state, _current_run_pipeline
+
+    if _current_state is None:
+        return {"status": "error", "message": "Студия не открыта в браузере"}
+
+    master_brief = {
+        "project": {"name": f"История для {request.child_name}", "workshop": "living_book"},
+        "story": {"real_task": request.task_context},
+        "child": {"name": request.child_name, "age": request.child_age},
+        "key_message": f"{request.child_name} справится!"
+    }
+
+    import json as _json
+    _current_state["master_brief"] = _json.dumps(master_brief, ensure_ascii=False, indent=2)
+    _current_state["active_dept"] = "living_book"
+
+    global _auto_run_requested
+    _auto_run_requested = True
+    return {"status": "started", "child_name": request.child_name}

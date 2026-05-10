@@ -189,46 +189,54 @@ def get_economy_data(days: int = 1) -> dict:
     entries = read_ledger()
     if not entries:
         return {
-            "total": 0, "burn_rate": 0,
+            "total": 0, "prev_total": 0, "burn_rate": 0,
             "by_provider": {}, "by_model": {},
             "by_agent": {}, "by_slot": {}
         }
 
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=days)
+    now        = datetime.now(timezone.utc)
+    cutoff     = now - timedelta(days=days)
+    prev_cutoff = cutoff - timedelta(days=days)   # ← предыдущий эквивалентный период
 
-    total = 0.0
+    total      = 0.0
+    prev_total = 0.0
     by_provider: dict[str, float] = {}
-    by_model: dict[str, float] = {}
-    by_agent: dict[str, float] = {}
-    by_slot: dict[str, float] = {}
+    by_model:    dict[str, float] = {}
+    by_agent:    dict[str, float] = {}
+    by_slot:     dict[str, float] = {}
 
     for entry in entries:
         try:
             entry_time = datetime.fromisoformat(entry["ts"])
+            cost       = entry.get("cost_usd", 0)
+
+            # Предыдущий период (для TRENDS)
+            if prev_cutoff <= entry_time < cutoff:
+                prev_total += cost
+
             if entry_time < cutoff:
                 continue
 
-            cost = entry.get("cost_usd", 0)
             provider = entry.get("provider", "openrouter")
-            model = entry.get("model", "unknown")
-            agent = entry.get("agent_id", "unknown")
-            slot = entry.get("slot_id", "unknown")
+            model    = entry.get("model",    "unknown")
+            agent    = entry.get("agent_id", "unknown")
+            slot     = entry.get("slot_id",  "unknown")
 
             total += cost
             by_provider[provider] = by_provider.get(provider, 0) + cost
-            by_model[model] = by_model.get(model, 0) + cost
-            by_agent[agent] = by_agent.get(agent, 0) + cost
-            by_slot[slot] = by_slot.get(slot, 0) + cost
+            by_model[model]       = by_model.get(model, 0)       + cost
+            by_agent[agent]       = by_agent.get(agent, 0)       + cost
+            by_slot[slot]         = by_slot.get(slot, 0)         + cost
         except Exception:
             continue
 
-    minutes = max(days * 24 * 60, 1)
+    minutes   = max(days * 24 * 60, 1)
     burn_rate = total / minutes
 
     return {
-        "total": round(total, 4),
-        "burn_rate": round(burn_rate, 4),
+        "total":      round(total, 4),
+        "prev_total": round(prev_total, 4),          # ← TRENDS ячейка
+        "burn_rate":  round(burn_rate, 4),
         "by_provider": dict(sorted(
             {k: round(v, 4) for k, v in by_provider.items()}.items(),
             key=lambda x: x[1], reverse=True
@@ -332,4 +340,77 @@ def get_agent_stats(agent_id: str, days: int = 1) -> dict:
             key=lambda x: x[1], reverse=True
         )),
         "recent": recent,
+    }
+def get_timeseries(period_days=7):
+    """
+    Возвращает временные ряды с заполненными пустыми слотами.
+
+    period_days == 1  → группировка по часам ("00:00" … "23:00")
+    period_days > 1   → группировка по дням  ("03.05" … "09.05")
+
+    Пустые слоты всегда заполняются нулями — Chart.js не ломается.
+
+    → {
+        "labels":   ["00:00", "01:00", ...] | ["03.05", "04.05", ...],
+        "cost":     [0.12, 0.45, ...],
+        "calls":    [3, 8, ...],
+        "avg_cost": [0.04, 0.056, ...]
+    }
+    """
+    from collections import OrderedDict
+    from datetime import datetime, timedelta, timezone
+
+    now    = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=period_days)
+    hourly = (period_days == 1)
+
+    # ── 1. Предзаполняем ВСЕ слоты нулями ──────────────────────────────
+    buckets: OrderedDict[str, dict] = OrderedDict()
+
+    if hourly:
+        # Округляем до начала часа
+        slot = cutoff.replace(minute=0, second=0, microsecond=0)
+        while slot <= now + timedelta(hours=1):
+            buckets[slot.strftime("%H:00")] = {"cost": 0.0, "calls": 0}
+            slot += timedelta(hours=1)
+    else:
+        slot = cutoff.replace(hour=0, minute=0, second=0, microsecond=0)
+        while slot <= now + timedelta(days=1):
+            buckets[slot.strftime("%d.%m")] = {"cost": 0.0, "calls": 0}
+            slot += timedelta(days=1)
+
+    # ── 2. Читаем леджер и заливаем данные ─────────────────────────────
+    if LEDGER_FILE.exists():
+        with open(LEDGER_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec  = json.loads(line)
+                    ts   = datetime.fromisoformat(rec["ts"])
+                    if ts < cutoff or ts > now:
+                        continue
+                    key  = ts.strftime("%H:00") if hourly else ts.strftime("%d.%m")
+                    cost = rec.get("cost_usd", 0)
+                    if key in buckets:
+                        buckets[key]["cost"]  += cost
+                        buckets[key]["calls"] += 1
+                except Exception:
+                    continue
+
+    # ── 3. Собираем массивы ─────────────────────────────────────────────
+    labels   = list(buckets.keys())
+    cost     = [round(v["cost"],  4) for v in buckets.values()]
+    calls    = [v["calls"]           for v in buckets.values()]
+    avg_cost = [
+        round(c / cs, 4) if cs > 0 else 0
+        for c, cs in zip(cost, calls)
+    ]
+
+    return {
+        "labels":   labels,
+        "cost":     cost,
+        "calls":    calls,
+        "avg_cost": avg_cost,
     }

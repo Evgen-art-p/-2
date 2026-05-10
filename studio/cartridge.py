@@ -281,6 +281,7 @@ class CartridgeRunner:
         # Сообщаем pipeline.py кто QA-агент этого цеха
         self.state["_qa_agent"] = getattr(self.manifest, "qa_agent", "A12")
         self.state["_slot_id"] = self.slot_id  # ← slot_id для feedback/reflection
+        self.state["active_dept"] = self.manifest.id  # ← dept-aware патч
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")
         settings_ctx = build_settings_ctx(self.state)
@@ -313,7 +314,7 @@ class CartridgeRunner:
                         worker_id = w
                         break
 
-            info = get_worker_info(worker_id)
+            info = get_worker_info(worker_id, self.manifest.id)
             label = info.get("label", worker_id) if info else worker_id
             phase = self.manifest.get_agent_phase(worker_id) or ""
 
@@ -449,6 +450,7 @@ class CartridgeRunner:
 
         parallel_groups = self.manifest.turbo_parallel
         run_type = "turbo"
+        self.state["active_dept"] = self.manifest.id  # ← dept-aware патч
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")
         settings_ctx = build_settings_ctx(self.state)
@@ -473,7 +475,7 @@ class CartridgeRunner:
                 await self.callbacks.on_parallel_start(self.slot_id, parallel_group)
 
                 async def _run_one(wid: str):
-                    _info = get_worker_info(wid)
+                    _info = get_worker_info(wid, self.manifest.id)
                     _label = _info.get("label", wid) if _info else wid
                     await self.callbacks.on_agent_start(self.slot_id, wid, _label, "TURBO")
                     ctx = build_agent_context(
@@ -487,7 +489,7 @@ class CartridgeRunner:
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 
                 for j, wid in enumerate(parallel_group):
-                    _info = get_worker_info(wid)
+                    _info = get_worker_info(wid, self.manifest.id)
                     _label = _info.get("label", wid) if _info else wid
                     if isinstance(results[j], Exception):
                         await self.callbacks.on_agent_error(self.slot_id, wid, str(results[j]))
@@ -512,7 +514,7 @@ class CartridgeRunner:
                 continue
 
             # Обычный последовательный агент
-            info = get_worker_info(worker_id)
+            info = get_worker_info(worker_id, self.manifest.id)
             label = info.get("label", worker_id) if info else worker_id
 
             await self.callbacks.on_agent_start(self.slot_id, worker_id, label, "TURBO")
