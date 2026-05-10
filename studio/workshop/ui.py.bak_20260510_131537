@@ -1306,7 +1306,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     # ─── TURBO PIPELINE (A02∥A03 параллельно) ────────────
     async def turbo_pipeline():
         """TURBO: A01 → (A02 ∥ A03) → A04 → A05"""
-        state["_slot_id"] = dept  # ← billing: пишем правильный цех
         if not state["master_brief"]:
             ui.notify("Сначала соберите бриф!", type='warning')
             return
@@ -1620,7 +1619,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             ui.notify("Пайплайн уже запущен!", type='warning')
             return
         
-        state["_slot_id"] = dept  # ← billing: пишем правильный цех
         state["pipeline_running"] = True
         
         # Используем существующий project_dir если файлы уже загружены
