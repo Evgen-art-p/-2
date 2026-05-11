@@ -60,7 +60,6 @@ class CartridgeManifest:
     stop_after: Optional[int] = None
     description: str = ""
     qa_agent: str = "A12"  # QA-агент цеха, чьи оценки идут в feedback
-    conflict_mode: str = "none"  # Режим конфликта из manifest.json
 
     # Run type — для совместимости с PIPELINE_MODES
     run_type: str = ""
@@ -88,7 +87,6 @@ class CartridgeManifest:
             description=data.get("description", ""),
             qa_agent=data.get("qa_agent", "A12"),
             run_type=data.get("run_type", module_id),
-            conflict_mode=data.get("conflict_mode", "none"),
         )
 
     @classmethod
@@ -281,13 +279,7 @@ class CartridgeRunner:
 
         run_type = self.manifest.run_type or self.manifest.id
         # Сообщаем pipeline.py кто QA-агент этого цеха
-        # Динамический QA: если qa_agent не в пайплайне — берём последнего агента
-        _all_agents = self.manifest.get_all_agents()
-        _manifest_qa = getattr(self.manifest, "qa_agent", "A12")
-        self.state["_qa_agent"] = (
-            _manifest_qa if _manifest_qa in _all_agents
-            else (_all_agents[-1] if _all_agents else _manifest_qa)
-        )
+        self.state["_qa_agent"] = getattr(self.manifest, "qa_agent", "A12")
         self.state["_slot_id"] = self.slot_id  # ← slot_id для feedback/reflection
         self.state["active_dept"] = self.manifest.id  # ← dept-aware патч
         client_slug = self.state.get("current_client", "_sandbox")

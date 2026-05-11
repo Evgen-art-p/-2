@@ -388,8 +388,18 @@ def process_agent_result(
         "raw": raw_result
     }
 
-        # ═══ STRATEGY: стратегии пишутся только через QA (реальный score) ═══
-        # record_strategy вызывается в _record_winning_strategies() после QA
+        # ═══ STRATEGY: запись стратегии агента ═══
+    if _STRATEGY_ENABLED:
+        _slot_id = state.get("_slot_id") or state.get("active_dept") or ""
+        print(f"[STRATEGY] Вызываю record_strategy: {worker_id} slot={_slot_id}")
+        record_strategy(
+            agent_id=worker_id,
+            slot_id=_slot_id,
+            score=7.0,
+            result_summary=human_text[:300],
+            run_type=run_type,
+            client_slug=client_slug,
+        )
 
     # ══ NEW: Личная память агента (Грондхейм) ══
     if _GRONDHEIM_ENABLED:
@@ -469,8 +479,7 @@ def process_agent_result(
     if worker_id == qa_agent and client_slug != "_sandbox":
         try:
             _slot_id_for_fb = state.get("_slot_id", "")
-            _all_run_agents = list(state.get("results", {}).keys())
-            save_feedback(client_slug, raw_result, slot_id=_slot_id_for_fb, agent_ids=_all_run_agents)
+            save_feedback(client_slug, raw_result, slot_id=_slot_id_for_fb)
             print(f"[FEEDBACK] ✅ {worker_id} → feedback для {client_slug} (slot: {_slot_id_for_fb or '—'})")
         except Exception as _fb_err:
             print(f"[FEEDBACK] Ошибка: {_fb_err}")

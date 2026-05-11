@@ -48,51 +48,7 @@ def _save_global(data: dict):
     GLOBAL_FEEDBACK_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _extract_score(my_output: dict) -> float:
-    """
-    Универсальный парсер score из my_output любого QA-агента.
-    Поддерживает: blocks (A12), otk_checklist (A16), status, прямой score.
-    """
-    # Прямой score
-    if "score" in my_output:
-        try:
-            return float(my_output["score"])
-        except (ValueError, TypeError):
-            pass
-
-    # OTK чеклист: "12/12" → 10.0, "10/12" → 8.3
-    checklist = my_output.get("otk_checklist", "")
-    if checklist and "/" in str(checklist):
-        try:
-            parts = str(checklist).split("/")
-            return round(10.0 * int(parts[0]) / int(parts[1]), 1)
-        except (ValueError, ZeroDivisionError):
-            pass
-
-    # Статус
-    status = my_output.get("status", "").upper()
-    status_map = {"READY": 9.0, "OK": 8.0, "INCOMPLETE": 5.0,
-                  "PARTIAL": 5.0, "FAIL": 2.0, "ERROR": 2.0}
-    if status in status_map:
-        return status_map[status]
-
-    # Blocks (формат A12) — считаем средний по всем блокам
-    blocks = my_output.get("blocks", {})
-    if blocks:
-        scores = []
-        for bd in blocks.values():
-            if isinstance(bd, dict):
-                checks = bd.get("checks", 0)
-                passed = bd.get("pass", 0)
-                if checks > 0:
-                    scores.append(10 * passed / checks)
-        if scores:
-            return round(sum(scores) / len(scores), 1)
-
-    return 5.0  # нейтральный дефолт
-
-
-def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = "", agent_ids: list = None):
+def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = ""):
     """
     Парсит результат Артура и сохраняет оценки агентов.
     
@@ -126,24 +82,6 @@ def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = ""
     overall = my_output.get("overall_status", "UNKNOWN")
     warnings = my_output.get("warnings", [])
     critical = my_output.get("critical_issues", [])
-
-    # ══ Универсальный fallback: если нет blocks — распределяем общий score ══
-    if not blocks and agent_ids:
-        universal_score = _extract_score(my_output)
-        feedback = {
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "overall_status": overall or ("READY" if universal_score >= 8 else "OK"),
-            "agents": {
-                aid: {"score": universal_score, "problems": [], "blocks_checked": ["universal"]}
-                for aid in agent_ids
-            },
-        }
-        fp = _feedback_path(client_slug)
-        fp.parent.mkdir(parents=True, exist_ok=True)
-        fp.write_text(json.dumps(feedback, ensure_ascii=False, indent=2), encoding="utf-8")
-        _update_global(feedback, slot_id=slot_id)
-        print(f"[FEEDBACK] Universal score={universal_score} → {len(agent_ids)} агентов")
-        return
     
     # Маппинг блоков Артура на агентов
     BLOCK_TO_AGENTS = {
