@@ -2,7 +2,7 @@
   "id": "clipmakers",
   "label": "🎵 Клипмейкеры",
   "icon": "🎵",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Полный цикл: от концепта клипа до финального монтажа",
   "run_type": "full",
   "phases": {
@@ -43,5 +43,13 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_clipmakers.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

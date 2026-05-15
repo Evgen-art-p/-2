@@ -2,7 +2,7 @@
   "id": "video_shorts",
   "label": "⚡ Видео Shorts",
   "icon": "⚡",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Полный цикл: от идеи до постинга",
   "run_type": "social",
   "phases": {
@@ -41,5 +41,19 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_video_shorts.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ],
+  "hard_stop": {
+    "after_agent": "A04",
+    "residents": [
+      "victor"
+    ]
+  }
 }

@@ -2,7 +2,7 @@
   "id": "web_story",
   "label": "🌐 Web Story",
   "icon": "🌐",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Хард-стоп после Рины (A05), затем PROD A06-A12",
   "run_type": "web_story",
   "phases": {
@@ -43,5 +43,13 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_web_story.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

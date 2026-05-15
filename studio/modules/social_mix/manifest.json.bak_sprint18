@@ -1,0 +1,31 @@
+{
+  "id": "social_mix",
+  "label": "📱 SMM & Контент",
+  "icon": "📱",
+  "version": "2.0",
+  "description": "Два режима: POST (A01-A12) и PLAN (A01-A04, стоп). Ревижн-лупы отключены.",
+  "run_type": "social",
+  "phases": {
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ]
+  },
+  "checkpoint_after": [],
+  "stop_after": null,
+  "conflict_mode": "divergent"
+}

@@ -253,6 +253,10 @@ def page_cabinet() -> None:
 
     def select_agent(agent_id, agent_dept=""):
         """Выбрать агента. agent_dept нужен для различения A01 в разных цехах."""
+        # ole_mode -> home при клике из панели (fix9_ole.py)
+        # open_ole_library() не проходит через select_agent, поэтому
+        # библиотечный режим не сбрасывается при нажатии кнопки 📚
+        state["ole_mode"] = "home"
         agent = None
         if agent_dept:
             for a in state["all_agents"].get(agent_dept, []):
@@ -565,6 +569,17 @@ def page_cabinet() -> None:
             ui.html('<div style="text-align:center;padding:32px;font-family:JetBrains Mono;font-size:0.56rem;color:rgba(140,150,180,0.3)">выбери агента слева</div>')
             return
         _dept = agent.get("dept", "")
+        # OLE: ветка library/home (fix6)
+        if agent.get("id") == "004_OLE":
+            if state.get("ole_mode") == "library":
+                _render_library_widget()
+                return
+            # Клик на Оле из панели — явно home-режим
+            def _ole_home_talk(aid, _d=_dept):
+                state["ole_mode"] = "home"
+                talk_to_agent(aid, _d)
+            render_agent_detail(agent, on_talk=_ole_home_talk)
+            return
         render_agent_detail(agent, on_talk=lambda aid, _d=_dept: talk_to_agent(aid, _d))
 
     def _render_matrix_tab():
@@ -831,8 +846,12 @@ def page_cabinet() -> None:
         is_resident = _is_agent_resident(agent)
         label = agent.get("label", agent_id)
 
-        # System prompt из home_prompt.md
-        home_prompt = _get_agent_home(agent_id, dept)
+        # System prompt — dlya Ole uchityvaem rezhim (patch_ole.py)
+        if agent_id == "004_OLE":
+            from studio.residents_manager import get_ole_system_prompt as _ole_sys
+            home_prompt = _ole_sys(state.get("ole_mode", "home")) or _get_agent_home(agent_id, dept)
+        else:
+            home_prompt = _get_agent_home(agent_id, dept)
         if not home_prompt:
             dna = agent.get("dna", {})
             static = dna.get("static", {})
@@ -1066,8 +1085,12 @@ def page_cabinet() -> None:
                 else:
                     messages.append({"role": role, "content": content_text})
 
-            # Tools: резиденты и промпт-режим — все тулы; рабочие агенты — без тулов
+            # Tools (patch_ole.py): rabochie=None, Ole-home=None, rezidenty=vse
             if talking and not is_resident:
+                tools = None
+            elif (talking
+                  and talking.get("id") == "004_OLE"
+                  and state.get("ole_mode") == "home"):
                 tools = None
             else:
                 tools = TOOLS_SCHEMA
@@ -1100,7 +1123,201 @@ def page_cabinet() -> None:
             state["waiting"] = False
             update_chat()
 
+    # ============================================================
+    # OLE 004: funktsii biblioteki (patch_ole.py)
+    # ============================================================
+
+    def _set_ole_section(section_id):
+        """Vybrat' sektsiju v vidzzhete kataloga i obnovit' pravuyu panel'."""
+        state["ole_library_section"] = section_id
+        update_right_panel("agent")
+
+    def _render_library_widget():
+        """Правая панель — виджет каталога Библиотеки (режим library)."""
+        from studio.library.library import get_all_books, LIBRARY_ROOT
+
+        agent      = state.get("selected_agent") or {}
+        label_text = agent.get("label", "Оле")
+        avatar_url = agent.get("avatar_url", "")
+
+        # avatar via avatar_url (fix10) — так же как в render_agent_detail
+        with ui.element("div").style("text-align:center;padding:8px 0 6px;"):
+            if avatar_url:
+                ui.element("div").classes("cab-detail-avatar").style(
+                    f"background-image: url('{avatar_url}');"
+                )
+            ui.label(f'{agent.get("id", "004_OLE")} {label_text}').style(
+                "font-family:'JetBrains Mono';font-size:0.75rem;font-weight:500;"
+                "color:rgba(220,225,240,0.92);display:block;margin-top:4px;"
+            )
+            ui.label("📚 библиотека").style(
+                "font-family:'JetBrains Mono';font-size:0.52rem;"
+                "color:rgba(0,242,255,0.5);display:block;margin-top:2px;"
+            )
+
+        ui.html('''<style>
+  .ole-lib-sep{height:1px;background:rgba(0,242,255,0.08);margin:6px 10px;}
+  .ole-sec-label{font-family:JetBrains Mono;font-size:0.48rem;
+    color:rgba(140,150,180,0.35);padding:6px 10px 2px;
+    text-transform:uppercase;letter-spacing:1px;}
+</style><div class="ole-lib-sep"></div>''')
+
+        # ── Секции (ui.button — надёжнее div.on("click")) ──────────────────────
+        SECS = {
+            "craft":      "📖 Ремесло",
+            "psychology": "🧠 Психология",
+            "marketing":  "📣 Маркетинг",
+            "tech":       "⚙️ Технологии",
+            "grondheim":  "🏰 Грондхейм",
+            "product":    "📦 Продукт",
+        }
+        active_sec = state.get("ole_library_section", "craft")
+
+        ui.html('<div class="ole-sec-label">секции</div>')
+        with ui.element("div").style("padding:0 4px;"):
+            for sec_id, sec_label in SECS.items():
+                is_act = (sec_id == active_sec)
+                btn = ui.button(
+                    sec_label,
+                    on_click=lambda _s=sec_id: _set_ole_section(_s),
+                ).props("flat no-caps align-left").style(
+                    "width:100%;font-family:JetBrains Mono;font-size:0.62rem;"
+                    "border-radius:6px;margin-bottom:1px;padding:3px 10px;"
+                    + (
+                        "background:rgba(0,242,255,0.08)!important;"
+                        "color:#00f2ff!important;"
+                        "border:1px solid rgba(0,242,255,0.2);"
+                        if is_act else
+                        "background:transparent!important;"
+                        "color:rgba(180,190,220,0.55)!important;"
+                        "border:1px solid transparent;"
+                    )
+                )
+
+        ui.html('<div class="ole-lib-sep"></div>')
+
+        # ── Загрузчик ───────────────────────────────────────────────────────────
+        ui.html(f'<div class="ole-sec-label">добавить → {active_sec}</div>')
+        with ui.element("div").style("padding:0 6px 6px;"):
+            ui.upload(
+                label="⇧  .md / .txt",
+                multiple=False,
+                auto_upload=True,
+                on_upload=handle_library_upload_book,
+            ).props('accept=".txt,.md" flat bordered').style(
+                "background:#08090e;"
+                "border:1.5px dashed rgba(0,242,255,0.12);"
+                "border-radius:8px;color:rgba(180,190,220,0.4);"
+                "font-family:JetBrains Mono;font-size:0.58rem;"
+            )
+
+        ui.html('<div class="ole-lib-sep"></div>')
+
+        # ── Книги секции ────────────────────────────────────────────────────────
+        all_books = get_all_books()
+        sec_books = [b for b in all_books if b.get("section") == active_sec]
+        last_10   = sec_books[-10:]
+
+        ui.html(
+            f'<div class="ole-sec-label">'
+            f'книги · {len(sec_books)} в секции / {len(all_books)} всего'
+            f'</div>'
+        )
+
+        if not last_10:
+            ui.html(
+                '<div style="text-align:center;padding:10px;'
+                'font-family:JetBrains Mono;font-size:0.55rem;'
+                'color:rgba(140,150,180,0.22)">полка пуста</div>'
+            )
+        else:
+            with ui.element("div").style(
+                "padding:0 6px;overflow-y:auto;"
+                "max-height:220px;scrollbar-width:thin;"
+            ):
+                for book in reversed(last_10):
+                    has_f = "✓" if (LIBRARY_ROOT / book.get("file", "")).exists() else "·"
+                    tags  = ", ".join(book.get("tags", [])[:3])
+                    depth = book.get("depth", "basic")
+                    ui.html(
+                        f'<div style="padding:5px 2px;'
+                        f'border-bottom:1px solid rgba(255,255,255,0.035);">'
+                        f'<div style="font-family:JetBrains Mono;font-size:0.6rem;'
+                        f'color:rgba(220,225,240,0.85);">'
+                        f'{has_f} <b>{book["id"]}</b> {book["title"]}'
+                        f'<span style="color:rgba(0,242,255,0.4);font-size:0.5rem;"'
+                        f'> [{depth}]</span></div>'
+                        f'<div style="font-family:JetBrains Mono;font-size:0.5rem;'
+                        f'color:rgba(140,150,180,0.35);">{tags}</div>'
+                        f'</div>'
+                    )
+
+    async def handle_library_upload_book(e):
+        """Zagruzhaet .md/.txt v biblioteku, registriruet, uvedomlyaet Ole."""
+        from pathlib import Path as _P
+        try:
+            name    = e.name
+            content = e.content.read() if hasattr(e.content, "read") else e.content
+
+            if not name.endswith((".txt", ".md")):
+                ui.notify("Tol'ko .txt i .md fayly", type="warning")
+                return
+
+            section   = state.get("ole_library_section", "craft")
+            dest_path = _P("studio/library") / section / name
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            dest_path.write_bytes(content)
+
+            from studio.library.register_book import register_file as _reg
+            result = _reg(str(dest_path), section)
+
+            if not result.get("success"):
+                ui.notify(f"Oshibka: {result.get('error', '?')}", type="negative")
+                return
+
+            book = result["book"]
+
+            from studio.library.library import reload_catalog as _reload
+            _reload()
+
+            # Podtverzhdenie ot Ole v chate
+            if state.get("talking_agent") and state["talking_agent"].get("id") == "004_OLE":
+                msg = (
+                    f"Kniga '{book['title']}' uzhe zaregistrirovana pod ID [{book['id']}]."
+                    if result.get("already_registered") else
+                    f"Kniga '{book['title']}' dobavlena na polku [{book['section']}] pod ID [{book['id']}]."
+                )
+                state["chat_history"].append({
+                    "role": "assistant",
+                    "content": msg,
+                    "time": datetime.now().strftime("%H:%M"),
+                })
+                update_chat()
+
+            ui.notify(f"OK: {book['id']}: {book['title']}", type="positive")
+            update_right_panel("agent")
+
+        except Exception as ex:
+            import traceback; traceback.print_exc()
+            ui.notify(f"Oshibka zagruzki: {ex}", type="negative")
+
+    def open_ole_library():
+        """Открыть Библиотеку — Оле в режиме library."""
+        # Режим ПЕРЕД talk_to_agent — он прочитает его при сборке промпта
+        state["ole_mode"] = "library"
+        residents = state["all_agents"].get("residents", [])
+        ole = next((a for a in residents if a.get("id") == "004_OLE"), None)
+        if ole:
+            state["selected_agent"] = ole
+            talk_to_agent("004_OLE", ole.get("dept", "residents"))
+        else:
+            ui.notify("Резидент 004_OLE не найден в системе.", type="warning")
+        update_right_panel("agent")
+        switch_tab("agent")
+        _hide_map()
+
     # ═══ LAYOUT ═══
+
 
     with ui.element("div").classes("cabinet-page"):
         with ui.element("div").classes("cab-grid"):
@@ -1163,6 +1380,13 @@ def page_cabinet() -> None:
                                 "click", lambda: ui.timer(0, _do_city_walk, once=True)
                             ):
                                 ui.html("🚶 прогулка")
+                            # Кнопка Библиотека (fix2_ole.py)
+                            with ui.element("div").classes("cab-map-btn").style(
+                                "cursor:pointer;"
+                                "background:rgba(0,242,255,0.04);"
+                                "border:1px solid rgba(0,242,255,0.15);"
+                            ).on("click", lambda: open_ole_library()):
+                                ui.html("📚 библиотека")
                     # Вьюпорт карты
                     with ui.element("div").classes("cab-map-viewport") as map_vp:
                         refs["map_canvas"] = ui.element("div").classes("cab-map-canvas has-bg")

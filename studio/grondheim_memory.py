@@ -412,6 +412,24 @@ def format_dna_for_prompt(agent_id: str, dept: str = "") -> str:
     lines.append("\nВеди себя в соответствии со своим характером и состоянием.")
     lines.append("Если ты в стрессе — это чувствуется в твоих ответах.")
     lines.append("Если ты на пике — твоя энергия заразительна.")
+    # ══ Character Drift — показываем агенту его дрейф ══
+    profile = dna.get("profile_vector", {})
+    if profile:
+        tone = profile.get("preferred_tone", "")
+        approach = profile.get("preferred_approach", "")
+        avg = profile.get("avg_score", 0)
+        if tone or approach:
+            lines.append("")
+            lines.append("Твой характер дрейфует в сторону успешных стратегий:")
+            if tone:
+                lines.append(f"  • Тон: {tone}")
+            if approach:
+                lines.append(f"  • Подход: {approach}")
+            if avg:
+                lines.append(f"  • Средняя оценка успешных работ: {avg}/10")
+            lines.append("Ты стал таким потому что это работало — продолжай.")
+    # ══ END Drift Display ══
+
     lines.append("=== КОНЕЦ СОСТОЯНИЯ ===")
 
     return "\n".join(lines)
@@ -1117,6 +1135,20 @@ def sync_to_dna(
     dynamic["streak"] = streak
     dynamic["stars"] = stars
 
+
+    # ══ Recovery Mechanics (Спринт 16) ══
+    # 3 победы подряд — стресс сбрасывается физиологически
+    if streak >= 3:
+        old_stress = dynamic["Stress"]
+        dynamic["Stress"] = 0.0
+        dynamic["Internal_Light"] = min(1.0, round(dynamic["Internal_Light"] + 0.05, 3))
+        print(
+            f"[RECOVERY] 🌟 {agent_id}: streak={streak} → "
+            f"Stress сброшен ({old_stress:.2f} → 0.0), "
+            f"Light={dynamic['Internal_Light']:.2f}"
+        )
+    # ══ END Recovery ══
+
     dna["dynamic"] = dynamic
     _save_json(dna_path, dna)
 
@@ -1131,6 +1163,133 @@ def sync_to_dna(
 # ═══════════════════════════════════════════════════════════
 # УТИЛИТЫ ДЛЯ PIPELINE ИНТЕГРАЦИИ
 # ═══════════════════════════════════════════════════════════
+
+def update_profile_vector(agent_id: str, dept: str = ""):
+    """
+    Вычисляет profile_vector на основе истории стратегий из Strategy Registry.
+    Агент дрейфует в сторону своих успешных подходов.
+
+    Вызывается после record_strategy() когда накоплено ≥ 3 побед.
+    Сохраняет вектор в dna.json["profile_vector"].
+    """
+    agent_dir = _find_agent_dir(agent_id, dept)
+    if not agent_dir:
+        return
+
+    dna_path = agent_dir / "dna.json"
+    dna = _load_json(dna_path)
+    if not dna:
+        return
+
+    # Загружаем стратегии из strategy_registry.json
+    registry_path = Path("studio/strategy_registry.json")
+    if not registry_path.exists():
+        return
+
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except Exception:
+        return
+
+    # Собираем все стратегии агента из всех слотов
+    all_strategies = []
+    for slot_id, agents in registry.get("slots", {}).items():
+        if agent_id in agents:
+            all_strategies.extend(agents[agent_id])
+
+    # Добавляем глобальные
+    all_strategies.extend(registry.get("global", {}).get(agent_id, []))
+
+    # Нужно минимум 3 стратегии для дрейфа
+    if len(all_strategies) < 3:
+        return
+
+    # Сортируем: wins важнее score
+    all_strategies.sort(
+        key=lambda s: (s.get("wins", 1), s.get("score", 0)),
+        reverse=True,
+    )
+
+    # Берём топ-5 стратегий
+    top = all_strategies[:5]
+
+    # Извлекаем паттерны из summaries
+    # Простой подход: считаем частоту ключевых слов (без внешних зависимостей)
+    import re
+    from collections import Counter
+
+    tone_words = Counter()
+    approach_words = Counter()
+    all_scores = []
+
+    # Ключевые слова для определения тона
+    tone_patterns = {
+        "ироничный": ["ирони", "шутк", "юмор", "сарказ", "остро"],
+        "серьёзный": ["серьёз", "строгий", "академич", "формаль"],
+        "тёплый": ["тёпл", "забот", "эмпат", "мягк", "добр"],
+        "дерзкий": ["дерзк", "смел", "провокац", "резк"],
+        "поэтичный": ["поэтич", "метафор", "образ", "лирич"],
+    }
+    approach_patterns = {
+        "структурный": ["структур", "логич", "последовательн", "анализ", "схем"],
+        "интуитивный": ["интуиц", "поток", "спонтан", "импровиз"],
+        "визуальный": ["визуал", "образ", "картин", "цвет", "сцен"],
+        "нарративный": ["истор", "повеств", "сюжет", "рассказ", "наррат"],
+        "минималистичный": ["минимал", "простой", "ясный", "чист", "лаконич"],
+    }
+
+    for s in top:
+        summary = s.get("summary", "").lower()
+        score = s.get("score", 0)
+        wins = s.get("wins", 1)
+        weight = wins * score  # комбинированный вес
+
+        all_scores.append(score)
+
+        # Подсчёт тона
+        for tone, keywords in tone_patterns.items():
+            for kw in keywords:
+                if kw in summary:
+                    tone_words[tone] += weight
+
+        # Подсчёт подхода
+        for approach, keywords in approach_patterns.items():
+            for kw in keywords:
+                if kw in summary:
+                    approach_words[approach] += weight
+
+    if not all_scores:
+        return
+
+    # Определяем доминирующий тон и подход
+    dominant_tone = tone_words.most_common(1)[0][0] if tone_words else "нейтральный"
+    dominant_approach = approach_words.most_common(1)[0][0] if approach_words else "сбалансированный"
+    avg_score = round(sum(all_scores) / len(all_scores), 1)
+
+    # Формируем профиль
+    profile_vector = {
+        "preferred_tone": dominant_tone,
+        "preferred_approach": dominant_approach,
+        "avg_score": avg_score,
+        "total_wins": sum(s.get("wins", 1) for s in top),
+        "dominant_strategy": top[0].get("summary", "")[:200] if top else "",
+        "tone_breakdown": dict(tone_words.most_common(3)),
+        "approach_breakdown": dict(approach_words.most_common(3)),
+        "last_updated": datetime.now().isoformat(),
+        "strategies_analyzed": len(all_strategies),
+    }
+
+    # Сохраняем в dna.json
+    dna["profile_vector"] = profile_vector
+    _save_json(dna_path, dna)
+
+    print(
+        f"[DRIFT] 🧬 {agent_id}: tone={dominant_tone}, "
+        f"approach={dominant_approach}, "
+        f"avg_score={avg_score}, "
+        f"strategies={len(all_strategies)}"
+    )
+
 
 def on_agent_wake(agent_id: str, dept: str = ""):
     """
@@ -1163,6 +1322,11 @@ def on_agent_done(
         emotional_weight=min(quality_score, 0.8),
         dept=dept,
     )
+
+    # ══ Character Drift (Спринт 17) ══
+    if quality_score >= 0.8:
+        update_profile_vector(agent_id, dept)
+    # ══ END Drift ══
 
     # Значимое — в резонансный лог
     if quality_score >= 0.7:
@@ -1245,6 +1409,32 @@ def on_agents_interact(
     dna_event, base_intensity = DNA_EVENT_MAP.get(interaction_type, ("good_work", 0.2))
     sync_to_dna(agent_a, dna_event, intensity=base_intensity * quality, dept=dept)
     sync_to_dna(agent_b, dna_event, intensity=base_intensity * quality * 0.7, dept=dept)
+
+    # ══ INTERACTION LOG: пишем в jsonl по слоту ══
+    # Слот определяем из dept (dept == slot_id в большинстве цехов)
+    # Файл: studio/economy/data/interaction_log_{slot}.jsonl
+    try:
+        import json as _ijson
+        from datetime import datetime as _idt
+        _slot = dept or "unknown"
+        _log_path = Path("studio/economy/data") / f"interaction_log_{_slot}.jsonl"
+        _log_path.parent.mkdir(parents=True, exist_ok=True)
+        _entry = {
+            "ts": _idt.utcnow().isoformat(),
+            "from_agent": agent_a,
+            "to_agent": agent_b,
+            "slot_id": _slot,
+            "interaction_type": interaction_type,
+            "quality": round(quality, 3),
+            "note": note[:200] if note else "",
+            "compatibility_snapshot": None,
+            "outcome_signal": None,
+        }
+        with open(_log_path, "a", encoding="utf-8") as _lf:
+            _lf.write(_ijson.dumps(_entry, ensure_ascii=False) + "\n")
+    except Exception as _log_err:
+        print(f"[INTERACTION-LOG] Ошибка записи: {_log_err}")
+    # ══ END INTERACTION LOG ══
 
 
 # ═══════════════════════════════════════════════════════════

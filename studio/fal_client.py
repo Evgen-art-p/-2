@@ -62,16 +62,16 @@ MODELS = {
         "max_refs": 10,
         "price": 0.04,
     },
-    "nano_banana": {
-        "edit":  "fal-ai/nano-banana-pro/edit",
-        "t2i":   "fal-ai/nano-banana-pro",
-        "label": "Nano Banana Pro",
+    "nano_banana_2": {
+        "edit":  "fal-ai/nano-banana-2/edit",
+        "t2i":   "fal-ai/nano-banana-2",
+        "label": "Nano Banana 2",
         "max_refs": 14,
         "price": 0.04,
     },
 }
 
-ACTIVE_MODEL = "nano_banana"
+ACTIVE_MODEL = "nano_banana_2"
 
 
 def switch_model(name: str):
@@ -96,6 +96,7 @@ IMAGE_FORMATS = {
     "1:1":   "square",
     "4:3":   "landscape_4_3",
     "3:4":   "portrait_4_3",
+    "4:5":   "portrait_4_5",
 }
 
 DEFAULT_FORMAT = "16:9"
@@ -1134,12 +1135,15 @@ def extract_tasks(data: dict) -> dict:
         "sfx": [],               # sfx[] с prompt из Рэя
         "music": {},             # suno_prompt из Рэя
         "voice_over": [],        # TTS промпты из Рэя
+        "social_post": None,     # Готовый пост (social_mix)
     }
 
     if source["format"] == "video":
         _extract_video_tasks(deliverables, tasks)
     elif source["format"] == "web_story":
         _extract_web_story_tasks(deliverables, tasks, data)
+    elif source["format"] == "social_mix":
+        _extract_social_tasks(deliverables, tasks)
     else:
         # Fallback: пробуем video, потом web_story
         _extract_video_tasks(deliverables, tasks)
@@ -1162,6 +1166,24 @@ def _detect_source(data: dict) -> dict:
             or data.get("project_id", "unknown")
         )
         return {"format": "web_story", "deliverables": dlv, "project_id": pid}
+
+    # 1.5) Social Mix v2 (Клавдия A12) — ключ post или images в deliverables
+    if data.get("deliverables"):
+        _dlv = data["deliverables"]
+        # Новый формат: deliverables.post + deliverables.images
+        if _dlv.get("post") or _dlv.get("images"):
+            return {
+                "format": "social_mix",
+                "deliverables": _dlv,
+                "project_id": data.get("project_id", "unknown"),
+            }
+        # Старый формат (fallback): post_text или image_prompts
+        if _dlv.get("post_text") or _dlv.get("image_prompts") or _dlv.get("image_prompt"):
+            return {
+                "format": "social_mix",
+                "deliverables": _dlv,
+                "project_id": data.get("project_id", "unknown"),
+            }
 
     # 2) Video pipeline (A05_Финализатор)
     if data.get("deliverables"):
@@ -1528,6 +1550,79 @@ def _extract_web_story_tasks(deliverables: dict, tasks: dict, data: dict = None)
     # build_order
     if deliverables.get("build_order"):
         tasks["publication"]["build_order"] = deliverables["build_order"]
+
+
+
+def _extract_social_tasks(deliverables: dict, tasks: dict):
+    """Парсинг Social Mix v2 pipeline (A12_Клавдия).
+
+    Поддерживает новый формат (deliverables.post + deliverables.images)
+    и старый fallback (post_text + image_prompts).
+    """
+    # ── Новый формат ──────────────────────────────────────────
+    post_block  = deliverables.get("post") or {}
+    images_list = deliverables.get("images") or []
+    meta_block  = deliverables.get("meta") or {}
+
+    # ── Старый fallback ───────────────────────────────────────
+    if not post_block and not images_list:
+        post_block  = deliverables.get("post_text") or {}
+        raw_prompts = deliverables.get("image_prompts") or []
+        if not raw_prompts:
+            single = deliverables.get("image_prompt", {})
+            if isinstance(single, dict) and single.get("positive"):
+                raw_prompts = [single]
+        gen_paths = deliverables.get("generated_paths") or []
+        images_list = []
+        for i, ip in enumerate(raw_prompts):
+            if not isinstance(ip, dict):
+                continue
+            saved = gen_paths[i] if i < len(gen_paths) else None
+            if saved and not Path(saved).exists():
+                saved = None
+            images_list.append({
+                "path":         saved,
+                "prompt":       ip.get("positive", ""),
+                "format":       ip.get("format", "4:5"),
+                "quality_score": None,
+                "typography":   "",
+            })
+
+    # ── Нормализация images ───────────────────────────────────
+    images = []
+    for i, img in enumerate(images_list):
+        if not isinstance(img, dict):
+            continue
+        saved = img.get("path")
+        if saved and not Path(saved).exists():
+            saved = None
+        images.append({
+            "index":         i,
+            "path":          saved,
+            "prompt":        img.get("prompt", ""),
+            "format":        img.get("format", "4:5"),
+            "quality_score": img.get("quality_score"),
+            "typography":    img.get("typography", ""),
+        })
+
+    tasks["social_post"] = {
+        "images":        images,
+        "hook":          post_block.get("hook", ""),
+        "body":          post_block.get("body", ""),
+        "cta":           post_block.get("cta", ""),
+        "hashtags":      post_block.get("hashtags", deliverables.get("hashtags", [])),
+        "first_comment": post_block.get("first_comment", deliverables.get("first_comment", "")),
+        "platform":      post_block.get("platform", deliverables.get("platform", "instagram")),
+        "post_type":     post_block.get("post_type", deliverables.get("post_type",
+                             "single" if len(images) <= 1 else "carousel")),
+        "viral_score":   meta_block.get("viral_score"),
+        "project_id":    meta_block.get("project_id", deliverables.get("meta", {}).get("project_id", "")),
+    }
+
+    ready = sum(1 for img in images if img["path"])
+    sp = tasks["social_post"]
+    print(f"    📱 Social post v2: {len(images)} картинок ({ready} готово), "
+          f"тип={sp['post_type']}, платформа={sp['platform']}")
 
 
 # ============================================================

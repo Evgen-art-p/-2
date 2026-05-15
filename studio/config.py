@@ -57,6 +57,8 @@ PROXY_URL = os.getenv("PROXY_URL", "")
 
 FAL_KEY = os.getenv("FAL_KEY", "")
 TAVILY_KEY = os.getenv("TAVILY_KEY", "")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY",  "")
+SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY", "")
 
 HTTP_TIMEOUT = 120
 

@@ -2,7 +2,7 @@
   "id": "advertising",
   "label": "📢 Реклама",
   "icon": "📢",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Полный цикл рекламных материалов: от идеи до готового креатива",
   "run_type": "social",
   "phases": {
@@ -41,5 +41,13 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_advertising.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

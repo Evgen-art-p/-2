@@ -14,7 +14,7 @@ from studio.assembly.constants import (
     parse_final_md, extract_tasks, find_final_mds,
 )
 from studio.assembly.helpers import restore_paths
-from studio.assembly.renderers import render_grid, render_stats, render_right_panels
+from studio.assembly.renderers import render_grid, render_stats, render_right_panels, render_social_post
 
 
 def load_md(path, state, refs):
@@ -43,15 +43,44 @@ def load_md(path, state, refs):
         state["selected"] = set()
         state["active_card"] = None
         state["active_item"] = None
+        state["_slide_index"] = 0
         restore_paths(state)
-        render_grid(state, refs)
-        render_stats(state, refs)
-        render_right_panels(state, refs)
+        if tasks.get("social_post"):
+            render_social_post(state, refs)
+            render_stats(state, refs)
+        else:
+            render_grid(state, refs)
+            render_stats(state, refs)
+            render_right_panels(state, refs)
         ui.notify(f"Project: {tasks['project_id']}", type="positive")
     except Exception as e:
         ui.notify(f"Error: {e}", type="negative")
         import traceback
         traceback.print_exc()
+
+
+
+def do_copy_post(state):
+    """Копирует готовый пост в буфер обмена."""
+    post = state.get("tasks", {}).get("social_post")
+    if not post:
+        ui.notify("Нет поста для копирования", type="warning")
+        return
+    parts = []
+    if post.get("hook"):
+        parts.append(post["hook"])
+    if post.get("body"):
+        parts.append(post["body"])
+    if post.get("cta"):
+        parts.append(post["cta"])
+    if post.get("hashtags"):
+        parts.append(" ".join(post["hashtags"]))
+    if post.get("first_comment"):
+        parts.append(f"\n💬 {post['first_comment']}")
+    text = "\n\n".join(parts)
+    import json as _json
+    ui.run_javascript(f"navigator.clipboard.writeText({_json.dumps(text)})")
+    ui.notify("📋 Пост скопирован!", type="positive")
 
 
 def do_export(item, state):

@@ -2,7 +2,7 @@
   "id": "logo_design",
   "label": "🧩 Логотипы",
   "icon": "🧩",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Концепция, сценарий, раскадровка",
   "run_type": "pre_prod",
   "phases": {
@@ -30,5 +30,13 @@
   "revision_loop": null,
   "turbo_workers": [],
   "turbo_parallel": [],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A12",
+  "interaction_log": "economy/data/interaction_log_logo_design.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

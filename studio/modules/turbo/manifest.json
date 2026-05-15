@@ -2,7 +2,7 @@
   "id": "turbo",
   "label": "⚡ TURBO Шортсы",
   "icon": "⚡",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Быстрый конвейер шортсов: A01→(A02∥A03)→A04→A05",
   "run_type": "turbo",
   "phases": {
@@ -30,5 +30,13 @@
   "checkpoint_after": [],
   "stop_after": null,
   "revision_loop": null,
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_turbo.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

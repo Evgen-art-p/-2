@@ -2,7 +2,7 @@
   "id": "video_long",
   "label": "🎥 Видео Long",
   "icon": "🎥",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Все агенты, checkpoint после A03 (сценарий)",
   "run_type": "full",
   "phases": {
@@ -43,5 +43,19 @@
       "A03"
     ]
   ],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A05",
+  "interaction_log": "economy/data/interaction_log_video_long.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ],
+  "hard_stop": {
+    "after_agent": "A04",
+    "residents": [
+      "victor"
+    ]
+  }
 }

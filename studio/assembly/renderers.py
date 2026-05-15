@@ -53,6 +53,221 @@ def render_grid(state, refs):
                     _card(f"ui_{ia['interaction_id']}_{ia['element_id']}", ia, "ui", state, refs)
 
 
+
+def render_social_post(state, refs):
+    """Рендер готового поста (social_mix v2) в центральной зоне Assembly.
+
+    Левая половина  — превью картинки + навигация карусели + кнопка REGEN
+    Правая половина — hook / body / CTA / хештеги / первый комментарий + КОПИРОВАТЬ
+    """
+    if not refs.get("grid") or not state.get("tasks"):
+        return
+    refs["grid"].clear()
+    post = state["tasks"].get("social_post")
+    if not post:
+        return
+
+    import asyncio
+    from pathlib import Path as _Path
+
+    try:
+        from studio.assembly.actions import do_copy_post
+    except ImportError:
+        do_copy_post = lambda s: ui.notify("do_copy_post не найден", type="warning")
+
+    try:
+        from studio.assembly.generators import do_regen_social_image
+        _has_regen = True
+    except (ImportError, AttributeError):
+        _has_regen = False
+
+    if "_slide_index" not in state:
+        state["_slide_index"] = 0
+
+    images = post.get("images", [])
+    n   = len(images)
+    idx = min(state["_slide_index"], n - 1) if n else 0
+
+    def _to_url(p: str) -> str:
+        """output/generated/... → /output/..."""
+        try:
+            from studio.assembly.constants import OUTPUT_DIR
+            rel = _Path(p).relative_to(OUTPUT_DIR)
+            return f"/output/{rel.as_posix()}"
+        except Exception:
+            return p
+
+    with refs["grid"]:
+        with ui.element("div").style(
+            "display:grid;grid-template-columns:1fr 1fr;gap:20px;"
+            "padding:16px;height:100%;box-sizing:border-box;overflow-y:auto;"
+        ):
+
+            # ── ЛЕВАЯ: картинка ───────────────────────────────────────
+            with ui.element("div").style(
+                "display:flex;flex-direction:column;gap:10px;align-items:stretch;"
+            ):
+                # Превью
+                with ui.element("div").style(
+                    "flex:1;background:rgba(255,255,255,0.03);"
+                    "border:1px solid rgba(255,255,255,0.08);border-radius:16px;"
+                    "overflow:hidden;aspect-ratio:4/5;display:flex;"
+                    "align-items:center;justify-content:center;min-height:280px;"
+                ):
+                    if images and images[idx].get("path") and _Path(images[idx]["path"]).exists():
+                        _url = f'{_to_url(images[idx]["path"])}?t={int(time.time()*1000)}'
+                        ui.image(_url).style("width:100%;height:100%;object-fit:cover;")
+                    else:
+                        ui.html(
+                            '<div style="text-align:center;">'
+                            '<div style="font-size:40px;">🖼️</div>'
+                            '<div style="color:rgba(255,255,255,0.25);font-size:11px;margin-top:8px;">'
+                            'Картинка генерируется в hooks.py (A06)<br>после запуска пайплайна'
+                            '</div></div>'
+                        )
+
+                # Навигация карусели
+                if n > 1:
+                    with ui.row().style("justify-content:center;align-items:center;gap:10px;"):
+                        def _prev(e, s=state, r=refs):
+                            s["_slide_index"] = max(0, s.get("_slide_index", 0) - 1)
+                            render_social_post(s, r)
+                        def _next(e, s=state, r=refs):
+                            s["_slide_index"] = min(
+                                len(s["tasks"]["social_post"]["images"]) - 1,
+                                s.get("_slide_index", 0) + 1
+                            )
+                            render_social_post(s, r)
+                        _btn = (
+                            "height:30px;width:38px;border-radius:8px;"
+                            "border:1px solid rgba(255,255,255,0.2);"
+                            "background:rgba(255,255,255,0.06);color:white;font-weight:900;"
+                        )
+                        ui.button("←", on_click=_prev).props("flat dense").style(_btn)
+                        ui.html(
+                            f'<span style="color:rgba(255,255,255,0.4);font-size:11px;">'
+                            f'{idx+1} / {n}</span>'
+                        )
+                        ui.button("→", on_click=_next).props("flat dense").style(_btn)
+
+                # Качество
+                if images and idx < len(images):
+                    _score = images[idx].get("quality_score")
+                    _qual  = images[idx].get("quality", "")
+                    if _score is not None:
+                        _q_color = "#00ff88" if _score >= 7 else "rgba(255,204,0,0.85)"
+                        ui.html(
+                            f'<div style="font-size:10px;color:{_q_color};">'
+                            f'⭐ {_score}/10'
+                            + (f' <span style="color:rgba(255,100,0,0.7);">[fallback]</span>'
+                               if _qual == "fallback" else '')
+                            + '</div>'
+                        )
+
+                # REGEN
+                if images and _has_regen:
+                    def _regen(e, s=state, r=refs):
+                        _img = s["tasks"]["social_post"]["images"][s.get("_slide_index", 0)]
+                        asyncio.ensure_future(do_regen_social_image(_img, s, r))
+                    ui.button("🔄 REGEN", on_click=_regen).props("flat dense").style(
+                        "height:34px;border-radius:10px;font-weight:800;font-size:11px;"
+                        "border:1px solid rgba(255,204,0,0.35);"
+                        "background:linear-gradient(135deg,rgba(255,204,0,0.12),rgba(255,149,0,0.08));"
+                        "color:rgba(255,255,255,0.9);"
+                    )
+
+            # ── ПРАВАЯ: текст поста ───────────────────────────────────
+            with ui.element("div").style(
+                "display:flex;flex-direction:column;gap:10px;overflow-y:auto;"
+            ):
+                # Платформа + тип + viral score
+                _platform   = post.get("platform", "instagram").upper()
+                _ptype      = post.get("post_type", "single")
+                _viral      = post.get("viral_score")
+                _badges = (
+                    f'<span style="padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;'
+                    f'background:rgba(0,204,255,0.12);color:rgba(0,204,255,0.85);'
+                    f'border:1px solid rgba(0,204,255,0.2);">📱 {_platform}</span>'
+                    f'<span style="padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;'
+                    f'background:rgba(255,149,0,0.10);color:rgba(255,149,0,0.8);'
+                    f'border:1px solid rgba(255,149,0,0.2);">{_ptype}</span>'
+                )
+                if _viral is not None:
+                    _badges += (
+                        f'<span style="padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;'
+                        f'background:rgba(0,255,136,0.08);color:rgba(0,255,136,0.7);'
+                        f'border:1px solid rgba(0,255,136,0.18);">🔥 viral {_viral}/10</span>'
+                    )
+                ui.html(f'<div style="display:flex;gap:8px;flex-wrap:wrap;">{_badges}</div>')
+
+                def _section(label_text, content_html, color="rgba(255,255,255,0.82)"):
+                    ui.html(
+                        f'<div style="color:rgba(255,255,255,0.35);font-size:9px;font-weight:700;'
+                        f'text-transform:uppercase;letter-spacing:0.1em;margin-top:6px;">'
+                        f'{label_text}</div>'
+                        f'<div style="color:{color};font-size:13px;line-height:1.55;">'
+                        f'{content_html}</div>'
+                    )
+
+                if post.get("hook"):
+                    _section("HOOK", f'<b>{post["hook"]}</b>', "#00ccff")
+
+                if post.get("body"):
+                    _section("ТЕКСТ", post["body"].replace("\n", "<br>"))
+
+                if post.get("cta"):
+                    _section("CTA", post["cta"], "#00ff88")
+
+                if post.get("hashtags"):
+                    _tags = " ".join(
+                        f'<span style="display:inline-block;padding:2px 7px;margin:2px;"'
+                        f'border-radius:7px;font-size:11px;'
+                        f'background:rgba(0,255,136,0.07);color:rgba(0,255,136,0.65);">'
+                        f'{t}</span>'
+                        for t in post["hashtags"]
+                    )
+                    ui.html(
+                        '<div style="color:rgba(255,255,255,0.35);font-size:9px;font-weight:700;'
+                        'text-transform:uppercase;letter-spacing:0.1em;margin-top:6px;">'
+                        '#️⃣ ХЕШТЕГИ</div>'
+                        f'<div style="line-height:2;">{_tags}</div>'
+                    )
+
+                if post.get("first_comment"):
+                    _section(
+                        "💬 ПЕРВЫЙ КОММЕНТАРИЙ",
+                        f'<i style="color:rgba(255,255,255,0.55);">{post["first_comment"]}</i>',
+                    )
+
+                # Статус
+                _ready = sum(
+                    1 for img in images
+                    if img.get("path") and _Path(img["path"]).exists()
+                )
+                _s_color = "#00ff88" if (_ready == n and n > 0) else "rgba(255,204,0,0.85)"
+                _s_text  = (
+                    "✅ Готово к публикации"
+                    if (_ready == n and n > 0)
+                    else f"⏳ Картинок: {_ready}/{n}"
+                )
+                ui.html(
+                    f'<div style="margin-top:8px;padding:6px 12px;border-radius:8px;'
+                    f'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">'
+                    f'<span style="color:{_s_color};font-size:11px;font-weight:700;">{_s_text}</span>'
+                    f'</div>'
+                )
+
+                # КОПИРОВАТЬ
+                ui.button(
+                    "📋 КОПИРОВАТЬ ПОСТ",
+                    on_click=lambda e, s=state: do_copy_post(s)
+                ).props("flat dense").style(
+                    "height:36px;border-radius:10px;font-weight:800;font-size:11px;margin-top:4px;"
+                    "border:1px solid rgba(0,255,136,0.3);background:rgba(0,255,136,0.08);"
+                    "color:rgba(0,255,136,0.9);"
+                )
+
+
 def _card(key, item, kind, state, refs):
     """Single asset card in the grid."""
     cls = "asset-card"
@@ -250,10 +465,15 @@ def render_stats(state, refs):
         return
     refs["stats"].clear()
     t = state["tasks"]
-    total = len(t["thumbnails"]) + len(t["key_frames"]) + len(t["videos"])
-    done = sum(1 for x in t["thumbnails"] if x.get("path"))
-    done += sum(1 for x in t["key_frames"] if x.get("path"))
-    done += sum(1 for x in t["videos"] if x.get("path"))
+    if t.get("social_post"):
+        _imgs = t["social_post"].get("images", [])
+        total = len(_imgs)
+        done  = sum(1 for x in _imgs if x.get("path"))
+    else:
+        total = len(t["thumbnails"]) + len(t["key_frames"]) + len(t["videos"])
+        done = sum(1 for x in t["thumbnails"] if x.get("path"))
+        done += sum(1 for x in t["key_frames"] if x.get("path"))
+        done += sum(1 for x in t["videos"] if x.get("path"))
     sel = len(state["selected"])
     project_name = t.get("project_id", "unknown")
     exp_dir = RENDER_DIR / project_name

@@ -2,7 +2,7 @@
   "id": "living_book",
   "label": "📖 Живая Книга",
   "icon": "📖",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Полный цикл: Фабула→Вера(ревизия)→18 агентов→Book Package",
   "run_type": "living_book",
   "phases": {
@@ -51,5 +51,13 @@
   },
   "turbo_workers": [],
   "turbo_parallel": [],
-  "conflict_mode": "divergent"
+  "conflict_mode": "divergent",
+  "qa_agent": "A16",
+  "interaction_log": "economy/data/interaction_log_living_book.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ]
 }

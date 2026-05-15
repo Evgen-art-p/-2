@@ -279,7 +279,7 @@ class CartridgeRunner:
                     start_index = i
                     break
 
-        run_type = self.manifest.run_type or self.manifest.id
+        run_type = self.state.get("run_type") or self.manifest.run_type or self.manifest.id
         # Сообщаем pipeline.py кто QA-агент этого цеха
         # Динамический QA: если qa_agent не в пайплайне — берём последнего агента
         _all_agents = self.manifest.get_all_agents()

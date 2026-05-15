@@ -6,7 +6,6 @@ import asyncio
 import re
 import shutil
 from studio.llm import chat, chat_with_images
-from studio.knowledge import load_all_knowledge
 from studio.config import KNOWLEDGE_DIR, BASE_DIR
 from studio.modules_registry import (
     CURRENT_DEPT, get_worker_prompt, get_worker_info,
@@ -50,6 +49,11 @@ from studio.workshop.assets import (
 )
 from studio.workshop.ref_indexer import convert_to_png, index_asset
 from studio.cartridge import CartridgeManifest, CartridgeRunner
+from studio.residents_manager import (
+    get_set_system_prompt,
+    build_set_context,
+    detect_run_type_from_brief,
+)
 from studio.workshop.nicegui_callbacks import NiceGUICallbacks
 
 # --- Грондхейм: память города ---
@@ -301,7 +305,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             "style": "Stylized 3D Realism",
         },
         "file_processor": None,
-        "knowledge": "",
         "set_system": "",
         "viewer_content": "",
         # --- Клиент ---
@@ -321,28 +324,15 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     # project_dir — будет создан при запуске пайплайна
     state["project_dir"] = None
     state["file_processor"] = None
-    state["knowledge"] = load_all_knowledge(KNOWLEDGE_DIR)
 
 
     
-    # Загружаем промт SET
-    from pathlib import Path as _P
-    _set_core = ""
-    _set_dept = ""
-    _core_path = _P("knowledge") / "set_core.md"
-    _dept_path = _P("knowledge") / f"set_{dept}.md"
-    if _core_path.exists():
-        _set_core = _core_path.read_text(encoding="utf-8")
-    if _dept_path.exists():
-        _set_dept = _dept_path.read_text(encoding="utf-8")
-    _dept_header = f"""
-    === ТЕКУЩИЙ ЦЕХ ===
-    Цех: {dept}
-    Режим: {state['run_type']}
-    Формат: {state['settings']['format']}
-    Стиль: {state['settings']['style']}
-    """
-    state["set_system"] = _set_core + "\n\n" + _set_dept + "\n" + _dept_header + "\nБАЗА ЗНАНИЙ:\n" + state["knowledge"]
+    # Загружаем промпт SET через Менеджер
+    state["set_system"] = get_set_system_prompt(
+        dept=dept,
+        run_type=state["run_type"],
+        settings=state["settings"],
+    )
 
     # Refs
     chat_log_ref = {'element': None}
@@ -961,17 +951,12 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         
         try:
             if worker_id == "SET":
-                # Обновляем настройки в system prompt (актуальные значения)
-                _live_settings = (
-                    f"\n\n=== АКТУАЛЬНЫЕ НАСТРОЙКИ ===\n"
-                    f"Цех: {state['active_dept']}\n"
-                    f"Режим: {state['run_type']}\n"
-                    f"Формат: {state['settings']['format']}\n"
-                    f"Длительность: {state['settings']['duration']} сек\n"
-                    f"Стиль: {state['settings']['style']}\n"
+                system = build_set_context(
+                    dept=state["active_dept"],
+                    run_type=state["run_type"],
+                    settings=state["settings"],
                 )
-                system = state["set_system"] + _live_settings
-                knowledge = state["knowledge"]
+                knowledge = ""
             else:
                 system = get_worker_prompt(worker_id, state.get("active_dept", ""))
                 knowledge = get_worker_knowledge(worker_id, state.get("active_dept", ""))
@@ -1097,31 +1082,31 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             brief = await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: chat(
-                    state["set_system"], 
-                    f"Собери MASTER BRIEF на основе диалога:{client_info_ctx}\n\n{context}", 
-                    state["knowledge"]
+                    build_set_context(
+                        dept=state["active_dept"],
+                        run_type=state["run_type"],
+                        settings=state["settings"],
+                    ),
+                    f"Собери MASTER BRIEF на основе диалога:{client_info_ctx}\n\n{context}",
+                    ""  # без knowledge
                 )
             )
             
             state["master_brief"] = brief
 
             # ═══ SET AUTO-MODE: контент-план или производство ═══
-            brief_lower = brief.lower()
-            if any(marker in brief_lower for marker in [
-                "content_plan", "контент-план", "режим: plan",
-                "тип задачи: content_plan"
-            ]):
-                if state["run_type"] != "content_plan":
-                    state["run_type"] = "content_plan"
-                    print(f"[SET] Переключил режим → content_plan")
-                    ui.notify("📝 SET: режим КОНТЕНТ-ПЛАН (A01-A04)", type="info", timeout=5000)
-            else:
-                # Обычный бриф — вернуть режим цеха по умолчанию
-                dept = state.get("active_dept", "social_mix")
-                default_type = DEPT_TO_RUNTYPE.get(dept, "social")
-                if state["run_type"] != default_type:
-                    state["run_type"] = default_type
-                    print(f"[SET] Вернул режим → {default_type}")
+            dept = state.get("active_dept", "social_mix")
+            default_type = DEPT_TO_RUNTYPE.get(dept, "social")
+            new_run_type = detect_run_type_from_brief(
+                brief=brief,
+                dept=dept,
+                default_run_type=default_type,
+            )
+            if state["run_type"] != new_run_type:
+                state["run_type"] = new_run_type
+                mode_label = "КОНТЕНТ-ПЛАН (A01-A04)" if new_run_type == "content_plan" else new_run_type
+                print(f"[SET] Режим → {new_run_type}")
+                ui.notify(f"📝 SET: режим {mode_label}", type="info", timeout=5000)
             # ═════════════════════════════════════════════════════
 
             update_viewer(f"# MASTER BRIEF\n\n{brief}")
@@ -3018,7 +3003,7 @@ Style: {state['settings']['style']}
                     with ui.element('div').style(
                         'display:flex; align-items:center; gap:6px; '
                         'background:rgba(255,255,255,0.05); border-radius:20px; '
-                        'padding:4px 8px; margin-left:auto; flex-shrink:0;'
+                        'padding:4px 8px; flex-shrink:0;'
                     ):
                         ui.html('<span style="font-size:0.6rem; color:rgba(255,255,255,0.35); '
                                 'letter-spacing:0.12em; margin-right:4px;">РЕЖИМ</span>')

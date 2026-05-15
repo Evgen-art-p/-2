@@ -44,6 +44,16 @@ except ImportError:
     def get_strategies(agent_id, slot_id=""): return ""
     def record_strategy(**kwargs): pass
 
+# ══ Culture Field (Этап 10) — Cultural Feedback Loop ══
+try:
+    from studio.culture.field_tracker import CulturalFieldTracker
+    _CULTURE_ENABLED = True
+    print("[CULTURE] 🧬 Cultural Field Tracker подключён")
+except ImportError:
+    _CULTURE_ENABLED = False
+    print("[CULTURE] ⚠ field_tracker не найден — работаем без культуры")
+# ══ END Culture ══
+
 # ══ Economy — экономический модуль (Глубокое Резюме Системы) ══
 try:
     from studio.economy import cost_intuition as _cost_intuition
@@ -231,6 +241,40 @@ def build_agent_context(
             context += strategies + "\n\n"
             print(f"[STRATEGY] 🏆 {worker_id}: стратегии загружены ({len(strategies)} симв.)")
     # ══ end Strategy Registry ══
+    # ══ Resource Economy — energy budget (Спринт 16) ══
+    if _GRONDHEIM_ENABLED:
+        try:
+            from studio.grondheim_memory import _find_agent_dir as _fad
+            import json as _ejson
+            _agent_dir = _fad(worker_id, state.get("active_dept", ""))
+            if _agent_dir:
+                _dna_path = _agent_dir / "dna.json"
+                if _dna_path.exists():
+                    _dna = _ejson.loads(_dna_path.read_text(encoding="utf-8"))
+                    _dyn = _dna.get("dynamic", {})
+                    _stress = float(_dyn.get("Stress", 0.0))
+                    _light  = float(_dyn.get("Internal_Light", 0.8))
+                    # energy: 0.0–1.0, нормируем в 0–100
+                    _energy = max(0.0, min(1.0, _light - _stress))
+                    _energy_pct = int(_energy * 100)
+                    if _energy_pct > 70:
+                        context += (
+                            f"⚡ ЭНЕРГИЯ ВЫСОКАЯ ({_energy_pct}/100): "
+                            "можешь использовать глубокий анализ и нестандартные решения.\n\n"
+                        )
+                        print(f"[ENERGY] ⚡ {worker_id}: {_energy_pct}/100 — HIGH")
+                    elif _energy_pct < 30:
+                        context += (
+                            f"⚡ ЭНЕРГИЯ НИЗКАЯ ({_energy_pct}/100): "
+                            "работай чётко и экономно — только необходимое.\n\n"
+                        )
+                        print(f"[ENERGY] 🔋 {worker_id}: {_energy_pct}/100 — LOW")
+                    else:
+                        print(f"[ENERGY] ✓ {worker_id}: {_energy_pct}/100 — норма")
+        except Exception as _energy_err:
+            print(f"[ENERGY] {worker_id}: {_energy_err}")
+    # ══ END Resource Economy ══
+
 
     # ══ Economy: Cost Intuition + Ministry (Этапы 2, 6-7) ══
     if _ECONOMY_ENABLED:
@@ -394,16 +438,19 @@ def process_agent_result(
     # ══ NEW: Личная память агента (Грондхейм) ══
     if _GRONDHEIM_ENABLED:
         # Определяем quality_score
-        quality = 0.5  # дефолт
-        has_deliverables = bool(meta.get("deliverables"))
+        # ИСПРАВЛЕНО: deliverables есть только у финализатора.
+        # Для промежуточных агентов смотрим на my_output и ghost_ids.
+        quality = 0.6  # дефолт — нейтральная хорошая работа
+        has_my_output = bool(meta.get("my_output") or meta.get("deliverables"))
         has_ghost_ids = bool(ghost_ids)
 
-        if has_deliverables and not has_ghost_ids:
-            quality = 0.8  # хорошая работа с результатом
-        elif has_deliverables and has_ghost_ids:
-            quality = 0.5  # есть результат, но с ошибками
-        elif not has_deliverables:
-            quality = 0.3  # нет деливераблей
+        if has_my_output and not has_ghost_ids:
+            quality = 0.8  # агент выдал результат без ошибок
+        elif has_my_output and has_ghost_ids:
+            quality = 0.5  # есть результат, но с галлюцинациями
+        elif not has_my_output and has_ghost_ids:
+            quality = 0.3  # нет вывода и есть ошибки
+        # has_my_output=False, has_ghost_ids=False → quality=0.6 (текстовый ответ без JSON)
 
         on_agent_done(
             agent_id=worker_id,
