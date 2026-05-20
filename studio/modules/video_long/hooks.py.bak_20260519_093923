@@ -659,29 +659,12 @@ def _bob_fill_outcome_signal(state: dict, my_output: dict):
                 filled = True
                 break
         if not filled:
-            # PATCH audit-sprint19 [7]: если целевая запись не найдена —
-            # дописываем патч-запись в конец (append-only, не перезаписываем лог)
-            patch_entry = {
-                "type":           "outcome_patch",
-                "project_id":     project_id,
-                "outcome_signal": outcome,
-                "patched_at":     datetime.datetime.utcnow().isoformat(),
-            }
-            with open(log_path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(patch_entry, ensure_ascii=False) + "\n")
-            print("[EPISODE A12] ✅ outcome_signal → patch-запись добавлена")
+            print("[EPISODE A12] ⚠️  Запись с outcome_signal=null не найдена")
             return
-        # PATCH audit-sprint19 [7]: вместо перезаписи всего файла — append патч-записи.
-        # Это соблюдает append-only принцип interaction_log (LONG_RULES правило 13).
-        patch_entry = {
-            "type":           "outcome_patch",
-            "project_id":     project_id,
-            "outcome_signal": outcome,
-            "patched_at":     datetime.datetime.utcnow().isoformat(),
-        }
-        with open(log_path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(patch_entry, ensure_ascii=False) + "\n")
-        print(f"[EPISODE A12] ✅ outcome_signal → patch-запись добавлена")
+        with open(log_path, "w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        print(f"[EPISODE A12] ✅ outcome_signal записан")
     except Exception as e:
         print(f"[EPISODE A12] ❌ Ошибка записи outcome_signal: {e}")
 

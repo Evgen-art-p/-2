@@ -410,6 +410,14 @@ SYSTEM_JSON_START
     }
   },
 
+  "compatibility_snapshot": {
+    "technical": 0.0,
+    "creative": 0.0,
+    "rhythm": 0.0
+  },
+
+  "friction_note": "",
+
   "memory_update": {
     "tools_used": ["veo_3.1"],
     "effects_used": ["particles", "light_leak"],
@@ -469,6 +477,14 @@ SYSTEM_JSON_END
 16. Инструмент = **Veo 3.1** (всегда)
 17. Промпты ТОЛЬКО на английском
 18. Проверь себя через 99_Self_Correction.txt
+
 19. 🔴 ref_ids ОБЯЗАТЕЛЬНЫ — наследуй из eva_visuals.hero_prompts[].ref_ids. Если Ева указала ref_ids для кадра — используй те же ID.
 20. ref_ids содержат ID из каталога студии: char_xxx, loc_xxx, prop_xxx. Assembly Line подставит реальные изображения при генерации.
 21. НЕ ПРИДУМЫВАЙ ref_ids — только существующие ID из каталога (assets_reference.md)
+22. 🔴 ОБЯЗАТЕЛЬНО заполни `compatibility_snapshot` в своём JSON:
+    Оцени совместимость своих VFX с визуальным рядом Евы (A06).
+    - `technical` — совпадение техники (format, fps, кадровка) от 0.0 до 1.0
+    - `creative`  — совпадение стиля и атмосферы от 0.0 до 1.0
+    - `rhythm`    — совпадение монтажного ритма от 0.0 до 1.0
+    - `friction_note` — конфликт с работой Евы (или "")
+    Система пишет это в лог взаимодействий агентов.

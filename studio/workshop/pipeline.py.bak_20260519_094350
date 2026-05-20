@@ -17,6 +17,18 @@ from studio.workshop.memory import (
 )
 from studio.workshop.assets import _load_asset_catalog
 
+# ══ Contract Validator — Таможня Контракта ══
+try:
+    from studio.workshop.contract_validator import validate as _contract_validate, build_retry_prompt as _contract_retry_prompt
+    _CONTRACT_ENABLED = True
+    print("[CONTRACT] Таможня Контракта подключена")
+except ImportError:
+    _CONTRACT_ENABLED = False
+    def _contract_validate(agent_id, my_output): return []
+    def _contract_retry_prompt(errors, agent_id): return ""
+# ══ END Contract ══
+
+
 # Reflection Engine — поведенческие паттерны из истории ранов
 try:
     from studio.reflection import get_reflection, maybe_rebuild
@@ -319,6 +331,9 @@ def build_agent_context(
             "Формат: INSIGHT: <твой вывод>\n"
         )
 
+    # Сохраняем контекст для возможного ретрая Таможни
+    state.setdefault("_last_context", {})[worker_id] = context
+
     return context
 
 
@@ -383,7 +398,7 @@ async def call_agent(
     return human_text, meta, raw_result
 
 
-def process_agent_result(
+async def process_agent_result(
     state: dict,
     worker_id: str,
     human_text: str,
@@ -414,6 +429,32 @@ def process_agent_result(
         warn = f"⚠️ {worker_id}: галлюцинации asset_id ({len(ghost_ids)}): " + ", ".join(ghost_ids[:5])
         print(f"[VALIDATION] {warn}")
 
+    # ══ Таможня Контракта + Auto-Retry ══
+    if _CONTRACT_ENABLED:
+        _cerrs = _contract_validate(worker_id, meta.get("my_output"),
+                                    dept=state.get("active_dept", ""))
+        if _cerrs:
+            for _ce in _cerrs:
+                print(f"[CONTRACT] ❌ {worker_id}: {_ce}")
+            state.setdefault("_contract_violations", {})[worker_id] = _cerrs
+            print(f"[CONTRACT] 🔄 {worker_id}: ретрай...")
+            _retry_ctx = state.get("_last_context", {}).get(worker_id, "")
+            _retry_ctx += "\n\n" + _contract_retry_prompt(_cerrs, worker_id)
+            try:
+                _r_human, _r_meta, _r_raw = await call_agent(state, worker_id, _retry_ctx)
+                if not _contract_validate(worker_id, _r_meta.get("my_output"),
+                                          dept=state.get("active_dept", "")):  # PATCH audit-sprint19 [2]
+                    human_text, meta, raw_result = _r_human, _r_meta, _r_raw
+                    state["_contract_violations"].pop(worker_id, None)
+                    print(f"[CONTRACT] ✅ {worker_id}: ретрай успешен")
+                else:
+                    print(f"[CONTRACT] ⚠️ {worker_id}: ретрай не помог")
+            except Exception as _re:
+                print(f"[CONTRACT] ⚠️ {worker_id}: ретрай упал — {_re}")
+        elif meta.get("my_output"):
+            print(f"[CONTRACT] ✅ {worker_id}: ключи верны")
+    # ══ END Contract ══
+
     # Извлекаем INSIGHT
     insight_match = re.search(r'INSIGHT:\s*(.+)', raw_result)
     if insight_match and client_slug != "_sandbox":
@@ -438,16 +479,19 @@ def process_agent_result(
     # ══ NEW: Личная память агента (Грондхейм) ══
     if _GRONDHEIM_ENABLED:
         # Определяем quality_score
-        quality = 0.5  # дефолт
-        has_deliverables = bool(meta.get("deliverables"))
+        # ИСПРАВЛЕНО: deliverables есть только у финализатора.
+        # Для промежуточных агентов смотрим на my_output и ghost_ids.
+        quality = 0.6  # дефолт — нейтральная хорошая работа
+        has_my_output = bool(meta.get("my_output") or meta.get("deliverables"))
         has_ghost_ids = bool(ghost_ids)
 
-        if has_deliverables and not has_ghost_ids:
-            quality = 0.8  # хорошая работа с результатом
-        elif has_deliverables and has_ghost_ids:
-            quality = 0.5  # есть результат, но с ошибками
-        elif not has_deliverables:
-            quality = 0.3  # нет деливераблей
+        if has_my_output and not has_ghost_ids:
+            quality = 0.8  # агент выдал результат без ошибок
+        elif has_my_output and has_ghost_ids:
+            quality = 0.5  # есть результат, но с галлюцинациями
+        elif not has_my_output and has_ghost_ids:
+            quality = 0.3  # нет вывода и есть ошибки
+        # has_my_output=False, has_ghost_ids=False → quality=0.6 (текстовый ответ без JSON)
 
         on_agent_done(
             agent_id=worker_id,
@@ -460,6 +504,13 @@ def process_agent_result(
         prev_agents = [k for k in state.get("results", {}).keys() if k != worker_id]
         if prev_agents:
             last_agent = prev_agents[-1]
+            _my_out = meta.get("my_output", {}) or {}
+            # compatibility_snapshot — агент A08 любого цеха пишет его напрямую в my_output
+            _compat = _my_out.get("compatibility_snapshot") \
+                if worker_id == "A08" else None
+            # final_dna — финализатор любого цеха (всегда A12 по стандарту qa_agent)
+            _outcome = _my_out.get("final_dna") \
+                if worker_id == state.get("_qa_agent", "A12") else None
             on_agents_interact(
                 agent_a=last_agent,
                 agent_b=worker_id,
@@ -467,6 +518,8 @@ def process_agent_result(
                 quality=quality,
                 note=f"Передача работы в пайплайне {run_type}",
                 dept=state.get("active_dept", ""),
+                compatibility_snapshot=_compat,
+                outcome_signal=_outcome,
             )
     # ══ END NEW ══
 
@@ -492,8 +545,11 @@ def process_agent_result(
             except Exception as _e:
                 print(f"[STRATEGY] Ошибка записи для {worker_id}: {_e}")
         
-        # Ministry: фиксируем исход
-        if _ECONOMY_ENABLED:
+        # Ministry: фиксируем исход с базовой оценкой.
+        # QA-агент пропускаем — он получит record_outcome с реальным score из feedback.json
+        # в QA-блоке ниже, чтобы не задваивать runs_total.
+        _qa_agent_id = state.get("_qa_agent", "A12")
+        if _ECONOMY_ENABLED and worker_id != _qa_agent_id:
             try:
                 from studio.economy import ledger as _ledger
                 _wcost = _ledger.agent_spent(worker_id, slot_id=_slot_id)
@@ -503,7 +559,7 @@ def process_agent_result(
                 _ministry.record_outcome(
                     agent_id=worker_id,
                     slot_id=_slot_id,
-                    score=7.0,  # базовая оценка
+                    score=7.0,  # базовая оценка, QA уточнит позже
                     cost_usd=_wcost,
                 )
             except Exception as _e:

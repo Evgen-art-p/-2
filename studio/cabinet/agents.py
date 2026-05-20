@@ -87,7 +87,7 @@ DEPT_AVATAR_MAP = {
 # is_permanent: True — НЕ показывать в аккордеоне, отдельная зона
 DEPARTMENTS = [
     {"id": "residents",    "label": "резиденты",    "prefix": "", "is_permanent": True},
-    {"id": "turbo",        "label": "turbo",        "prefix": "T"},
+    {"id": "turbo",        "label": "turbo",        "prefix": "A"},
     {"id": "video_long",   "label": "video-long",   "prefix": "A"},
     {"id": "video_shorts", "label": "video-shorts",  "prefix": "A"},
     {"id": "social_mix",   "label": "social-mix",   "prefix": "A"},

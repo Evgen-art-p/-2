@@ -422,7 +422,7 @@ class CartridgeRunner:
                     and "victor" in _hard_stop.get("residents", [])
                 ):
                     try:
-                        from studio.residents_manager import run_victor_critique
+                        from studio.workshop.residents_manager import run_victor_critique
                         print(f"[VICTOR] ⚡ Запускаю критику после {worker_id}...")
                         critique = run_victor_critique(
                             chain_data=previous_output,

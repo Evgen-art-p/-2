@@ -110,7 +110,7 @@ WORKSHOP_OPTIONS = [
 ]
 
 TURBO_ROLE_OPTIONS = [
-    "", "A01", "A02", "A03", "A04", "A05", "T1_stella"
+    "", "A01", "A02", "A03", "A04", "A05"
 ]
 
 RESIDENT_ROLE_OPTIONS = [

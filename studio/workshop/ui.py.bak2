@@ -1438,7 +1438,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         await run_cartridge_pipeline(
             from_worker=resume_from,
             with_chat_context=False
-        )
     # --- Буфер для pending-загрузок (до подтверждения категории) ---
     _pending_uploads: list = []
 

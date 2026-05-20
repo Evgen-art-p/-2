@@ -1,0 +1,107 @@
+# studio/workshop/contract_validator.py
+# Таможня Контракта — проверяет ключи my_output агента
+# против CHAIN_CONTRACT.md
+
+from __future__ import annotations
+import re
+from pathlib import Path
+from typing import Optional
+
+_DEFAULT_CONTRACT = Path("studio/modules/video_shorts/CHAIN_CONTRACT.md")
+
+# Кеш по dept — не смешиваем контракты разных цехов
+_contract_cache: dict[str, dict] = {}
+
+
+def _load_contract(dept: str = "") -> dict:
+    """Парсит CHAIN_CONTRACT.md → {agent_id: {allowed_keys}}.
+    Читает контракт своего цеха. Кешируется по dept.
+    """
+    if dept in _contract_cache:
+        return _contract_cache[dept]
+
+    rules: dict = {}
+    if dept:
+        contract_path = Path(f"studio/modules/{dept}/CHAIN_CONTRACT.md")
+    else:
+        contract_path = _DEFAULT_CONTRACT
+
+    if not contract_path.exists():
+        # Пробуем дефолт как запасной вариант
+        if contract_path != _DEFAULT_CONTRACT and _DEFAULT_CONTRACT.exists():
+            print(f"[CONTRACT] {contract_path} не найден — использую дефолт video_shorts")
+            contract_path = _DEFAULT_CONTRACT
+        else:
+            print(f"[CONTRACT] {contract_path} не найден — валидация отключена")
+            _contract_cache[dept] = rules
+            return rules
+
+    text = contract_path.read_text(encoding="utf-8")
+    row_re = re.compile(
+        r"\|\s*(A\d+[a-z]?)\s+[^|]+?\s*\|"
+        r"\s*([^|]*)\|"
+        r"\s*([^|]*)\|"
+        r"\s*[^|]*\|",
+        re.MULTILINE,
+    )
+    for m in row_re.finditer(text):
+        agent_id = m.group(1).strip()
+        keys: set = set()
+        for cell in (m.group(2), m.group(3)):
+            for kw in re.findall(r"`([^`]+)`", cell):
+                keys.add(kw.strip())
+            for kw in cell.split(","):
+                kw = kw.strip().strip("`")
+                if kw and kw not in ("—", "-", ""):
+                    keys.add(kw)
+        if keys:
+            rules[agent_id] = keys
+
+    print(f"[CONTRACT] [{dept or 'default'}] Загружено правил: {len(rules)} агентов")
+    _contract_cache[dept] = rules
+    return rules
+
+
+def validate(agent_id: str, my_output, dept: str = "") -> list:
+    if not my_output:
+        return []
+    rules = _load_contract(dept)
+    if agent_id not in rules:
+        return []
+    allowed = rules[agent_id]
+    skip = {"inherit", "next_step", "next_input", "meta"}
+    bad = set(my_output.keys()) - skip - allowed
+    if not bad:
+        return []
+    errors = []
+    for bk in sorted(bad):
+        # подсказка по общему префиксу
+        best, best_score = None, 0
+        for key in allowed:
+            common = sum(a == b for a, b in zip(bk.lower(), key.lower()))
+            score = common / max(len(bk), len(key))
+            if score > best_score and score > 0.4:
+                best_score, best = score, key
+        hint = f" (имелось в виду: `{best}`?)" if best else ""
+        errors.append(
+            f"Ключ `{bk}` запрещён Контрактом для {agent_id}.{hint} "
+            f"Разрешены: {sorted(allowed)}"
+        )
+    return errors
+
+
+def build_retry_prompt(errors: list, agent_id: str) -> str:
+    lines = [
+        "ТАМОЖНЯ КОНТРАКТА: ОШИБКА КЛЮЧЕЙ",
+        f"Агент {agent_id} использовал запрещённые ключи в my_output.",
+        "",
+        "НАРУШЕНИЯ:",
+    ]
+    for i, err in enumerate(errors, 1):
+        lines.append(f"  {i}. {err}")
+    lines += [
+        "",
+        "ИСПРАВЬ my_output: используй ТОЛЬКО разрешённые ключи.",
+        "Повтори ответ полностью с исправленным JSON.",
+    ]
+    return "\n".join(lines)

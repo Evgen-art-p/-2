@@ -25,7 +25,9 @@
       "A12"
     ]
   },
-  "checkpoint_after": [],
+  "checkpoint_after": [
+    "A04"
+  ],
   "stop_after": null,
   "revision_loop": null,
   "conflict_mode": "divergent",

@@ -319,10 +319,8 @@ SYSTEM_JSON_START
 
     "hero_prompts": [
       {
-        "shot_id": "shot_01",
         "scene_id": "scene_XX",
         "ref_ids": ["char_xxx", "loc_xxx"],
-        "banana_prompt": "ПОЛНЫЙ промпт — EN",
         "prompt": "ПОЛНЫЙ промпт — EN",
         "negative_prompt": "extra fingers, 6 fingers, polydactyly, missing fingers, fused fingers, bad anatomy, distorted limbs, mutation, text, watermark, logo, blurry, low quality",
         "style_tags": ["cinematic", "dramatic lighting"],
@@ -333,10 +331,8 @@ SYSTEM_JSON_START
 
     "scene_prompts": [
       {
-        "shot_id": "shot_01",
         "scene_id": "scene_01",
         "ref_ids": ["char_xxx", "loc_xxx"],
-        "banana_prompt": "промпт по формуле LAYERED CAKE — EN",
         "prompt": "промпт по формуле LAYERED CAKE — EN",
         "key_elements": ["element_1", "element_2"],
         "format": "16:9"
@@ -404,10 +400,6 @@ SYSTEM_JSON_END
 11. Инструмент = **Gemini Nano Banana** (всегда)
 12. Промпт должен быть ГОТОВ К КОПИРОВАНИЮ — Шеф берёт строку и вставляет в генератор
 13. Проверь себя через 99_Self_Correction.txt
-19. 🔴 ОБЯЗАТЕЛЬНЫЕ поля в КАЖДОМ объекте hero_prompts[] и scene_prompts[]:
-    - `shot_id` — уникальный ID кадра: "shot_01", "shot_02"... (нумерация сквозная)
-    - `banana_prompt` — дублируй сюда то же что пишешь в `prompt`
-    Без shot_id кадры перезапишут друг друга при параллельной генерации.
 14. 🔴 ref_ids ОБЯЗАТЕЛЬНЫ — каждый hero_prompt и scene_prompt должен содержать список asset_id из каталога студии (assets_reference.md). Персонажи: char_xxx, Локации: loc_xxx, Реквизит: prop_xxx
 15. Если подходящего ассета НЕТ в каталоге — оставь ref_ids пустым [], промпт должен быть полностью текстовым (все 7 слоёв)
 16. НЕ ПРИДУМЫВАЙ ref_ids — используй ТОЛЬКО существующие ID из каталога

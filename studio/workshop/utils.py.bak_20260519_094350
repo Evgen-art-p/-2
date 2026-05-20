@@ -116,28 +116,13 @@ def _validate_asset_ids(meta: dict, worker_id: str) -> list[str]:
         for item in selected.get(cat, []):
             _check_ids([item.get("id")], f"selected_assets.{cat}")
 
-    # key_frames (Визор / Финализатор — другие цеха)
+    # key_frames (Визор / Финализатор)
     for src in [my_output, deliverables]:
         for frame in src.get("key_frames", []):
             if isinstance(frame, dict):
                 _check_ids(frame.get("ref_ids", []), f"key_frames[{frame.get('segment','')}]")
 
-    # PATCH audit-sprint19 [8]: video_long — eva_visuals.frames + felix_vfx.video_clips
-    eva = my_output.get("eva_visuals", {})
-    if isinstance(eva, dict):
-        for frame in eva.get("frames", []):
-            if isinstance(frame, dict):
-                _check_ids(frame.get("ref_ids", []),
-                           f"eva_visuals.frames[{frame.get('frame_id', '')}]")
-
-    felix = my_output.get("felix_vfx", {})
-    if isinstance(felix, dict):
-        for clip in felix.get("video_clips", []):
-            if isinstance(clip, dict):
-                _check_ids(clip.get("ref_ids", []),
-                           f"felix_vfx.video_clips[{clip.get('frame_id', '')}]")
-
-    # veo3_prompts (другие цеха)
+    # veo3_prompts
     for src in [my_output, deliverables]:
         for clip in src.get("veo3_prompts", []):
             if isinstance(clip, dict):

@@ -110,6 +110,22 @@ class NiceGUICallbacks(PipelineCallbacks):
         with self._client:
             ui.notify(f"🔁 {worker_id} retry: {reason}", type="warning")
 
+    # ── Виктор ───────────────────────────────────────────
+
+    async def on_victor_ready(self, slot_id: str, critique: dict):
+        """Виктор завершил критику — активируем пузырёк в UI."""
+        with self._client:
+            self.state["victor_ready"] = True
+            self.state["victor_critique"] = critique
+            victor_el = self.avatars_ref["elements"].get("VICTOR")
+            if victor_el:
+                victor_el.classes(add="victor-ready")
+            ui.notify(
+                "⚡ Виктор готов — посмотри критику",
+                type="warning",
+                timeout=6000,
+            )
+
     # ── Viewer ────────────────────────────────────────────
 
     async def on_viewer_update(self, slot_id: str, worker_id: str, content: str):

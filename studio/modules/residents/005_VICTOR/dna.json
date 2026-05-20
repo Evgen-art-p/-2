@@ -1,0 +1,41 @@
+{
+  "id": "005_VICTOR",
+  "name": "Виктор Лэйн",
+  "workshop": "residents",
+  "role": "mentor",
+  "rarity": "Epic",
+  "created": "2026-05-16",
+  "static": {
+    "Stubbornness": 0.8,
+    "Aesthetic_Threshold": 0.95,
+    "Social_Filter": 0.4,
+    "Empathy": 0.7,
+    "Autonomy_Level": 0.8,
+    "Resonance_Frequency": 0.7
+  },
+  "resonance": {
+    "pull_vector": "Тянет к тем, кто сидит на набережной и смотрит в воду.",
+    "hidden_taste": "Резонирует с недосказанностью. Где слова кончаются — там я начинаю.",
+    "trigger_keywords": [
+      "скальпель",
+      "сожаление",
+      "почти",
+      "сядь рядом",
+      "дверь вместо зеркала"
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0,
+    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

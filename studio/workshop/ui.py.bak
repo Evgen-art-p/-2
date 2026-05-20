@@ -6,7 +6,6 @@ import asyncio
 import re
 import shutil
 from studio.llm import chat, chat_with_images
-from studio.knowledge import load_all_knowledge
 from studio.config import KNOWLEDGE_DIR, BASE_DIR
 from studio.modules_registry import (
     CURRENT_DEPT, get_worker_prompt, get_worker_info,
@@ -50,6 +49,11 @@ from studio.workshop.assets import (
 )
 from studio.workshop.ref_indexer import convert_to_png, index_asset
 from studio.cartridge import CartridgeManifest, CartridgeRunner
+from studio.residents_manager import (
+    get_set_system_prompt,
+    build_set_context,
+    detect_run_type_from_brief,
+)
 from studio.workshop.nicegui_callbacks import NiceGUICallbacks
 
 # --- Грондхейм: память города ---
@@ -253,7 +257,7 @@ PIPELINE_MODES = {
 DEPT_TO_RUNTYPE = {
     "social_mix":   "social",
     "video_long":   "full",
-    "video_short":  "social",
+    "video_shorts": "social",
     "web_story":    "web_story",
     "market_hit":   "social",
     "logo_design":  "pre_prod",
@@ -266,7 +270,7 @@ DEPT_TO_RUNTYPE = {
 DEPT_LABELS = {
     "social_mix":   "🗓️ Соцсети",
     "video_long":   "🎥 Видео Long",
-    "video_short":  "⚡ Видео Shorts",
+    "video_shorts": "⚡ Видео Shorts",
     "web_story":    "🌐 Web Story",
     "market_hit":   "🛒 Маркетплейсы",
     "logo_design":  "🧩 Логотипы",
@@ -301,7 +305,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             "style": "Stylized 3D Realism",
         },
         "file_processor": None,
-        "knowledge": "",
         "set_system": "",
         "viewer_content": "",
         # --- Клиент ---
@@ -313,6 +316,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         "paused_at": None,        # worker_id где остановились
         "paused_output": "",      # previous_output для продолжения
         "paused_context": {},     # сохранённый контекст
+        # ── Виктор ──
+        "victor_ready": False,    # True когда Виктор отработал на ХАРД-СТОПе
+        "victor_critique": None,  # dict с критикой от Виктора
     }
 
     global _current_state
@@ -321,28 +327,15 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     # project_dir — будет создан при запуске пайплайна
     state["project_dir"] = None
     state["file_processor"] = None
-    state["knowledge"] = load_all_knowledge(KNOWLEDGE_DIR)
 
 
     
-    # Загружаем промт SET
-    from pathlib import Path as _P
-    _set_core = ""
-    _set_dept = ""
-    _core_path = _P("knowledge") / "set_core.md"
-    _dept_path = _P("knowledge") / f"set_{dept}.md"
-    if _core_path.exists():
-        _set_core = _core_path.read_text(encoding="utf-8")
-    if _dept_path.exists():
-        _set_dept = _dept_path.read_text(encoding="utf-8")
-    _dept_header = f"""
-    === ТЕКУЩИЙ ЦЕХ ===
-    Цех: {dept}
-    Режим: {state['run_type']}
-    Формат: {state['settings']['format']}
-    Стиль: {state['settings']['style']}
-    """
-    state["set_system"] = _set_core + "\n\n" + _set_dept + "\n" + _dept_header + "\nБАЗА ЗНАНИЙ:\n" + state["knowledge"]
+    # Загружаем промпт SET через Менеджер
+    state["set_system"] = get_set_system_prompt(
+        dept=dept,
+        run_type=state["run_type"],
+        settings=state["settings"],
+    )
 
     # Refs
     chat_log_ref = {'element': None}
@@ -358,6 +351,102 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     import studio.modules_registry as _mr; _mr.CURRENT_DEPT = dept
     
     ui.add_head_html(f'<style>{IDENTITY_BUREAU_CSS}</style>')
+
+    # ── CSS Виктора ──
+    ui.add_head_html("""<style>
+    .avatar-victor {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 200, 50, 0.55);
+        background: rgba(255, 180, 0, 0.10);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        opacity: 0.75;
+        transition: all 0.3s ease;
+        font-size: 10px;
+        color: rgba(255, 210, 80, 0.9);
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        flex-shrink: 0;
+        user-select: none;
+    }
+    .avatar-victor:hover {
+        opacity: 1.0;
+        border-color: rgba(255, 200, 50, 0.85);
+        background: rgba(255, 180, 0, 0.18);
+    }
+    .avatar-victor.victor-ready {
+        border-color: rgba(255, 180, 0, 0.85);
+        background: rgba(255, 180, 0, 0.12);
+        opacity: 1;
+        cursor: pointer;
+        color: rgba(255, 200, 50, 0.95);
+        box-shadow: 0 0 12px rgba(255, 180, 0, 0.3);
+        animation: victor-pulse 2s ease-in-out infinite;
+    }
+    .avatar-victor.victor-ready:hover {
+        background: rgba(255, 180, 0, 0.22);
+        box-shadow: 0 0 20px rgba(255, 180, 0, 0.5);
+        transform: scale(1.08);
+    }
+    @keyframes victor-pulse {
+        0%, 100% { box-shadow: 0 0 12px rgba(255, 180, 0, 0.3); }
+        50%       { box-shadow: 0 0 22px rgba(255, 180, 0, 0.6); }
+    }
+    .victor-critique-panel {
+        background: rgba(255, 180, 0, 0.04);
+        border: 1px solid rgba(255, 180, 0, 0.2);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+    }
+    .victor-critique-title {
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        color: rgba(255, 180, 0, 0.6);
+        font-weight: 700;
+        margin-bottom: 14px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .victor-verdict {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        margin-bottom: 14px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .victor-verdict.approved      { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+    .victor-verdict.concerns       { background: rgba(255,180,0,0.12); color: #ffb400; border: 1px solid rgba(255,180,0,0.3); }
+    .victor-verdict.rework         { background: rgba(255,80,80,0.12); color: #ff5050; border: 1px solid rgba(255,80,80,0.3); }
+    .victor-section-label {
+        font-size: 0.62rem;
+        color: rgba(255,255,255,0.3);
+        letter-spacing: 0.12em;
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 6px;
+        margin-top: 12px;
+    }
+    .victor-section-text {
+        color: rgba(220,225,240,0.85);
+        font-size: 0.82rem;
+        line-height: 1.6;
+    }
+    .victor-question {
+        background: rgba(255,180,0,0.06);
+        border-left: 3px solid rgba(255,180,0,0.4);
+        padding: 10px 14px;
+        border-radius: 0 8px 8px 0;
+        color: rgba(255,200,80,0.9);
+        font-size: 0.82rem;
+        font-style: italic;
+        margin-top: 12px;
+        line-height: 1.5;
+    }
+    </style>""")
+
 
     # ── ANTI-STRETCH: JS фиксатор layout ──
     ui.add_head_html("""<script>
@@ -942,7 +1031,110 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             update_viewer(f"# {label} ({worker_id})\n\n*Отчёт пока не создан. Запустите пайплайн или напишите агенту напрямую.*")
         
         ui.notify(f'Switched to {worker_id}', type='info')
-    
+
+    def switch_worker_victor():
+        """Клик на пузырёк Виктора — показывает его критику в viewer и аватар."""
+        state["active_worker"] = "VICTOR"
+        update_avatar_states()
+
+        # Аватар Виктора в правой панели
+        if status_ref['element']:
+            try:
+                status_ref['element'].clear()
+            except Exception:
+                return
+            with status_ref['element']:
+                ui.html(f'''
+                    <div style="position: relative; width: 100%; height: 100%; min-height: 200px;">
+                        <img src="/static/avatars/residents/VICTOR.png"
+                            style="width: 100%; height: 100%; object-fit: cover;
+                                    border-radius: 12px; opacity: 0.85;"
+                            onerror="this.style.background='rgba(255,180,0,0.08)'; this.style.display='flex';">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0;
+                                    padding: 15px; background: linear-gradient(transparent, rgba(0,0,0,0.85));
+                                    border-radius: 0 0 12px 12px;">
+                            <div style="font-size: 0.65rem; color: rgba(255,180,0,0.6); letter-spacing: 0.15em;">РЕЗИДЕНТ-КРИТИК</div>
+                            <div style="font-size: 1.3rem; font-weight: 700; color: #ffb400;">VICTOR</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.8);">Второй взгляд</div>
+                        </div>
+                    </div>
+                ''')
+
+        # Критика в viewer
+        critique = state.get("victor_critique") or {}
+        if isinstance(critique, dict):
+            _render_victor_critique(critique)
+        else:
+            update_viewer(f"# ⚡ ВИКТОР\n\n{critique}")
+
+    def _render_victor_critique(critique: dict):
+        """Рендерит victor_critique как красивый markdown в viewer."""
+        verdict_raw = critique.get("verdict", "")
+        strong = critique.get("strong_points", [])
+        blind  = critique.get("blind_spots", [])
+        question = critique.get("critical_question", "")
+        recommendation = critique.get("recommendation", "")
+
+        # Цвет вердикта
+        verdict_map = {
+            "APPROVED": ("approved", "✅ APPROVED"),
+            "APPROVED_WITH_CONCERNS": ("concerns", "⚠️ APPROVED WITH CONCERNS"),
+            "NEEDS_REWORK": ("rework", "❌ NEEDS REWORK"),
+        }
+        verdict_cls, verdict_label = verdict_map.get(
+            verdict_raw, ("concerns", verdict_raw or "—")
+        )
+
+        strong_md = "\n".join(f"- {s}" for s in strong) if strong else "—"
+        blind_md  = "\n".join(f"- {b}" for b in blind)  if blind  else "—"
+
+        md = f"""# ⚡ ВИКТОР — КРИТИКА
+
+<div class="victor-critique-panel">
+<div class="victor-critique-title">РЕЗИДЕНТ-КРИТИК · ВТОРОЙ ВЗГЛЯД</div>
+<div class="victor-verdict {verdict_cls}">{verdict_label}</div>
+
+<div class="victor-section-label">СИЛЬНЫЕ СТОРОНЫ</div>
+<div class="victor-section-text">
+
+{strong_md}
+
+</div>
+
+<div class="victor-section-label">СЛЕПЫЕ ПЯТНА</div>
+<div class="victor-section-text">
+
+{blind_md}
+
+</div>
+
+<div class="victor-question">
+❓ {question or "—"}
+</div>
+
+<div class="victor-section-label">РЕКОМЕНДАЦИЯ</div>
+<div class="victor-section-text">{recommendation or "—"}</div>
+</div>
+
+> Вердикт Виктора — мнение. Финальное решение за тобой.
+"""
+        update_viewer(md)
+
+    def update_victor_bubble():
+        """Активирует пузырёк Виктора когда state['victor_ready'] == True.
+        Вызывать из pipeline после того как Виктор отработал.
+        """
+        el = avatars_ref['elements'].get('VICTOR')
+        if not el:
+            return
+        if state.get("victor_ready"):
+            el.classes(remove='avatar-victor')
+            el.classes(add='avatar-victor victor-ready')
+            ui.notify('⚡ Виктор готов — посмотри критику', type='warning', timeout=4000)
+        else:
+            el.classes(remove='victor-ready')
+
+
     async def send_message():
         if not input_ref['element']:
             return
@@ -961,17 +1153,12 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         
         try:
             if worker_id == "SET":
-                # Обновляем настройки в system prompt (актуальные значения)
-                _live_settings = (
-                    f"\n\n=== АКТУАЛЬНЫЕ НАСТРОЙКИ ===\n"
-                    f"Цех: {state['active_dept']}\n"
-                    f"Режим: {state['run_type']}\n"
-                    f"Формат: {state['settings']['format']}\n"
-                    f"Длительность: {state['settings']['duration']} сек\n"
-                    f"Стиль: {state['settings']['style']}\n"
+                system = build_set_context(
+                    dept=state["active_dept"],
+                    run_type=state["run_type"],
+                    settings=state["settings"],
                 )
-                system = state["set_system"] + _live_settings
-                knowledge = state["knowledge"]
+                knowledge = ""
             else:
                 system = get_worker_prompt(worker_id, state.get("active_dept", ""))
                 knowledge = get_worker_knowledge(worker_id, state.get("active_dept", ""))
@@ -1097,31 +1284,31 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             brief = await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: chat(
-                    state["set_system"], 
-                    f"Собери MASTER BRIEF на основе диалога:{client_info_ctx}\n\n{context}", 
-                    state["knowledge"]
+                    build_set_context(
+                        dept=state["active_dept"],
+                        run_type=state["run_type"],
+                        settings=state["settings"],
+                    ),
+                    f"Собери MASTER BRIEF на основе диалога:{client_info_ctx}\n\n{context}",
+                    ""  # без knowledge
                 )
             )
             
             state["master_brief"] = brief
 
             # ═══ SET AUTO-MODE: контент-план или производство ═══
-            brief_lower = brief.lower()
-            if any(marker in brief_lower for marker in [
-                "content_plan", "контент-план", "режим: plan",
-                "тип задачи: content_plan"
-            ]):
-                if state["run_type"] != "content_plan":
-                    state["run_type"] = "content_plan"
-                    print(f"[SET] Переключил режим → content_plan")
-                    ui.notify("📝 SET: режим КОНТЕНТ-ПЛАН (A01-A04)", type="info", timeout=5000)
-            else:
-                # Обычный бриф — вернуть режим цеха по умолчанию
-                dept = state.get("active_dept", "social_mix")
-                default_type = DEPT_TO_RUNTYPE.get(dept, "social")
-                if state["run_type"] != default_type:
-                    state["run_type"] = default_type
-                    print(f"[SET] Вернул режим → {default_type}")
+            dept = state.get("active_dept", "social_mix")
+            default_type = DEPT_TO_RUNTYPE.get(dept, "social")
+            new_run_type = detect_run_type_from_brief(
+                brief=brief,
+                dept=dept,
+                default_run_type=default_type,
+            )
+            if state["run_type"] != new_run_type:
+                state["run_type"] = new_run_type
+                mode_label = "КОНТЕНТ-ПЛАН (A01-A04)" if new_run_type == "content_plan" else new_run_type
+                print(f"[SET] Режим → {new_run_type}")
+                ui.notify(f"📝 SET: режим {mode_label}", type="info", timeout=5000)
             # ═════════════════════════════════════════════════════
 
             update_viewer(f"# MASTER BRIEF\n\n{brief}")
@@ -3002,8 +3189,20 @@ Style: {state['settings']['style']}
         
         # ─── HEADER ──────────────────────────────────────
         with ui.element('div').classes('area-header'):
-            with ui.element('div').classes('glass squad-deck').style('display:flex; align-items:center; justify-content:center; width:100%; gap:8px;'):
-                with ui.element('div').style('display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;'):
+            with ui.element('div').classes('glass squad-deck').style(
+                'display:flex; align-items:center; width:100%; gap:8px; padding:0 8px; position:relative;'
+            ):
+                # ── Заглушка слева — симметрия с Виктором справа ──
+                _victor_depts = ["video_long", "video_shorts"]
+                _has_victor = dept in _victor_depts
+                if _has_victor:
+                    ui.element('div').style('width:38px; flex-shrink:0;')
+
+                # ── Агенты — центр ──
+                with ui.element('div').style(
+                    'display:flex; align-items:center; gap:6px; flex-wrap:wrap; '
+                    'justify-content:center; flex:1;'
+                ):
                     _avatar_list = ALL_TURBO if is_turbo else ALL_WORKERS
                     for worker_id in _avatar_list:
                         avatar = ui.element('div').classes(f'avatar {"active" if worker_id == "SET" else ""}')
@@ -3011,6 +3210,14 @@ Style: {state['settings']['style']}
                         with avatar:
                             ui.label(worker_id).style('font-size: 10px')
                         avatars_ref['elements'][worker_id] = avatar
+
+                # ── Виктор — правый угол ──
+                if _has_victor:
+                    _victor_el = ui.element('div').classes('avatar-victor').style('flex-shrink:0;')
+                    _victor_el.on('click', lambda e, v='VICTOR': switch_worker_victor())
+                    with _victor_el:
+                        ui.label('⚡V').style('font-size:10px;')
+                    avatars_ref['elements']['VICTOR'] = _victor_el
 
                 # Тоггл режима — только для цеха соцсетей
                 if dept == 'social_mix':

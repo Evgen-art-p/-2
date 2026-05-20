@@ -1,6 +1,6 @@
 # studio/modules/turbo/hooks.py
 # Студия «Шесть Пальцев» · 2026
-# v3.2 — A03 генерит кадры, A05 генерит обложки. A-нотация везде.
+# v3.1 — T3 генерит кадры, T5 генерит обложки.
 #         Gemini-проверка качества + до 5 ретраев на каждую картинку.
 
 import json
@@ -29,10 +29,10 @@ def on_before_agent(state: dict, worker_id: str, context: str) -> str:
 
 
 def on_after_agent(state: dict, worker_id: str, human_text: str, meta: dict) -> dict:
-    if worker_id == "A03":
-        _a03_generate_keyframes(state, human_text)
-    elif worker_id == "A05":
-        _a05_generate_thumbnails_and_deliverables(state, human_text)
+    if worker_id == "T3":
+        _t3_generate_keyframes(state, human_text)
+    elif worker_id == "T5":
+        _t5_generate_thumbnails_and_deliverables(state, human_text)
     return {}
 
 
@@ -150,16 +150,16 @@ def _generate_with_retries(
 # T3 — КЛЮЧЕВЫЕ КАДРЫ
 # ============================================================
 
-def _a03_generate_keyframes(state: dict, human_text: str):
+def _t3_generate_keyframes(state: dict, human_text: str):
     """
-    Парсит JSON из ответа A03.
+    Парсит JSON из ответа T3.
     Для каждого key_frame: генерирует, проверяет качество, ретраи.
     Записывает пути в key_frames[].path.
     Пишет vizor_visual в chain_data (только свой ключ).
     """
     data = _parse_json(human_text)
     if not data:
-        print("[A03] JSON не найден — пропускаю генерацию кадров")
+        print("[T3] JSON не найден — пропускаю генерацию кадров")
         return
 
     my_output    = data.get("my_output", data)
@@ -167,7 +167,7 @@ def _a03_generate_keyframes(state: dict, human_text: str):
     frames       = vizor_visual.get("key_frames", [])
 
     if not frames:
-        print("[A03] key_frames пуст — пропускаю генерацию")
+        print("[T3] key_frames пуст — пропускаю генерацию")
         return
 
     project_id  = _get_project_id(state)
@@ -181,7 +181,7 @@ def _a03_generate_keyframes(state: dict, human_text: str):
     for i, frame in enumerate(frames):
         prompt = frame.get("banana_prompt") or frame.get("prompt", "")
         if not prompt:
-            print(f"[A03] Кадр {i+1}/{total}: нет banana_prompt — пропускаю")
+            print(f"[T3] Кадр {i+1}/{total}: нет banana_prompt — пропускаю")
             frame["path"] = None
             continue
 
@@ -192,17 +192,17 @@ def _a03_generate_keyframes(state: dict, human_text: str):
         filename_base = f"frame_{i+1:02d}_{segment}_{purpose}"
         dest          = project_dir / f"{filename_base}.png"
 
-        print(f"\n[A03] 🎬 Кадр {i+1}/{total}: {filename_base}")
-        print(f"[A03]   Промпт: {prompt[:80]}...")
+        print(f"\n[T3] 🎬 Кадр {i+1}/{total}: {filename_base}")
+        print(f"[T3]   Промпт: {prompt[:80]}...")
         if ref_ids:
-            print(f"[A03]   Референсы: {ref_ids}")
+            print(f"[T3]   Референсы: {ref_ids}")
 
         path, score, quality = _generate_with_retries(
             prompt=prompt,
             ref_ids=ref_ids,
             filename_base=filename_base,
             dest=dest,
-            agent_id="A03",
+            agent_id="T3",
             slot_id=slot_id,
         )
 
@@ -212,11 +212,11 @@ def _a03_generate_keyframes(state: dict, human_text: str):
 
         if path:
             generated += 1
-            print(f"[A03] 💾 {dest} | score={score} | {quality}")
+            print(f"[T3] 💾 {dest} | score={score} | {quality}")
         else:
-            print(f"[A03] ⚠️ Кадр {i+1} не сгенерирован после {MAX_ATTEMPTS} попыток")
+            print(f"[T3] ⚠️ Кадр {i+1} не сгенерирован после {MAX_ATTEMPTS} попыток")
 
-    print(f"\n[A03] Итого: {generated}/{total} кадров сгенерировано")
+    print(f"\n[T3] Итого: {generated}/{total} кадров сгенерировано")
 
     # Пишем только vizor_visual — остальной chain_data не трогаем
     vizor_visual["key_frames"] = frames
@@ -227,24 +227,24 @@ def _a03_generate_keyframes(state: dict, human_text: str):
 # T5 — ОБЛОЖКИ + СБОРКА DELIVERABLES
 # ============================================================
 
-def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
+def _t5_generate_thumbnails_and_deliverables(state: dict, human_text: str):
     """
-    Парсит JSON из ответа A05.
+    Парсит JSON из ответа T5.
     Генерирует variant_a и variant_b с проверкой качества и ретраями.
-    Читает пути кадров из chain_data["vizor_visual"] (записанного A03).
+    Читает пути кадров из chain_data["vizor_visual"] (записанного T3).
     Собирает deliverables с готовыми путями.
     Пишет tasks[] для Assembly.
     """
     data = _parse_json(human_text)
     if not data:
-        print("[A05] JSON не найден — пропускаю генерацию обложек")
+        print("[T5] JSON не найден — пропускаю генерацию обложек")
         return
 
     my_output = data.get("my_output", data)
     thumb     = my_output.get("thumbnail", {})
 
     if not thumb:
-        print("[A05] thumbnail не найден — пропускаю генерацию обложек")
+        print("[T5] thumbnail не найден — пропускаю генерацию обложек")
 
     project_id  = _get_project_id(state)
     project_dir = OUTPUT_DIR / project_id
@@ -260,23 +260,23 @@ def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
 
         prompt = variant.get("banana_prompt") or variant.get("prompt", "")
         if not prompt:
-            print(f"[A05] {variant_name}: нет banana_prompt — пропускаю")
+            print(f"[T5] {variant_name}: нет banana_prompt — пропускаю")
             continue
 
         ref_ids = _norm_refs(variant.get("ref_ids", []))
         dest    = project_dir / f"thumb_{variant_name}.png"
 
-        print(f"\n[A05] 🖼️ Обложка: {variant_name}")
-        print(f"[A05]   Промпт: {prompt[:80]}...")
+        print(f"\n[T5] 🖼️ Обложка: {variant_name}")
+        print(f"[T5]   Промпт: {prompt[:80]}...")
         if ref_ids:
-            print(f"[A05]   Референсы: {ref_ids}")
+            print(f"[T5]   Референсы: {ref_ids}")
 
         path, score, quality = _generate_with_retries(
             prompt=prompt,
             ref_ids=ref_ids,
             filename_base=f"thumb_{variant_name}",
             dest=dest,
-            agent_id="A05",
+            agent_id="T5",
             slot_id=slot_id,
         )
 
@@ -286,11 +286,11 @@ def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
 
         if path:
             generated += 1
-            print(f"[A05] 💾 {dest} | score={score} | {quality}")
+            print(f"[T5] 💾 {dest} | score={score} | {quality}")
         else:
-            print(f"[A05] ⚠️ {variant_name} не сгенерирован после {MAX_ATTEMPTS} попыток")
+            print(f"[T5] ⚠️ {variant_name} не сгенерирован после {MAX_ATTEMPTS} попыток")
 
-    print(f"\n[A05] Обложки: {generated}/2 сгенерировано")
+    print(f"\n[T5] Обложки: {generated}/2 сгенерировано")
 
     # ── Кадры от T3 — читаем из chain_data["vizor_visual"] ──
     chain        = state.get("chain_data") or state.get("shared_data") or {}
@@ -298,7 +298,7 @@ def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
     vizor_frames = vizor_visual.get("key_frames", []) if isinstance(vizor_visual, dict) else []
 
     if not vizor_frames:
-        print("[A05] ⚠️ vizor_visual.key_frames пуст — пути к кадрам отсутствуют")
+        print("[T5] ⚠️ vizor_visual.key_frames пуст — пути к кадрам отсутствуют")
 
     # ── Сборка deliverables ──────────────────────────────────
     deliverables = my_output.get("deliverables") or {}
@@ -352,7 +352,7 @@ def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
         "ready_to_publish" if (ready_frames and ready_thumbs) else "incomplete"
     )
 
-    print(f"[A05] deliverables: {ready_frames}/{len(deliverables['key_frames'])} кадров, "
+    print(f"[T5] deliverables: {ready_frames}/{len(deliverables['key_frames'])} кадров, "
           f"{ready_thumbs}/2 обложек | status={deliverables['status']}")
 
     # ── tasks[] для Assembly ─────────────────────────────────
@@ -417,8 +417,7 @@ def _get_project_id(state: dict) -> str:
     chain = state.get("chain_data") or state.get("shared_data") or {}
     return (
         chain.get("project_id")
-        or chain.get("stella_strategy", {}).get("project_id", "")  # имя персонажа
-        or chain.get("a01_strategy",    {}).get("project_id", "")  # fallback по worker_id
+        or chain.get("stella_strategy", {}).get("project_id", "")
         or "turbo_unknown"
     )
 

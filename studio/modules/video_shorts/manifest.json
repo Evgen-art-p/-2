@@ -25,24 +25,13 @@
       "A12"
     ]
   },
-  "checkpoint_after": [],
+  "checkpoint_after": [
+    "A04"
+  ],
   "stop_after": null,
   "revision_loop": null,
-  "turbo_workers": [
-    "A01",
-    "A02",
-    "A03",
-    "A04",
-    "A05"
-  ],
-  "turbo_parallel": [
-    [
-      "A02",
-      "A03"
-    ]
-  ],
   "conflict_mode": "divergent",
-  "qa_agent": "A05",
+  "qa_agent": "A12",
   "interaction_log": "economy/data/interaction_log_video_shorts.jsonl",
   "memory_layers": [
     "personal",

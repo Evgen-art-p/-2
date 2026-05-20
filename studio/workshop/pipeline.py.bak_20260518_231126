@@ -431,8 +431,7 @@ async def process_agent_result(
 
     # ══ Таможня Контракта + Auto-Retry ══
     if _CONTRACT_ENABLED:
-        _cerrs = _contract_validate(worker_id, meta.get("my_output"),
-                                    dept=state.get("active_dept", ""))
+        _cerrs = _contract_validate(worker_id, meta.get("my_output"))
         if _cerrs:
             for _ce in _cerrs:
                 print(f"[CONTRACT] ❌ {worker_id}: {_ce}")
@@ -442,8 +441,7 @@ async def process_agent_result(
             _retry_ctx += "\n\n" + _contract_retry_prompt(_cerrs, worker_id)
             try:
                 _r_human, _r_meta, _r_raw = await call_agent(state, worker_id, _retry_ctx)
-                if not _contract_validate(worker_id, _r_meta.get("my_output"),
-                                          dept=state.get("active_dept", "")):  # PATCH audit-sprint19 [2]
+                if not _contract_validate(worker_id, _r_meta.get("my_output")):
                     human_text, meta, raw_result = _r_human, _r_meta, _r_raw
                     state["_contract_violations"].pop(worker_id, None)
                     print(f"[CONTRACT] ✅ {worker_id}: ретрай успешен")
@@ -505,9 +503,8 @@ async def process_agent_result(
         if prev_agents:
             last_agent = prev_agents[-1]
             _my_out = meta.get("my_output", {}) or {}
-            # compatibility_snapshot — вложен в felix_vfx согласно CHAIN_CONTRACT
-            # PATCH audit-sprint19 [3]: был .get("compatibility_snapshot") на корне my_output
-            _compat = _my_out.get("felix_vfx", {}).get("compatibility_snapshot") \
+            # compatibility_snapshot — агент A08 любого цеха пишет его напрямую в my_output
+            _compat = _my_out.get("compatibility_snapshot") \
                 if worker_id == "A08" else None
             # final_dna — финализатор любого цеха (всегда A12 по стандарту qa_agent)
             _outcome = _my_out.get("final_dna") \

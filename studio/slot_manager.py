@@ -292,6 +292,21 @@ class SlotManager:
 
         print(f"[SLOTS] Инициализирована память: {slot.slot_id} ({len(manifest.get_all_agents())} агентов)")
 
+        # ── 4-й слой: лог взаимодействий для экономики ──
+        self._ensure_economy_log(slot.slot_id)
+
+    # ── Economy log ────────────────────────────────────────
+
+    def _ensure_economy_log(self, slot_id: str):
+        """Создаёт пустой interaction_log_{slot_id}.jsonl.
+        Не перезаписывает если уже существует."""
+        log_dir = Path("studio/economy/data")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / f"interaction_log_{slot_id}.jsonl"
+        if not log_path.exists():
+            log_path.touch()
+            print(f"[SLOTS] Создан лог: {log_path}")
+
     # ── Статистика ─────────────────────────────────────────
 
     def count_agents(self) -> int:

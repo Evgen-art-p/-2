@@ -413,33 +413,34 @@ class CartridgeRunner:
                     f"# {label} ({worker_id})\n\n{human_text}"
                 )
 
-                # ── Виктор на ХАРД-СТОПе (независимо от checkpoint_after) ──
-                # PATCH audit-sprint19 [1]: вынесен из-под checkpoint_after.
-                # hard_stop — отдельный механизм, checkpoint_after — отдельный.
-                _hard_stop = self.manifest.hard_stop
-                if (
-                    _hard_stop.get("after_agent") == worker_id
-                    and "victor" in _hard_stop.get("residents", [])
-                ):
-                    try:
-                        from studio.residents_manager import run_victor_critique
-                        print(f"[VICTOR] ⚡ Запускаю критику после {worker_id}...")
-                        critique = run_victor_critique(
-                            chain_data=previous_output,
-                            dept=self.slot_id,
-                        )
-                        self.state["victor_critique"] = critique
-                        self.state["victor_ready"] = True
-                        await self.callbacks.on_victor_ready(
-                            self.slot_id, critique
-                        )
-                        print(f"[VICTOR] ✅ Вердикт: {critique.get('verdict', '?')}")
-                    except Exception as _ve:
-                        print(f"[VICTOR] ❌ Ошибка: {_ve}")
-                # ── END Виктор ──
-
                 # Checkpoint?
                 if worker_id in self.manifest.checkpoint_after:
+
+                    # ── Виктор на ХАРД-СТОПе ──
+                    # Активируется для ЛЮБОГО цеха у которого в manifest.hard_stop.residents есть "victor"
+                    _hard_stop = self.manifest.hard_stop
+                    _is_hard_stop_agent = (
+                        _hard_stop.get("after_agent") == worker_id
+                        and "victor" in _hard_stop.get("residents", [])
+                    )
+                    if _is_hard_stop_agent:
+                        try:
+                            from studio.workshop.residents_manager import run_victor_critique
+                            print(f"[VICTOR] ⚡ Запускаю критику после {worker_id}...")
+                            critique = run_victor_critique(
+                                chain_data=previous_output,
+                                dept=self.slot_id,
+                            )
+                            self.state["victor_critique"] = critique
+                            self.state["victor_ready"] = True
+                            # Активируем пузырёк в UI
+                            await self.callbacks.on_victor_ready(
+                                self.slot_id, critique
+                            )
+                            print(f"[VICTOR] ✅ Вердикт: {critique.get('verdict', '?')}")
+                        except Exception as _ve:
+                            print(f"[VICTOR] ❌ Ошибка: {_ve}")
+                    # ── END Виктор ──
 
                     should_continue = await self.callbacks.on_checkpoint(
                         self.slot_id, worker_id, label
@@ -475,14 +476,11 @@ class CartridgeRunner:
             print(f"[CARTRIDGE] Ошибка суммаризации: {e}")
 
         # Этап 8 — Culture Formation
-        # update_slot_field уже вызывается в hooks.py финализатором (A12) для цехов с hooks.
-        # Для цехов без hooks.py (turbo, legacy) — вызываем здесь.
-        if not self._hooks:
-            try:
-                from studio.culture.field_tracker import CulturalFieldTracker
-                CulturalFieldTracker().update_slot_field(self.slot_id)
-            except Exception as e:
-                print(f"[CULTURE] Ошибка field_tracker: {e}")
+        try:
+            from studio.culture.field_tracker import CulturalFieldTracker
+            CulturalFieldTracker().update_slot_field(self.slot_id)
+        except Exception as e:
+            print(f"[CULTURE] Ошибка field_tracker: {e}")  
 
     async def run_turbo(self):
         """Запуск TURBO-режима: короткий пайплайн с параллелизмом.

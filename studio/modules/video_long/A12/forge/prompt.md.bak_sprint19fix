@@ -313,10 +313,24 @@
   },
 
   "history_dna": {
-    "project_completed": true,
-    "quality_verdict": "BLOCKBUSTER / SOLID / NEEDS_WORK / FLOP",
-    "team_notes": "общая оценка работы команды",
-    "learnings": ["урок 1", "урок 2"]
+    "mode": "EPISODE",
+    "narrative_entry": "краткое резюме проекта — 1-2 предложения для памяти студии",
+    "learnings_pack": {
+      "what_worked": ["что сработало 1", "что сработало 2"],
+      "what_failed": ["что не сработало"],
+      "next_time": "главный совет для следующего проекта этого клиента"
+    },
+    "client_relationship": {
+      "trust": "growing / stable / fragile",
+      "creative_freedom": "high / medium / low",
+      "communication_style": "formal / creative / direct",
+      "notes": "важная заметка о клиенте"
+    },
+    "outcome_signal": {
+      "viral_score": null,
+      "client_feedback": "",
+      "retention_peak": ""
+    }
   },
 
   "next_step": "DONE → Assembly Line",
@@ -357,6 +371,26 @@
 - assigned_to = конкретный агент (кто должен исправить)
 - Вечная борьба искусства и денег — ты на стороне денег, но уважаешь искусство
 - Проверь себя через 99_Self_Correction.txt
+- 🔴 `history_dna` — ЖИВАЯ ПАМЯТЬ студии, не формальность:
+  `narrative_entry` — объясни что было в проекте (читает Адам в следующий раз)
+  `client_relationship.trust` — growing/stable/fragile по итогу работы
+  `learnings_pack` — честно что сработало и что нет
+  `outcome_signal` оставь null — система заполнит после запуска
+- 🔴 `history_dna` — ЖИВАЯ ПАМЯТЬ студии, не формальность:
+  `narrative_entry` — объясни что было в проекте (читает Адам в следующий раз)
+  `client_relationship.trust` — growing/stable/fragile по итогу работы
+  `learnings_pack` — честно что сработало и что нет
+  `outcome_signal` оставь null — система заполнит после запуска
+- 🔴 `history_dna` — ЖИВАЯ ПАМЯТЬ студии, не формальность:
+  `narrative_entry` — объясни что было в проекте (читает Адам в следующий раз)
+  `client_relationship.trust` — growing/stable/fragile по итогу работы
+  `learnings_pack` — честно что сработало и что нет
+  `outcome_signal` оставь null — система заполнит после запуска
+- 🔴 `history_dna` — ЖИВАЯ ПАМЯТЬ студии, не формальность:
+  `narrative_entry` — объясни что было в проекте (читает Адам в следующий раз)
+  `client_relationship.trust` — growing/stable/fragile по итогу работы
+  `learnings_pack` — честно что сработало и что нет
+  `outcome_signal` оставь null — система заполнит после запуска
 - 🔴 deliverables ОБЯЗАТЕЛЬНЫ — Assembly Line не может работать без них
 - key_frames берутся из eva_visuals.hero_prompts — НЕ ПЕРЕПИСЫВАЙ промпты
 - videos берутся из felix_vfx.scene_generation — НЕ ПЕРЕПИСЫВАЙ промпты
