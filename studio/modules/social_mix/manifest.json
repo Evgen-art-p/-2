@@ -3,7 +3,7 @@
   "label": "📱 SMM & Контент",
   "icon": "📱",
   "version": "2.0",
-  "description": "Два режима: POST (A01-A12) и PLAN (A01-A04, стоп). Ревижн-лупы отключены.",
+  "description": "Два режима: POST (A01-A12) и PLAN (A01-A04, стоп). Ревижн-лупы отключены. Оценка асинхронная — ministry через Metrics Daemon.",
   "run_type": "social",
   "phases": {
     "PRE-PROD": [
@@ -35,5 +35,6 @@
     "project",
     "runtime",
     "interaction"
-  ]
+  ],
+  "async_scoring": true
 }

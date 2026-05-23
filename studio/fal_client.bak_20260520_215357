@@ -40,8 +40,7 @@ RENDER_DIR.mkdir(parents=True, exist_ok=True)
 
 ASSETS_DIR = Path("assets")  # дефолт, перезаписывается при load_catalog
 CLIENTS_DIR = Path("clients")
-_current_client_slug = None
-CLIENTS_DIR = Path("clients")
+_current_client_slug = NoneCLIENTS_DIR = Path("clients")
 
 CATALOG_PATH = Path("assets_catalog.json")
 # Фоллбэк на .txt

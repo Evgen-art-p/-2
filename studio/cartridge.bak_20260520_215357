@@ -394,12 +394,6 @@ class CartridgeRunner:
                 # ═══ HOOK: on_after_agent ═══
                 hook_result = self._call_hook("on_after_agent", self.state, worker_id, human_text, meta)
                 if hook_result and isinstance(hook_result, dict):
-                    if hook_result.get("action") == "stop":  # patch_sprint20_smm
-                        print(f"[HOOKS] ⏹ Пайплайн остановлен после {worker_id}.")
-                        await self.callbacks.on_status(
-                            self.slot_id, f"Стоп после {worker_id}.", "info"
-                        )
-                        break
                     human_text = hook_result.get("human_text", human_text)
                     meta = hook_result.get("meta", meta)
 

@@ -639,13 +639,12 @@ async def process_agent_result(
                 except Exception:
                     _wcost = 0.0
                 try:
-                    if not state.get("async_scoring", False):  # patch_ministry_qa
-                        _ministry.record_outcome(
-                            agent_id=_wid,
-                            slot_id=_ec_slot,
-                            score=_wscore,
-                            cost_usd=_wcost,
-                        )
+                    _ministry.record_outcome(
+                        agent_id=_wid,
+                        slot_id=_ec_slot,
+                        score=_wscore,
+                        cost_usd=_wcost,
+                    )
                 except Exception as _me:
                     print(f"[MINISTRY] record_outcome ошибка: {_me}")
         # ══ END Ministry ══

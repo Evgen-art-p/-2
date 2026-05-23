@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 19.0 | **Дата:** 2026-05-17 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 20.0 | **Дата:** 2026-05-20 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > ⚠️ 12 апреля — студия была потеряна (удалена репа + файлы). Восстановлена за ночь.
@@ -69,7 +69,7 @@
 
 ### Ключевые файлы:
 ```
-studio/cartridge.py                          ✅ ПРОПАТЧЕН Спринт 19 (Victor без хардкода)
+studio/cartridge.py                          ✅ ПРОПАТЧЕН Спринт 20 (action=stop + Victor)
 studio/slot_manager.py                       ✅
 studio/slots.json                            ✅ 11 активных слотов
 studio/workshop/pipeline.py                  ✅ ПРОПАТЧЕН Спринт 18
@@ -99,6 +99,11 @@ studio/modules/video_long/manifest.json      ✅ v2.0 ПРОПАТЧЕН Спр�
 studio/modules/video_shorts/manifest.json    ✅ v2.0 ПРОПАТЧЕН Спринт 19
 studio/modules/video_shorts/hooks.py         ✅ v2.0 ПРОПАТЧЕН Спринт 19 (A07 + A12 fal.ai)
 studio/modules/video_shorts/CHAIN_CONTRACT.md ✅ СОЗДАН Спринт 19
+studio/modules/social_mix/manifest.json      ✅ v2.0 ГОТОВ Спринт 20
+studio/modules/social_mix/hooks.py           ✅ v3.0 ПРОПАТЧЕН Спринт 20
+studio/modules/social_mix/CHAIN_CONTRACT.md  ✅ СОЗДАН Спринт 20
+studio/modules/video_long/hooks.py           ✅ v2.1 СОЗДАН Спринт 20
+studio/WORKSHOP_STANDARD.md                  ✅ СОЗДАН Спринт 20
 studio/ui_registry.py                        ✅ ПРОПАТЧЕН Спринт 18
 ```
 
@@ -107,8 +112,8 @@ studio/ui_registry.py                        ✅ ПРОПАТЧЕН Спринт
 | Слот | Агентов | Особенности | Manifest | hooks.py | Промты |
 |------|---------|-------------|----------|----------|--------|
 | turbo | 5 | A02∥A03 параллельно | ✅ v2.0 | ✅ v3.2 | ⏳ |
-| social_mix | 12 | полный цикл | ⏳ v2.0 | ⏳ | ⏳ |
-| video_long | 12 | hard_stop A04 + Виктор, qa=A12 | ✅ v2.0 | ⏳ | ⏳ |
+| social_mix | 12 | полный цикл, POST+PLAN | ✅ v2.0 | ✅ v3.0 | ⏳ |
+| video_long | 12 | hard_stop A04 + Виктор, qa=A12 | ✅ v2.0 | ✅ v2.1 | ⏳ |
 | video_shorts | 12 | hard_stop A04 + Виктор, qa=A12 | ✅ v2.0 | ✅ v2.0 | ✅ Спринт 19 |
 | web_story | 12 | checkpoint A05 | ⏳ | ⏳ | ⏳ |
 | clipmakers | 12 | checkpoint A03 | ⏳ | ⏳ | ⏳ |
@@ -364,7 +369,7 @@ agent_dir/
 
 **A. Манифесты — 8 оставшихся цехов:**
 ```
-⏳ social_mix/manifest.json    → version 2.0, qa_agent=A12, interaction_log
+✅ social_mix/manifest.json    v2.0 — готов
 ⏳ web_story/manifest.json     → version 2.0, qa_agent=A12, interaction_log
 ⏳ clipmakers/manifest.json    → version 2.0, qa_agent=A12, interaction_log
 ⏳ advertising/manifest.json   → version 2.0, qa_agent=A12, interaction_log
@@ -378,9 +383,11 @@ agent_dir/
 ```
 ✅ turbo/hooks.py        v3.2 — не трогать
 ✅ video_shorts/hooks.py v2.0 — готов
-⏳ video_long/hooks.py   → реализовать (аналог video_shorts, кадры + обложка)
+✅ video_long/hooks.py   v2.1 — готов (A06 Eva + A08 Felix + A11 Tracy + A12 Bob)
 ⏳ video_long промты     → 12 агентов по LONG_RULES v4.2
 ⏳ video_long/CHAIN_CONTRACT.md → создать
+✅ social_mix/CHAIN_CONTRACT.md  → создан Спринт 20
+✅ studio/WORKSHOP_STANDARD.md  → создан Спринт 20 (шаблон для всех 11 цехов)
 ⏳ остальные 7 цехов     → аудит: нужен ли hooks.py?
 ```
 
@@ -433,6 +440,7 @@ agent_dir/
 | 2026-05-11 | **Спринт 17 — CHARACTER DRIFT ЗАКРЫТ.** profile_vector. Дубль биллинга закрыт |
 | 2026-05-15 | **Спринт 18 — СТАНДАРТ ПАЙПЛАЙНОВ.** LONG v4.2 + SHORTS v2.2. Манифесты v2.0. hooks.py v1.0. Виктор подключён. qa_agent=A12. CulturalFieldTracker API зафиксирован. |
 | 2026-05-16 | **Спринт 18 финал.** ui_registry.py пропатчен. Resonance-файлы выверены. Рек. #27. STUDIO_CONTEXT v18.2. |
+| 2026-05-20 | **Спринт 20 — АУДИТ SMM-ЦЕХА.** 5 багов закрыты патч-скриптом. CHAIN_CONTRACT social_mix создан. WORKSHOP_STANDARD для 11 цехов. video_long/hooks.py v2.1 готов. STUDIO_CONTEXT v20.0. |
 | 2026-05-17 | **Спринт 19 — СТАНДАРТ ПРОМТОВ.** video_shorts: 12 промтов эталон, hooks.py v2.0 (A07+A12 fal.ai), CHAIN_CONTRACT.md, patch_sprint19.py. cartridge.py: Victor без хардкода. STUDIO_CONTEXT v19.0. |
 
 ---
@@ -478,7 +486,7 @@ agent_dir/
 |---|----------|-----------|
 | 1 | global_feedback.json отсутствует | ⏳ ждёт первого рана |
 | 2 | conflict_stats.json отсутствует | ⏳ ждёт рана с конфликтом |
-| 3 | knowledge.py — 265 байт, заглушка | 🟡 возможен импорт-ошибка |
+| 3 | ~~knowledge.py — 265 байт, заглушка~~ | ✅ ЗАКРЫТ — файл рабочий, не заглушка |
 | 4 | instances/ — legacy папка | 🟢 некритично |
 | 5 | ~~TURBO_ROLE_OPTIONS~~ | ✅ ЗАКРЫТ Спринт 18 |
 | 6 | interaction_log_video_long.jsonl — не создан | ⏳ ждёт рана |
@@ -487,12 +495,17 @@ agent_dir/
 | 9 | ~~Виктор не подключён~~ | ✅ ЗАКРЫТ Спринт 18 |
 | 10 | ~~Промты video_shorts не проверены~~ | ✅ ЗАКРЫТ Спринт 19 |
 | 11 | Джем и Сет — полномочия не определены | 🟡 Спринт 19 |
-| 12 | video_long/hooks.py — не реализован | 🔴 Спринт 19 |
+| 12 | ~~video_long/hooks.py — не реализован~~ | ✅ ЗАКРЫТ Спринт 20 — v2.1 готов |
 | 13 | ~~turbo/hooks.py — worker_id T3/T5~~ | ✅ ЗАКРЫТ Спринт 18 |
 | 14 | ~~checkpoint_after двойная остановка video_long/shorts~~ | ✅ ЗАКРЫТ Спринт 19 |
 | 15 | ~~cartridge.py хардкод _victor_depts~~ | ✅ ЗАКРЫТ Спринт 19 |
 | 16 | Промты остальных 10 цехов не проверены | 🔴 Спринт 19+ |
+| 17 | ~~cartridge.py: {"action":"stop"} игнорировался~~ | ✅ ЗАКРЫТ Спринт 20 — patch_sprint20_smm.py |
+| 18 | ~~fal_client.py стр.43: _current_client_slug = NoneCLIENTS_DIR~~ | ✅ ЗАКРЫТ Спринт 20 |
+| 19 | ~~social_mix/hooks.py: модель gemini-flash-1.5 (устарела)~~ | ✅ ЗАКРЫТ Спринт 20 — gemini-2.5-flash |
+| 20 | ~~social_mix/hooks.py: slot_id FAL-вызовов дробил ministry-статистику~~ | ✅ ЗАКРЫТ Спринт 20 |
+| 21 | ~~video_long/hooks.py: хардкод update_slot_field("video_long")~~ | ✅ ЗАКРЫТ Спринт 20 |
 
 ---
 
-*Обновлено: Спринт 19 — 2026-05-17. video_shorts эталон готов. patch_sprint19.py применить. Следующий — video_long/hooks.py + промты, потом 8 манифестов.*
+*Обновлено: Спринт 20 — 2026-05-20. SMM-цех аудирован. patch_sprint20_smm.py применить. Следующий — video_long промты + остальные 7 манифестов.*

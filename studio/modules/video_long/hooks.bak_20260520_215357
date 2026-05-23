@@ -533,7 +533,7 @@ def _bob_cultural_trace(state: dict) -> list:
     try:
         from studio.culture.field_tracker import CulturalFieldTracker
         tracker  = CulturalFieldTracker()
-        patterns = tracker.update_slot_field(state.get("_slot_id", "video_long"))
+        patterns = tracker.update_slot_field("video_long")
         if not isinstance(patterns, list):
             patterns = []
         stable = [p for p in patterns

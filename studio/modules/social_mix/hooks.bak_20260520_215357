@@ -130,7 +130,7 @@ async def _evan_generate_image(state: dict):
                     None,
                     lambda p=prompt_positive, r=ref_paths, f=fmt, n=fname: generate_with_refs(
                         p, ref_paths=r, format=f, filename=n,
-                        agent_id="A06", slot_id=f"{state.get('active_dept', 'social_mix')}_fal"
+                        agent_id="A06", slot_id=f"social_img_{attempt}"
                     ),
                 )
             else:
@@ -138,7 +138,7 @@ async def _evan_generate_image(state: dict):
                     None,
                     lambda p=prompt_positive, f=fmt, n=fname: generate_image(
                         p, format=f, filename=n,
-                        agent_id="A06", slot_id=f"{state.get('active_dept', 'social_mix')}_fal"
+                        agent_id="A06", slot_id=f"social_img_{attempt}"
                     ),
                 )
         except Exception as gen_err:
