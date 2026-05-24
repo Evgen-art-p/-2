@@ -204,62 +204,7 @@ def on_after_agent(state: dict, worker_id: str, human_text: str, meta: dict) -> 
             project_id=project_id,
         )
 
-        # 6. Ministry — реальный score из outcome_signal
-        # Стандарт раздел 7: ministry.record_outcome в финализаторе.
-        _record_ministry_outcome(state, outcome_signal)
-
     return {}
-
-
-def _record_ministry_outcome(state: dict, outcome_signal: dict) -> None:
-    """
-    Сообщает Ministry о результате рана video_shorts.
-    viral_score из outcome_signal — реальная оценка, не LLM-фантазия.
-    Если viral_score нет — считаем детерминированно по наличию deliverables.
-    """
-    try:
-        from studio.economy import ministry as _min
-        slot_id = state.get("_slot_id", "video_shorts")
-
-        # Score: берём viral_score если есть, иначе детерминированный минимум
-        viral = outcome_signal.get("viral_score") if outcome_signal else None
-        if viral is not None:
-            try:
-                score = float(viral)
-            except (TypeError, ValueError):
-                score = 5.0
-        else:
-            # Fallback: есть ли deliverables в chain_data
-            chain  = state.get("chain_data", {})
-            has_kf = bool(chain.get("key_frames") or chain.get("eva_visuals"))
-            has_th = bool(chain.get("thumbnail") or chain.get("tracy_smm"))
-            score  = 5.0 + (2.0 if has_kf else 0) + (1.5 if has_th else 0)
-
-        score = round(min(10.0, max(0.0, score)), 2)
-
-        # Все агенты рана
-        agents = list(state.get("results", {}).keys()) or [
-            "A01","A02","A03","A04","A05",
-            "A06","A07","A08","A09","A10","A11","A12",
-        ]
-        for agent_id in agents:
-            try:
-                from studio.economy import ledger as _led
-                cost = _led.agent_spent(agent_id, slot_id=slot_id)
-            except Exception:
-                cost = 0.0
-            _min.record_outcome(
-                agent_id=agent_id,
-                slot_id=slot_id,
-                score=score,
-                cost_usd=cost,
-            )
-
-        print(f"[VS A12] 🏛 Ministry: score={score} "
-              f"viral_raw={viral} agents={len(agents)}")
-
-    except Exception as e:
-        print(f"[VS A12] ⚠ ministry.record_outcome: {e}")
 
 
 # ─── Вспомогательные для A12 ──────────────────────────────────────────────────

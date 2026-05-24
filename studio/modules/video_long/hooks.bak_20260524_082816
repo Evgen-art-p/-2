@@ -455,76 +455,8 @@ def _bob_finalize(state: dict, human_text: str):
     _bob_update_history_dna(state, my_output, cultural_trace)
     _bob_update_dna_json(state, my_output)
     _bob_fill_outcome_signal(state, my_output)
-    _bob_record_ministry(state, my_output)
 
     print("[EPISODE A12] ✅ Петля памяти закрыта")
-
-
-def _bob_record_ministry(state: dict, my_output: dict) -> None:
-    """
-    Финализатор video_long сообщает Ministry о реальном результате.
-    Стандарт раздел 7: ministry.record_outcome в финализаторе hooks.py.
-
-    viral_score из outcome_signal Боба — реальная оценка.
-    Если нет — детерминированный счёт по готовым deliverables.
-    """
-    try:
-        from studio.economy import ministry as _min
-        slot_id = state.get("_slot_id", "video_long")
-
-        # Score: viral_score если есть
-        outcome = my_output.get("outcome_signal", {})
-        viral   = outcome.get("viral_score") if isinstance(outcome, dict) else None
-        if viral is None:
-            viral = my_output.get("viral_score")
-
-        if viral is not None:
-            try:
-                score = float(viral)
-            except (TypeError, ValueError):
-                score = 5.0
-        else:
-            # Fallback: считаем по deliverables
-            chain    = state.get("chain_data", {})
-            deliv    = state.get("_last_output", {}).get("deliverables", {})
-            kf       = deliv.get("key_frames", [])
-            ready_kf = sum(1 for f in kf if f.get("path"))
-            total_kf = len(kf) or 1
-            thumb    = deliv.get("thumbnail", {})
-            ready_th = sum(
-                1 for v in ("variant_a", "variant_b")
-                if thumb.get(v, {}).get("path")
-            )
-            score = 5.0
-            score += 2.5 * (ready_kf / total_kf)  # кадры
-            score += 1.5 * (ready_th / 2)          # обложки
-            score  = round(min(10.0, score), 2)
-
-        score = round(min(10.0, max(0.0, score)), 2)
-
-        # Все агенты рана
-        agents = list(state.get("results", {}).keys()) or [
-            "A01","A02","A03","A04","A05",
-            "A06","A07","A08","A09","A10","A11","A12",
-        ]
-        for agent_id in agents:
-            try:
-                from studio.economy import ledger as _led
-                cost = _led.agent_spent(agent_id, slot_id=slot_id)
-            except Exception:
-                cost = 0.0
-            _min.record_outcome(
-                agent_id=agent_id,
-                slot_id=slot_id,
-                score=score,
-                cost_usd=cost,
-            )
-
-        print(f"[VL A12] 🏛 Ministry: score={score} "
-              f"viral_raw={viral} agents={len(agents)}")
-
-    except Exception as e:
-        print(f"[VL A12] ⚠ ministry.record_outcome: {e}")
 
 
 def _bob_collect_media(chain: dict, deliverables: dict):

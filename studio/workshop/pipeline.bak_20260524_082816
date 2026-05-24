@@ -549,9 +549,8 @@ async def process_agent_result(
             print(f"[FEEDBACK] ✅ {worker_id} → feedback для {client_slug} (slot: {_slot_id_for_fb or '—'})")
         except Exception as _fb_err:
             print(f"[FEEDBACK] Ошибка: {_fb_err}")
-        # _apply_qa_feedback убрана: поиск слов в тексте QA ненадёжен.
-        # DNA синхронизируется через _sync_feedback_scores_to_dna
-        # которая читает структурированный feedback.json.
+        if _GRONDHEIM_ENABLED:
+            _apply_qa_feedback(state, raw_result, qa_agent)
         # ══ SYNC: реальные оценки QA → DNA агентов ══
         _sync_feedback_scores_to_dna(client_slug, state.get("active_dept", ""))
         # ══ STRATEGY REGISTRY: записываем победы по слотам ══
