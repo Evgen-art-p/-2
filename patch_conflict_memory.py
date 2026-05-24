@@ -1,4 +1,24 @@
-# studio/economy/conflict_memory.py — ПАМЯТЬ КОНФЛИКТОВ (Этап 6, v2)
+"""
+patch_conflict_memory.py — Спринт 22
+Переписывает studio/economy/conflict_memory.py
+
+Что меняется:
+  - record_conflict_outcome() получает run_id + reserve_pool
+  - save_run_reserve()    — сохраняет резерв привязанный к run_id
+  - get_run_reserve()     — Демон достаёт резерв по run_id
+  - consume_from_reserve() — достаёт следующую идею, обновляет резерв
+  - close_run_reserve()   — хороший сигнал: резерв → interaction_log как опыт
+  - _update_stats()       — расширен: released_agent + reserve_size
+
+Запуск: python patch_conflict_memory.py
+"""
+
+import shutil
+from pathlib import Path
+
+TARGET = Path("studio/economy/conflict_memory.py")
+
+NEW_CONTENT = '''# studio/economy/conflict_memory.py — ПАМЯТЬ КОНФЛИКТОВ (Этап 6, v2)
 # Резерв идей привязан к run_id. Демон — единственный арбитр выживания.
 #
 # Философия:
@@ -59,7 +79,7 @@ def record_conflict_outcome(
     }
 
     with open(CONFLICT_LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\\n")
 
     _update_stats(log_entry)
 
@@ -260,7 +280,7 @@ def close_run_reserve(
                                    ).get("is_mutation", False),
                 "attempt_number":  len(reserve.get("consumed_order", [])) + 1,
             }
-            f.write(json.dumps(winner_entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(winner_entry, ensure_ascii=False) + "\\n")
 
             # Резервные идеи — как альтернативный опыт
             pool = reserve.get("pool", {})
@@ -279,7 +299,7 @@ def close_run_reserve(
                     "is_mutation": idea.get("is_mutation", False),
                     "was_tried":   agent_id in reserve.get("consumed_order", []),
                 }
-                f.write(json.dumps(alt_entry, ensure_ascii=False) + "\n")
+                f.write(json.dumps(alt_entry, ensure_ascii=False) + "\\n")
 
         print(f"[RESERVE] ✅ Закрыт резерв {run_id}/{phase_id}, опыт записан в {log_path.name}")
     except Exception as e:
@@ -532,3 +552,38 @@ def list_open_reserves(slot_id: Optional[str] = None) -> List[dict]:
 def _iso_now() -> str:
     from datetime import datetime, timezone
     return datetime.now(timezone.utc).isoformat()
+'''
+
+
+def apply_patch():
+    if not TARGET.exists():
+        print(f"[PATCH] ❌ Файл не найден: {TARGET}")
+        return False
+
+    # Бэкап
+    bak = TARGET.with_suffix(f".bak_sprint22")
+    shutil.copy2(TARGET, bak)
+    print(f"[PATCH] 📦 Бэкап: {bak}")
+
+    TARGET.write_text(NEW_CONTENT, encoding="utf-8")
+    print(f"[PATCH] ✅ conflict_memory.py обновлён — резерв + Демон-культура")
+
+    # Проверка синтаксиса
+    import subprocess
+    result = subprocess.run(
+        ["python", "-m", "py_compile", str(TARGET)],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        print("[PATCH] ✅ Синтаксис OK")
+    else:
+        print(f"[PATCH] ❌ Синтаксис ERROR:\n{result.stderr}")
+        print("[PATCH] 🔄 Восстанавливаю бэкап...")
+        shutil.copy2(bak, TARGET)
+        return False
+
+    return True
+
+
+if __name__ == "__main__":
+    apply_patch()

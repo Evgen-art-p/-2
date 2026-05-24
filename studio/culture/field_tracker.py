@@ -1,11 +1,9 @@
 """
-Cultural Field Tracker — Stage 8: Culture Formation
-Наблюдает за выжившими стратегиями, считает метрики устойчивости.
-Формирует локальные (slot) и глобальное поля.
-НЕ влияет на промпты.
+Cultural Field Tracker — Stage 8: Culture Formation (v2)
+Источник правды — Демон (реакция зрителя), не internal QA.
+Культура теперь попадает в промпты агентов через format_field_for_prompt().
 """
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -14,40 +12,32 @@ from collections import defaultdict
 
 class CulturalFieldTracker:
     """
-    Анализирует Strategy Registry, Conflict Memory, Ministry ratings —
-    и строит распределение вероятностей выживших паттернов.
+    Строит культурное поле цеха из данных выживания у зрителя (Демон).
+    Strategy Registry и QA — вспомогательные источники.
+    Основной источник правды: conflict_memory.daemon_wins.
     """
 
     def __init__(self, studio_root: Optional[Path] = None):
         if studio_root is None:
-            studio_root = Path(__file__).resolve().parent.parent  # studio/
-        self.root = studio_root
-        self.culture_dir = self.root / "culture" / "data"
+            studio_root = Path(__file__).resolve().parent.parent
+        self.root            = studio_root
+        self.culture_dir     = self.root / "culture" / "data"
         self.slot_fields_dir = self.culture_dir / "slot_fields"
         self.slot_fields_dir.mkdir(parents=True, exist_ok=True)
 
-        # Input источники
         self.strategy_registry_path = self.root / "strategy_registry.json"
-        self.conflict_stats_path = self.root / ".." / "studio" / "economy" / "data" / "conflict_stats.json"
-        # поправка: conflict_stats лежит в economy/data/
-        self._resolve_paths()
-        
-        # Output
-        self.global_field_path = self.culture_dir / "global_field.json"
+        self.conflict_stats_path    = self.root / "economy" / "data" / "conflict_stats.json"
+        self.global_field_path      = self.culture_dir / "global_field.json"
 
-        # Кеш загруженных полей
-        self._slot_fields: Dict[str, dict] = {}
-        self._global_field: Optional[dict] = None
+        self._resolve_paths()
+        self._slot_fields:  Dict[str, dict] = {}
+        self._global_field: Optional[dict]  = None
 
     def _resolve_paths(self):
-        """Разрешает относительные пути к источникам данных"""
-        # strategy_registry
         if not self.strategy_registry_path.exists():
             alt = self.root / ".." / "strategy_registry.json"
             if alt.exists():
                 self.strategy_registry_path = alt.resolve()
-        
-        # conflict_stats — лежит в economy/data/
         if not self.conflict_stats_path.exists():
             alt = self.root / "economy" / "data" / "conflict_stats.json"
             if alt.exists():
@@ -58,21 +48,50 @@ class CulturalFieldTracker:
     # ═══════════════════════════════════════════════════════════
 
     def _load_strategy_registry(self) -> dict:
-        """Загружает реестр стратегий"""
         if not self.strategy_registry_path.exists():
             return {"slots": {}}
         with open(self.strategy_registry_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
     def _load_conflict_stats(self) -> dict:
-        """Загружает статистику конфликтов"""
         if not self.conflict_stats_path.exists():
             return {}
         with open(self.conflict_stats_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    def _load_daemon_culture(self, slot_id: str) -> List[dict]:
+        """
+        Загружает победы зрителя по слоту из conflict_memory.
+        Это главный источник правды о культуре цеха.
+
+        Возвращает список:
+        [{"agent_id": "A03", "phase_id": "ph", "count": 5, "avg_viral_score": 0.72, "mutations": 1}, ...]
+        """
+        try:
+            from studio.economy.conflict_memory import get_slot_daemon_culture
+            return get_slot_daemon_culture(slot_id)
+        except Exception:
+            pass
+
+        # Fallback: читаем напрямую из conflict_stats.json
+        stats = self._load_conflict_stats()
+        daemon_wins = stats.get("daemon_wins", {})
+        result = []
+        for key, entry in daemon_wins.items():
+            parts = key.split("::")
+            if len(parts) < 3 or parts[0] != slot_id:
+                continue
+            result.append({
+                "agent_id":        parts[2],
+                "phase_id":        parts[1],
+                "count":           entry.get("count", 0),
+                "avg_viral_score": entry.get("avg_viral_score", 0.0),
+                "mutations":       entry.get("mutations", 0),
+            })
+        result.sort(key=lambda x: x["avg_viral_score"], reverse=True)
+        return result
+
     def _load_ministry_ratings(self) -> dict:
-        """Загружает рейтинги Министерства"""
         ministry_path = self.root / "economy" / "data" / "ministry.json"
         if not ministry_path.exists():
             return {}
@@ -80,33 +99,30 @@ class CulturalFieldTracker:
             return json.load(f)
 
     def _load_slot_field(self, slot_id: str) -> dict:
-        """Загружает существующее поле слота или создаёт новое"""
         if slot_id in self._slot_fields:
             return self._slot_fields[slot_id]
-        
         field_path = self.slot_fields_dir / f"{slot_id}.json"
         if field_path.exists():
             with open(field_path, "r", encoding="utf-8") as f:
                 field = json.load(f)
         else:
             field = {
-                "slot_id": slot_id,
+                "slot_id":    slot_id,
                 "first_seen": datetime.now(timezone.utc).isoformat(),
-                "patterns": [],
+                "patterns":   [],
                 "meta": {
-                    "total_runs_observed": 0,
+                    "total_runs_observed":   0,
                     "distinct_patterns_seen": 0,
-                    "stable_norms_count": 0
+                    "stable_norms_count":    0,
+                    "daemon_approved_count": 0,
                 }
             }
         self._slot_fields[slot_id] = field
         return field
 
     def _load_global_field(self) -> dict:
-        """Загружает глобальное поле или создаёт новое"""
         if self._global_field is not None:
             return self._global_field
-        
         if self.global_field_path.exists():
             with open(self.global_field_path, "r", encoding="utf-8") as f:
                 self._global_field = json.load(f)
@@ -115,203 +131,150 @@ class CulturalFieldTracker:
                 "patterns": [],
                 "meta": {
                     "total_civilizational_patterns": 0,
-                    "cross_slot_survivors": 0,
-                    "last_updated": None
+                    "cross_slot_survivors":          0,
+                    "last_updated":                  None,
                 }
             }
         return self._global_field
 
     # ═══════════════════════════════════════════════════════════
-    # АНАЛИЗ ПАТТЕРНОВ
+    # АНАЛИЗ ПАТТЕРНОВ — главное изменение v2
     # ═══════════════════════════════════════════════════════════
-
-    def _extract_strategy_patterns(self, strategies: dict, slot_id: Optional[str] = None) -> List[dict]:
-        """
-        Извлекает паттерны из Strategy Registry.
-        strategy = {"pattern_description": str, "success_rate": float, "agent_id": str, ...}
-        """
-        patterns = []
-        slots = strategies.get("slots", {})
-        
-        for sid, slot_data in slots.items():
-            if slot_id and sid != slot_id:
-                continue
-            
-            for agent_id, agent_strategies in slot_data.items():
-                for strat in agent_strategies:
-                    if isinstance(strat, dict):
-                        pattern = {
-                            "pattern": strat.get("pattern_description", strat.get("strategy", "unknown")),
-                            "agent_id": agent_id,
-                            "slot_id": sid,
-                            "success_rate": strat.get("success_rate", 0.5),
-                            "timestamp": strat.get("last_seen", strat.get("timestamp", "")),
-                        }
-                        patterns.append(pattern)
-        
-        return patterns
-
-    def _extract_conflict_winners(self, conflict_stats: dict, slot_id: Optional[str] = None) -> List[dict]:
-        """
-        Извлекает паттерны победителей конфликтов.
-        """
-        patterns = []
-        
-        for key, stats in conflict_stats.items():
-            # ключ: "slot_id::phase_id::agent_id"
-            parts = key.split("::")
-            if len(parts) < 3:
-                continue
-            sid, phase_id, agent_id = parts[0], parts[1], parts[2]
-            
-            if slot_id and sid != slot_id:
-                continue
-            
-            if isinstance(stats, dict):
-                pattern = {
-                    "pattern": f"conflict_winner_{phase_id}",
-                    "agent_id": agent_id,
-                    "slot_id": sid,
-                    "wins": stats.get("wins", 0),
-                    "total": stats.get("total", 1),
-                    "win_rate": stats.get("win_rate", stats.get("wins", 0) / max(stats.get("total", 1), 1)),
-                }
-                patterns.append(pattern)
-        
-        return patterns
 
     def _detect_behavioral_patterns(self, slot_id: str) -> List[dict]:
         """
-        Аггрегирует данные из всех источников и выделяет устойчивые паттерны.
+        Собирает паттерны из трёх источников в порядке приоритета:
+        1. daemon_wins      — победы у реального зрителя (главный источник)
+        2. strategy_registry — внутренние стратегии агентов (дополнение)
+        3. conflict_stats   — released/wins из старой логики (fallback)
         """
-        strategies = self._load_strategy_registry()
-        conflict_stats = self._load_conflict_stats()
-        ministry_ratings = self._load_ministry_ratings()
-        
-        # 1. Паттерны из стратегий
-        strat_patterns = self._extract_strategy_patterns(strategies, slot_id)
-        
-        # 2. Паттерны из конфликтов
-        conflict_patterns = self._extract_conflict_winners(conflict_stats, slot_id)
-        
-        # 3. Аггрегация по описанию паттерна
         aggregated = defaultdict(lambda: {
-            "pattern": "",
-            "occurrences": 0,
-            "agents": set(),
-            "slots": set(),
+            "pattern":            "",
+            "occurrences":        0,
+            "agents":             set(),
+            "slots":              set(),
+            "total_viral_score":  0.0,
+            "daemon_approvals":   0,
+            "mutation_wins":      0,
             "total_success_rate": 0.0,
-            "total_wins": 0,
-            "total_conflicts": 0,
-            "first_seen": None,
-            "last_seen": None,
+            "first_seen":         None,
+            "last_seen":          None,
         })
-        
-        for p in strat_patterns:
-            key = p["pattern"]
+
+        # ── 1. Daemon wins — реальная культура ──
+        daemon_culture = self._load_daemon_culture(slot_id)
+        for entry in daemon_culture:
+            key = f"daemon_survivor_{entry['agent_id']}_{entry['phase_id']}"
             agg = aggregated[key]
-            agg["pattern"] = key
-            agg["occurrences"] += 1
-            agg["agents"].add(p["agent_id"])
-            agg["slots"].add(p["slot_id"])
-            agg["total_success_rate"] += p["success_rate"]
-            
-            ts = p.get("timestamp", "")
-            if ts:
-                if not agg["first_seen"] or ts < agg["first_seen"]:
-                    agg["first_seen"] = ts
-                if not agg["last_seen"] or ts > agg["last_seen"]:
-                    agg["last_seen"] = ts
-        
-        for p in conflict_patterns:
-            key = p["pattern"]
-            agg = aggregated[key]
-            agg["pattern"] = key
-            agg["agents"].add(p["agent_id"])
-            agg["slots"].add(p["slot_id"])
-            agg["total_wins"] += p.get("wins", 0)
-            agg["total_conflicts"] += p.get("total", 0)
-            if not agg["occurrences"]:
-                agg["occurrences"] = 1  # минимум
-        
-        # 4. Вычисление метрик
+            agg["pattern"]           = key
+            agg["occurrences"]      += entry["count"]
+            agg["agents"].add(entry["agent_id"])
+            agg["slots"].add(slot_id)
+            agg["total_viral_score"] += entry["avg_viral_score"] * entry["count"]
+            agg["daemon_approvals"]  += entry["count"]
+            agg["mutation_wins"]     += entry.get("mutations", 0)
+
+        # ── 2. Strategy Registry — внутренний опыт ──
+        strategies = self._load_strategy_registry()
+        for sid, slot_data in strategies.get("slots", {}).items():
+            if slot_id and sid != slot_id:
+                continue
+            for agent_id, agent_strategies in slot_data.items():
+                for strat in (agent_strategies or []):
+                    if not isinstance(strat, dict):
+                        continue
+                    key = strat.get("pattern_description", strat.get("strategy", "unknown"))
+                    agg = aggregated[key]
+                    agg["pattern"]            = key
+                    agg["occurrences"]       += 1
+                    agg["agents"].add(agent_id)
+                    agg["slots"].add(sid)
+                    agg["total_success_rate"] += strat.get("success_rate", 0.5)
+                    ts = strat.get("last_seen", strat.get("timestamp", ""))
+                    if ts:
+                        if not agg["first_seen"] or ts < agg["first_seen"]:
+                            agg["first_seen"] = ts
+                        if not agg["last_seen"] or ts > agg["last_seen"]:
+                            agg["last_seen"] = ts
+
+        # ── 3. Вычисление метрик ──
         result = []
         for key, agg in aggregated.items():
-            n = max(agg["occurrences"], 1)
-            
-            # adoption_rate = сколько агентов используют / общее число агентов в слоте
-            # оценка: используем количество уникальных агентов
-            adoption_rate = len(agg["agents"]) / max(len(agg["agents"]) + 3, 1)  # +3 — smoothing
-            
-            # cross_slot_success = работает ли в других слотах
-            cross_slot_success = len(agg["slots"]) / max(len(agg["slots"]) + 1, 1)  # >0.5 если 2+ слота
-            
-            # survival_duration = оценка по времени (пока proxy: occurrences)
-            survival_duration = n
-            
-            # failure_resistance = доля конфликтов с победами
-            if agg["total_conflicts"] > 0:
-                failure_resistance = agg["total_wins"] / agg["total_conflicts"]
+            n            = max(agg["occurrences"], 1)
+            n_agents     = len(agg["agents"])
+            adoption_rate = n_agents / max(n_agents + 3, 1)
+
+            # Survival: если есть daemon_approvals — они определяют выживание
+            survival_duration = agg["daemon_approvals"] if agg["daemon_approvals"] > 0 else n
+
+            # Viral score: среднее по approvals или fallback на success_rate
+            if agg["daemon_approvals"] > 0:
+                avg_viral = agg["total_viral_score"] / agg["daemon_approvals"]
+                failure_resistance = min(1.0, avg_viral / 10.0)
             else:
-                failure_resistance = agg["total_success_rate"] / (n * 1.0) if n > 0 else 0.5
-            
-            # energy_efficiency — пока оценка: успешные паттерны считаем эффективными
-            energy_efficiency = min(agg["total_success_rate"] / n, 1.0) if n > 0 else 0.5
-            
+                avg_viral = 0.0
+                failure_resistance = agg["total_success_rate"] / n if n > 0 else 0.5
+
+            cross_slot_success = len(agg["slots"]) / max(len(agg["slots"]) + 1, 1)
+
             result.append({
-                "pattern": key,
+                "pattern":            key,
                 "cross_slot_success": round(cross_slot_success, 3),
-                "survival_duration": survival_duration,
-                "adoption_rate": round(adoption_rate, 3),
+                "survival_duration":  survival_duration,
+                "adoption_rate":      round(adoption_rate, 3),
                 "failure_resistance": round(failure_resistance, 3),
-                "energy_efficiency": round(energy_efficiency, 3),
-                "source_agents": sorted(list(agg["agents"])),
-                "observed_slots": sorted(list(agg["slots"])),
-                "first_seen": agg["first_seen"] or datetime.now(timezone.utc).isoformat(),
-                "occurrences": agg["occurrences"],
+                "avg_viral_score":    round(avg_viral, 3),
+                "daemon_approvals":   agg["daemon_approvals"],
+                "mutation_wins":      agg["mutation_wins"],
+                "source_agents":      sorted(list(agg["agents"])),
+                "observed_slots":     sorted(list(agg["slots"])),
+                "first_seen":         agg["first_seen"] or datetime.now(timezone.utc).isoformat(),
+                "occurrences":        agg["occurrences"],
             })
-        
-        # Сортировка: сначала стабильные с высокой adoption
-        result.sort(key=lambda x: (x["adoption_rate"] + x["failure_resistance"]), reverse=True)
-        
+
+        # Сортировка: daemon_approvals → adoption_rate
+        result.sort(
+            key=lambda x: (x["daemon_approvals"], x["adoption_rate"] + x["failure_resistance"]),
+            reverse=True,
+        )
         return result
 
     # ═══════════════════════════════════════════════════════════
-    # ОПРЕДЕЛЕНИЕ СТАТУСА ПАТТЕРНА
+    # СТАТУС ПАТТЕРНА — v2: stable требует одобрения Демона
     # ═══════════════════════════════════════════════════════════
 
     def _determine_status(self, pattern: dict, existing_pattern: Optional[dict] = None) -> str:
         """
-        Определяет статус паттерна:
-        - candidate: успешен < 10 ранов
-        - stable: держится 10+ ранов, adoption > 0.3
-        - declining: был stable, но метрики падают
-        - global: выжил в 3+ слотах > 20 ранов (назначается отдельно)
+        candidate: нет одобрений Демона или < 3 ранов
+        stable:    Демон одобрил 3+ раз, avg_viral_score > 0
+        declining: был stable, метрики упали
+        global:    выжил в 3+ слотах
         """
-        duration = pattern.get("survival_duration", 0)
-        adoption = pattern.get("adoption_rate", 0)
-        cross = pattern.get("cross_slot_success", 0)
-        
-        # Проверка на declining
+        daemon_approvals = pattern.get("daemon_approvals", 0)
+        avg_viral        = pattern.get("avg_viral_score", 0.0)
+        duration         = pattern.get("survival_duration", 0)
+        adoption         = pattern.get("adoption_rate", 0)
+        cross            = pattern.get("cross_slot_success", 0)
+
+        # Declining: был stable/global, метрики упали
         if existing_pattern and existing_pattern.get("status") in ("stable", "global"):
+            old_viral    = existing_pattern.get("avg_viral_score", 0)
             old_adoption = existing_pattern.get("adoption_rate", 0)
-            old_resistance = existing_pattern.get("failure_resistance", 0)
-            new_adoption = pattern.get("adoption_rate", 0)
-            new_resistance = pattern.get("failure_resistance", 0)
-            
-            # Падение более чем на 15% — declining
-            if (old_adoption - new_adoption > 0.15) or (old_resistance - new_resistance > 0.15):
+            if (old_viral - avg_viral > 0.15) or (old_adoption - adoption > 0.15):
                 return "declining"
-        
-        # Глобальный паттерн
-        if cross > 0.6 and duration >= 20:
+
+        # Global: выжил в 3+ слотах от Демона
+        if cross > 0.6 and daemon_approvals >= 5:
             return "global"
-        
-        # Стабильный
-        if duration >= 10 and adoption >= 0.3:
+
+        # Stable: Демон одобрил 3+ раз
+        if daemon_approvals >= 3 and avg_viral > 0:
             return "stable"
-        
-        # Кандидат
+
+        # Stable по старой логике (если нет данных Демона)
+        if daemon_approvals == 0 and duration >= 10 and adoption >= 0.3:
+            return "stable"
+
         return "candidate"
 
     # ═══════════════════════════════════════════════════════════
@@ -319,169 +282,189 @@ class CulturalFieldTracker:
     # ═══════════════════════════════════════════════════════════
 
     def update_slot_field(self, slot_id: str) -> dict:
-        """
-        Обновляет культурное поле для одного слота.
-        Вызывается после каждого рана или пакетно.
-        """
-        field = self._load_slot_field(slot_id)
+        """Обновляет культурное поле для одного слота."""
+        field        = self._load_slot_field(slot_id)
         old_patterns = {p["pattern"]: p for p in field.get("patterns", [])}
-        
-        # Детектируем текущие паттерны
-        detected = self._detect_behavioral_patterns(slot_id)
-        
-        # Обновляем метаданные
-        field["meta"]["total_runs_observed"] += 1
-        field["meta"]["distinct_patterns_seen"] = len(detected)
-        
-        # Обновляем паттерны
+        detected     = self._detect_behavioral_patterns(slot_id)
+
+        field["meta"]["total_runs_observed"]    += 1
+        field["meta"]["distinct_patterns_seen"]  = len(detected)
+
         updated_patterns = []
         for pat in detected:
-            existing = old_patterns.get(pat["pattern"])
+            existing   = old_patterns.get(pat["pattern"])
             pat["status"] = self._determine_status(pat, existing)
             updated_patterns.append(pat)
-        
-        stable_count = sum(1 for p in updated_patterns if p["status"] == "stable")
-        global_count = sum(1 for p in updated_patterns if p["status"] == "global")
-        
-        field["patterns"] = updated_patterns
-        field["meta"]["stable_norms_count"] = stable_count
-        field["meta"]["global_patterns_count"] = global_count
+
+        stable_count  = sum(1 for p in updated_patterns if p["status"] == "stable")
+        global_count  = sum(1 for p in updated_patterns if p["status"] == "global")
+        daemon_count  = sum(p.get("daemon_approvals", 0) for p in updated_patterns)
+
+        field["patterns"]                            = updated_patterns
+        field["meta"]["stable_norms_count"]          = stable_count
+        field["meta"]["global_patterns_count"]       = global_count
+        field["meta"]["daemon_approved_count"]       = daemon_count
         field["last_updated"] = datetime.now(timezone.utc).isoformat()
-        
-        # Сохраняем
+
         self._save_slot_field(slot_id, field)
         self._slot_fields[slot_id] = field
-        
         return field
 
     def _save_slot_field(self, slot_id: str, field: dict):
-        """Сохраняет поле слота на диск"""
         field_path = self.slot_fields_dir / f"{slot_id}.json"
         with open(field_path, "w", encoding="utf-8") as f:
             json.dump(field, f, ensure_ascii=False, indent=2)
 
     def update_all_slots(self) -> Dict[str, dict]:
-        """
-        Обновляет культурные поля для всех известных слотов.
-        """
         strategies = self._load_strategy_registry()
-        slot_ids = list(strategies.get("slots", {}).keys())
-        
-        # Также проверяем слоты из conflict_stats
+        slot_ids   = list(strategies.get("slots", {}).keys())
+
         conflict_stats = self._load_conflict_stats()
-        for key in conflict_stats:
+        for key in conflict_stats.get("daemon_wins", {}):
             sid = key.split("::")[0]
             if sid not in slot_ids:
                 slot_ids.append(sid)
-        
+
         results = {}
         for sid in slot_ids:
             results[sid] = self.update_slot_field(sid)
-        
-        # Обновляем глобальное поле
         self._update_global_field()
-        
         return results
 
     # ═══════════════════════════════════════════════════════════
-    # ГЛОБАЛЬНОЕ ПОЛЕ (цивилизационный слой)
+    # ФОРМАТ ДЛЯ ПРОМПТА — культура наконец доходит до агентов
+    # ═══════════════════════════════════════════════════════════
+
+    def format_field_for_prompt(self, slot_id: str) -> str:
+        """
+        Форматирует культурное поле цеха для инжекта в контекст агента.
+        Не директива — фон. Агент чувствует что здесь работало у зрителя.
+
+        Вызывается из build_agent_context() в pipeline.py.
+        Показывает только stable и global паттерны — шум не нужен.
+        """
+        field    = self._load_slot_field(slot_id)
+        patterns = field.get("patterns", [])
+
+        stable  = [p for p in patterns if p["status"] in ("stable", "global")]
+        if not stable:
+            return ""
+
+        lines = [f"=== КУЛЬТУРА ЦЕХА {slot_id} (опыт реального зрителя) ==="]
+        lines.append("Эти подходы выжили у аудитории — не потому что так решил алгоритм,")
+        lines.append("а потому что зритель их принял. Это не правила — это эхо реальности.")
+        lines.append("")
+
+        for p in stable[:5]:  # топ-5, не перегружаем
+            viral  = p.get("avg_viral_score", 0)
+            agents = ", ".join(p.get("source_agents", [])[:3])
+            mut    = " [мутация выжила]" if p.get("mutation_wins", 0) > 0 else ""
+            lines.append(
+                f"  • {p['pattern']}{mut} "
+                f"(одобрений Демона: {p.get('daemon_approvals', 0)}, "
+                f"viral: {viral:.1f})"
+            )
+            if agents:
+                lines.append(f"    носители: {agents}")
+
+        lines.append("")
+        lines.append("Используй это как ориентир — не как клетку.")
+        lines.append("=== КОНЕЦ КУЛЬТУРЫ ЦЕХА ===")
+        return "\n".join(lines)
+
+    # ═══════════════════════════════════════════════════════════
+    # ГЛОБАЛЬНОЕ ПОЛЕ
     # ═══════════════════════════════════════════════════════════
 
     def _update_global_field(self):
-        """
-        Формирует глобальное поле — паттерны, выжившие в 3+ слотах > 20 ранов.
-        """
-        global_patterns = []
+        """Паттерны выжившие в 3+ слотах у Демона — цивилизационный слой."""
         seen_patterns = defaultdict(lambda: {
-            "pattern": "",
-            "slots": set(),
+            "pattern":        "",
+            "slots":          set(),
             "total_duration": 0,
             "total_adoption": 0.0,
-            "occurrences": 0,
+            "total_viral":    0.0,
+            "occurrences":    0,
         })
-        
-        # Собираем паттерны из всех слотов
+
         for slot_file in self.slot_fields_dir.glob("*.json"):
             with open(slot_file, "r", encoding="utf-8") as f:
                 field = json.load(f)
             slot_id = field.get("slot_id", slot_file.stem)
-            
             for pat in field.get("patterns", []):
-                key = pat["pattern"]
-                agg = seen_patterns[key]
+                key          = pat["pattern"]
+                agg          = seen_patterns[key]
                 agg["pattern"] = key
                 agg["slots"].add(slot_id)
                 agg["total_duration"] += pat.get("survival_duration", 0)
                 agg["total_adoption"] += pat.get("adoption_rate", 0)
-                agg["occurrences"] += pat.get("occurrences", 0)
-        
-        # Фильтр: 3+ слота, суммарная длительность > 20
+                agg["total_viral"]    += pat.get("avg_viral_score", 0)
+                agg["occurrences"]    += pat.get("occurrences", 0)
+
+        global_patterns = []
         for key, agg in seen_patterns.items():
-            if len(agg["slots"]) >= 3 and agg["total_duration"] >= 20:
-                n_slots = len(agg["slots"])
+            n_slots = len(agg["slots"])
+            if n_slots >= 3 and agg["total_duration"] >= 20:
                 global_patterns.append({
-                    "pattern": key,
-                    "observed_in_slots": sorted(list(agg["slots"])),
+                    "pattern":               key,
+                    "observed_in_slots":     sorted(list(agg["slots"])),
                     "total_survival_duration": agg["total_duration"],
-                    "average_adoption": round(agg["total_adoption"] / n_slots, 3),
-                    "status": "global",
-                    "emerged_at": datetime.now(timezone.utc).isoformat(),
+                    "average_adoption":      round(agg["total_adoption"] / n_slots, 3),
+                    "average_viral_score":   round(agg["total_viral"] / n_slots, 3),
+                    "status":                "global",
+                    "emerged_at":            datetime.now(timezone.utc).isoformat(),
                 })
-        
-        # Сортировка: больше слотов + длительность
-        global_patterns.sort(key=lambda x: (len(x["observed_in_slots"]), x["total_survival_duration"]), reverse=True)
-        
+
+        global_patterns.sort(
+            key=lambda x: (len(x["observed_in_slots"]), x["total_survival_duration"]),
+            reverse=True,
+        )
+
         self._global_field = {
             "patterns": global_patterns,
             "meta": {
                 "total_civilizational_patterns": len(global_patterns),
-                "cross_slot_survivors": len(global_patterns),
-                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "cross_slot_survivors":          len(global_patterns),
+                "last_updated":                  datetime.now(timezone.utc).isoformat(),
             }
         }
         self._save_global_field()
 
     def _save_global_field(self):
-        """Сохраняет глобальное поле"""
         with open(self.global_field_path, "w", encoding="utf-8") as f:
             json.dump(self._global_field, f, ensure_ascii=False, indent=2)
 
     # ═══════════════════════════════════════════════════════════
-    # ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ ОТЧЁТОВ
+    # ПУБЛИЧНЫЕ МЕТОДЫ
     # ═══════════════════════════════════════════════════════════
 
     def get_slot_summary(self, slot_id: str) -> dict:
-        """Возвращает сводку по культурному полю слота"""
-        field = self._load_slot_field(slot_id)
-        
-        stable = [p for p in field.get("patterns", []) if p["status"] == "stable"]
+        field      = self._load_slot_field(slot_id)
+        stable     = [p for p in field.get("patterns", []) if p["status"] == "stable"]
         candidates = [p for p in field.get("patterns", []) if p["status"] == "candidate"]
-        declining = [p for p in field.get("patterns", []) if p["status"] == "declining"]
-        
+        declining  = [p for p in field.get("patterns", []) if p["status"] == "declining"]
         return {
-            "slot_id": slot_id,
-            "last_updated": field.get("last_updated"),
+            "slot_id":       slot_id,
+            "last_updated":  field.get("last_updated"),
             "total_patterns": len(field.get("patterns", [])),
-            "stable_norms": len(stable),
-            "candidates": len(candidates),
-            "declining": len(declining),
-            "top_patterns": field.get("patterns", [])[:5],
-            "field_trend": "stable" if len(declining) == 0 else "shifting",
+            "stable_norms":  len(stable),
+            "candidates":    len(candidates),
+            "declining":     len(declining),
+            "top_patterns":  field.get("patterns", [])[:5],
+            "field_trend":   "stable" if not declining else "shifting",
+            "data_source":   "daemon" if field["meta"].get("daemon_approved_count", 0) > 0 else "internal_qa",
         }
 
     def get_global_summary(self) -> dict:
-        """Возвращает сводку по глобальному цивилизационному слою"""
         global_field = self._load_global_field()
         return {
             "total_civilizational_patterns": len(global_field.get("patterns", [])),
-            "patterns": global_field.get("patterns", []),
+            "patterns":    global_field.get("patterns", []),
             "last_updated": global_field.get("meta", {}).get("last_updated"),
         }
 
     def get_all_slots_summary(self) -> List[dict]:
-        """Сводка по всем слотам"""
         summaries = []
         for slot_file in self.slot_fields_dir.glob("*.json"):
-            slot_id = slot_file.stem
-            summaries.append(self.get_slot_summary(slot_id))
+            summaries.append(self.get_slot_summary(slot_file.stem))
         return summaries

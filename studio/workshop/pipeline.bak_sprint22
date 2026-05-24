@@ -253,20 +253,6 @@ def build_agent_context(
             context += strategies + "\n\n"
             print(f"[STRATEGY] 🏆 {worker_id}: стратегии загружены ({len(strategies)} симв.)")
     # ══ end Strategy Registry ══
-
-    # ══ Cultural Field — культура цеха из данных Демона (Этап 8 v2) ══
-    if _CULTURE_ENABLED:
-        try:
-            _culture_slot = state.get("_slot_id", "")
-            if _culture_slot:
-                _tracker = CulturalFieldTracker()
-                _culture_ctx = _tracker.format_field_for_prompt(_culture_slot)
-                if _culture_ctx:
-                    context += _culture_ctx + "\n\n"
-                    print(f"[CULTURE] 🧬 {worker_id}: культура цеха {_culture_slot} загружена")
-        except Exception as _cult_err:
-            print(f"[CULTURE] {worker_id}: {_cult_err}")
-    # ══ end Cultural Field ══
     # ══ Resource Economy — energy budget (Спринт 16) ══
     if _GRONDHEIM_ENABLED:
         try:

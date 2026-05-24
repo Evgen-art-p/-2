@@ -1,5 +1,5 @@
 # studio/economy/metrics_daemon.py
-# Студия «Шесть Пальцев» · 2026 · Спринт 22
+# Студия «Шесть Пальцев» · 2026 · Спринт 20
 #
 # Metrics Daemon — независимый фоновый процесс.
 # Единственная ответственность: забрать реальные метрики → закрыть петлю.
@@ -9,15 +9,18 @@
 #   2. Найти посты со статусом "published" у которых прошло > 24ч
 #   3. Запросить метрики из API соцсети
 #   4. Посчитать real_viral_score
-#   5. Вызвать ministry.record_outcome
-#   6. [v2] Сигнал Демона → закрыть резерв (хороший) или достать следующую идею (плохой)
-#   7. Сравнить с прогнозом Тима, записать разницу
-#   8. Обновить статус поста → "scored"
+#   5. Вызвать ministry.record_outcome (ЕДИНСТВЕННОЕ место в студии где это происходит)
+#   6. Сравнить с прогнозом Тима, записать разницу
+#   7. Обновить статус поста → "scored"
 #
-# Запуск:
+# Запуск как отдельный процесс:
 #   python studio/economy/metrics_daemon.py
-#   python studio/economy/metrics_daemon.py --interval 3600
-#   python studio/economy/metrics_daemon.py --once
+#   python studio/economy/metrics_daemon.py --interval 3600   # проверять каждый час
+#   python studio/economy/metrics_daemon.py --once            # один проход и выход
+#
+# Запуск как фоновый поток внутри студии (в studio/__init__.py или main.py):
+#   from studio.economy.metrics_daemon import start_background
+#   start_background()
 
 from __future__ import annotations
 
@@ -30,8 +33,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 CLIENTS_DIR      = Path("clients")
-DEFAULT_INTERVAL = 3600
-MATURITY_HOURS   = 24
+DEFAULT_INTERVAL = 3600        # секунд между проходами (1 час)
+MATURITY_HOURS   = 24          # через сколько часов пост "созрел"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -39,23 +42,26 @@ MATURITY_HOURS   = 24
 # ═══════════════════════════════════════════════════════════════
 
 def run_forever(interval_sec: int = DEFAULT_INTERVAL) -> None:
-    print(f"[DAEMON] Запущен. Интервал: {interval_sec}с. Порог созревания: {MATURITY_HOURS}ч.")
+    """Бесконечный цикл. Проход каждые interval_sec секунд."""
+    print(f"[DAEMON] 🟢 Запущен. Интервал: {interval_sec}с. "
+          f"Порог созревания: {MATURITY_HOURS}ч.")
     while True:
         try:
             processed = check_all_clients()
             if processed:
-                print(f"[DAEMON] Обработано постов: {processed}")
+                print(f"[DAEMON] ✅ Обработано постов: {processed}")
             else:
-                print(f"[DAEMON] Нет созревших постов. Следующая проверка через {interval_sec}с.")
+                print(f"[DAEMON] 💤 Нет созревших постов. Следующая проверка через {interval_sec}с.")
         except Exception as e:
-            print(f"[DAEMON] Ошибка прохода: {e}")
+            print(f"[DAEMON] ❌ Ошибка прохода: {e}")
         time.sleep(interval_sec)
 
 
 def start_background(interval_sec: int = DEFAULT_INTERVAL) -> threading.Thread:
     """
     Запускает демон в фоновом потоке.
-    Вызывай из main.py при старте студии:
+    Вызывай из main.py или studio/__init__.py при старте студии:
+
         from studio.economy.metrics_daemon import start_background
         start_background()
     """
@@ -66,7 +72,7 @@ def start_background(interval_sec: int = DEFAULT_INTERVAL) -> threading.Thread:
         name="MetricsDaemon",
     )
     t.start()
-    print("[DAEMON] Фоновый поток запущен (MetricsDaemon)")
+    print(f"[DAEMON] 🔄 Фоновый поток запущен (MetricsDaemon)")
     return t
 
 
@@ -75,8 +81,13 @@ def start_background(interval_sec: int = DEFAULT_INTERVAL) -> threading.Thread:
 # ═══════════════════════════════════════════════════════════════
 
 def check_all_clients() -> int:
+    """
+    Один проход по всем клиентам.
+    Возвращает количество обработанных постов.
+    """
     if not CLIENTS_DIR.exists():
         return 0
+
     total = 0
     for client_dir in CLIENTS_DIR.iterdir():
         if not client_dir.is_dir():
@@ -89,10 +100,11 @@ def check_all_clients() -> int:
 
 
 def _process_client(client_id: str, pending_file: Path) -> int:
+    """Обрабатывает pending_posts одного клиента."""
     try:
         posts = json.loads(pending_file.read_text(encoding="utf-8"))
     except Exception as e:
-        print(f"[DAEMON] {client_id}: не могу прочитать pending_posts.json: {e}")
+        print(f"[DAEMON] ⚠️ {client_id}: не могу прочитать pending_posts.json: {e}")
         return 0
 
     cfg = _load_social_config(client_id)
@@ -108,6 +120,7 @@ def _process_client(client_id: str, pending_file: Path) -> int:
         if entry.get("status") != "published":
             continue
 
+        # Проверяем зрелость
         try:
             pub_dt = datetime.fromisoformat(entry["published_at"])
         except (KeyError, ValueError):
@@ -117,48 +130,36 @@ def _process_client(client_id: str, pending_file: Path) -> int:
             remaining = threshold - (now - pub_dt)
             h = int(remaining.total_seconds() // 3600)
             m = int((remaining.total_seconds() % 3600) // 60)
-            print(f"[DAEMON] {client_id}/{entry['project_id']}: созреет через {h}ч {m}мин")
+            print(f"[DAEMON] ⏳ {client_id}/{entry['project_id']}: созреет через {h}ч {m}мин")
             continue
 
-        platform = entry["platform"]
-        metrics  = _fetch_metrics(entry, cfg)
+        # Забираем метрики
+        platform   = entry["platform"]
+        metrics    = _fetch_metrics(entry, cfg)
 
         if not metrics:
-            print(f"[DAEMON] {client_id}/{entry['project_id']}: метрики недоступны")
+            print(f"[DAEMON] ⚠️ {client_id}/{entry['project_id']}: метрики недоступны")
             continue
 
+        # Считаем реальный viral_score
         real_score = _calc_score(metrics, platform, cfg.get("score_weights", {}))
         tim_score  = entry.get("tim_forecast")
 
-        print(f"[DAEMON] {client_id}/{entry['project_id']}: реальный={real_score} | прогноз Тима={tim_score}")
+        print(f"[DAEMON] 📊 {client_id}/{entry['project_id']}: "
+              f"реальный={real_score} | прогноз Тима={tim_score}")
 
-        # Министерство
+        # Закрываем петлю → Министерство
         _report_to_ministry(client_id, platform, real_score, entry["project_id"])
 
-        # [v2] Сигнал Демона — резерв
-        run_id   = entry.get("conflict_run_id", "")
-        phase_id = entry.get("conflict_phase_id", "")
-        slot_id  = entry.get("slot_id", "")
-        if run_id and phase_id:
-            _handle_daemon_signal(
-                run_id=run_id,
-                phase_id=phase_id,
-                slot_id=slot_id,
-                real_score=real_score,
-                metrics=metrics,
-                platform=platform,
-                entry=entry,
-                cfg=cfg,
-            )
-
         # Обновляем запись
-        entry["status"]           = "scored"
-        entry["scored_at"]        = now.isoformat()
-        entry["real_metrics"]     = metrics
+        entry["status"]          = "scored"
+        entry["scored_at"]       = now.isoformat()
+        entry["real_metrics"]    = metrics
         entry["real_viral_score"] = real_score
         if tim_score is not None:
             entry["forecast_delta"] = round(real_score - float(tim_score), 2)
 
+        # Патчим claudia_final.json проекта
         _patch_final_dna(client_id, entry["project_id"], real_score)
 
         processed += 1
@@ -170,205 +171,6 @@ def _process_client(client_id: str, pending_file: Path) -> int:
         )
 
     return processed
-
-
-# ═══════════════════════════════════════════════════════════════
-# СИГНАЛ ДЕМОНА — главная новая логика v2
-# ═══════════════════════════════════════════════════════════════
-
-def _handle_daemon_signal(
-    run_id: str,
-    phase_id: str,
-    slot_id: str,
-    real_score: float,
-    metrics: dict,
-    platform: str,
-    entry: dict,
-    cfg: dict,
-) -> None:
-    """
-    Демон оценивает сигнал и решает судьбу резерва.
-
-    Хороший сигнал → close_run_reserve():
-        резерв закрывается, опыт уходит в interaction_log,
-        победитель записывается в daemon_wins (культура цеха).
-
-    Плохой сигнал → consume_from_reserve():
-        следующая идея из резерва идёт в мир через лёгкий прогон финализатора.
-        Мутации получают приоритет.
-    """
-    try:
-        from studio.economy.conflict_memory import (
-            get_run_reserve,
-            consume_from_reserve,
-            close_run_reserve,
-        )
-    except ImportError as e:
-        print(f"[DAEMON] conflict_memory недоступен: {e}")
-        return
-
-    reserve = get_run_reserve(run_id, phase_id)
-    if not reserve:
-        return  # резерв уже закрыт или не существует
-
-    released_agent = reserve.get("released_agent_id", "unknown")
-
-    if _is_good_signal(real_score, metrics, platform):
-        print(f"[DAEMON] Хороший сигнал (score={real_score}) — закрываю резерв {run_id}")
-        close_run_reserve(
-            run_id=run_id,
-            phase_id=phase_id,
-            winning_agent_id=released_agent,
-            viral_score=real_score,
-            slot_id=slot_id,
-        )
-    else:
-        print(f"[DAEMON] Плохой сигнал (score={real_score}) — достаю из резерва {run_id}")
-        next_idea = consume_from_reserve(run_id, phase_id)
-        if next_idea:
-            _release_reserve_idea(next_idea, entry, cfg, platform, slot_id)
-        else:
-            print(f"[DAEMON] Резерв {run_id} исчерпан — больше идей нет")
-            # Исчерпан — всё равно закрываем, победитель не определён
-            close_run_reserve(
-                run_id=run_id,
-                phase_id=phase_id,
-                winning_agent_id=released_agent,
-                viral_score=real_score,
-                slot_id=slot_id,
-            )
-
-
-def _is_good_signal(real_score: float, metrics: dict, platform: str) -> bool:
-    """
-    Хороший сигнал = есть реальная реакция зрителя.
-    Плохой сигнал = нулевой пульс за 24 часа.
-
-    На старте (нет истории): простая эвристика по метрикам.
-    В будущем Ministry добавит сравнение с нормой цеха.
-
-    Нулевой пульс для Telegram: views < 50 AND forwards == 0 AND reactions == 0
-    Нулевой пульс для VK:       likes == 0 AND reposts == 0 AND comments == 0
-    """
-    if platform == "telegram":
-        views     = metrics.get("views", 0)
-        forwards  = metrics.get("forwards", 0)
-        reactions = metrics.get("reactions", 0)
-        flat = (views < 50) and (forwards == 0) and (reactions == 0)
-        return not flat
-
-    elif platform == "vk":
-        likes    = metrics.get("likes", 0)
-        reposts  = metrics.get("reposts", 0)
-        comments = metrics.get("comments", 0)
-        flat = (likes == 0) and (reposts == 0) and (comments == 0)
-        return not flat
-
-    # Для YouTube и других — по score
-    return real_score >= 1.0
-
-
-def _release_reserve_idea(
-    next_idea: dict,
-    original_entry: dict,
-    cfg: dict,
-    platform: str,
-    slot_id: str,
-) -> None:
-    """
-    Выпускает следующую идею из резерва в мир.
-
-    Не запускает полный CartridgeRunner — это лёгкий прогон:
-    идея уже готова (intent + human_text), нужно только опубликовать
-    через broadcaster с контекстом "первый не выжил".
-
-    Если broadcaster недоступен — сохраняет идею в pending как новый пост.
-    """
-    agent_id    = next_idea["agent_id"]
-    intent      = next_idea["intent"]
-    is_mutation = next_idea.get("is_mutation", False)
-    attempt     = next_idea.get("attempt_number", 2)
-
-    mutation_marker = " [МУТАЦИЯ]" if is_mutation else ""
-    print(
-        f"[DAEMON] Выпускаю резервную идею: агент={agent_id}"
-        f"{mutation_marker}, попытка={attempt}"
-    )
-
-    # Пробуем через broadcaster
-    try:
-        from studio.assembly.broadcaster import publish_text
-        result = publish_text(
-            text=next_idea.get("human_text", intent),
-            platform=platform,
-            cfg=cfg,
-            meta={
-                "source":       "reserve",
-                "agent_id":     agent_id,
-                "attempt":      attempt,
-                "is_mutation":  is_mutation,
-                "run_id":       next_idea.get("run_id", ""),
-                "slot_id":      slot_id,
-                "note":         f"Резервная идея (попытка {attempt}). Первая не выжила у зрителя.",
-            },
-        )
-        if result:
-            print(f"[DAEMON] Резервная идея опубликована через broadcaster")
-            # Добавляем в pending_posts для следующей проверки Демона
-            _add_to_pending(
-                client_id=original_entry.get("client_id", ""),
-                post_id=result.get("post_id", ""),
-                platform=platform,
-                project_id=f"{original_entry.get('project_id', '')}__reserve_{attempt}",
-                conflict_run_id=next_idea.get("run_id", ""),
-                conflict_phase_id=next_idea.get("phase_id", ""),
-                slot_id=slot_id,
-            )
-            return
-    except ImportError:
-        print("[DAEMON] broadcaster недоступен — сохраняю идею в очередь")
-    except Exception as e:
-        print(f"[DAEMON] Ошибка публикации через broadcaster: {e}")
-
-    # Fallback — сохраняем в файл для ручного запуска
-    fallback_path = Path("studio/economy/data") / f"reserve_pending_{next_idea.get('run_id', 'unknown')}.json"
-    fallback_path.write_text(
-        json.dumps(next_idea, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    print(f"[DAEMON] Резервная идея сохранена: {fallback_path}")
-
-
-def _add_to_pending(
-    client_id: str,
-    post_id: str,
-    platform: str,
-    project_id: str,
-    conflict_run_id: str,
-    conflict_phase_id: str,
-    slot_id: str,
-) -> None:
-    """Добавляет опубликованный резервный пост в pending_posts для следующей проверки."""
-    if not client_id or not post_id:
-        return
-    pending_file = CLIENTS_DIR / client_id / "pending_posts.json"
-    try:
-        posts = json.loads(pending_file.read_text(encoding="utf-8")) if pending_file.exists() else []
-    except Exception:
-        posts = []
-
-    posts.append({
-        "status":            "published",
-        "published_at":      datetime.now(timezone.utc).isoformat(),
-        "post_id":           post_id,
-        "platform":          platform,
-        "project_id":        project_id,
-        "conflict_run_id":   conflict_run_id,
-        "conflict_phase_id": conflict_phase_id,
-        "slot_id":           slot_id,
-        "source":            "reserve",
-    })
-    pending_file.write_text(json.dumps(posts, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -401,6 +203,7 @@ def _fetch_telegram(post_id: str, channel_id: str, token: str) -> dict:
             "chat_id":     channel_id,
             "message_ids": json.dumps([int(post_id)]),
         }, timeout=15).json()
+
         if r.get("ok") and r.get("result"):
             m = r["result"][0]
             return {
@@ -426,6 +229,7 @@ def _fetch_vk(post_id: str, owner_id: str, token: str) -> dict:
             "access_token": token,
             "v":            "5.199",
         }, timeout=15).json()
+
         if "response" in r and r["response"]:
             p = r["response"][0]
             return {
@@ -445,15 +249,15 @@ def _fetch_vk(post_id: str, owner_id: str, token: str) -> dict:
 
 _DEFAULT_WEIGHTS = {
     "telegram": {
-        "views_per_point": 500,    "views_max_points": 4.0,
-        "forwards_per_point": 5,   "forwards_max_points": 3.0,
-        "reactions_per_point": 20, "reactions_max_points": 3.0,
+        "views_per_point": 500,   "views_max_points": 4.0,
+        "forwards_per_point": 5,  "forwards_max_points": 3.0,
+        "reactions_per_point": 20,"reactions_max_points": 3.0,
     },
     "vk": {
-        "views_per_point": 1000,   "views_max_points": 3.0,
-        "likes_per_point": 20,     "likes_max_points": 3.0,
-        "reposts_per_point": 5,    "reposts_max_points": 2.5,
-        "comments_per_point": 10,  "comments_max_points": 1.5,
+        "views_per_point": 1000,  "views_max_points": 3.0,
+        "likes_per_point": 20,    "likes_max_points": 3.0,
+        "reposts_per_point": 5,   "reposts_max_points": 2.5,
+        "comments_per_point": 10, "comments_max_points": 1.5,
     },
 }
 
@@ -462,7 +266,7 @@ def _calc_score(metrics: dict, platform: str, weights: dict) -> float:
     cfg   = weights.get(platform) or _DEFAULT_WEIGHTS.get(platform, {})
     score = 0.0
 
-    def _add(metric_key, per_key, max_key):
+    def _add(metric_key: str, per_key: str, max_key: str):
         nonlocal score
         val = metrics.get(metric_key, 0)
         per = max(cfg.get(per_key, 1), 1)
@@ -483,19 +287,24 @@ def _calc_score(metrics: dict, platform: str, weights: dict) -> float:
 
 
 # ═══════════════════════════════════════════════════════════════
-# MINISTRY
+# MINISTRY — ЕДИНСТВЕННОЕ МЕСТО ВЫЗОВА В СТУДИИ
 # ═══════════════════════════════════════════════════════════════
 
 def _report_to_ministry(client_id: str, platform: str,
                          real_score: float, project_id: str) -> None:
+    """
+    Вызывает ministry.record_outcome с РЕАЛЬНЫМИ данными.
+    Это единственное место в студии где вызывается ministry.record_outcome
+    для social_mix. Клавдия (A12) этого НЕ делает.
+    """
     try:
         sys.path.insert(0, str(Path(__file__).parents[2]))
         from studio.economy import ministry
         ministry.record_outcome("A06",      f"{platform}_fal", real_score, cost_usd=0.0)
         ministry.record_outcome("pipeline", "social_mix",      real_score, cost_usd=0.0)
-        print(f"[DAEMON] Ministry обновлён: {project_id} → score={real_score}")
+        print(f"[DAEMON] 🏛 Ministry обновлён: {project_id} → score={real_score}")
     except Exception as e:
-        print(f"[DAEMON] ministry.record_outcome: {e}")
+        print(f"[DAEMON] ⚠️ ministry.record_outcome: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -503,7 +312,12 @@ def _report_to_ministry(client_id: str, platform: str,
 # ═══════════════════════════════════════════════════════════════
 
 def _patch_final_dna(client_id: str, project_id: str, real_score: float) -> None:
-    search = [CLIENTS_DIR / client_id / "jobs", Path("runs"), Path("output")]
+    """Дописывает real_viral_score в claudia_final.json проекта."""
+    search = [
+        CLIENTS_DIR / client_id / "jobs",
+        Path("runs"),
+        Path("output"),
+    ]
     for base in search:
         for match in base.glob(f"*{project_id}*"):
             if not match.is_dir():
@@ -515,14 +329,16 @@ def _patch_final_dna(client_id: str, project_id: str, real_score: float) -> None
                     data.setdefault("final_dna", {})["real_viral_score"] = real_score
                     data.setdefault("final_dna", {})["status"]           = "scored"
                     data.setdefault("claudia_final", {})["status"]       = "scored"
-                    p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+                    p.write_text(
+                        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
                 except Exception as e:
-                    print(f"[DAEMON] patch_final_dna: {e}")
+                    print(f"[DAEMON] ⚠️ patch_final_dna: {e}")
                 return
 
 
 # ═══════════════════════════════════════════════════════════════
-# КОНФИГ
+# КОНФИГ КЛИЕНТА
 # ═══════════════════════════════════════════════════════════════
 
 def _load_social_config(client_id: str) -> dict | None:
@@ -543,7 +359,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Metrics Daemon — сборщик реальных метрик")
     parser.add_argument("--interval", type=int, default=DEFAULT_INTERVAL,
                         help=f"интервал между проходами в секундах (default: {DEFAULT_INTERVAL})")
-    parser.add_argument("--once", action="store_true", help="один проход и выход")
+    parser.add_argument("--once",     action="store_true",
+                        help="один проход и выход")
     args = parser.parse_args()
 
     if args.once:
