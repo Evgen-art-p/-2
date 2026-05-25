@@ -60,25 +60,8 @@ def cartridges():
 def living_book_loader_page():
     page_book_loader()    
 
-# ══ Loka-Filter: пульс города при старте · Спринт 21 ══
-# Daemon-тред — не блокирует запуск студии если что-то пойдёт не так.
-# Затухает сенсорная память ВСЕХ агентов: Cabinet, city_walker, резиденты.
-# Без этого агенты не стареют вне пайплайна — город стоит.
-import threading as _loka_thread
-def _run_loka_filter():
-    try:
-        from studio.grondheim_memory import run_loka_filter_all
-        run_loka_filter_all()
-        print("[LOKA-FILTER] Пульс города завершён")
-    except Exception as _err:
-        print(f"[LOKA-FILTER] Ошибка: {_err}")
-_loka_thread.Thread(
-    target=_run_loka_filter,
-    daemon=True,
-    name="LokaFilterStartup",
-).start()
-print("[LOKA-FILTER] Пульс города запущен в фоне")
-# ══ END Loka-Filter ══
+from studio.grondheim_memory import run_loka_filter_all
+run_loka_filter_all()
 
 from studio.slot_manager import SlotManager
 SlotManager().print_summary()

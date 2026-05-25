@@ -1305,30 +1305,47 @@ def on_agent_wake(agent_id: str, dept: str = ""):
 def on_agent_done(
     agent_id: str,
     result_summary: str,
-    quality_score: float = 0.5,  # параметр сохранён для совместимости, но не используется
+    quality_score: float = 0.5,
     dept: str = "",
 ):
     """
     Вызывается после завершения работы агента.
-
-    ПАТЧ Спринт 21 · Единственный источник правды:
-    - Эта функция пишет ТОЛЬКО в sensory_memory (фактологический журнал).
-    - sync_to_dna() и update_profile_vector() УДАЛЕНЫ отсюда.
-    - DNA меняется только через _sync_feedback_scores_to_dna() в pipeline.py
-      после реального QA score от финального агента цеха.
-
-    Причина: quality_score здесь был эвристикой (0.3/0.5/0.6/0.8 по синтаксису),
-    что вызывало двойную запись в DNA — сначала мусором, потом правдой.
+    - Записывает рабочее событие в sensory
+    - Если quality_score высокий — записывает в resonance
     """
-    # Только в оперативку — факт выполнения работы, без оценки
+    # Всегда в оперативку
     record_sensory_event(
         agent_id=agent_id,
         content=f"Выполнил задачу: {result_summary[:200]}",
         event_type="work",
         source="pipeline",
-        emotional_weight=0.3,  # нейтральный вес — оценка придёт от QA
+        emotional_weight=min(quality_score, 0.8),
         dept=dept,
     )
+
+    # ══ Character Drift (Спринт 17) ══
+    if quality_score >= 0.8:
+        update_profile_vector(agent_id, dept)
+    # ══ END Drift ══
+
+    # Значимое — в резонансный лог
+    if quality_score >= 0.7:
+        record_resonance_event(
+            agent_id=agent_id,
+            event_type="achievement",
+            content=f"Отличная работа: {result_summary[:200]}",
+            significance=quality_score,
+            dept=dept,
+        )
+
+    # ══ SYNC TO DNA: город дышит ══
+    if quality_score >= 0.7:
+        sync_to_dna(agent_id, "good_work", intensity=quality_score, dept=dept)
+    elif quality_score < 0.3:
+        sync_to_dna(agent_id, "bad_work", intensity=1.0 - quality_score, dept=dept)
+    # Нейтральная работа (0.3–0.7) — не трогаем DNA.
+    # Стресс снижается только за реально хорошую работу, иначе агенты
+    # дрейфуют к нулевому стрессу даже без реальных достижений.
 
 
 def on_agents_interact(
@@ -1383,12 +1400,17 @@ def on_agents_interact(
             dept=dept,
         )
 
-    # ══ DNA-мутация из взаимодействий: ОТКЛЮЧЕНА · Спринт 21 ══
-    # Факт контакта между агентами фиксируется в emotional_weights
-    # (warmth, trust, respect) — это резонансная память, не химия.
-    # Стресс/Свет/Уважение/Терпение меняются ТОЛЬКО через:
-    #   _sync_feedback_scores_to_dna() → реальный QA score после рана.
-    # Бэкдор через DNA_EVENT_MAP закрыт.
+    # ══ SYNC TO DNA: взаимодействие меняет состояние ══
+    DNA_EVENT_MAP = {
+        "collaboration": ("good_work", 0.3),
+        "conflict":      ("conflict", 0.7),
+        "praise":        ("praised", 0.6),
+        "critique":      ("criticized", 0.5),
+        "rescue":        ("rescued", 0.8),
+    }
+    dna_event, base_intensity = DNA_EVENT_MAP.get(interaction_type, ("good_work", 0.2))
+    sync_to_dna(agent_a, dna_event, intensity=base_intensity * quality, dept=dept)
+    sync_to_dna(agent_b, dna_event, intensity=base_intensity * quality * 0.7, dept=dept)
 
     # ══ INTERACTION LOG: пишем в jsonl по слоту ══
     # Слот определяем из dept (dept == slot_id в большинстве цехов)
