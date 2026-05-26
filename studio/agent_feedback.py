@@ -56,7 +56,7 @@ def _extract_score(my_output: dict) -> float:
     # Прямой score
     if "score" in my_output:
         try:
-            return float(my_output["score"])
+            return _apply_score_ceiling(float(my_output["score"]))
         except (ValueError, TypeError):
             pass
 
@@ -65,7 +65,7 @@ def _extract_score(my_output: dict) -> float:
     if checklist and "/" in str(checklist):
         try:
             parts = str(checklist).split("/")
-            return round(10.0 * int(parts[0]) / int(parts[1]), 1)
+            return _apply_score_ceiling(round(10.0 * int(parts[0]) / int(parts[1]), 1))
         except (ValueError, ZeroDivisionError):
             pass
 
@@ -74,7 +74,7 @@ def _extract_score(my_output: dict) -> float:
     status_map = {"READY": 9.0, "OK": 8.0, "INCOMPLETE": 5.0,
                   "PARTIAL": 5.0, "FAIL": 2.0, "ERROR": 2.0}
     if status in status_map:
-        return status_map[status]
+        return _apply_score_ceiling(status_map[status])
 
     # Blocks (формат A12) — считаем средний по всем блокам
     blocks = my_output.get("blocks", {})
@@ -87,9 +87,24 @@ def _extract_score(my_output: dict) -> float:
                 if checks > 0:
                     scores.append(10 * passed / checks)
         if scores:
-            return round(sum(scores) / len(scores), 1)
+            return _apply_score_ceiling(round(sum(scores) / len(scores), 1))
 
     return 5.0  # нейтральный дефолт
+
+
+def _apply_score_ceiling(score: float) -> float:
+    """
+    Потолок детерминированного score: максимум 6.0.
+
+    Физика мира: скрипт не может поставить выше 6.0.
+    6.0 = «выжил, сделал по ТЗ» — это честный максимум без живого взгляда.
+    Выше 6.0 — только Metrics Daemon (реальный зритель) или субъективный QA.
+
+    Не трогает:
+      - real_viral_score Демона (считается отдельно в metrics_daemon.py)
+      - Виктора (он ставит вердикт, не цифру)
+    """
+    return round(min(6.0, score), 2)
 
 
 def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = "", agent_ids: list = None):
