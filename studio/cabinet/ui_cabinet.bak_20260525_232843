@@ -1101,26 +1101,6 @@ def page_cabinet() -> None:
             reply = await call_openrouter(messages, state["model"], tools_schema=tools)
             print(f"[CABINET] 📥 Ответ: {len(reply)} симв.")
 
-            # ══ ЖИВАЯ ПАМЯТЬ КАБИНЕТА · Спринт 21 ══
-            if talking:
-                _cab_id   = talking["id"]
-                _cab_dept = talking.get("dept", "")
-                try:
-                    from studio.grondheim_memory import record_sensory_event, sync_to_dna
-                    record_sensory_event(
-                        agent_id=_cab_id,
-                        content=f"Архитектор: {text[:120]} / {_cab_id}: {reply[:120]}",
-                        event_type="social",
-                        source="cabinet",
-                        emotional_weight=0.6,
-                        dept=_cab_dept,
-                    )
-                    sync_to_dna(_cab_id, "cabinet_chat", intensity=1.0, dept=_cab_dept)
-                    print(f"[CABINET] 🧠 {_cab_id}: память + micro-relief (-3% stress)")
-                except Exception as _mem_err:
-                    print(f"[CABINET] ⚠ Память: {_mem_err}")
-            # ══ END ЖИВАЯ ПАМЯТЬ ══
-
             nav_route = get_pending_nav()
             if nav_route:
                 ui.run_javascript(f'window.open("{nav_route}", "_blank")')

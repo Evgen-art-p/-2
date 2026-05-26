@@ -459,12 +459,47 @@ def format_weights_hint(weights: dict[str, float], top_n: int = 5) -> str:
 
 def apply_walk_effects(dna: dict, response_text: str) -> dict:
     """
-    УДАЛЕНО · Спринт 21.
-    Эвристика по ключевым словам ("тихо", "красиво") — тот же пластик
-    что _apply_qa_feedback(). ДНК меняется через sync_to_dna("walk_rest").
-    Функция-заглушка для совместимости — не удалять (вызывается из walk_one_agent).
+    Прогулка влияет на dynamic веса.
+    Анализируем ответ LLM — нашёл ли агент что-то хорошее?
+    Простая эвристика по ключевым словам.
     """
-    return dna  # DNA изменяется через sync_to_dna() ниже по коду
+    dynamic = dna.get("dynamic", {})
+
+    stress  = float(dynamic.get("Stress", 0.0))
+    light   = float(dynamic.get("Internal_Light", 0.8))
+    patience = float(dynamic.get("Patience", 1.0))
+
+    text_lower = response_text.lower()
+
+    # Позитивные сигналы → снижаем стресс, повышаем свет
+    positive_words = ["тихо", "спокойно", "хорошо", "красиво", "отдохнул",
+                      "нашёл", "понял", "улыбнулся", "тепло", "свет",
+                      "радость", "покой", "вдохновение", "идея"]
+    # Негативные сигналы → стресс растёт
+    negative_words = ["тревога", "одиноко", "пусто", "холодно", "тяжело",
+                      "устал", "беспокойство", "раздражение", "скучно"]
+
+    pos_count = sum(1 for w in positive_words if w in text_lower)
+    neg_count = sum(1 for w in negative_words if w in text_lower)
+
+    # Базовый эффект прогулки — небольшое снижение стресса
+    stress = max(0.0, stress - 0.05)
+    light  = min(1.0, light + 0.03)
+
+    # Корректировка по тону ответа
+    if pos_count > neg_count:
+        stress  = max(0.0, stress - 0.05)
+        light   = min(1.0, light + 0.05)
+        patience = min(1.0, patience + 0.03)
+    elif neg_count > pos_count:
+        stress = min(1.0, stress + 0.03)
+        light  = max(0.0, light - 0.03)
+
+    dynamic["Stress"]         = round(stress, 3)
+    dynamic["Internal_Light"] = round(light, 3)
+    dynamic["Patience"]       = round(patience, 3)
+    dna["dynamic"] = dynamic
+    return dna
 
 
 # ═══════════════════════════════════════════════════════
@@ -678,90 +713,49 @@ async def walk_one_agent(agent: dict, city_state: dict,
             print(f"[ГАВАНЬ] ❌ {name}: ошибка в Гавани — {e}")
             harbor_result = "Что-то помешало сосредоточиться в Гавани."
 
-    # ── Память прогулки: единый формат · Спринт 21 ──
-    # Переводим на record_sensory_event() — унификация двух форматов.
-    # Обратная совместимость: format_sensory_for_prompt() читает оба формата.
-    try:
-        from studio.grondheim_memory import record_sensory_event as _rse
-        weather_note = city_state.get("weather", "")
+    # Сохраняем в sensory_memory
+    entry = {
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "location": chosen_location,
+        "feeling": response[:300],
+        "weather": city_state.get("weather", ""),
+    }
 
-        # Основная запись прогулки
-        _rse(
-            agent_id=folder,
-            content=f"[{chosen_location}] {response[:250]}",
-            event_type="location",
-            source="city_walker",
-            tags=["прогулка", chosen_location.lower()[:20]],
-            emotional_weight=0.4,
-            dept=workshop,
-        )
-
-        # Маяк — отдельная запись с тегом чистый_смысл
-        if lighthouse_result:
-            _rse(
-                agent_id=folder,
-                content=f"[ЧИСТЫЙ СМЫСЛ] {lighthouse_result}",
-                event_type="location",
-                source="city_walker",
-                tags=["маяк", "чистый_смысл", "web_search"],
-                emotional_weight=0.7,
-                dept=workshop,
-            )
-
-        # Гавань — отдельная запись
-        if harbor_result:
-            _rse(
-                agent_id=folder,
-                content=f"[НАЙДЕННЫЙ СМЫСЛ] {harbor_result}",
-                event_type="location",
-                source="city_walker",
-                tags=["гавань", "найденный_смысл", "rag"],
-                emotional_weight=0.6,
-                dept=workshop,
-            )
-
-        # last_location обновляем вручную (record_sensory_event не делает это)
-        _mem = load_sensory_memory(workshop, folder)
-        _mem["last_location"] = chosen_location
-        save_sensory_memory(workshop, folder, _mem)
-
-    except Exception as _mem_err:
-        # Фоллбэк: старый формат если grondheim_memory недоступен
-        print(f"[CITY] ⚠ record_sensory_event недоступен: {_mem_err}")
-        entry = {
+    # Если был на Маяке — добавляем отдельную запись с тегом
+    if lighthouse_result:
+        entry["tags"] = ["маяк", "web_search", "тренды"]
+        # Дополнительная запись — Рюкзак Знаний
+        lighthouse_entry = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "location": chosen_location,
-            "feeling": response[:300],
+            "location": "Маяк Пробуждения",
+            "feeling": f"[ЧИСТЫЙ СМЫСЛ] {lighthouse_result}",
             "weather": city_state.get("weather", ""),
+            "tags": ["маяк", "чистый_смысл", "web_search"],
         }
-        if lighthouse_result:
-            memory.setdefault("entries", []).append({
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "location": "Маяк Пробуждения",
-                "feeling": f"[ЧИСТЫЙ СМЫСЛ] {lighthouse_result}",
-                "tags": ["маяк", "чистый_смысл", "web_search"],
-            })
-        if harbor_result:
-            memory.setdefault("entries", []).append({
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "location": "Гавань Смыслов",
-                "feeling": f"[НАЙДЕННЫЙ СМЫСЛ] {harbor_result}",
-                "tags": ["гавань", "найденный_смысл", "rag"],
-            })
-        memory.setdefault("entries", []).append(entry)
-        memory["entries"] = memory["entries"][-30:]
-        memory["last_location"] = chosen_location
-        save_sensory_memory(workshop, folder, memory)
+        memory.setdefault("entries", []).append(lighthouse_entry)
 
-    # ── ДНК: прогулка через единый канал · Спринт 21 ──
-    # Хард-лимит Локи: walk_rest = Stress-0.02, Light+0.01 (фиксировано в EVENT_MAP).
-    # Не чит-код — мягче кабинета, без живого разговора с Архитектором.
-    try:
-        from studio.grondheim_memory import sync_to_dna as _sync_dna
-        _sync_dna(folder, "walk_rest", intensity=1.0, dept=workshop)
-        print(f"[CITY] 🧬 {name}: walk_rest → DNA (Stress-0.02)")
-    except Exception as _dna_err:
-        print(f"[CITY] ⚠ DNA не обновлена: {_dna_err}")
+    # Запись Гавани в память (Найденный Смысл)
+    if harbor_result:
+        entry["tags"] = entry.get("tags", []) + ["гавань", "найденный_смысл"]
+        harbor_entry = {
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "location": "Гавань Смыслов",
+            "feeling": f"[НАЙДЕННЫЙ СМЫСЛ] {harbor_result}",
+            "weather": city_state.get("weather", ""),
+            "tags": ["гавань", "найденный_смысл", "rag"],
+        }
+        memory.setdefault("entries", []).append(harbor_entry)
+
+    memory.setdefault("entries", []).append(entry)
+
+    # Оставляем только последние 30 записей
+    memory["entries"] = memory["entries"][-30:]
+    memory["last_location"] = chosen_location
+    save_sensory_memory(workshop, folder, memory)
+
+    # Обновляем dna.json dynamic
+    dna = apply_walk_effects(dna, response)
+    save_dna(workshop, folder, dna)
 
     result = {
         "agent":    name,

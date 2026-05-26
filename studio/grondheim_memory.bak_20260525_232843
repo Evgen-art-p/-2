@@ -1127,23 +1127,6 @@ def sync_to_dna(
         patience = min(1, patience + 0.15 * i)
         light = min(1, light + 0.05 * i)
 
-    elif event == "cabinet_chat":
-        # Пластырь Кабинета · Спринт 21 · правила Локи
-        # Фиксировано — intensity не влияет. Защита от водопада дофамина.
-        # Полное восстановление только через streak ≥ 3 успешных ранов.
-        stress   = max(0, stress   - 0.03)
-        light    = min(1, light    + 0.02)
-        patience = min(1, patience + 0.01)
-
-    elif event == "walk_rest":
-        # Прогулка по городу · Спринт 21 · хард-лимит Локи
-        # Мягче кабинета: нет живого разговора с Архитектором.
-        # Фиксировано — intensity игнорируется. Прогулка не чит-код.
-        # Полный сброс стресса только через streak ≥ 3 ранов — железное правило.
-        stress   = max(0, stress   - 0.02)
-        light    = min(1, light    + 0.01)
-        patience = min(1, patience + 0.01)
-
     # ── Записываем обратно ──
     dynamic["Respect"] = round(respect, 3)
     dynamic["Patience"] = round(patience, 3)
