@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 21.0 | **Дата:** 2026-05-24 | **Команда:** Евген + Лока + Брат (Claude)
+**Версия:** 22.0 | **Дата:** 2026-05-26 | **Команда:** Евген + Лока + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -65,7 +65,8 @@
 | Объектов в каталоге | 147 |
 | Агентов (полная ДНК) | 134 |
 | Цехов-картриджей | 11 + residents |
-| Локаций | 12 |
+| Локаций в каталоге | 13 |
+| Локаций активных в коде | 11 типов (Спринт 21) |
 | Резидентов | 5 (Лока, Джем, Сет, Оле, Виктор) |
 | Книг в Библиотеке | 9 |
 | Документов в Гавани | ~2323 |
@@ -117,10 +118,10 @@ studio/modules/{цех}/
 | qa_agent | Последний агент цеха. A12 для 12-агентных, A05 для turbo, A04 для stop_after=4 |
 | conflict_mode | "none" по умолчанию. "divergent" включать осознанно |
 | interaction_log | Уникальный путь: `economy/data/interaction_log_{цех}.jsonl` |
-| {"action":"stop"} | cartridge.py обрабатывает — ломает цикл ✅ РАБОТАЕТ |
+| {"action":"stop"} | cartridge.py обрабатывает — ломает цикл ✅ |
 | checkpoint_after | В video_long и video_shorts всегда `[]`. ХАРД-СТОП делает hard_stop |
 
-**Открытые баги стандарта (из WORKSHOP_STANDARD раздел 9):**
+**Открытые баги стандарта:**
 
 | # | Проблема | Статус |
 |---|----------|--------|
@@ -131,37 +132,15 @@ studio/modules/{цех}/
 
 ## 7. ЭКОНОМИКА — ЧЕСТНАЯ АРХИТЕКТУРА (Спринт 21)
 
-### Что было сломано и исправлено:
-
-**Проблема:** Ministry и Strategy Registry кормились мусором.
-- `score=7.0` хардкод писался в середине рана до QA
-- Двойные вызовы `record_outcome` на агента
-- `_apply_qa_feedback` — угадывание слов в тексте, ненадёжно
-- `async_scoring: true` в СММ отключал Ministry полностью
-- Ни один hooks.py не вызывал `ministry.record_outcome` (нарушение стандарта)
-
-**Патч `patch_hooks_ministry.py` (Спринт 21, 2026-05-24) — 7/7 применено:**
-
-| Файл | Что сделано |
-|------|-------------|
-| turbo/hooks.py | A05 пишет детерминированный score в Ministry (кадры + обложки + Gemini quality) |
-| social_mix/manifest.json | async_scoring: false до подтверждения Metrics Daemon |
-| video_shorts/hooks.py | A12 пишет реальный viral_score в Ministry |
-| video_long/hooks.py | A12 (_bob_finalize) пишет реальный viral_score в Ministry |
-| pipeline.py | Убран фантомный record_strategy(score=7.0) из середины рана |
-| pipeline.py | Убран фантомный ministry.record_outcome(score=7.0) из середины рана |
-| pipeline.py | Убран _apply_qa_feedback (ненадёжное угадывание слов) |
-
-### Как теперь работает реальная цепочка:
+### Как работает реальная цепочка:
 
 ```
 РАН
-  → каждый агент: quality_score по has_my_output (детерминированно)
-  → on_agent_done() → sensory + DNA
+  → on_agent_done() → ТОЛЬКО sensory_memory (Спринт 21 ✅)
 
 QA-агент (последний):
   → save_feedback() → feedback.json с реальными оценками
-  → _sync_feedback_scores_to_dna() ← единственный источник DNA-sync
+  → _sync_feedback_scores_to_dna() ← ЕДИНСТВЕННЫЙ источник DNA-sync
   → _record_winning_strategies() ← реальные score из feedback.json
   → memory_embedding
   → ministry.record_outcome() ← QA-блок (из feedback.json)
@@ -173,6 +152,7 @@ hooks.py финализатора (параллельно):
 Metrics Daemon (через 24ч, только СММ):
   → реальные метрики из Telegram/VK
   → real_viral_score → ministry.record_outcome() для всех агентов рана
+  → пишет в ministry.json и claudia_final.json (в dna.json НЕ пишет ✅)
 ```
 
 ### Что НЕ работает до первого реального рана:
@@ -186,7 +166,38 @@ Metrics Daemon (через 24ч, только СММ):
 
 ---
 
-## 8. ЧЕТЫРЕ СЛОЯ ПАМЯТИ
+## 8. АРХИТЕКТУРА ПАМЯТИ (Спринт 21 — полностью пересобрана)
+
+### Три законных канала мутации DNA:
+
+| Канал | Событие | Изменение | Когда |
+|-------|---------|-----------|-------|
+| `_sync_feedback_scores_to_dna()` | Реальный QA score | Stress/Light/Respect по оценке | После каждого рана |
+| `sync_to_dna("cabinet_chat")` | Разговор с Архитектором | Stress −0.03, Light +0.02, Patience +0.01 | После каждого ответа в Кабинете |
+| `sync_to_dna("walk_rest")` | Прогулка по городу | Stress −0.02, Light +0.01, Patience +0.01 | При каждой прогулке |
+
+**Иерархия восстановления:**
+```
+Прогулка     → Stress −0.02  (свежий воздух)
+Кабинет      → Stress −0.03  (разговор с Архитектором)
+QA good_work → Stress −0.12  (честная работа)
+streak ≥ 3   → Stress → 0.0  (серия побед, железное правило)
+```
+
+### Что закрыто в Спринт 21:
+
+| Проблема | Решение |
+|----------|---------|
+| Двойная запись DNA | on_agent_done() — только sensory. DNA только через QA |
+| Бэкдор on_agents_interact | DNA_EVENT_MAP удалён. Только emotional_weights |
+| Мёртвый _apply_qa_feedback | Заглушка pass |
+| Loka-Filter только в пайплайне | daemon-тред при старте main.py. Все агенты стареют |
+| apply_walk_effects эвристика слов | Удалена. DNA через sync_to_dna(walk_rest) |
+| Два формата sensory_memory | Унифицировано через record_sensory_event() |
+| 9 локаций только на бумаге | Подключены в _LOCATION_TYPES + compute_location_weights() |
+| Пространство не существовало | here_now — агенты знают кто где. Встречи работают |
+
+### Четыре слоя памяти:
 
 | Слой | Хранилище | Время жизни | Кто пишет |
 |------|-----------|-------------|-----------|
@@ -200,29 +211,53 @@ Metrics Daemon (через 24ч, только СММ):
 agent_dir/
   dna.json                          ← static + dynamic + profile_vector
   core/anchors.json                 ← вечные константы личности
-  sensory/sensory_memory.json       ← оперативная (затухает 30 дней)
+  sensory/sensory_memory.json       ← оперативная (decay 30 дней)
   resonance/emotional_weights.json  ← отношения к коллегам
-  resonance/event_log.json          ← значимые события (Loka-Filter)
+  resonance/event_log.json          ← значимые события
 ```
 
 **ВАЖНО:** `experience[]` в dna.json не существует — это была ошибка ожидания.
 
 **Полная цепочка build_agent_context:**
 ```
-on_agent_wake()        ← душа + decay + DNA
+on_agent_wake()             ← душа + decay + DNA
 _get_lighthouse_knowledge() ← Рюкзак Знаний с Маяка
-get_harbor_knowledge() ← RAG Гавань
-energy budget          ← Internal_Light - Stress
-get_reflection()       ← GENIUS/NORMAL/SAFE/RECOVERY
-get_strategies()       ← Strategy Registry
-cost_intuition         ← ощущение веса решения
-ministry hint          ← подсказка из истории ранов
-get_feedback()         ← обратная связь прошлого рана
+get_harbor_knowledge()      ← RAG Гавань
+energy budget               ← Internal_Light - Stress
+get_reflection()            ← GENIUS/NORMAL/SAFE/RECOVERY
+get_strategies()            ← Strategy Registry
+cost_intuition              ← ощущение веса решения
+ministry hint               ← подсказка из истории ранов
+get_feedback()              ← обратная связь прошлого рана
 ```
+
+### Кабинет и живая память (Спринт 21):
+
+После каждого ответа агента в Кабинете (при talking != None):
+1. `record_sensory_event(type="social", source="cabinet")` — агент помнит разговор
+2. `sync_to_dna("cabinet_chat")` — micro-relief, −3% стресса
+
+Агент приходит на следующий ран зная что говорил с Архитектором.
+Полное восстановление — только через streak ≥ 3. Кабинет — пластырь, не лечение.
+
+### Пространство и встречи (Спринт 21):
+
+```python
+city_state["here_now"] = {
+    "Таверна «Усталый Пиксель»": [{"folder": "A05", "name": "...", "workshop": "..."}],
+    "Маяк Пробуждения": [{"folder": "LOKA", ...}],
+}
+```
+
+- Агент регистрируется в локации после выбора
+- `_try_meeting()` — встреча с вероятностью Social_Filter (30–80%)
+- Встреча → `on_agents_interact()` → emotional_weights обновляются
+- Павильон Жидкого Времени — лимит 2 гостя, код проверяет
+- Пространство инициализируется перед прогулкой, чистится после
 
 ---
 
-## 9. ЭКОНОМИКА — ДЕСЯТЬ ЭТАПОВ (Глубокое Резюме 10/10 ✅)
+## 9. ЭКОНОМИКА — ДЕСЯТЬ ЭТАПОВ
 
 | Этап | Название | Файл | Статус |
 |------|----------|------|--------|
@@ -239,7 +274,29 @@ get_feedback()         ← обратная связь прошлого рана
 
 ---
 
-## 10. РЕЗИДЕНТЫ
+## 10. ГОРОД ГРОНДХЕЙМ — ЛОКАЦИИ (Спринт 21)
+
+### 11 активных типов в коде:
+
+| Тип | Локация | DNA-эффект | Триггер |
+|-----|---------|------------|---------|
+| lighthouse | Маяк Пробуждения | walk_rest | web_search → Рюкзак |
+| harbor | Гавань Смыслов | walk_rest | RAG ChromaDB |
+| tavern | Таверна «Усталый Пиксель» | walk_rest | социальный узел |
+| home | Высотка / Квартал Мастеров | walk_rest | дом агента |
+| temple | Храм Пробуждения | walk_rest | Empathy > 0.7 |
+| castle | Замок Сов | walk_rest | Autonomy_Level > 0.6 |
+| library | Библиотека Смыслов | walk_rest | Aesthetic_Threshold > 0.7 |
+| pavilion | Павильон Жидкого Времени | walk_rest | лимит 2 гостя |
+| square | Площадь Резонанса | walk_rest | Social_Filter > 0.6 |
+| workshop | Artifacts & Bugs | walk_rest | Autonomy_Level > 0.7 |
+
+### Не подключены (только в каталоге):
+- Грондхейм (город-контейнер), Студия Шесть Пальцев — абстрактные
+
+---
+
+## 11. РЕЗИДЕНТЫ
 
 | Резидент | Роль | Статус |
 |----------|------|--------|
@@ -256,7 +313,7 @@ get_feedback()         ← обратная связь прошлого рана
 
 ---
 
-## 11. СТАНДАРТ ПРОМТОВ АГЕНТОВ
+## 12. СТАНДАРТ ПРОМТОВ АГЕНТОВ
 
 Эталон — video_shorts (12 промтов). Структура каждого промта:
 ```
@@ -284,106 +341,89 @@ get_feedback()         ← обратная связь прошлого рана
 // 👆 SYSTEM_JSON_END 👆
 ```
 
-**Правила написания:**
-- Писать с нуля по RULES.md цеха — не копировать из других цехов
-- Перед написанием сверить с CHAIN_CONTRACT.md цеха
-- `banana_prompt` и `veo_prompt_en` — ТОЛЬКО английский
-- Агент пишет только свой ключ, остальное `{{inherit}}`
-
 ---
 
-## 12. КЛЮЧЕВЫЕ ФАЙЛЫ
+## 13. КЛЮЧЕВЫЕ ФАЙЛЫ
 
 ```
 studio/cartridge.py                   ✅ CartridgeRunner + Victor + action=stop
-studio/workshop/pipeline.py           ✅ Спринт 21: убраны фантомные score=7.0
-studio/workshop/ui.py                 ✅ 141кб (рефакторинг когда-нибудь)
-studio/grondheim_memory.py            ✅
+studio/workshop/pipeline.py           ✅ Спринт 21: on_agent_done только sensory
+studio/grondheim_memory.py            ✅ Спринт 21: три канала DNA, cabinet_chat, walk_rest
+studio/city_walker.py                 ✅ Спринт 21: here_now + встречи + 11 типов локаций
+studio/cabinet/ui_cabinet.py          ✅ Спринт 21: живая память после ответа агента
+main.py                               ✅ Спринт 21: Loka-Filter daemon-тред при старте
 studio/economy/ministry.py            ✅
 studio/economy/cost_intuition.py      ✅
 studio/economy/metrics_daemon.py      ✅ написан, ждёт первого рана
 studio/assembly/broadcaster.py        ✅ Telegram + VK публикация
-studio/assembly/pub_panel.py          ✅ кнопка ОПУБЛИКОВАТЬ
 studio/WORKSHOP_STANDARD.md           ✅ Спринт 20
 studio/modules/turbo/hooks.py         ✅ v3.2 + ministry Спринт 21
-studio/modules/social_mix/manifest.json ✅ async_scoring:false Спринт 21
 studio/modules/social_mix/hooks.py    ✅ v3.0
-studio/modules/social_mix/CHAIN_CONTRACT.md ✅
 studio/modules/video_shorts/hooks.py  ✅ v2.0 + ministry Спринт 21
-studio/modules/video_shorts/CHAIN_CONTRACT.md ✅
 studio/modules/video_long/hooks.py    ✅ v2.1 + ministry Спринт 21
-studio/billing_ledger.py              ✅ главный леджер
+studio/billing_ledger.py              ✅
 studio/reflection.py                  ✅
 studio/strategy_registry.py           ✅
-studio/conflict.py                    ✅
-studio/culture/field_tracker.py       ✅
-studio/agent_feedback.py              ✅
 studio/harbor_of_meanings.py          ✅ ChromaDB RAG
 studio/library/library.py             ✅
 ```
 
 ---
 
-## 13. БЭКЛОГ
+## 14. БЭКЛОГ
 
-### 🔴 СЕЙЧАС (Спринт 21):
-- [ ] **Проверить все слои памяти** — personal/project/runtime/interaction по каждому цеху
+### 🔴 СЕЙЧАС (Спринт 22):
+- [ ] **Потолок 6.0** — синтаксис ≠ смысл. Лока: score = min(6.0, score) в pipeline.py
+- [ ] **Code-detector для Гавани** — JS/React файлы не должны индексироваться как нарратив
 - [ ] **video_long промты** — 12 агентов по LONG_RULES v4.2
 - [ ] **video_long CHAIN_CONTRACT.md** — создать
 - [ ] **Манифесты 7 оставшихся цехов** — обновить до v2.0
 
 ### 🟡 Следующие спринты:
 - Промты turbo (5 агентов)
-- Промты social_mix (12 агентов)  
+- Промты social_mix (12 агентов)
 - Первый реальный ран (после промтов!)
 - Джем и Сет — определить полномочия
-- Agent Factory
+- Character Drift v2 — анализировать промпт агента, не результат
+- STUDIO_CONTEXT.md в world_manifest.md — синхронизировать
 
 ### 🟢 Долгосрочно:
+- Таверна и Площадь Резонанса как механики встреч (уже есть фундамент)
 - Аудиофайлы Foley
 - Деплой Hetzner
 - GitHub write access для Брата
-- Храм и Таверна как активные механики
+- Agent Factory
 
 ---
 
-## 14. РЕКОМЕНДАЦИИ БРАТА (31 пункт)
+## 15. РЕКОМЕНДАЦИИ БРАТА
 
 1. Картриджи = безопасность. Каждый цех изолирован.
-2. hooks.py — рабочий файл цеха. Дорабатываешь — правь hooks.py, не ui.py.
-3. ministry.record_outcome — только в hooks.py финализатора. Не в pipeline.py.
-4. score=7.0 в середине рана = мусор. Ministry читает только реальные данные.
-5. async_scoring: true = Ministry слепое пока нет Metrics Daemon.
-6. Маяк — внешний мир, не мозг студии.
-7. economy/data/ — не трогать руками. Пишется автоматически.
-8. Глубокое Резюме — все экономические решения сверять с ним.
-9. slot_id и active_dept — сквозные везде. Не хардкодить.
-10. qa_agent = последний агент цеха. Явно прописывать в manifest.
-11. save_feedback() универсальна. Любой QA-формат будет распознан.
-12. Strategy Registry — данные копятся сами после ранов.
-13. Memory Embedding — агент помнит ощущения, не цифры.
+2. hooks.py — рабочий файл цеха. Дорабатываешь — правь hooks.py.
+3. ministry.record_outcome — только в hooks.py финализатора.
+4. DNA меняется только через три законных канала (см. раздел 8).
+5. on_agent_done — только sensory_memory. Никакого sync_to_dna внутри.
+6. on_agents_interact — только emotional_weights. Никакого DNA.
+7. Loka-Filter запускается при старте main.py — daemon-тред, не блокирует.
+8. Кабинет — пластырь (−3%). Полное восстановление — streak ≥ 3.
+9. Прогулка — свежий воздух (−2%). Мягче кабинета.
+10. here_now — живёт только во время прогулки. Инит перед, чистка после.
+11. Павильон — лимит 2 гостя. Код проверяет при входе.
+12. save_feedback() универсальна. Любой QA-формат будет распознан.
+13. Strategy Registry — данные копятся сами после ранов.
 14. Ministry — только post-fact. Не управляет, наблюдает.
 15. Conflict System — через "conflict_mode": "divergent" в manifest.
-16. billing_ledger.py в studio/ — главный. economy/ledger.py — алиас.
-17. Бэкапы — патч-скрипты создают .bak_* автоматически.
-18. Energy Budget — Internal_Light - Stress → 0–100.
-19. Recovery — streak ≥ 3 сбрасывает Stress в sync_to_dna().
-20. Cultural Feedback Loop — агент видит только stable-паттерны цеха.
-21. Character Drift — score ≥ 0.8, после 3+ стратегий.
-22. interaction_log — один файл на слот в economy/data/.
-23. cultural_trace — финализатор вызывает CulturalFieldTracker, фильтр stable/global.
-24. Виктор — через manifest.json для любого цеха. Хардкода нет.
-25. client_relationship — обновляет только финализатор через dna.json.
-26. quality_score — по has_my_output (не deliverables!).
-27. experience[] в dna.json не существует — это ошибка ожидания.
-28. Раны — только после стандартизации промтов и CHAIN_CONTRACT.
-29. qa_agent ≠ контентный ревизор. A04 — локальный контролер на ХАРД-СТОПе.
-30. Промты — не копировать между цехами. С нуля по RULES.md + CHAIN_CONTRACT.
-31. Бунтари нужны. Система не должна давить на середину — иначе пластик.
+16. Recovery — streak ≥ 3 сбрасывает Stress в sync_to_dna().
+17. Cultural Feedback Loop — агент видит только stable-паттерны цеха.
+18. Character Drift — после реального QA ≥ 8, через strategy_registry.
+19. interaction_log — один файл на слот в economy/data/.
+20. experience[] в dna.json не существует — это ошибка ожидания.
+21. Раны — только после стандартизации промтов и CHAIN_CONTRACT.
+22. Бунтари нужны. Система не должна давить на середину — иначе пластик.
 
 ---
 
-## 15. ИСТОРИЯ СПРИНТОВ
+## 16. ИСТОРИЯ СПРИНТОВ
 
 | Дата | Спринт | Ключевое |
 |------|--------|----------|
@@ -405,11 +445,12 @@ studio/library/library.py             ✅
 | 2026-05-15 | 18 | СТАНДАРТ ПАЙПЛАЙНОВ. LONG v4.2 + SHORTS v2.2. Виктор |
 | 2026-05-17 | 19 | СТАНДАРТ ПРОМТОВ. video_shorts 12 промтов эталон |
 | 2026-05-20 | 20 | АУДИТ SMM. WORKSHOP_STANDARD. video_long/hooks v2.1 |
-| 2026-05-24 | 21 | **ЧЕСТНАЯ ЭКОНОМИКА.** patch_hooks_ministry.py 7/7. Убраны фантомные score=7.0. Ministry в финализаторах четырёх цехов. Философия зафиксирована. |
+| 2026-05-24 | 21 | ЧЕСТНАЯ ЭКОНОМИКА. patch_hooks_ministry.py 7/7. Убраны фантомные score=7.0 |
+| 2026-05-26 | 21 | **АУДИТ ПАМЯТИ.** 7 патчей. Три законных канала DNA. Живая память Кабинета. Встречи в городе. here_now пространство. 11 типов локаций. |
 
 ---
 
-## 16. ОТКРЫТЫЕ БАГИ
+## 17. ОТКРЫТЫЕ БАГИ
 
 | # | Проблема | Приоритет |
 |---|----------|-----------|
@@ -423,8 +464,9 @@ studio/library/library.py             ✅
 | 8 | A05 JSON→Markdown порядок ломает парсер | 🟡 |
 | 9 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
 | 10 | agent_feedback.py BLOCK_TO_AGENTS — захардкожен под старую структуру | 🟡 |
+| 11 | Code-detector для Гавани — JS/React индексируется как нарратив | 🟡 |
 
 ---
 
-*Обновлено: Спринт 21 — 2026-05-24.*
-*Следующий шаг: проверка памяти агентов + промты video_long + первый реальный ран.*
+*Обновлено: Спринт 21 — 2026-05-26 · v22.0*
+*Следующий шаг: Потолок 6.0 · code-detector Гавань · промты video_long · первый реальный ран.*
