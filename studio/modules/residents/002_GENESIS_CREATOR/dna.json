@@ -27,7 +27,10 @@
     "Internal_Light": 1,
     "streak": 1,
     "stars": 0,
-    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+    "_note": "автоинициализация при рождении — меняется в процессе жизни",
+    "favorite_location": "",
+    "visit_streak": 0,
+    "habit_strength": 0.0
   },
   "balance": {
     "GND": 100.0,

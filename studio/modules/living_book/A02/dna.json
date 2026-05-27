@@ -19,7 +19,10 @@
     "Stress": 0,
     "Internal_Light": 0.84,
     "streak": 1,
-    "stars": 0
+    "stars": 0,
+    "favorite_location": "",
+    "visit_streak": 0,
+    "habit_strength": 0.0
   },
   "resonance": {
     "pull_vector": [
