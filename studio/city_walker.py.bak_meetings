@@ -601,21 +601,18 @@ def format_weights_hint(weights: dict[str, float], top_n: int = 5) -> str:
 # ВЛИЯНИЕ ПРОГУЛКИ НА СОСТОЯНИЕ
 # ═══════════════════════════════════════════════════════
 
-async def _try_meeting(
+def _try_meeting(
     agent_folder: str,
     agent_name: str,
     agent_dna: dict,
     chosen_location: str,
     here_now: dict,
     workshop: str,
-    agent_profession: str = "",
 ) -> dict | None:
     """
-    Пространственный триггер встречи · Спринт 23 Блок Б.
-    Если в chosen_location уже есть агент — жребий по Social_Filter,
-    и при выпадении — ЖИВОЙ диалог через meeting.run_meeting().
-
-    Возвращает dict с описанием встречи (или None если не состоялась).
+    Пространственный триггер встречи · Спринт 21.
+    Если в chosen_location уже есть агент — встреча с вероятностью Social_Filter.
+    Детерминированный расчёт, без LLM. Результат → on_agents_interact().
     """
     import random
 
@@ -623,98 +620,51 @@ async def _try_meeting(
     if not others:
         return None
 
-    # Берём первого подходящего партнёра (не себя)
-    partner = None
-    for candidate in others:
-        if candidate["folder"] != agent_folder:
-            partner = candidate
-            break
-    if partner is None:
-        return None
-
+    partner = others[0]
     partner_folder = partner["folder"]
     partner_name   = partner["name"]
-    partner_dept   = partner.get("workshop", workshop)
 
-    # Вероятность встречи: усреднённый Social_Filter обоих
-    a_social = float(agent_dna.get("static", {}).get("Social_Filter", 0.5))
-    partner_dna = load_dna(partner_dept, partner_folder)
-    b_social = float(partner_dna.get("static", {}).get("Social_Filter", 0.5))
-    avg_social = (a_social + b_social) / 2
-    meet_chance = 0.30 + avg_social * 0.50
+    if partner_folder == agent_folder:
+        return None
+
+    # Вероятность встречи: Social_Filter 0.0 → 30%, 1.0 → 80%
+    static = agent_dna.get("static", {})
+    social_filter = float(static.get("Social_Filter", 0.5))
+    meet_chance = 0.30 + social_filter * 0.50
 
     if random.random() > meet_chance:
         print(f"[CITY] 🚶 {agent_name} прошёл мимо {partner_name} в {chosen_location}")
         return None
 
-    # Резидент Павильона — лимит 2 уже соблюдён в walk_one_agent
     print(f"[CITY] 🤝 ВСТРЕЧА: {agent_name} ↔ {partner_name} в {chosen_location}")
 
-    # Подгружаем профессии — нужны для голоса в meeting.py
-    def _read_profession(dept: str, folder: str) -> str:
-        info_path = MODULES_DIR / dept / folder / "info.json"
-        if info_path.exists():
-            try:
-                info = json.loads(info_path.read_text(encoding="utf-8"))
-                return info.get("profession") or info.get("role") or ""
-            except Exception:
-                return ""
-        return ""
+    loc_lower = chosen_location.lower()
+    if "храм" in loc_lower or "павильон" in loc_lower:
+        quality = 0.8   # тихое место — глубокий разговор
+    elif "маяк" in loc_lower or "библиотека" in loc_lower:
+        quality = 0.7   # обмен знаниями
+    elif "таверна" in loc_lower:
+        quality = 0.6   # расслабленно
+    else:
+        quality = 0.5
 
-    agent_a_dict = {
-        "folder":     agent_folder,
-        "name":       agent_name,
-        "dept":       workshop,
-        "profession": agent_profession or _read_profession(workshop, agent_folder),
-    }
-    agent_b_dict = {
-        "folder":     partner_folder,
-        "name":       partner_name,
-        "dept":       partner_dept,
-        "profession": _read_profession(partner_dept, partner_folder),
-    }
-
-    # Загружаем city_state свежим — там лежит weather
-    city_state = load_city_state()
-
-    # Живой диалог
     try:
-        from studio.meeting import run_meeting
-        scene = await run_meeting(
-            agent_a=agent_a_dict,
-            agent_b=agent_b_dict,
-            location=chosen_location,
-            city_state=city_state,
+        from studio.grondheim_memory import on_agents_interact
+        on_agents_interact(
+            agent_a=agent_folder,
+            agent_b=partner_folder,
+            interaction_type="collaboration",
+            quality=quality,
+            note=f"Случайная встреча в {chosen_location}",
+            dept=workshop,
         )
     except Exception as _err:
-        print(f"[CITY] ⚠ run_meeting упал: {_err}")
-        import traceback; traceback.print_exc()
-        # Фоллбэк — детерминированный режим как было
-        try:
-            from studio.grondheim_memory import on_agents_interact
-            on_agents_interact(
-                agent_a=agent_folder, agent_b=partner_folder,
-                interaction_type="collaboration", quality=0.4,
-                note=f"Случайная встреча в {chosen_location} (фоллбэк)",
-                dept=workshop,
-            )
-        except Exception:
-            pass
-        return {"met": partner_name, "location": chosen_location, "quality": 0.4}
+        print(f"[CITY] ⚠ on_agents_interact: {_err}")
 
-    if scene is None:
-        # Молча разошлись — это нормально, on_agents_interact уже отработал внутри
-        return {"met": partner_name, "location": chosen_location,
-                "quality": 0.15, "silent": True}
-
-    inter = scene.get("interaction", {})
     return {
-        "met":      partner_name,
+        "met": partner_name,
         "location": chosen_location,
-        "quality":  inter.get("quality", 0.5),
-        "type":     inter.get("type", "collaboration"),
-        "turns":    scene.get("total_turns", 0),
-        "spoken":   scene.get("spoken_turns", 0),
+        "quality": quality,
     }
 
 
@@ -887,10 +837,7 @@ async def walk_one_agent(agent: dict, city_state: dict,
     save_city_state(city_state)
 
     # Проверяем встречу
-    meeting = await _try_meeting(
-        folder, name, dna, chosen_location, here_now, workshop,
-        agent_profession=agent.get("Profession", ""),
-    )
+    meeting = _try_meeting(folder, name, dna, chosen_location, here_now, workshop)
     if meeting:
         print(f"[CITY] 💬 {name} встретил {meeting['met']} в {meeting['location']}")
     # ══ END ПРОСТРАНСТВО ══
