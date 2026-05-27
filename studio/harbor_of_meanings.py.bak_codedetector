@@ -34,9 +34,10 @@ HARBOR_DB_PATH = Path("studio/harbor_db")
 HARBOR_COLLECTION = "grondheim_knowledge_v2"
 
 # Источники для индексации
-# Гавань = пристань готовых проектов (runs/) + живые смыслы с Маяка
 INDEX_SOURCES = {
-    "runs": Path("runs"),
+    "knowledge":    Path("knowledge"),
+    "runs":         Path("runs"),
+    "city_docs":    Path("GRONDHEIM_CITY"),
 }
 
 # Расширения для индексации
@@ -196,64 +197,17 @@ def _clean_text(text: str) -> str:
     return cleaned.strip()
 
 
-# Расширения которые всегда считаются кодом
-_CODE_EXTENSIONS = {".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte", ".css", ".scss", ".less"}
-
-# Паттерны кода (достаточно 2 совпадений → это код)
-_CODE_PATTERNS = [
-    r"^import\s+React",
-    r"^import\s+\{",
-    r"^from\s+react",
-    r"useState\s*\(",
-    r"useEffect\s*\(",
-    r"const\s+\w+\s*=\s*\(",   # const Component = (
-    r"=>\s*\{",                 # стрелочные функции
-    r"export\s+default\s+",
-    r"export\s+const\s+",
-    r"className\s*=",
-    r"<[A-Z]\w+",               # JSX компоненты <Component
-    r"ReactDOM\.render",
-    r"\.map\s*\(\s*\(",
-    r"props\.\w+",
-    r"^\s*function\s+\w+\s*\(", # function declaration
-    r"npm\s+install",
-    r"require\s*\(",  # require(...)
-]
-
-
-def _is_code(text: str, filepath_str: str) -> bool:
-    """Возвращает True если файл — программный код, а не нарратив."""
-    fp = filepath_str.lower()
-
-    # По расширению — сразу да
-    suffix = Path(filepath_str).suffix.lower()
-    if suffix in _CODE_EXTENSIONS:
-        return True
-
-    # По паттернам — нужно 2+ совпадения
-    hits = sum(
-        1 for pattern in _CODE_PATTERNS
-        if re.search(pattern, text, re.MULTILINE)
-    )
-    return hits >= 2
-
-
 def _detect_content_type(text: str, filepath_str: str) -> str:
     """
-    Определяет тип контента: narrative / template / log / lore / code.
+    Определяет тип контента: narrative / template / log / lore.
 
     - narrative: истории, рефлексии, описания персонажей, чистые смыслы
     - template: промпты агентов, JSON-шаблоны, output-форматы
     - log: результаты runs (chain_data, оценки, JSON-выходы агентов)
     - lore: концепции города, документация, философия
-    - code: JS/React/TS/Vue и любой программный код — НЕ индексируется
     """
     fp = filepath_str.lower()
     text_lower = text.lower()
-
-    # ── Code-детектор: первый, самый важный ──
-    if _is_code(text, filepath_str):
-        return "code"
 
     # По пути файла — ранние выходы
     if "grondheim_city" in fp and ("concept" in fp or "lore" in fp or "hexagon" in fp):
@@ -413,11 +367,6 @@ def index_file(filepath: Path, category: str = "general") -> int:
 
     # ── Определяем тип контента ──
     content_type = _detect_content_type(text, str(filepath))
-
-    # ── Код не индексируем — никогда ──
-    if content_type == "code":
-        print(f"[ГАВАНЬ] ⏭  Пропуск кода: {filepath.name}")
-        return 0
 
     # Метаданные
     metadata = {
@@ -599,12 +548,27 @@ def reindex_all() -> dict:
 
     stats = {}
 
-    # 1. Runs — готовые проекты (главный источник Гавани)
+    # 1. Knowledge (SET промпты)
+    n = index_directory(INDEX_SOURCES["knowledge"], category="set_knowledge")
+    stats["knowledge"] = n
+    print(f"[ГАВАНЬ]   knowledge/: {n} чанков")
+
+    # 2. Runs (результаты проектов)
     n = index_directory(INDEX_SOURCES["runs"], category="project_results")
     stats["runs"] = n
     print(f"[ГАВАНЬ]   runs/: {n} чанков")
 
-    # 2. Lighthouse sensory — живые смыслы агентов с Маяка
+    # 3. City docs (концепции, лор)
+    n = index_directory(INDEX_SOURCES["city_docs"], category="city_lore")
+    stats["city_docs"] = n
+    print(f"[ГАВАНЬ]   GRONDHEIM_CITY/: {n} чанков")
+
+    # 4. Agent knowledge bases
+    n = index_agent_knowledge()
+    stats["agent_knowledge"] = n
+    print(f"[ГАВАНЬ]   agent knowledge/: {n} чанков")
+
+    # 5. Lighthouse sensory (Чистый Смысл)
     n = index_sensory_lighthouse()
     stats["lighthouse"] = n
     print(f"[ГАВАНЬ]   Маяк (sensory): {n} записей")
@@ -696,10 +660,8 @@ def search_harbor(
             if exclude_categories and cat in exclude_categories:
                 continue
 
-            # ── Фильтр 3: скрываем template и code если не запрошено ──
+            # ── Фильтр 3: скрываем template если не запрошено ──
             ct = meta.get("content_type", "")
-            if ct == "code":
-                continue  # код никогда не показываем
             if ct == "template" and not include_templates:
                 continue
 

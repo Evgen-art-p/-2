@@ -34,9 +34,10 @@ HARBOR_DB_PATH = Path("studio/harbor_db")
 HARBOR_COLLECTION = "grondheim_knowledge_v2"
 
 # Источники для индексации
-# Гавань = пристань готовых проектов (runs/) + живые смыслы с Маяка
 INDEX_SOURCES = {
-    "runs": Path("runs"),
+    "knowledge":    Path("knowledge"),
+    "runs":         Path("runs"),
+    "city_docs":    Path("GRONDHEIM_CITY"),
 }
 
 # Расширения для индексации
@@ -599,12 +600,27 @@ def reindex_all() -> dict:
 
     stats = {}
 
-    # 1. Runs — готовые проекты (главный источник Гавани)
+    # 1. Knowledge (SET промпты)
+    n = index_directory(INDEX_SOURCES["knowledge"], category="set_knowledge")
+    stats["knowledge"] = n
+    print(f"[ГАВАНЬ]   knowledge/: {n} чанков")
+
+    # 2. Runs (результаты проектов)
     n = index_directory(INDEX_SOURCES["runs"], category="project_results")
     stats["runs"] = n
     print(f"[ГАВАНЬ]   runs/: {n} чанков")
 
-    # 2. Lighthouse sensory — живые смыслы агентов с Маяка
+    # 3. City docs (концепции, лор)
+    n = index_directory(INDEX_SOURCES["city_docs"], category="city_lore")
+    stats["city_docs"] = n
+    print(f"[ГАВАНЬ]   GRONDHEIM_CITY/: {n} чанков")
+
+    # 4. Agent knowledge bases
+    n = index_agent_knowledge()
+    stats["agent_knowledge"] = n
+    print(f"[ГАВАНЬ]   agent knowledge/: {n} чанков")
+
+    # 5. Lighthouse sensory (Чистый Смысл)
     n = index_sensory_lighthouse()
     stats["lighthouse"] = n
     print(f"[ГАВАНЬ]   Маяк (sensory): {n} записей")
