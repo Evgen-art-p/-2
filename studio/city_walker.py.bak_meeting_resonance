@@ -611,119 +611,44 @@ async def _try_meeting(
     agent_profession: str = "",
 ) -> dict | None:
     """
-    Пространственный триггер встречи · Спринт 23 Блок Б · v2 (резонанс).
+    Пространственный триггер встречи · Спринт 23 Блок Б.
+    Если в chosen_location уже есть агент — жребий по Social_Filter,
+    и при выпадении — ЖИВОЙ диалог через meeting.run_meeting().
 
-    Партнёр выбирается по СВЯЗИ, не по случайному соседству:
-      • emotional_weights.json — кого агент уже знает (warmth/trust/respect)
-      • Workshop_ID — один цех = знакомы по ранам
-      • Если знакомых нет → Social_Filter решает заговорить с незнакомцем
-
-    Это убирает «фанеру» — пустые встречи между агентами без истории.
-    Замкнутые интроверты в Таверне молча пройдут. Тёплые пары
-    (после общего рана, после удачного диалога) встретятся точно.
+    Возвращает dict с описанием встречи (или None если не состоялась).
     """
     import random
 
-    others = [c for c in here_now.get(chosen_location, []) if c["folder"] != agent_folder]
+    others = here_now.get(chosen_location, [])
     if not others:
         return None
 
-    # ═══ ЗАГРУЗКА РЕЗОНАНСА АГЕНТА ═══
-    # Читаем emotional_weights.json — кто кого знает и насколько тепло.
-    def _load_resonance(dept: str, folder: str) -> dict:
-        path = MODULES_DIR / dept / folder / "resonance" / "emotional_weights.json"
-        if not path.exists():
-            return {}
-        try:
-            return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            return {}
-
-    my_weights = _load_resonance(workshop, agent_folder)
-
-    # ═══ SCORE КАЖДОГО КАНДИДАТА ═══
-    # Чем выше score — тем сильнее агента тянет именно к этому соседу.
-    a_social = float(agent_dna.get("static", {}).get("Social_Filter", 0.5))
-
-    candidates_scored = []
-    for cand in others:
-        cand_folder = cand["folder"]
-        cand_dept   = cand.get("workshop", workshop)
-
-        # Резонанс ОТ agent К cand
-        rel = my_weights.get(cand_folder) or my_weights.get(cand_folder.upper()) or {}
-        warmth  = float(rel.get("warmth",  0.0))
-        trust   = float(rel.get("trust",   0.0))
-        respect = float(rel.get("respect", 0.0))
-        rivalry = float(rel.get("rivalry", 0.0))
-
-        # Общий цех = знакомы по ранам
-        same_dept = 1.0 if cand_dept == workshop and workshop != "residents" else 0.0
-
-        # Базовый score связи
-        score = (
-            warmth   * 0.40 +
-            trust    * 0.30 +
-            respect  * 0.20 +
-            same_dept * 0.30
-        )
-
-        # Соперничество — притягивает (хочется выяснить отношения), но мягко
-        score += rivalry * 0.10
-
-        # Социальный филер партнёра — насколько он сам готов вступить в диалог.
-        # Если партнёр-интроверт, шанс встречи падает даже при тёплых отношениях.
-        cand_dna = load_dna(cand_dept, cand_folder)
-        b_social = float(cand_dna.get("static", {}).get("Social_Filter", 0.5))
-        score *= (0.5 + b_social * 0.5)  # коэф 0.5..1.0
-
-        candidates_scored.append({
-            "cand":      cand,
-            "score":     round(score, 3),
-            "rel":       rel,
-            "same_dept": bool(same_dept),
-            "b_social":  b_social,
-        })
-
-    # Сортируем — лучший наверху
-    candidates_scored.sort(key=lambda x: x["score"], reverse=True)
-    best = candidates_scored[0]
-    partner = best["cand"]
-
-    # ═══ ПОРОГИ ВСТРЕЧИ ═══
-    # 1. Если score >= 0.30 — это знакомый, встреча почти гарантирована.
-    #    Шанс = 70% + score*30% (capped 95%)
-    # 2. Если score < 0.30 — незнакомец. Шанс решает Social_Filter
-    #    обоих сторон, как раньше, но НИЖЕ (т.к. незнакомый):
-    #    base 0.15 + avg_social*0.35 (max ~50%)
-    # 3. Если Social_Filter агента < 0.3 — интроверт, всегда молча проходит
-    #    мимо незнакомцев (но к знакомым подходит).
-
-    is_known = best["score"] >= 0.30
-
-    if is_known:
-        meet_chance = min(0.95, 0.70 + best["score"] * 0.30)
-        reason_tag = f"знакомый (score={best['score']:.2f})"
-    else:
-        # Замкнутый интроверт пройдёт мимо незнакомца
-        if a_social < 0.30:
-            print(f"[CITY] 🚶 {agent_name} (интроверт) прошёл мимо в {chosen_location}")
-            return None
-        avg_social = (a_social + best["b_social"]) / 2
-        meet_chance = 0.15 + avg_social * 0.35
-        reason_tag = f"незнакомец (S_F={avg_social:.2f})"
-
-    if random.random() > meet_chance:
-        print(f"[CITY] 🚶 {agent_name} прошёл мимо {partner['name']} "
-              f"в {chosen_location} ({reason_tag})")
+    # Берём первого подходящего партнёра (не себя)
+    partner = None
+    for candidate in others:
+        if candidate["folder"] != agent_folder:
+            partner = candidate
+            break
+    if partner is None:
         return None
-
-    print(f"[CITY] 🤝 ВСТРЕЧА: {agent_name} ↔ {partner['name']} "
-          f"в {chosen_location} · {reason_tag}")
 
     partner_folder = partner["folder"]
     partner_name   = partner["name"]
     partner_dept   = partner.get("workshop", workshop)
+
+    # Вероятность встречи: усреднённый Social_Filter обоих
+    a_social = float(agent_dna.get("static", {}).get("Social_Filter", 0.5))
+    partner_dna = load_dna(partner_dept, partner_folder)
+    b_social = float(partner_dna.get("static", {}).get("Social_Filter", 0.5))
+    avg_social = (a_social + b_social) / 2
+    meet_chance = 0.30 + avg_social * 0.50
+
+    if random.random() > meet_chance:
+        print(f"[CITY] 🚶 {agent_name} прошёл мимо {partner_name} в {chosen_location}")
+        return None
+
+    # Резидент Павильона — лимит 2 уже соблюдён в walk_one_agent
+    print(f"[CITY] 🤝 ВСТРЕЧА: {agent_name} ↔ {partner_name} в {chosen_location}")
 
     # Подгружаем профессии — нужны для голоса в meeting.py
     def _read_profession(dept: str, folder: str) -> str:
@@ -790,8 +715,6 @@ async def _try_meeting(
         "type":     inter.get("type", "collaboration"),
         "turns":    scene.get("total_turns", 0),
         "spoken":   scene.get("spoken_turns", 0),
-        "score":    best["score"],
-        "known":    is_known,
     }
 
 
