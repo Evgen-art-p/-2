@@ -28,9 +28,9 @@
   },
   "dynamic": {
     "Respect": 0.96,
-    "Patience": 0.999,
+    "Patience": 1,
     "Stress": 0,
-    "Internal_Light": 0.82,
+    "Internal_Light": 0.86,
     "streak": 0,
     "stars": 0,
     "_note": "автоинициализация миграцией — подкрути характер через реестр или кабинет",

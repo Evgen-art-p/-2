@@ -1664,14 +1664,6 @@ def page_cabinet() -> None:
                                     + ", ".join(restless_d[:10])
                                     + "</div>"
                                 )
-                            if not revolts_d and not resentful_d and not restless_d:
-                                ui.html(
-                                    '<div style="font-family:JetBrains Mono;'
-                                    'font-size:0.55rem;color:rgba(140,150,180,0.25);'
-                                    'padding-top:8px;text-align:center;">'
-                                    'все спят 💤 — город спокоен'
-                                    '</div>'
-                                )
 
                     def _toggle(e, db=detail_block, es=expanded_state):
                         es["open"] = not es["open"]

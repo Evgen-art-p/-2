@@ -578,6 +578,7 @@ def page_cabinet() -> None:
                 "SAFE":     "🛡",
                 "RECOVERY": "💤",
             }
+            _hide_map()
             # Сохраняем отчёт
             try:
                 from studio.daily_reports import save_report
@@ -621,6 +622,7 @@ def page_cabinet() -> None:
                 ui.notify("⚠ Агентов не найдено", type="warning")
                 return
 
+            _hide_map()
             reload_all_agents()
             update_residents()
             update_city_zone()
@@ -633,15 +635,9 @@ def page_cabinet() -> None:
                     for k, d in night_results.items()
                     if d.get("decay_changes", {}).get("resentment_grew")
                 ]
-                restless_save = [
-                    d.get("agent_name", k.split("_")[0])
-                    for k, d in night_results.items()
-                    if d.get("decision") == "RESTLESS"
-                ]
                 save_report("night", summary, {
                     "revolts":   revolts,
                     "resentful": resentful_save,
-                    "restless":  restless_save,
                 })
                 switch_tab("reports")
                 update_right_panel("reports")
@@ -1663,14 +1659,6 @@ def page_cabinet() -> None:
                                     f'<b>😰 Тревожный сон ({len(restless_d)})</b><br>'
                                     + ", ".join(restless_d[:10])
                                     + "</div>"
-                                )
-                            if not revolts_d and not resentful_d and not restless_d:
-                                ui.html(
-                                    '<div style="font-family:JetBrains Mono;'
-                                    'font-size:0.55rem;color:rgba(140,150,180,0.25);'
-                                    'padding-top:8px;text-align:center;">'
-                                    'все спят 💤 — город спокоен'
-                                    '</div>'
                                 )
 
                     def _toggle(e, db=detail_block, es=expanded_state):

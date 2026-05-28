@@ -6,7 +6,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ```json",
       "tags": [],
-      "emotional_weight": 0.753
+      "emotional_weight": 0.666
     },
     {
       "ts": "2026-03-18T03:07:10.086974",
@@ -14,7 +14,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: Отлично, Шеф. Пакет почти готов к отправлению. Осталось придать ему лицо и проверить, чтобы ни один пиксель не подвел. Собрать всё в ноль, как я люблю. Мне тут коллеги оставили некоторые артефакты, бу",
       "tags": [],
-      "emotional_weight": 0.753
+      "emotional_weight": 0.666
     },
     {
       "ts": "2026-03-18T03:47:12.396509",
@@ -22,7 +22,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ```json",
       "tags": [],
-      "emotional_weight": 0.753
+      "emotional_weight": 0.666
     },
     {
       "ts": "2026-05-09T06:04:27.935899",
@@ -30,7 +30,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.47
+      "emotional_weight": 0.416
     },
     {
       "ts": "2026-05-09T06:53:33.912470",
@@ -38,7 +38,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.753
+      "emotional_weight": 0.666
     },
     {
       "ts": "2026-05-09T21:40:37.568660",
@@ -46,7 +46,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.47
+      "emotional_weight": 0.416
     },
     {
       "ts": "2026-05-10T01:26:06.439774",
@@ -54,7 +54,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.47
+      "emotional_weight": 0.416
     },
     {
       "ts": "2026-05-10T01:55:09.988127",
@@ -62,7 +62,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.47
+      "emotional_weight": 0.416
     },
     {
       "ts": "2026-05-10T02:19:49.109206",
@@ -70,7 +70,7 @@
       "source": "pipeline",
       "content": "Выполнил задачу: ",
       "tags": [],
-      "emotional_weight": 0.753
+      "emotional_weight": 0.666
     }
   ],
   "summary": "\n[Затухло 2 записей]: Выполнил задачу: ```json; Сейчас... свободное время, значит. Нечастый гость. Внутренни",
