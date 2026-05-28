@@ -562,6 +562,37 @@ async def process_agent_result(
         # которая читает структурированный feedback.json.
         # ══ SYNC: реальные оценки QA → DNA агентов ══
         _sync_feedback_scores_to_dna(client_slug, state.get("active_dept", ""))
+        # ══ КНИГА ЖАЛОБ И БЛАГОДАРНОСТЕЙ · Спринт 25 ══
+        # Проверяем каждого агента цеха на триггер жалобы.
+        # qa_agent уже известен (A05/A12/A18 из manifest).
+        # Благодарности — отдельный механизм, пишется из hooks.py когда
+        # один агент явно спас другого (например, A08 закрыл слабый блок A05).
+        try:
+            from studio.complaint_book import check_and_write_complaint
+            _book_dept = state.get("active_dept", "")
+            _book_qa = qa_agent  # A05 / A12 / A18 — из manifest, уже правильный
+            # Читаем feedback.json чтобы знать реальные оценки
+            from pathlib import Path as _P
+            import json as _J
+            _fb_path = _P("clients") / client_slug / "feedback.json"
+            if _fb_path.exists():
+                _fb_data = _J.loads(_fb_path.read_text(encoding="utf-8"))
+                _agents_fb = _fb_data.get("agents", {})
+                for _book_agent_id, _book_fb in _agents_fb.items():
+                    if _book_agent_id == _book_qa:
+                        continue  # QA сам на себя не жалуется
+                    _book_score = float(_book_fb.get("score", 5.0))
+                    entry = check_and_write_complaint(
+                        agent_id=_book_agent_id,
+                        qa_agent_id=_book_qa,
+                        qa_score=_book_score,
+                        dept=_book_dept,
+                    )
+                    if entry:
+                        print(f"[BOOK] 🗡 {_book_agent_id} написал жалобу (score={_book_score})")
+        except Exception as _book_err:
+            print(f"[BOOK] ⚠ Книга Жалоб: {_book_err}")
+        # ══ END КНИГА ══
         # ══ STRATEGY REGISTRY: записываем победы по слотам ══
         if _STRATEGY_ENABLED:
             _record_winning_strategies(state, client_slug)

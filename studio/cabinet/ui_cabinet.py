@@ -714,6 +714,10 @@ def page_cabinet() -> None:
                 _render_reports_tab()
             elif tab_name == "chronicles":  # === CHRONICLES_PATCH:update_right_panel ===
                 _render_chronicles_tab()
+            elif tab_name == "book":  # === BOOK_PATCH:update_right_panel ===
+                _render_book_tab()
+                return
+                _render_chronicles_tab()
         try:
             el.update()
         except Exception:
@@ -975,6 +979,10 @@ def page_cabinet() -> None:
             reload_all_agents()
             update_right_panel("matrix")
         if tab_name == "chronicles":  # === CHRONICLES_PATCH:switch_tab ===
+            update_right_panel("chronicles")
+        if tab_name == "book":  # === BOOK_PATCH:switch_tab ===
+            update_right_panel("book")
+            return
             update_right_panel("chronicles")
 
     def talk_to_agent(agent_id, agent_dept=""):
@@ -2239,7 +2247,7 @@ if(document.readyState === 'loading') {
 
             with ui.element("div").classes("cab-right"):
                 with ui.element("div").classes("cab-tabs"):
-                    for tab_name, tab_label in [("agent","агент"),("matrix","матрица"),("chronicles","хроники"),("files","файлы"),("reports","отчёты"),("archive","архив")]:
+                    for tab_name, tab_label in [("agent","агент"),("matrix","матрица"),("chronicles","хроники"),("book","книга"),("files","файлы"),("reports","отчёты"),("archive","архив")]:
                         is_active = tab_name == state["active_tab"]
                         cls = "cab-tab active" if is_active else "cab-tab"
                         tab_el = ui.element("div").classes(cls)
@@ -2247,7 +2255,7 @@ if(document.readyState === 'loading') {
                             ui.label(tab_label).style("font-size:inherit;color:inherit;cursor:pointer;pointer-events:none;")
                         tab_el.on("click", lambda e, _t=tab_name: switch_tab(_t))
                         refs["right_tabs"][tab_name] = tab_el
-                for tab_name in ["agent","matrix","chronicles","files","reports","archive"]:
+                for tab_name in ["agent","matrix","chronicles","book","files","reports","archive"]:
                     is_active = tab_name == state["active_tab"]
                     panel = ui.element("div").classes("cab-tab-content").style(f'display:{"block" if is_active else "none"}')
                     refs["right_panels"][tab_name] = panel
