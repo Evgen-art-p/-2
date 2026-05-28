@@ -115,6 +115,15 @@ except ImportError:
     def sync_to_dna(agent_id, event, intensity=0.5, dept=""): pass
     def record_sensory_event(**kwargs): pass
 # ══ END NEW ══
+# ══ NEW: Квантовые прогулки — автотриггер после рана ══
+_QUANTUM_WALK_ENABLED = False
+try:
+    from studio.city_walker import run_city_walk_evening as _run_evening_walk
+    _QUANTUM_WALK_ENABLED = True
+    print("[CITY] 🌆 Квантовые прогулки подключены (автотриггер)")
+except ImportError:
+    async def _run_evening_walk(**kwargs): return []
+# ══ END ══
 
 
 # ══ Рюкзак Знаний: читаем что агент принёс с Маяка ══
@@ -590,6 +599,23 @@ async def process_agent_result(
             except Exception as _emb_err:
                 print(f"[EMBEDDING] Ошибка: {_emb_err}")
         # ══ END Memory Embedding ══
+        # ══ АВТОТРИГГЕР: вечерняя прогулка после рана · Спринт 24 ══
+        # Fire-and-forget — не блокирует пайплайн.
+        # Агенты цеха идут домой своим путём пока UI уже показывает результат.
+        if _QUANTUM_WALK_ENABLED:
+            _dept_for_walk = state.get("active_dept", "")
+            if _dept_for_walk:
+                try:
+                    asyncio.create_task(
+                        _run_evening_walk(
+                            workshops=[_dept_for_walk],
+                            max_agents=0,  # все агенты цеха
+                        )
+                    )
+                    print(f"[CITY] 🌆 Вечерняя прогулка запущена для цеха: {_dept_for_walk}")
+                except Exception as _walk_err:
+                    print(f"[CITY] ⚠ Автотриггер прогулки: {_walk_err}")
+        # ══ END АВТОТРИГГЕР ══
 
         # ══ Ministry: фиксируем исходы post-fact (Этапы 6-7) ══
         if _ECONOMY_ENABLED:

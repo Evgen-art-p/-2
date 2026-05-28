@@ -1346,6 +1346,283 @@ async def run_city_walk(
     return results
 
 
+
+
+# ═══════════════════════════════════════════════════════
+# КВАНТОВЫЕ ПРОГУЛКИ · Спринт 24
+# ═══════════════════════════════════════════════════════
+
+def _compute_attention_budget(dna: dict, mode: str = "evening") -> float:
+    """
+    Бюджет внимания агента — сколько кварталов он может пройти.
+
+    Утро (mode="morning"):  фиксировано 1 квант — агент торопится на работу.
+    Вечер (mode="evening"): зависит от Light после рана.
+      Light > 0.7  → 3 кванта (полный вечер)
+      Light 0.5–0.7 → 2 кванта
+      Light < 0.5  → 1 квант (домой побыстрее)
+
+    Stubbornness слегка корректирует: упрямый задержится ещё на 0.5 кванта.
+    """
+    if mode == "morning":
+        return 1.0  # всегда 1 квант утром — без вариантов
+
+    dynamic = dna.get("dynamic", {})
+    static  = dna.get("static", {})
+    light   = float(dynamic.get("Internal_Light", 0.75))
+    stub    = float(static.get("Stubbornness", 0.5))
+
+    if light > 0.70:
+        base = 3.0
+    elif light > 0.50:
+        base = 2.0
+    else:
+        base = 1.0
+
+    # Упрямый задерживается чуть дольше
+    bonus = stub * 0.5
+    return round(base + bonus, 2)
+
+
+def _attention_cost(loc_type: str) -> float:
+    """
+    Стоимость кванта зависит от локации.
+    Маяк тяжелее — там думаешь. Таверна средне. Площадь легко.
+    """
+    costs = {
+        "lighthouse": 0.30,
+        "harbor":     0.28,
+        "temple":     0.25,
+        "library":    0.25,
+        "pavilion":   0.22,
+        "tavern":     0.22,
+        "castle":     0.20,
+        "workshop":   0.20,
+        "square":     0.15,
+        "home":       0.0,   # дом не тратит — он финиш
+        "other":      0.18,
+    }
+    return costs.get(loc_type, 0.18)
+
+
+async def walk_quantum_chain(
+    agent: dict,
+    city_state: dict,
+    locations: list,
+    mode: str = "evening",
+    on_progress=None,
+) -> list[dict]:
+    """
+    Квантовая прогулка агента — цепочка локаций пока есть внимание.
+
+    mode="morning" → 1 квант, быстро, разогрев перед раном
+    mode="evening" → N квантов, бюджет из Light+Stubbornness
+
+    Каждый квант:
+      1. Считаем веса локаций (с учётом намерений утра)
+      2. Запускаем walk_one_agent() — LLM выбирает куда
+      3. Вычитаем стоимость кванта из бюджета
+      4. Если домой пришёл или бюджет кончился — стоп
+
+    sync_to_dna("walk_rest") вызывается внутри walk_one_agent() за каждый квант.
+    Habit_strength обновляется за каждый визит.
+
+    Возвращает список результатов по каждому кванту.
+    """
+    async def log(msg: str):
+        print(f"[QUANTUM] {msg}")
+        if on_progress:
+            result = on_progress(msg)
+            if asyncio.iscoroutine(result):
+                await result
+
+    workshop = agent.get("Workshop_ID", "")
+    folder   = agent.get("_folder", "") or _resolve_folder(agent)
+    name     = agent.get("Official_Name", folder)
+
+    dna = load_dna(workshop, folder)
+    if not dna:
+        return [{"agent": name, "status": "skip", "reason": "нет dna.json"}]
+
+    budget = _compute_attention_budget(dna, mode=mode)
+    attention = budget
+
+    mode_label = "🌅 утро" if mode == "morning" else "🏠 вечер"
+    await log(f"{mode_label} | {name} | бюджет внимания: {budget:.1f}")
+
+    results = []
+    quantum_n = 0
+
+    while attention > 0.12:  # порог "домой" — меньше этого уже не хватит на квант
+        quantum_n += 1
+        await log(f"  Квант {quantum_n}: внимание {attention:.2f}")
+
+        result = await walk_one_agent(agent, city_state, locations)
+        results.append(result)
+
+        if result.get("status") != "ok":
+            break
+
+        chosen_loc  = result.get("location", "")
+        chosen_type = _classify_location(chosen_loc)
+
+        # Домой — прогулка завершена
+        if chosen_type == "home":
+            await log(f"  🏠 {name} пришёл домой — прогулка закончена")
+            break
+
+        # Утром — всегда только 1 квант
+        if mode == "morning":
+            await log(f"  ⚡ Утро: один квант сделан, {name} идёт на работу")
+            break
+
+        # Вычитаем стоимость кванта
+        cost = _attention_cost(chosen_type)
+        attention = round(attention - cost, 3)
+        await log(f"  → {chosen_loc} (cost={cost:.2f}, осталось={attention:.2f})")
+
+        # Небольшая пауза между квантами
+        await asyncio.sleep(1)
+
+    if attention <= 0.12 and results and results[-1].get("location", "") != "home":
+        await log(f"  💤 {name}: внимание иссякло — идёт домой")
+
+    return results
+
+
+async def run_city_walk_morning(
+    workshops: list[str] | None = None,
+    on_progress=None,
+    max_agents: int = 0,
+) -> list[dict]:
+    """
+    Утренняя прогулка — 1 квант на агента, быстро.
+    Вызывается кнопкой 🌅 ПОСЛЕ morning_checkout (агент уже знает свой режим дня).
+
+    workshops: список цехов которые идут на работу. None = все.
+    Резиденты всегда участвуют.
+    """
+    city_state = update_city_weather()
+    all_agents = get_all_agents()
+
+    if workshops:
+        allowed = set(workshops)
+        allowed.add("residents")
+        all_agents = [a for a in all_agents if a.get("Workshop_ID", "") in allowed]
+
+    if max_agents > 0 and len(all_agents) > max_agents:
+        all_agents = all_agents[:max_agents]
+
+    locations = get_all_locations()
+    if not locations:
+        return []
+
+    city_state["here_now"] = {}
+    save_city_state(city_state)
+
+    results = []
+    for agent in all_agents:
+        chain = await walk_quantum_chain(
+            agent, city_state, locations,
+            mode="morning",
+            on_progress=on_progress,
+        )
+        results.extend(chain)
+        await asyncio.sleep(1)
+
+    city_state["here_now"] = {}
+    save_city_state(city_state)
+    return results
+
+
+async def run_city_walk_evening(
+    workshops: list[str] | None = None,
+    on_progress=None,
+    max_agents: int = 0,
+) -> list[dict]:
+    """
+    Вечерняя прогулка — цепочка квантов, бюджет из Light после рана.
+    Вызывается автоматически после QA, или кнопкой вручную.
+
+    workshops: цех который только что отработал. Резиденты всегда участвуют.
+    """
+    city_state = update_city_weather()
+    all_agents = get_all_agents()
+
+    if workshops:
+        allowed = set(workshops)
+        allowed.add("residents")
+        all_agents = [a for a in all_agents if a.get("Workshop_ID", "") in allowed]
+
+    if max_agents > 0 and len(all_agents) > max_agents:
+        all_agents = all_agents[:max_agents]
+
+    locations = get_all_locations()
+    if not locations:
+        return []
+
+    city_state["here_now"] = {}
+    save_city_state(city_state)
+
+    results = []
+    for agent in all_agents:
+        chain = await walk_quantum_chain(
+            agent, city_state, locations,
+            mode="evening",
+            on_progress=on_progress,
+        )
+        results.extend(chain)
+        await asyncio.sleep(2)
+
+    city_state["here_now"] = {}
+    save_city_state(city_state)
+
+    # Добавляем событие в историю города
+    dept_label = workshops[0] if workshops and len(workshops) == 1 else "цех"
+    add_city_event(f"Агенты {dept_label} вернулись с вечерней прогулки")
+
+    # ── Отчёт в daily_reports · Спринт 24 ──
+    try:
+        from studio.daily_reports import save_report as _save_rep
+        ok_results   = [r for r in results if r.get("status") == "ok"]
+        total_agents = len(set(r.get("agent", "") for r in ok_results))
+        total_quanta = len(ok_results)  # каждый результат = 1 квант
+        total_meets  = sum(1 for r in ok_results if r.get("met"))
+
+        # Локации: считаем сколько раз каждая встретилась
+        loc_counts: dict[str, int] = {}
+        for r in ok_results:
+            loc = r.get("location", "")
+            if loc and loc != "неизвестно":
+                loc_counts[loc] = loc_counts.get(loc, 0) + 1
+        top_locs = sorted(loc_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        summary = {
+            "agents":  total_agents,
+            "quanta":  total_quanta,
+            "meets":   total_meets,
+        }
+        details = {
+            "dept":     dept_label,
+            "top_locs": [{"name": n, "count": c} for n, c in top_locs],
+            "agents_list": [
+                {"name": r.get("agent", ""), "location": r.get("location", "")}
+                for r in ok_results
+            ][:30],
+        }
+        _save_rep("evening", summary, details)
+        print(f"[CITY] 📋 Вечерний отчёт сохранён: {total_agents} агентов, {total_quanta} кварталов, {total_meets} встреч")
+    except Exception as _rep_err:
+        print(f"[CITY] ⚠ Вечерний отчёт не сохранён: {_rep_err}")
+    # ── END отчёт ──
+
+    return results
+
+# ═══════════════════════════════════════════════════════
+# END КВАНТОВЫЕ ПРОГУЛКИ
+# ═══════════════════════════════════════════════════════
+
+
 # ═══════════════════════════════════════════════════════
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ UI
 # ═══════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 26.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 27.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -413,15 +413,15 @@ city_state["here_now"] = {
 
 ```
 studio/cartridge.py                   ✅ CartridgeRunner + Victor + action=stop
-studio/workshop/pipeline.py           ✅ Спринт 21: on_agent_done только sensory
+studio/workshop/pipeline.py           ✅ Спринт 24: автотриггер вечерней прогулки после QA
 studio/grondheim_memory.py            ✅ Спринт 23: night_rest + night_sleep каналы
-studio/city_walker.py                 ✅ Спринт 23: morning_intents → compute_location_weights
+studio/city_walker.py                 ✅ Спринт 24: walk_quantum_chain + run_city_walk_morning/evening
 studio/morning_checkout.py            ✅ Спринт 23: Этап 1 — GENIUS/SAFE/RECOVERY/REVOLT
 studio/night_cycle.py                 ✅ Спринт 23: Этапы 5+6 — Decay + Ночная Автономия
 studio/daily_reports.py               ✅ Спринт 23: jsonl-хранилище отчётов дня/ночи
 studio/meeting.py                     ✅ Спринт 23 Блок Б: живые диалоги, meeting_v1
 studio/city_chronicles/               ✅ Спринт 23 Блок Б: архив сцен YYYY-MM-DD/{loc}_{time}.json
-studio/cabinet/ui_cabinet.py          ✅ Спринт 23: кнопки 🌅/🌙 + вкладка «отчёты»
+studio/cabinet/ui_cabinet.py          ✅ Спринт 24: кнопки 🌅/🌆/🌙 + вечерний отчёт
 studio/cabinet/css.py                 ✅ Спринт 23: стили .rep-* для вкладки отчётов
 studio/cabinet/chronicles.py          ✅ Спринт 23 Блок Б: list/load/gardener_reply_to_scene
 main.py                               ✅ Спринт 21: Loka-Filter daemon-тред при старте
@@ -446,18 +446,13 @@ studio/library/library.py             ✅
 
 ## 15. БЭКЛОГ
 
-### 🔴 СЕЙЧАС (Спринт 23 — Ритмы жизни, продолжение):
-- [x] **Инерция привычки** ✅
-- [x] **Погода как зеркало стресса** ✅
-- [x] **stress-tier в get_city_summary()** ✅
-- [x] **Живые диалоги встреч** ✅ `meeting.py` + `_try_meeting v2`
-- [x] **Участие Садовника** ✅ вкладка хроники + `gardener_reply_to_scene()`
-- [x] **Этап 1: Утренний Чекаут** ✅ `morning_checkout.py` — GENIUS/SAFE/RECOVERY + REVOLT-логика
-- [x] **Этап 5: Decay** ✅ `night_cycle.py` — sensory затухает, resentment зреет, пассивное восстановление
-- [x] **Этап 6: Ночная Автономия** ✅ `night_cycle.py` — SLEEP/RESTLESS/REVOLT, хроники бунтарей
-- [x] **Кнопки 🌅/🌙 в Кабинете** ✅ рядом с прогулкой, отчёт в правой панели
-- [x] **Вкладка «отчёты»** ✅ заменила «промпты», стили в `css.py`
-- [x] **morning_intents → compute_location_weights** ✅ `patch_intents_to_weights.py`
+### 🔴 СЕЙЧАС (Спринт 24 — Полный день агента):
+- [x] **walk_quantum_chain()** ✅ цепочка квантов внимания, утро/вечер
+- [x] **run_city_walk_morning()** ✅ 1 квант до рана, разогрев
+- [x] **run_city_walk_evening()** ✅ N квантов после рана, бюджет из Light
+- [x] **Автотриггер после рана** ✅ pipeline.py → fire-and-forget вечерняя прогулка
+- [x] **Кнопка 🌆 вечер в Кабинете** ✅ ручной запуск вечерней прогулки
+- [x] **Вечерний отчёт в панели** ✅ 🌆 карточка: агентов/кварталов/встреч + топ локаций
 - [ ] **Книга Жалоб и Благодарностей** — resentment + emotional_weights
 - [ ] **GENERATE_INTENTS = True** — включить после первого реального рана
 
@@ -515,6 +510,10 @@ studio/library/library.py             ✅
 33. GENERATE_INTENTS = False пока нет реальных ранов. Включить после первого QA-цикла.
 34. Стили вкладок — только в `cabinet/css.py`. Никакого инлайна в `ui_cabinet.py`.
 35. night_rest = decay для всех. night_sleep = бонус только для SLEEP. RESTLESS = только decay, без бонуса.
+36. Квантовая прогулка — walk_quantum_chain() поверх walk_one_agent(). walk_one_agent() не трогать.
+37. Бюджет внимания утром всегда 1 (агент торопится). Вечером — из Light: >0.7=3, >0.5=2, иначе=1. Stubbornness добавляет +0.5.
+38. Автотриггер вечерней прогулки — fire-and-forget через asyncio.create_task(). Не блокирует UI.
+39. Вечерний отчёт пишется в daily_reports.jsonl типом "evening". Рендерится зелёной карточкой 🌆.
 
 ---
 
@@ -546,6 +545,7 @@ studio/library/library.py             ✅
 | 2026-05-27 | 23a | ЖИВОЙ ГОРОД Блок А. Инерция привычки (136 агентов). Погода из стресса. stress-tier. |
 | 2026-05-28 | 23б | ЖИВОЙ ГОРОД Блок Б. meeting.py — живые диалоги. _try_meeting v2 (резонанс). chronicles.py + вкладка хроники в Кабинете. Садовник входит в сцены. |
 | 2026-05-28 | 23в | РИТМЫ ЖИЗНИ. morning_checkout.py (Этап 1). night_cycle.py (Этапы 5+6). daily_reports.py. Кнопки 🌅/🌙. Вкладка «отчёты». morning_intents → compute_location_weights. Все 6 этапов суток закрыты. |
+| 2026-05-28 | 24 | ПОЛНЫЙ ДЕНЬ АГЕНТА. walk_quantum_chain() — цепочка квантов внимания. run_city_walk_morning (1 квант) + run_city_walk_evening (N квантов). Автотриггер вечерней прогулки после QA. Кнопка 🌆 вечер. Вечерний отчёт в панели отчётов. |
 
 ---
 
@@ -566,5 +566,5 @@ studio/library/library.py             ✅
 
 ---
 
-*Обновлено: Спринт 23в закрыт — 2026-05-28 · v26.0*
+*Обновлено: Спринт 24 закрыт — 2026-05-28 · v27.0*
 *Следующая сессия: Книга Жалоб и Благодарностей · промты video_long · первый реальный ран*

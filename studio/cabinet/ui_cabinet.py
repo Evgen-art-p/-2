@@ -599,12 +599,43 @@ def page_cabinet() -> None:
                 type="positive"
             )
 
+            # ── Утренняя прогулка: 1 квант, агент идёт на работу · Спринт 24 ──
+            try:
+                from studio.city_walker import run_city_walk_morning as _morning_walk
+                ui.notify("🚶 Дорога на работу...", type="info")
+                await _morning_walk(max_agents=0)
+                _refresh_map()
+                reload_all_agents()
+                update_residents()
+                update_city_zone()
+                print("[CITY] 🌅 Утренняя прогулка завершена")
+            except Exception as _wm_err:
+                print(f"[CITY] ⚠ Утренняя прогулка: {_wm_err}")
+            # ── END утренняя прогулка ──
+
         except Exception as e:
             import traceback; traceback.print_exc()
             try:
                 ui.notify(f"❌ {e}", type="negative")
             except Exception:
                 print(f"[CHECKOUT] ❌ {e}")
+
+    async def _do_evening_walk():
+        """Вечерняя прогулка — цепочка квантов пока есть силы. · Спринт 24"""
+        try:
+            from studio.city_walker import run_city_walk_evening as _evening_walk
+            ui.notify("🌆 Агенты идут домой...", type="info")
+            await _evening_walk(max_agents=0)
+            _refresh_map()
+            reload_all_agents()
+            update_residents()
+            update_city_zone()
+            ui.notify("✅ Вечерняя прогулка завершена", type="positive")
+        except Exception as e:
+            try:
+                ui.notify(f"❌ {e}", type="negative")
+            except Exception:
+                print(f"[CITY] ❌ вечерняя прогулка: {e}")
 
     async def _do_night_cycle():
         """Ночной цикл: Decay + Ночная Автономия для всех агентов."""
@@ -1545,11 +1576,20 @@ def page_cabinet() -> None:
                 summary    = report.get("summary", {})
                 details    = report.get("details", {})
                 is_morning = rtype == "morning"
+                is_evening = rtype == "evening"
 
-                icon      = "🌅" if is_morning else "🌙"
-                label     = "Утренний Чекаут" if is_morning else "Ночной Цикл"
-                card_cls  = "rep-card rep-card-morning" if is_morning else "rep-card rep-card-night"
-                title_cls = "rep-card-title-morning" if is_morning else "rep-card-title-night"
+                if is_morning:
+                    icon, label = "🌅", "Утренний Чекаут"
+                    card_cls  = "rep-card rep-card-morning"
+                    title_cls = "rep-card-title-morning"
+                elif is_evening:
+                    icon, label = "🌆", "Вечерняя прогулка"
+                    card_cls  = "rep-card rep-card-evening"
+                    title_cls = "rep-card-title-evening"
+                else:
+                    icon, label = "🌙", "Ночной Цикл"
+                    card_cls  = "rep-card rep-card-night"
+                    title_cls = "rep-card-title-night"
 
                 # Summary HTML
                 if is_morning:
@@ -1562,6 +1602,15 @@ def page_cabinet() -> None:
                         f'<span class="rep-normal">⚡{n}</span> ' +
                         f'<span class="rep-safe">🛡{s}</span> ' +
                         f'<span class="rep-recovery">💤{r}</span>'
+                    )
+                elif is_evening:
+                    ag = summary.get("agents", 0)
+                    qu = summary.get("quanta", 0)
+                    me = summary.get("meets", 0)
+                    summary_html = (
+                        f'<span style="color:rgba(80,220,140,0.8)">🚶{ag}</span> ' +
+                        f'<span style="color:rgba(80,220,140,0.55)">кв:{qu}</span> ' +
+                        f'<span style="color:rgba(212,175,55,0.7)">🤝{me}</span>'
                     )
                 else:
                     sl = summary.get("SLEEP", 0)
@@ -2028,6 +2077,13 @@ def page_cabinet() -> None:
                                 "color:rgba(255,200,80,0.8);"
                             ).on("click", lambda: ui.timer(0, _do_morning_checkout, once=True)):
                                 ui.html("🌅 день")
+                            with ui.element("div").classes("cab-map-btn").style(
+                                "cursor:pointer;"
+                                "background:rgba(50,150,100,0.04);"
+                                "border:1px solid rgba(50,200,120,0.18);"
+                                "color:rgba(80,220,140,0.8);"
+                            ).on("click", lambda: ui.timer(0, _do_evening_walk, once=True)):
+                                ui.html("🌆 вечер")
                             with ui.element("div").classes("cab-map-btn").style(
                                 "cursor:pointer;"
                                 "background:rgba(108,80,200,0.04);"
