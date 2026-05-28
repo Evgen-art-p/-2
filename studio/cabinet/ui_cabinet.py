@@ -716,8 +716,6 @@ def page_cabinet() -> None:
                 _render_chronicles_tab()
             elif tab_name == "book":  # === BOOK_PATCH:update_right_panel ===
                 _render_book_tab()
-                return
-                _render_chronicles_tab()
         try:
             el.update()
         except Exception:
@@ -982,8 +980,6 @@ def page_cabinet() -> None:
             update_right_panel("chronicles")
         if tab_name == "book":  # === BOOK_PATCH:switch_tab ===
             update_right_panel("book")
-            return
-            update_right_panel("chronicles")
 
     def talk_to_agent(agent_id, agent_dept=""):
         """Начать разговор с агентом — полноценный режим диалога."""

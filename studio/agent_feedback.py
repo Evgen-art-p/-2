@@ -160,19 +160,9 @@ def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = ""
         print(f"[FEEDBACK] Universal score={universal_score} → {len(agent_ids)} агентов")
         return
     
-    # Маппинг блоков Артура на агентов
-    BLOCK_TO_AGENTS = {
-        "scenario":      ["A03", "A04", "A05"],   # Маркус, Софи, Рина
-        "ux":            ["A06"],                   # Лана
-        "visual":        ["A07", "A10"],            # Оливер, Нова
-        "sound":         ["A11"],                   # Рэй
-        "content":       ["A04", "A05"],            # Софи, Рина
-        "interactive":   ["A08"],                   # Люми
-        "gamification":  ["A09"],                   # Бруно
-        "cross_check":   ["A10", "A12"],            # Нова, Артур
-        "security":      ["A12"],                   # Артур
-        "memory":        ["A01", "A02"],            # Мира, Астра
-    }
+    # Динамический маппинг блоков → агенты
+    # Строится из agent_ids если передан, иначе fallback на legacy-хардкод
+    BLOCK_TO_AGENTS = _build_block_map(agent_ids or [])
     
     # Собираем оценки per agent
     agent_scores = {}
