@@ -26,9 +26,9 @@
   },
   "dynamic": {
     "Respect": 1.0,
-    "Patience": 1.0,
+    "Patience": 1,
     "Stress": 0,
-    "Internal_Light": 0.84,
+    "Internal_Light": 0.86,
     "streak": 1,
     "stars": 0,
     "favorite_location": "",

@@ -144,5 +144,2052 @@
   "recent_events": [],
   "walk_count": 2,
   "avg_stress": 0.004,
-  "here_now": {}
+  "here_now": {},
+  "morning_modes": {
+    "A01_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_advertising": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_clipmakers": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_emo_card": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A00_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A00a_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.85,
+      "reason": "energy=0.85 — полон сил"
+    },
+    "A01_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A02_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.85,
+      "reason": "energy=0.85 — полон сил"
+    },
+    "A03_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A04_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A05_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A06_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A07_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A08_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A09_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A10_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A11_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A12_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A13_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A14_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.85,
+      "reason": "energy=0.85 — полон сил"
+    },
+    "A15_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.874,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A16_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.85,
+      "reason": "energy=0.85 — полон сил"
+    },
+    "A01_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_logo_design": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_market_hit": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "001_GENESIS_LOKA_residents": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "energy=1.00 — полон сил"
+    },
+    "002_GENESIS_CREATOR_residents": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "energy=1.00 — полон сил"
+    },
+    "003_LEGACY_SET_residents": {
+      "mode": "GENIUS",
+      "energy": 0.95,
+      "reason": "energy=0.95 — полон сил"
+    },
+    "004_OLE_residents": {
+      "mode": "GENIUS",
+      "energy": 0.83,
+      "reason": "energy=0.83 — полон сил"
+    },
+    "005_VICTOR_residents": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.594,
+      "reason": "energy=0.59 — полон сил"
+    },
+    "A02_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.774,
+      "reason": "energy=0.77 — полон сил"
+    },
+    "A03_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.695,
+      "reason": "energy=0.69 — полон сил"
+    },
+    "A04_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.78,
+      "reason": "energy=0.78 — полон сил"
+    },
+    "A05_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.85,
+      "reason": "energy=0.85 — полон сил"
+    },
+    "A06_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_turbo": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "streak=16 — серия побед, стресс не страшен"
+    },
+    "A02_turbo": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "streak=22 — серия побед, стресс не страшен"
+    },
+    "A03_turbo": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "streak=20 — серия побед, стресс не страшен"
+    },
+    "A04_turbo": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "streak=22 — серия побед, стресс не страшен"
+    },
+    "A05_turbo": {
+      "mode": "GENIUS",
+      "energy": 1.0,
+      "reason": "streak=14 — серия побед, стресс не страшен"
+    },
+    "A01_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_video_long": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_video_shorts": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A01_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A02_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A03_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A04_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A05_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A06_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A07_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A08_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A09_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A10_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A11_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    },
+    "A12_web_story": {
+      "mode": "GENIUS",
+      "energy": 0.81,
+      "reason": "energy=0.81 — полон сил"
+    }
+  },
+  "morning_intents": {},
+  "checkout_ts": "2026-05-28T10:45:26.319198",
+  "night_ts": "2026-05-28T10:45:59.062496",
+  "night_results": {
+    "A01_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Инна Импульс"
+    },
+    "A02_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Борис Баланс"
+    },
+    "A03_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Ева Эстетик"
+    },
+    "A04_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Марк Метр"
+    },
+    "A05_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Павел Промпт"
+    },
+    "A06_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Глеб Глитч"
+    },
+    "A07_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лаура Лайт"
+    },
+    "A08_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тихон Техно"
+    },
+    "A09_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Нина Нарезка"
+    },
+    "A10_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Коля Колор"
+    },
+    "A11_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.337,
+      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Соня Саунд"
+    },
+    "A12_advertising": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Финн Финиш"
+    },
+    "A01_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Вайб Винни"
+    },
+    "A02_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Ричи Ритм"
+    },
+    "A03_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стори Стив"
+    },
+    "A04_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лока Лотти"
+    },
+    "A05_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стелла Стайл"
+    },
+    "A06_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.348,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Гимбал Гас"
+    },
+    "A07_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Люмен Люк"
+    },
+    "A08_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Дрон Дэн"
+    },
+    "A09_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лютер Лут"
+    },
+    "A10_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Джиджи Глитч"
+    },
+    "A11_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Бьюти Белла"
+    },
+    "A12_clipmakers": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Рендер Рекс"
+    },
+    "A01_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Соня Соул (Sonya Soul)"
+    },
+    "A02_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Муза Мьюз (Muse Muse)"
+    },
+    "A03_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.337,
+      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Вика Винтаж (Vika Vintage)"
+    },
+    "A04_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Эля Эстет (Elya Esthete)"
+    },
+    "A05_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Гера Гармония (Gera Harmony)"
+    },
+    "A06_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.285,
+      "reason": "revolt_score=0.28 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Полли Пастель (Polly Pastel)"
+    },
+    "A07_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.337,
+      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стелла Скрипт (Stella Script)"
+    },
+    "A08_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.302,
+      "reason": "revolt_score=0.30 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тим Тон (Tim Tone)"
+    },
+    "A09_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Марта Моушн (Marta Motion)"
+    },
+    "A10_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.302,
+      "reason": "revolt_score=0.30 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Мими Мелоди (Mimi Melody)"
+    },
+    "A11_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.25,
+      "reason": "revolt_score=0.25 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Флора Флэтлей (Flora Flatlay)"
+    },
+    "A12_emo_card": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Клим Куратор (Klim Curator)"
+    },
+    "A00_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.15,
+      "reason": "revolt_score=0.15 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Фабула Фейн (Fable Fein)"
+    },
+    "A00a_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.272,
+      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Вера Душа (Vera Dusha)"
+    },
+    "A01_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.272,
+      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Нейро Спарк (Neuro Spark)"
+    },
+    "A02_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.272,
+      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Хронос Мемо (Chronos Memo)"
+    },
+    "A03_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.22,
+      "reason": "revolt_score=0.22 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Психолог София (Psychology Sophia)"
+    },
+    "A04_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.307,
+      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Локус Скрипт (Locus Script)"
+    },
+    "A05_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.29,
+      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Омни Соник (Omni Sonic)"
+    },
+    "A06_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.307,
+      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Фоли Грит (Foley Grit)"
+    },
+    "A07_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.185,
+      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Ларс Вокс (Lars Vox)"
+    },
+    "A08_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.185,
+      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Аура Амбиент (Aura Ambient)"
+    },
+    "A09_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.307,
+      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Линза Стат (Lens Stat)"
+    },
+    "A10_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.248,
+      "reason": "revolt_score=0.25 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Узел Контрол (Node Control)"
+    },
+    "A11_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.307,
+      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сейф Шифр (Safe Cipher)"
+    },
+    "A12_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.185,
+      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тьютор Линк (Tutor Link)"
+    },
+    "A13_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.255,
+      "reason": "revolt_score=0.26 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Код Гронд (Code Grond)"
+    },
+    "A14_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.185,
+      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Эхо Сенсор (Echo Sensor)"
+    },
+    "A15_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.29,
+      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Зеро Баг (Zero Bug)"
+    },
+    "A16_living_book": {
+      "decision": "SLEEP",
+      "revolt_score": 0.29,
+      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Марка Файн (Mark Fine)"
+    },
+    "A01_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Арчи Архетип (Archie Archetype)"
+    },
+    "A02_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сэм Символ (Sam Symbol)"
+    },
+    "A03_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Крис Концепт (Chris Concept)"
+    },
+    "A04_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Иван Айкон (Ivan Icon)"
+    },
+    "A05_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Гриша Грид (Grisha Grid)"
+    },
+    "A06_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лео Лого (Leo Logo)"
+    },
+    "A07_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Глеб Глиф (Gleb Glyph)"
+    },
+    "A08_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Пэт Пантон (Pat Pantone)"
+    },
+    "A09_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.348,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Макс Мерч (Max Merch)"
+    },
+    "A10_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Марти Моушн (Marty Motion)"
+    },
+    "A11_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Полли Пак (Polly Pack)"
+    },
+    "A12_logo_design": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стен Статус (Stan Status)"
+    },
+    "A01_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Шерлок Спрос"
+    },
+    "A02_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тони Оффер"
+    },
+    "A03_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Бруно Логик"
+    },
+    "A04_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Глеб 0.5сек"
+    },
+    "A05_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Марк Глянец"
+    },
+    "A06_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.337,
+      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Nana Banana"
+    },
+    "A07_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Алекс Плашка"
+    },
+    "A08_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Макс Вес"
+    },
+    "A09_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Люк Люстр"
+    },
+    "A10_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Джо Хлёсткий"
+    },
+    "A11_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Грид Сталкер"
+    },
+    "A12_market_hit": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Шарк"
+    },
+    "001_GENESIS_LOKA_residents": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лока"
+    },
+    "002_GENESIS_CREATOR_residents": {
+      "decision": "SLEEP",
+      "revolt_score": 0.325,
+      "reason": "revolt_score=0.33 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Джем"
+    },
+    "003_LEGACY_SET_residents": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сет"
+    },
+    "004_OLE_residents": {
+      "decision": "SLEEP",
+      "revolt_score": 0.215,
+      "reason": "revolt_score=0.21 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Оле"
+    },
+    "005_VICTOR_residents": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Виктор Лэйн"
+    },
+    "A01_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.443,
+      "reason": "revolt_score=0.44 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Костя Кутюр"
+    },
+    "A02_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.415,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Никита Флеш"
+    },
+    "A03_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.399,
+      "reason": "revolt_score=0.40 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Макс Стори"
+    },
+    "A04_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Глеб Контроль"
+    },
+    "A05_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Алекс Стиль"
+    },
+    "A06_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Эван Вижн"
+    },
+    "A07_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.344,
+      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сева Семантик"
+    },
+    "A08_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Герман ГОСТ"
+    },
+    "A09_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Белла Байт"
+    },
+    "A10_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тим Таргет"
+    },
+    "A11_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Федя Фикс"
+    },
+    "A12_social_mix": {
+      "decision": "SLEEP",
+      "revolt_score": 0.348,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Клавдия Архив"
+    },
+    "A01_turbo": {
+      "decision": "SLEEP",
+      "revolt_score": -1.21,
+      "reason": "revolt_score=-1.21 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стелла"
+    },
+    "A02_turbo": {
+      "decision": "SLEEP",
+      "revolt_score": -1.863,
+      "reason": "revolt_score=-1.86 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Мими Мем"
+    },
+    "A03_turbo": {
+      "decision": "SLEEP",
+      "revolt_score": -1.645,
+      "reason": "revolt_score=-1.65 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Визор"
+    },
+    "A04_turbo": {
+      "decision": "SLEEP",
+      "revolt_score": -1.828,
+      "reason": "revolt_score=-1.83 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Постпро"
+    },
+    "A05_turbo": {
+      "decision": "SLEEP",
+      "revolt_score": -1.08,
+      "reason": "revolt_score=-1.08 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Финализатор"
+    },
+    "A01_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Адам Арка"
+    },
+    "A02_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Зак Зум"
+    },
+    "A03_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лео Логлайн"
+    },
+    "A04_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Катя Кат"
+    },
+    "A05_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лукас Ленз"
+    },
+    "A06_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Ева Эпик"
+    },
+    "A07_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тим Титр"
+    },
+    "A08_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Феликс FX"
+    },
+    "A09_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Алекс Экшн"
+    },
+    "A10_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сэм Стерео"
+    },
+    "A11_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Трейси Тизер"
+    },
+    "A12_video_long": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Боб Блокбастер"
+    },
+    "A01_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Трикси Тренд"
+    },
+    "A02_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Гарри Хук"
+    },
+    "A03_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Джулия"
+    },
+    "A04_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тэг Тони"
+    },
+    "A05_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Вера Вертикаль"
+    },
+    "A06_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Рик Ринглайт"
+    },
+    "A07_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Пенни Проп"
+    },
+    "A08_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Стрим Стэн"
+    },
+    "A09_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лайтнинг Ларри"
+    },
+    "A10_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Луиджи Луп"
+    },
+    "A11_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.348,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Сабби Сью"
+    },
+    "A12_video_shorts": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Тамб Том"
+    },
+    "A01_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Мира — Стратег"
+    },
+    "A02_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Астра — Персонажи и мир"
+    },
+    "A03_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.383,
+      "reason": "revolt_score=0.38 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Маркус — Структура и сюжет"
+    },
+    "A04_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Софи — Сценарист"
+    },
+    "A05_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.407,
+      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Рина — Редактура"
+    },
+    "A06_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.285,
+      "reason": "revolt_score=0.28 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Лана — UX Flow"
+    },
+    "A07_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.355,
+      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Оливер — Визуал"
+    },
+    "A08_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Люми — Интерактив"
+    },
+    "A09_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Бруно — Геймификация"
+    },
+    "A10_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.32,
+      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Нова — AI Промпты"
+    },
+    "A11_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.372,
+      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Рэй — Звук"
+    },
+    "A12_web_story": {
+      "decision": "SLEEP",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
+      "resentment": 0.0,
+      "decay_changes": {
+        "night_rest": true
+      },
+      "agent_name": "Артур — QA"
+    }
+  }
 }

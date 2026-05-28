@@ -557,6 +557,106 @@ def page_cabinet() -> None:
             except Exception:
                 print(f"[CITY] ❌ {e}")
 
+    async def _do_morning_checkout():
+        """Утренний Чекаут: рассчитать режим дня для всех агентов."""
+        try:
+            from studio.morning_checkout import run_morning_checkout
+            ui.notify("🌅 Утренний чекаут...", type="info")
+
+            result = await run_morning_checkout()
+            modes   = result.get("modes", {})
+            summary = result.get("summary", {})
+
+            if not modes:
+                ui.notify("⚠ Агентов не найдено", type="warning")
+                return
+
+            # ── Формируем отчёт в чат ──────────────────────────────
+            MODE_ICONS = {
+                "GENIUS":   "🔥",
+                "NORMAL":   "⚡",
+                "SAFE":     "🛡",
+                "RECOVERY": "💤",
+            }
+            _hide_map()
+            # Сохраняем отчёт
+            try:
+                from studio.daily_reports import save_report
+                by_mode_save = {"GENIUS": [], "NORMAL": [], "SAFE": [], "RECOVERY": []}
+                for key, data in modes.items():
+                    m = data.get("mode", "NORMAL")
+                    folder = key.split("_")[0]
+                    revolt = " после бунта" if data.get("night_revolt") else ""
+                    by_mode_save[m].append(f"{folder}: {data.get('reason','')[:50]}{revolt}")
+                save_report("morning", summary, by_mode_save)
+                switch_tab("reports")
+                update_right_panel("reports")
+            except Exception as _re:
+                print(f"[CHECKOUT] ⚠ save_report: {_re}")
+
+            ui.notify(
+                f"✅ Чекаут: {summary.get('GENIUS',0)}🔥 "
+                f"{summary.get('RECOVERY',0)}💤",
+                type="positive"
+            )
+
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            try:
+                ui.notify(f"❌ {e}", type="negative")
+            except Exception:
+                print(f"[CHECKOUT] ❌ {e}")
+
+    async def _do_night_cycle():
+        """Ночной цикл: Decay + Ночная Автономия для всех агентов."""
+        try:
+            from studio.night_cycle import run_night_cycle
+            ui.notify("🌙 Ночной цикл...", type="info")
+
+            result = await run_night_cycle()
+            summary = result.get("summary", {})
+            revolts = result.get("revolts", [])
+            night_results = result.get("night_results", {})
+
+            if not night_results:
+                ui.notify("⚠ Агентов не найдено", type="warning")
+                return
+
+            _hide_map()
+            reload_all_agents()
+            update_residents()
+            update_city_zone()
+
+            # Сохраняем отчёт
+            try:
+                from studio.daily_reports import save_report
+                resentful_save = [
+                    f"{d.get('agent_name','?')} → {d.get('decay_changes',{}).get('resentment_grew',{}).get('target','?')}"
+                    for k, d in night_results.items()
+                    if d.get("decay_changes", {}).get("resentment_grew")
+                ]
+                save_report("night", summary, {
+                    "revolts":   revolts,
+                    "resentful": resentful_save,
+                })
+                switch_tab("reports")
+                update_right_panel("reports")
+            except Exception as _re:
+                print(f"[NIGHT] ⚠ save_report: {_re}")
+
+            notify_text = f"✅ Ночь: {summary.get('REVOLT',0)}⚡ бунт"
+            if revolts:
+                notify_text += f" · {', '.join(revolts[:2])}"
+            ui.notify(notify_text, type="positive")
+
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            try:
+                ui.notify(f"❌ {e}", type="negative")
+            except Exception:
+                print(f"[NIGHT] ❌ {e}")
+
+
     # ═══ RIGHT PANEL ═══
 
     def update_right_panel(tab_name):
@@ -575,6 +675,8 @@ def page_cabinet() -> None:
                 _render_prompts_tab()
             elif tab_name == "archive":
                 _render_archive_tab()
+            elif tab_name == "reports":
+                _render_reports_tab()
             elif tab_name == "chronicles":  # === CHRONICLES_PATCH:update_right_panel ===
                 _render_chronicles_tab()
         try:
@@ -1399,6 +1501,173 @@ def page_cabinet() -> None:
         "conflict":      ("конфликт",      "rgba(220,100,100,0.8)"),
     }
 
+
+    def _render_reports_tab():
+        """Вкладка «отчёты» — история запусков Чекаута и Ночного цикла."""
+        try:
+            from studio.daily_reports import load_reports, format_ts
+            reports = load_reports(limit=30)
+        except Exception:
+            reports = []
+
+        if not reports:
+            ui.html(
+                '<div style="text-align:center;padding:32px 16px;'
+                'font-family:JetBrains Mono;font-size:0.56rem;'
+                'color:rgba(140,150,180,0.3);">'
+                'отчётов пока нет<br>'
+                '<span style="font-size:0.5rem;color:rgba(140,150,180,0.2)">'
+                'нажми 🌅 день или 🌙 ночь</span>'
+                '</div>'
+            )
+            return
+
+        # Кнопка очистки
+        def _clear_reports():
+            try:
+                from pathlib import Path
+                Path("studio/daily_reports.jsonl").unlink(missing_ok=True)
+                update_right_panel("reports")
+                ui.notify("Отчёты очищены", type="info")
+            except Exception as e:
+                ui.notify(f"⚠ {e}", type="negative")
+
+        with ui.element("div").style(
+            "display:flex;justify-content:space-between;align-items:center;"
+            "padding:4px 8px 6px;"
+        ):
+            ui.html(
+                f'<span style="font-family:JetBrains Mono;font-size:0.52rem;'
+                f'color:rgba(140,150,180,0.35);">'
+                f'записей: {len(reports)}</span>'
+            )
+            ui.button("🗑", on_click=_clear_reports).props("flat dense").style(
+                "font-size:0.65rem;color:rgba(140,150,180,0.3);min-width:24px;"
+            )
+
+        MODE_ICONS = {"GENIUS": "🔥", "NORMAL": "⚡", "SAFE": "🛡", "RECOVERY": "💤"}
+
+        with ui.element("div").style(
+            "overflow-y:auto;max-height:calc(100vh - 160px);scrollbar-width:thin;"
+        ):
+            for report in reports:
+                rtype   = report.get("type", "")
+                ts      = format_ts(report.get("ts", ""))
+                summary = report.get("summary", {})
+                details = report.get("details", {})
+
+                is_morning = rtype == "morning"
+                icon  = "🌅" if is_morning else "🌙"
+                label = "Утренний Чекаут" if is_morning else "Ночной Цикл"
+                accent = "rgba(255,180,50,0.7)" if is_morning else "rgba(160,130,240,0.7)"
+                bg     = "rgba(255,180,50,0.03)" if is_morning else "rgba(108,80,200,0.03)"
+                border = "rgba(255,180,50,0.12)" if is_morning else "rgba(108,80,200,0.15)"
+
+                # Строка summary
+                if is_morning:
+                    g = summary.get("GENIUS", 0)
+                    n = summary.get("NORMAL", 0)
+                    s = summary.get("SAFE", 0)
+                    r = summary.get("RECOVERY", 0)
+                    summary_line = (
+                        f'<span style="color:rgba(255,100,80,0.8)">🔥{g}</span> '
+                        f'<span style="color:rgba(255,200,80,0.6)">⚡{n}</span> '
+                        f'<span style="color:rgba(100,180,255,0.6)">🛡{s}</span> '
+                        f'<span style="color:rgba(140,150,180,0.5)">💤{r}</span>'
+                    )
+                else:
+                    sl = summary.get("SLEEP", 0)
+                    rs = summary.get("RESTLESS", 0)
+                    rv = summary.get("REVOLT", 0)
+                    summary_line = (
+                        f'<span style="color:rgba(140,150,180,0.5)">💤{sl}</span> '
+                        f'<span style="color:rgba(255,200,80,0.6)">😰{rs}</span> '
+                        f'<span style="color:rgba(255,100,80,0.9)">⚡{rv}</span>'
+                    )
+
+                expanded_state = {"open": False}
+
+                with ui.element("div").style(
+                    f"padding:9px 10px;margin:4px 6px;"
+                    f"background:{bg};border:1px solid {border};"
+                    f"border-radius:8px;cursor:pointer;"
+                ) as card:
+                    # Заголовок — кликабельный
+                    ui.html(
+                        f'<div style="display:flex;justify-content:space-between;'
+                        f'align-items:center;margin-bottom:4px;">'
+                        f'<span style="font-family:JetBrains Mono;font-size:0.65rem;'
+                        f'color:{accent};font-weight:500;">{icon} {label}</span>'
+                        f'<span style="font-family:JetBrains Mono;font-size:0.5rem;'
+                        f'color:rgba(140,150,180,0.4);">{ts} ▾</span>'
+                        f'</div>'
+                    )
+                    # Summary строка — всегда видна
+                    ui.html(
+                        f'<div style="font-family:JetBrains Mono;font-size:0.6rem;'
+                        f'margin-bottom:3px;">{summary_line}</div>'
+                    )
+
+                    # Детали — разворачиваются по клику
+                    with ui.element("div").style("display:none;margin-top:6px;") as detail_block:
+                        if is_morning:
+                            for mode_key, mode_icon in [
+                                ("RECOVERY","💤"), ("SAFE","🛡"),
+                                ("GENIUS","🔥"), ("NORMAL","⚡")
+                            ]:
+                                agents = details.get(mode_key, [])
+                                if agents:
+                                    ui.html(
+                                        f'<div style="font-family:JetBrains Mono;'
+                                        f'font-size:0.55rem;color:rgba(180,185,210,0.6);'
+                                        f'border-top:1px solid rgba(255,255,255,0.04);'
+                                        f'padding-top:4px;margin-top:3px;">'
+                                        f'<b>{mode_icon} {mode_key} ({len(agents)})</b><br>'
+                                        + "<br>".join(a for a in agents[:6])
+                                        + ("..." if len(agents) > 6 else "")
+                                        + "</div>"
+                                    )
+                        else:
+                            revolts_d   = details.get("revolts", [])
+                            resentful_d = details.get("resentful", [])
+                            restless_d  = details.get("restless", [])
+                            if revolts_d:
+                                ui.html(
+                                    f'<div style="font-family:JetBrains Mono;'
+                                    f'font-size:0.55rem;color:rgba(255,120,80,0.85);'
+                                    f'border-top:1px solid rgba(255,255,255,0.04);'
+                                    f'padding-top:4px;margin-top:3px;">'
+                                    f'<b>⚡ Бунтари ({len(revolts_d)})</b><br>'
+                                    + "<br>".join(f"⚡ {r}" for r in revolts_d[:8])
+                                    + ("..." if len(revolts_d) > 8 else "")
+                                    + "</div>"
+                                )
+                            if resentful_d:
+                                ui.html(
+                                    f'<div style="font-family:JetBrains Mono;'
+                                    f'font-size:0.55rem;color:rgba(220,100,100,0.75);'
+                                    f'margin-top:3px;">'
+                                    f'<b>🔴 Обиды ({len(resentful_d)})</b><br>'
+                                    + "<br>".join(f"🔴 {r}" for r in resentful_d[:5])
+                                    + "</div>"
+                                )
+                            if restless_d:
+                                ui.html(
+                                    f'<div style="font-family:JetBrains Mono;'
+                                    f'font-size:0.55rem;color:rgba(200,180,80,0.6);'
+                                    f'margin-top:3px;">'
+                                    f'<b>😰 Тревожный сон ({len(restless_d)})</b><br>'
+                                    + ", ".join(restless_d[:10])
+                                    + "</div>"
+                                )
+
+                    def _toggle(e, db=detail_block, es=expanded_state):
+                        es["open"] = not es["open"]
+                        db.style("display:block;" if es["open"] else "display:none;")
+
+                    card.on("click", _toggle)
+
+
     def _render_chronicles_tab():
         """Список хроник в правой панели."""
         items = list_chronicles(limit=80)
@@ -1773,6 +2042,21 @@ def page_cabinet() -> None:
                                 "border:1px solid rgba(0,242,255,0.15);"
                             ).on("click", lambda: open_ole_library()):
                                 ui.html("📚 библиотека")
+                            with ui.element("div").classes("cab-map-btn").style(
+                                "cursor:pointer;"
+                                "background:rgba(255,180,50,0.04);"
+                                "border:1px solid rgba(255,180,50,0.18);"
+                                "color:rgba(255,200,80,0.8);"
+                            ).on("click", lambda: ui.timer(0, _do_morning_checkout, once=True)):
+                                ui.html("🌅 день")
+                            with ui.element("div").classes("cab-map-btn").style(
+                                "cursor:pointer;"
+                                "background:rgba(108,80,200,0.04);"
+                                "border:1px solid rgba(108,80,200,0.22);"
+                                "color:rgba(160,130,240,0.8);"
+                            ).on("click", lambda: ui.timer(0, _do_night_cycle, once=True)):
+                                ui.html("🌙 ночь")
+
                     # Вьюпорт карты
                     with ui.element("div").classes("cab-map-viewport") as map_vp:
                         refs["map_canvas"] = ui.element("div").classes("cab-map-canvas has-bg")
@@ -1920,7 +2204,7 @@ if(document.readyState === 'loading') {
 
             with ui.element("div").classes("cab-right"):
                 with ui.element("div").classes("cab-tabs"):
-                    for tab_name, tab_label in [("agent","агент"),("matrix","матрица"),("chronicles","хроники"),("files","файлы"),("prompts","промпты"),("archive","архив")]:
+                    for tab_name, tab_label in [("agent","агент"),("matrix","матрица"),("chronicles","хроники"),("files","файлы"),("reports","отчёты"),("archive","архив")]:
                         is_active = tab_name == state["active_tab"]
                         cls = "cab-tab active" if is_active else "cab-tab"
                         tab_el = ui.element("div").classes(cls)
@@ -1928,7 +2212,7 @@ if(document.readyState === 'loading') {
                             ui.label(tab_label).style("font-size:inherit;color:inherit;cursor:pointer;pointer-events:none;")
                         tab_el.on("click", lambda e, _t=tab_name: switch_tab(_t))
                         refs["right_tabs"][tab_name] = tab_el
-                for tab_name in ["agent","matrix","chronicles","files","prompts","archive"]:
+                for tab_name in ["agent","matrix","chronicles","files","reports","archive"]:
                     is_active = tab_name == state["active_tab"]
                     panel = ui.element("div").classes("cab-tab-content").style(f'display:{"block" if is_active else "none"}')
                     refs["right_panels"][tab_name] = panel

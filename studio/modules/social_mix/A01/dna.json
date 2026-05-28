@@ -27,10 +27,10 @@
     "trigger_keywords": []
   },
   "dynamic": {
-    "Respect": 1,
-    "Patience": 0.784,
-    "Stress": 0.324,
-    "Internal_Light": 0.848,
+    "Respect": 1.0,
+    "Patience": 0.834,
+    "Stress": 0.204,
+    "Internal_Light": 0.868,
     "streak": 0,
     "stars": 0,
     "_note": "автоинициализация миграцией — подкрути характер через реестр или кабинет",

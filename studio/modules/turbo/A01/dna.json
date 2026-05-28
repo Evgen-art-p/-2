@@ -24,9 +24,9 @@
   },
   "dynamic": {
     "Respect": 1.0,
-    "Patience": 0.898,
-    "Stress": 0,
-    "Internal_Light": 1,
+    "Patience": 0.948,
+    "Stress": 0.0,
+    "Internal_Light": 1.0,
     "streak": 16,
     "stars": 0,
     "_note": "автоинициализация при рождении — меняется в процессе жизни",

@@ -1,0 +1,539 @@
+# studio/night_cycle.py
+"""
+🌙 НОЧНОЙ ЦИКЛ — Этапы 5 и 6 Ритмов Жизни
+
+Этап 5: Decay
+  Фоновый детерминированный тик.
+  Sensory-события оседают.
+  Обиды зреют в тишине.
+  Пассивное восстановление дома.
+
+Этап 6: Ночная Автономия
+  Агент принимает финальное суточное решение:
+    SLEEP   → глубокий сон, восстановление
+    RESTLESS → тревожный сон, почти ничего
+    REVOLT  → бунт ночью над своим смыслом
+
+  Решение детерминировано: Autonomy + resentment + Stress + Ambition - streak.
+  Никакого LLM — пока Садовник спит, LLM тоже спит.
+
+  Результаты пишутся в city_state["night_results"] →
+  morning_checkout.py читает их при расчёте режима дня.
+
+Студия «Шесть Пальцев» · Спринт 23 · 2026
+"""
+
+import json
+import asyncio
+from pathlib import Path
+from datetime import datetime, timedelta
+from typing import Optional
+
+MODULES_DIR      = Path("studio/modules")
+CITY_STATE       = Path("studio/city_state.json")
+CITY_CHRONICLES  = Path("studio/city_chronicles")
+
+# ── Пороги бунта ──────────────────────────────────────────────
+REVOLT_THRESHOLD    = 0.65  # revolt_score выше → бунт
+RESTLESS_STRESS     = 0.70  # Stress выше этого при не-бунте → тревожный сон
+
+
+# ════════════════════════════════════════════════════════════════
+# ЭТАП 5: DECAY
+# ════════════════════════════════════════════════════════════════
+
+def _run_decay_for_agent(agent_dir: Path, dept: str) -> dict:
+    """
+    Три процесса затухания для одного агента:
+      1. Sensory: plавное затухание emotional_weight
+      2. Пассивное восстановление дома
+      3. Созревание resentment от плохого QA
+
+    Все изменения через легитимные каналы.
+    Возвращает краткий лог изменений.
+    """
+    folder   = agent_dir.name
+    dna_path = agent_dir / "dna.json"
+    if not dna_path.exists():
+        return {}
+
+    try:
+        dna = json.loads(dna_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    changes = {}
+
+    # ── 1. Sensory decay (Loka-Filter для веса записей) ────────
+    sensory_path = agent_dir / "sensory" / "sensory_memory.json"
+    if sensory_path.exists():
+        try:
+            sensory = json.loads(sensory_path.read_text(encoding="utf-8"))
+            entries = sensory.get("entries", [])
+            cutoff  = datetime.now() - timedelta(days=30)
+            archived = 0
+
+            new_entries = []
+            for entry in entries:
+                raw_ts = entry.get("ts") or entry.get("date", "")
+                try:
+                    entry_time = datetime.fromisoformat(raw_ts)
+                except (ValueError, TypeError):
+                    new_entries.append(entry)
+                    continue
+
+                weight = float(entry.get("emotional_weight", 0.3))
+                # Плавное затухание: -3% в сутки
+                new_weight = round(weight * 0.97, 3)
+                entry["emotional_weight"] = new_weight
+
+                # Старые с низким весом → в архив (summary)
+                if entry_time < cutoff and new_weight < 0.05:
+                    archived += 1
+                    text = (entry.get("content") or entry.get("feeling", ""))[:60]
+                    old_summary = sensory.get("summary", "")
+                    sensory["summary"] = (old_summary + f" | {text}")[-500:]
+                else:
+                    new_entries.append(entry)
+
+            sensory["entries"] = new_entries
+            sensory_path.write_text(
+                json.dumps(sensory, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+            if archived:
+                changes["sensory_archived"] = archived
+        except Exception:
+            pass
+
+    # ── 2. Пассивное восстановление дома ───────────────────────
+    # Только если агент "дома" (last_location = home или пусто после чистки here_now)
+    # Используем sync_to_dna("night_rest") — новый легитимный канал
+    try:
+        from studio.grondheim_memory import sync_to_dna
+        sync_to_dna(folder, "night_rest", intensity=1.0, dept=dept)
+        changes["night_rest"] = True
+    except Exception as e:
+        # Фоллбэк: прямая запись если grondheim_memory недоступен
+        dynamic = dna.get("dynamic", {})
+        stress  = float(dynamic.get("Stress", 0.0))
+        patience = float(dynamic.get("Patience", 1.0))
+        dynamic["Stress"]   = round(max(0.0, stress   - 0.01), 3)
+        dynamic["Patience"] = round(min(1.0, patience + 0.005), 3)
+        dna["dynamic"] = dynamic
+        dna_path.write_text(json.dumps(dna, ensure_ascii=False, indent=2), encoding="utf-8")
+        changes["night_rest_fallback"] = True
+
+    # ── 3. Созревание resentment ────────────────────────────────
+    # Условие: плохой QA-день (Stress высокий И light был потрачен)
+    # Читаем актуальный dna после night_rest
+    try:
+        dna = json.loads(dna_path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+
+    dynamic = dna.get("dynamic", {})
+    stress  = float(dynamic.get("Stress", 0.0))
+    light   = float(dynamic.get("Internal_Light", 0.8))
+
+    # Порог: выложился (light < 0.4) и получил стресс (> 0.6)
+    # → значит день был плохим, обида зреет
+    if stress > 0.60 and light < 0.40:
+        ew_path = agent_dir / "resonance" / "emotional_weights.json"
+        ew = {}
+        if ew_path.exists():
+            try:
+                ew = json.loads(ew_path.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+
+        # Ищем QA-агента последнего рана из sensory
+        # Простой эвристик: если есть записи с source="pipeline" — ищем QA в них
+        qa_agent = _find_qa_agent_from_sensory(agent_dir)
+        if qa_agent and qa_agent != folder:
+            if qa_agent not in ew:
+                ew[qa_agent] = {"warmth": 0.5, "trust": 0.5, "respect": 0.5, "rivalry": 0.0}
+            old_resentment = float(ew[qa_agent].get("resentment", 0.0))
+            new_resentment = round(min(1.0, old_resentment + 0.05), 3)
+            ew[qa_agent]["resentment"] = new_resentment
+            ew[qa_agent]["last_interaction"] = datetime.now().isoformat()
+
+            ew_path.parent.mkdir(parents=True, exist_ok=True)
+            ew_path.write_text(json.dumps(ew, ensure_ascii=False, indent=2), encoding="utf-8")
+            changes["resentment_grew"] = {
+                "target": qa_agent,
+                "new_value": new_resentment
+            }
+
+    return changes
+
+
+def _find_qa_agent_from_sensory(agent_dir: Path) -> Optional[str]:
+    """
+    Эвристика: находим QA-агента из последних sensory-записей.
+    QA обычно последний агент цеха — ищем "QA" или "A12" / "A05" в source.
+    Возвращает folder-имя или None.
+    """
+    sensory_path = agent_dir / "sensory" / "sensory_memory.json"
+    if not sensory_path.exists():
+        return None
+    try:
+        sensory = json.loads(sensory_path.read_text(encoding="utf-8"))
+        for entry in reversed(sensory.get("entries", [])):
+            content = entry.get("content", "").lower()
+            # Ищем упоминание QA-агента
+            for keyword in ["qa", "a12", "a05", "артур", "arthur", "финализатор"]:
+                if keyword in content:
+                    # Простая эвристика — возвращаем стандартное имя QA
+                    return "A12"
+    except Exception:
+        pass
+    return None
+
+
+# ════════════════════════════════════════════════════════════════
+# ЭТАП 6: НОЧНАЯ АВТОНОМИЯ
+# ════════════════════════════════════════════════════════════════
+
+def _compute_night_decision(dna: dict) -> dict:
+    """
+    Детерминированное решение агента: бунт или сон.
+
+    revolt_score = (autonomy*0.35 + resentment*0.30 + stress*0.20 + ambition*0.15)
+                   - streak*0.10
+
+    Возвращает:
+    {
+        "decision": "REVOLT" | "RESTLESS" | "SLEEP",
+        "revolt_score": float,
+        "reason": str
+    }
+    """
+    static  = dna.get("static",  {})
+    dynamic = dna.get("dynamic", {})
+
+    autonomy  = float(static.get("Autonomy_Level", 0.5))
+    stress    = float(dynamic.get("Stress",         0.0))
+    streak    = int(dynamic.get("streak", 0))
+
+    # Ambition — не все агенты имеют, дефолт 0.5
+    ambition = float(static.get("Ambition", dynamic.get("Ambition", 0.5)))
+
+    # Максимальный resentment из emotional_weights — обида давит
+    # Читаем напрямую из файла чтобы не зависеть от grondheim_memory
+    resentment = 0.0
+
+    return_dict = {}
+    # Будет вызван ниже после загрузки ew
+    return_dict["autonomy"]  = autonomy
+    return_dict["stress"]    = stress
+    return_dict["streak"]    = streak
+    return_dict["ambition"]  = ambition
+    return_dict["resentment"] = resentment  # обновится ниже
+
+    revolt_score = (
+        autonomy   * 0.35 +
+        resentment * 0.30 +
+        stress     * 0.20 +
+        ambition   * 0.15
+    ) - (max(0, streak) * 0.10)  # только серия ПОБЕД снимает давление
+
+    revolt_score = round(revolt_score, 3)
+
+    if revolt_score > REVOLT_THRESHOLD:
+        decision = "REVOLT"
+        reason   = f"revolt_score={revolt_score:.2f} (autonomy={autonomy:.2f}, resentment={resentment:.2f})"
+    elif stress > RESTLESS_STRESS:
+        decision = "RESTLESS"
+        reason   = f"stress={stress:.2f} — не спит, тревожный сон"
+    else:
+        decision = "SLEEP"
+        reason   = f"revolt_score={revolt_score:.2f} — сон"
+
+    return {
+        "decision":    decision,
+        "revolt_score": revolt_score,
+        "reason":       reason,
+    }
+
+
+def _compute_night_decision_with_ew(dna: dict, agent_dir: Path) -> dict:
+    """
+    Полная версия: читает emotional_weights для resentment.
+    """
+    static  = dna.get("static",  {})
+    dynamic = dna.get("dynamic", {})
+
+    autonomy  = float(static.get("Autonomy_Level", 0.5))
+    stress    = float(dynamic.get("Stress",         0.0))
+    streak    = int(dynamic.get("streak", 0))
+    ambition  = float(static.get("Ambition", dynamic.get("Ambition", 0.5)))
+
+    # Максимальный resentment
+    resentment = 0.0
+    ew_path = agent_dir / "resonance" / "emotional_weights.json"
+    if ew_path.exists():
+        try:
+            ew = json.loads(ew_path.read_text(encoding="utf-8"))
+            if ew:
+                resentment = max(
+                    float(rel.get("resentment", 0.0))
+                    for rel in ew.values()
+                )
+        except Exception:
+            pass
+
+    revolt_score = (
+        autonomy   * 0.35 +
+        resentment * 0.30 +
+        stress     * 0.20 +
+        ambition   * 0.15
+    ) - (max(0, streak) * 0.10)
+
+    revolt_score = round(revolt_score, 3)
+
+    if revolt_score > REVOLT_THRESHOLD:
+        decision = "REVOLT"
+        reason   = (
+            f"revolt_score={revolt_score:.2f} "
+            f"(autonomy={autonomy:.2f}, resentment={resentment:.2f}, "
+            f"stress={stress:.2f}, ambition={ambition:.2f})"
+        )
+    elif stress > RESTLESS_STRESS:
+        decision = "RESTLESS"
+        reason   = f"stress={stress:.2f} > {RESTLESS_STRESS} — тревожный сон"
+    else:
+        decision = "SLEEP"
+        reason   = f"revolt_score={revolt_score:.2f} ≤ {REVOLT_THRESHOLD} — глубокий сон"
+
+    return {
+        "decision":     decision,
+        "revolt_score": revolt_score,
+        "reason":       reason,
+        "resentment":   round(resentment, 3),
+    }
+
+
+def _apply_night_decision(dna_path: Path, dna: dict, folder: str, dept: str, decision: str) -> dict:
+    """
+    Применяет последствия ночного решения через sync_to_dna().
+    Возвращает обновлённые значения.
+    """
+    try:
+        from studio.grondheim_memory import sync_to_dna
+
+        if decision == "SLEEP":
+            # Глубокий сон — лучшее восстановление
+            sync_to_dna(folder, "night_sleep", intensity=1.0, dept=dept)
+
+        elif decision == "RESTLESS":
+            # Тревожный сон — почти ничего
+            sync_to_dna(folder, "night_rest", intensity=0.3, dept=dept)
+
+        elif decision == "REVOLT":
+            # Бунт: сгорел в работе → частичный сброс стресса
+            # (полное восстановление зависит от Stubbornness — см. morning_checkout)
+            sync_to_dna(folder, "night_rest", intensity=0.6, dept=dept)
+
+    except Exception:
+        # Фоллбэк: прямая запись
+        dynamic = dna.get("dynamic", {})
+        if decision == "SLEEP":
+            dynamic["Stress"]   = round(max(0.0, float(dynamic.get("Stress", 0)) - 0.05), 3)
+            dynamic["Patience"] = round(min(1.0, float(dynamic.get("Patience", 1)) + 0.02), 3)
+        elif decision == "RESTLESS":
+            dynamic["Stress"]   = round(max(0.0, float(dynamic.get("Stress", 0)) - 0.01), 3)
+        elif decision == "REVOLT":
+            dynamic["Stress"]   = round(max(0.0, float(dynamic.get("Stress", 0)) - 0.03), 3)
+
+        dna["dynamic"] = dynamic
+        try:
+            dna_path.write_text(
+                json.dumps(dna, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+        except Exception:
+            pass
+
+    # Перечитываем актуальный dna
+    try:
+        return json.loads(dna_path.read_text(encoding="utf-8"))
+    except Exception:
+        return dna
+
+
+# ════════════════════════════════════════════════════════════════
+# ЗАПИСЬ В CHRONICLES (REVOLT-агенты)
+# ════════════════════════════════════════════════════════════════
+
+def _write_revolt_chronicle(agent_name: str, folder: str, reason: str):
+    """
+    Пишет запись в city_chronicles о ночном бунте.
+    Садовник увидит её утром в вкладке хроники.
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    ts    = datetime.now().strftime("%H-%M-%S")
+
+    chronicle_dir = CITY_CHRONICLES / today
+    chronicle_dir.mkdir(parents=True, exist_ok=True)
+
+    chronicle = {
+        "schema":    "night_revolt_v1",
+        "ts":        datetime.now().isoformat(),
+        "agent":     agent_name,
+        "folder":    folder,
+        "type":      "night_revolt",
+        "location":  "Квартал Мастеров (ночь)",
+        "reason":    reason,
+        "note":      f"{agent_name} работал ночью над чем-то своим",
+    }
+
+    path = chronicle_dir / f"night_revolt_{folder}_{ts}.json"
+    try:
+        path.write_text(
+            json.dumps(chronicle, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    except Exception as e:
+        print(f"[NIGHT] ⚠ Не удалось записать хронику: {e}")
+
+
+# ════════════════════════════════════════════════════════════════
+# ГЛАВНАЯ ФУНКЦИЯ
+# ════════════════════════════════════════════════════════════════
+
+async def run_night_cycle(
+    workshops: list[str] | None = None,
+    on_progress=None,
+) -> dict:
+    """
+    Ночной цикл: Decay (Этап 5) + Ночная Автономия (Этап 6).
+
+    workshops: список цехов (None = все)
+    on_progress: callback(msg) для UI
+
+    Возвращает:
+    {
+        "night_results": {
+            "A05_social_mix": {"decision": "REVOLT", "revolt_score": 0.71, ...},
+            ...
+        },
+        "summary": {"SLEEP": 90, "RESTLESS": 30, "REVOLT": 14},
+        "revolts": ["Виктор", "A05", ...]
+    }
+    """
+    async def log(msg: str):
+        print(f"[NIGHT] {msg}")
+        if on_progress:
+            result = on_progress(msg)
+            if asyncio.iscoroutine(result):
+                await result
+
+    await log(f"🌙 Ночной цикл · {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+    night_results = {}
+    summary  = {"SLEEP": 0, "RESTLESS": 0, "REVOLT": 0}
+    revolts  = []
+    count    = 0
+
+    if not MODULES_DIR.exists():
+        await log("❌ studio/modules/ не найден")
+        return {"night_results": night_results, "summary": summary, "revolts": revolts}
+
+    for dept_dir in sorted(MODULES_DIR.iterdir()):
+        if not dept_dir.is_dir():
+            continue
+        dept = dept_dir.name
+        if workshops and dept not in workshops:
+            continue
+
+        for agent_dir in sorted(dept_dir.iterdir()):
+            if not agent_dir.is_dir():
+                continue
+
+            dna_path = agent_dir / "dna.json"
+            if not dna_path.exists():
+                continue
+
+            try:
+                dna = json.loads(dna_path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+
+            folder     = agent_dir.name
+            agent_key  = f"{folder}_{dept}"
+            agent_name = dna.get("name", folder)
+
+            # ── Этап 5: Decay ──────────────────────────────────
+            decay_changes = _run_decay_for_agent(agent_dir, dept)
+
+            # ── Этап 6: Ночная Автономия ───────────────────────
+            night = _compute_night_decision_with_ew(dna, agent_dir)
+            decision = night["decision"]
+
+            # Применяем последствия
+            _apply_night_decision(dna_path, dna, folder, dept, decision)
+
+            # Хроника бунта
+            if decision == "REVOLT":
+                _write_revolt_chronicle(agent_name, folder, night["reason"])
+                revolts.append(agent_name)
+                await log(f"  ⚡ REVOLT: {agent_name} — {night['reason'][:80]}")
+            elif decision == "RESTLESS":
+                await log(f"  😰 RESTLESS: {agent_name} (stress={night.get('revolt_score', 0):.2f})")
+
+            summary[decision] = summary.get(decision, 0) + 1
+
+            night_results[agent_key] = {
+                **night,
+                "decay_changes": decay_changes,
+                "agent_name":    agent_name,
+            }
+            count += 1
+
+    # Сохраняем в city_state для morning_checkout
+    city_state = {}
+    if CITY_STATE.exists():
+        try:
+            city_state = json.loads(CITY_STATE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    city_state["night_results"] = night_results
+    city_state["night_ts"]      = datetime.now().isoformat()
+
+    CITY_STATE.parent.mkdir(parents=True, exist_ok=True)
+    CITY_STATE.write_text(
+        json.dumps(city_state, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+    await log(f"✅ Ночной цикл завершён. Обработано {count} агентов.")
+    await log(
+        f"   SLEEP={summary['SLEEP']} | RESTLESS={summary['RESTLESS']} | REVOLT={summary['REVOLT']}"
+    )
+    if revolts:
+        await log(f"   🔥 Бунтари: {', '.join(revolts[:10])}")
+
+    return {"night_results": night_results, "summary": summary, "revolts": revolts}
+
+
+# ════════════════════════════════════════════════════════════════
+# СИНХРОННЫЙ ВРАППЕР
+# ════════════════════════════════════════════════════════════════
+
+def run_night_cycle_sync(workshops: list[str] | None = None) -> dict:
+    """Синхронный враппер для вызова из NiceGUI."""
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, run_night_cycle(workshops))
+                return future.result(timeout=600)
+        else:
+            return loop.run_until_complete(run_night_cycle(workshops))
+    except Exception as e:
+        print(f"[NIGHT] ❌ Ошибка: {e}")
+        return {"night_results": {}, "summary": {}, "revolts": []}

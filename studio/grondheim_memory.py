@@ -1135,6 +1135,22 @@ def sync_to_dna(
         light    = min(1, light    + 0.02)
         patience = min(1, patience + 0.01)
 
+    elif event == "night_rest":
+        # Пассивное восстановление дома (Этап 5 Decay) · Спринт 23
+        # Тише прогулки: нет движения, нет воздуха — просто тишина.
+        # intensity используется: 1.0 = дома, 0.6 = после бунта, 0.3 = тревожный сон
+        stress   = max(0, stress   - 0.01 * i)
+        patience = min(1, patience + 0.005 * i)
+
+    elif event == "night_sleep":
+        # Глубокий сон после хорошего дня (Этап 6 SLEEP) · Спринт 23
+        # Лучшее восстановление после walk_rest.
+        # streak >= 3: Stress → 0.0 (железное правило — уже есть выше)
+        stress   = max(0, stress   - 0.05)
+        patience = min(1, patience + 0.02)
+        light    = min(1, light    + 0.01)  # утренняя свежесть
+
+
     elif event == "walk_rest":
         # Прогулка по городу · Спринт 21 · хард-лимит Локи
         # Мягче кабинета: нет живого разговора с Архитектором.

@@ -1,17 +1,8 @@
 {
   "_note": "оперативная память",
   "created": "2026-03-27",
-  "entries": [
-    {
-      "ts": "2026-04-03T20:02:35.960435",
-      "type": "work",
-      "source": "pipeline",
-      "content": "Выполнил задачу: # 📦 МАРКА ФАЙН — BOOK PACKAGE\n\n## Статус: READY\n\n## Состав пакета:\n| Файл | Статус | Содержание |\n|------|--------|------------|\n| book.json | ✅ | Метаданные, 1 глав, 3 персонажей |\n| chapters/ch01.js",
-      "tags": [],
-      "emotional_weight": 0.5
-    }
-  ],
-  "summary": "",
+  "entries": [],
+  "summary": "\n[Затухло 1 записей]: Выполнил задачу: # 📦 МАРКА ФАЙН — BOOK PACKAGE\n\n## Статус: R",
   "last_location": "",
   "location_tags": []
 }

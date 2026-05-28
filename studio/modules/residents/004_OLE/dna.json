@@ -29,9 +29,9 @@
   },
   "dynamic": {
     "Respect": 1.0,
-    "Patience": 1.0,
-    "Stress": 0.05,
-    "Internal_Light": 0.82,
+    "Patience": 1,
+    "Stress": 0,
+    "Internal_Light": 0.84,
     "streak": 0,
     "stars": 0,
     "_note": "Оле — спокойный резидент. Стресс почти нулевой: она в своей стихии.",
