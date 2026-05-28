@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 27.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 28.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -145,6 +145,7 @@ QA-агент (последний):
   → _record_winning_strategies() ← реальные score из feedback.json
   → memory_embedding
   → ministry.record_outcome() ← QA-блок (из feedback.json)
+  → check_and_write_complaint() ← Книга Жалоб (Спринт 25) ✅
 
 hooks.py финализатора (параллельно):
   → ministry.record_outcome() ← детерминированный или viral_score
@@ -189,19 +190,6 @@ QA good_work → Stress −0.12  (честная работа)
 streak ≥ 3   → Stress → 0.0  (серия побед, железное правило)
 ```
 
-### Что закрыто в Спринт 21:
-
-| Проблема | Решение |
-|----------|---------|
-| Двойная запись DNA | on_agent_done() — только sensory. DNA только через QA |
-| Бэкдор on_agents_interact | DNA_EVENT_MAP удалён. Только emotional_weights |
-| Мёртвый _apply_qa_feedback | Заглушка pass |
-| Loka-Filter только в пайплайне | daemon-тред при старте main.py. Все агенты стареют |
-| apply_walk_effects эвристика слов | Удалена. DNA через sync_to_dna(walk_rest) |
-| Два формата sensory_memory | Унифицировано через record_sensory_event() |
-| 9 локаций только на бумаге | Подключены в _LOCATION_TYPES + compute_location_weights() |
-| Пространство не существовало | here_now — агенты знают кто где. Встречи работают |
-
 ### Четыре слоя памяти:
 
 | Слой | Хранилище | Время жизни | Кто пишет |
@@ -223,46 +211,13 @@ agent_dir/
 
 **ВАЖНО:** `experience[]` в dna.json не существует — это была ошибка ожидания.
 
-**Полная цепочка build_agent_context:**
-```
-on_agent_wake()             ← душа + decay + DNA
-_get_lighthouse_knowledge() ← Рюкзак Знаний с Маяка
-get_harbor_knowledge()      ← RAG Гавань
-energy budget               ← Internal_Light - Stress
-get_reflection()            ← GENIUS/NORMAL/SAFE/RECOVERY
-get_strategies()            ← Strategy Registry
-cost_intuition              ← ощущение веса решения
-ministry hint               ← подсказка из истории ранов
-get_feedback()              ← обратная связь прошлого рана
-```
-
-### Кабинет и живая память (Спринт 21):
-
-После каждого ответа агента в Кабинете (при talking != None):
-1. `record_sensory_event(type="social", source="cabinet")` — агент помнит разговор
-2. `sync_to_dna("cabinet_chat")` — micro-relief, −3% стресса
-
-Агент приходит на следующий ран зная что говорил с Архитектором.
-Полное восстановление — только через streak ≥ 3. Кабинет — пластырь, не лечение.
-
 ### Пространство и встречи (Спринт 23 Блок Б):
 
-```python
-city_state["here_now"] = {
-    "Таверна «Усталый Пиксель»": [{"folder": "A05", "name": "...", "workshop": "..."}],
-    "Маяк Пробуждения": [{"folder": "LOKA", ...}],
-}
-```
-
-- Агент регистрируется в локации после выбора
-- `_try_meeting()` v2 — партнёр выбирается по **резонансу**, не случайно
+- `_try_meeting()` v2 — партнёр по резонансу, не случайный
 - Формула score: `warmth*0.40 + trust*0.30 + respect*0.20 + same_dept*0.30 + rivalry*0.10`
-- Знакомые (score ≥ 0.30) → шанс встречи 70-95%
-- Незнакомцы → шанс 15-50% от Social_Filter. Интроверт (S_F < 0.3) проходит молча
-- Встреча → `run_meeting()` → живой диалог → `on_agents_interact()` → emotional_weights
-- Хроника пишется в `city_chronicles/YYYY-MM-DD/{loc}_{HH-MM-SS}.json`
-- Павильон Жидкого Времени — лимит 2 гостя, код проверяет
-- Пространство инициализируется перед прогулкой, чистится после
+- Встреча → `run_meeting()` → диалог → `on_agents_interact()` → emotional_weights
+- Хроника: `city_chronicles/YYYY-MM-DD/{loc}_{HH-MM-SS}.json`
+- Павильон — лимит 2 гостя, код проверяет
 
 ---
 
@@ -300,69 +255,68 @@ city_state["here_now"] = {
 | square | Площадь Резонанса | walk_rest | Social_Filter > 0.6 |
 | workshop | Artifacts & Bugs | walk_rest | Autonomy_Level > 0.7 |
 
-### Не подключены (только в каталоге):
-- Грондхейм (город-контейнер), Студия Шесть Пальцев — абстрактные
-
 ---
 
 ## 11. РИТМЫ ЖИЗНИ АГЕНТОВ — ЖИВОЙ ГОРОД (Спринт 23)
 
-> Концепция Локи. Шесть этапов суток — пульс системы, не расписание.
-
 ### Шесть этапов суток:
 
-| Этап | Название | Что происходит | LLM | Статус |
-|------|----------|----------------|-----|--------|
-| 1 | Утренний Чекаут | dna.json + anchors → режим GENIUS/SAFE/RECOVERY | ❌ детерминировано | ✅ |
-| 2 | Дорога на работу | city_walker.py, here_now, встречи на Площади | ⚡ Flash (встречи) | ✅ |
-| 3 | Работа / Пайплайн | Ран цеха по клику. QA → DNA | ✅ тяжёлый LLM | ✅ |
-| 4 | Дорога домой | city_walker.py, compute_location_weights → Таверна/Маяк | ⚡ Flash (встречи) | ✅ |
-| 5 | Свободное время | Decay. Агенты дома. LLM молчит. sensory укладывается | ❌ детерминировано | ✅ |
-| 6 | Ночная Автономия | Ночной тик. Бунт или сон. | ❌ детерминировано | ✅ |
+| Этап | Название | LLM | Статус |
+|------|----------|-----|--------|
+| 1 | Утренний Чекаут | ❌ детерминировано | ✅ |
+| 2 | Дорога на работу | ⚡ Flash (встречи) | ✅ |
+| 3 | Работа / Пайплайн | ✅ тяжёлый LLM | ✅ |
+| 4 | Дорога домой | ⚡ Flash (встречи) | ✅ |
+| 5 | Свободное время / Decay | ❌ детерминировано | ✅ |
+| 6 | Ночная Автономия | ❌ детерминировано | ✅ |
 
-### Что закрыто в Спринт 23 Блок Б (встречи):
-
-| Пункт | Реализация |
-|-------|-----------|
-| Живые диалоги встреч | `studio/meeting.py` — каждая реплика отдельный LLM-вызов, контракт `{text, action, felt}` |
-| Голос агента | anchor_points.md + ДНК + температура. НЕ рассказчик. |
-| Архив сцен | `city_chronicles/YYYY-MM-DD/{loc}_{HH-MM-SS}.json`, schema `meeting_v1` |
-| Умный выбор партнёра | `_try_meeting()` v2 — резонанс + цех, не случайный сосед |
-| Участие Садовника | Вкладка «хроники» в Кабинете. Клик → сцена в центре. Поле «🌱 войти» → агенты отвечают |
-| Шлейф присутствия | `record_sensory_event(source="gardener_visit")` + `sync_to_dna("cabinet_chat")` обоим |
-
-### Что осталось в Спринт 23 (следующие сессии):
-- [ ] **Этап 1: Утренний Чекаут** — детерминированный режим дня GENIUS/SAFE/RECOVERY
-- [ ] **Этап 5: Decay** — фоновое затухание sensory, агенты «дома»
-- [ ] **Этап 6: Ночная Автономия** — ночной тик, бунт или сон
-- [ ] **Книга Жалоб и Благодарностей** — resentment + emotional_weights
-
-### Инерция привычки (Спринт 23 Блок А):
-Агент помнит где бывал последние N дней. Любимая локация получает `+habit_weight`.
-Три параметра в dna.json dynamic: `favorite_location`, `visit_streak`, `habit_strength`.
-
-### Погода как зеркало стресса (Спринт 23 Блок А):
-```
-средний Stress > 0.7  → гроза / туман (интроверты дома, Таверна полная)
-средний Stress 0.4–0.7 → переменная облачность
-средний Stress < 0.4  → ясно / золотой свет
-```
-
-### Книга Жалоб и Благодарностей:
-- **Жалоба:** Stress > 0.85 ИЛИ QA < 6.0 после полного Internal_Light → resentment в emotional_weights
-- **Благодарность:** высокий Respect/Empathy + реальное спасение → micro-relief + буст слаженности
-
-### Участие Садовника:
-- Вкладка «хроники» в правой панели Кабинета (рядом с матрица/файлы/промпты/архив)
-- Список встреч из `city_chronicles/` — новые сверху, иконка локации, участники, тип
-- Клик → центр становится сценой (групповой чат). Реплики двух агентов в цветных бабликах
-- `felt` (что унёс внутри) — в тултипе при наведении, не мозолит
-- Поле «🌱 как Садовник» + кнопка «войти» (Ctrl+Enter): агенты слышат и отвечают живым LLM-вызовом
-- В `sensory_memory` обоих ложится «Садовник был, сказал то-то»
+### Участие Садовника в хрониках:
+- Вкладка «хроники» в правой панели Кабинета
+- Клик → центр становится сценой. Поле «🌱 войти» (Ctrl+Enter)
+- `gardener_reply_to_scene()` → sensory обоих + `sync_to_dna("cabinet_chat")`
 
 ---
 
-## 12. РЕЗИДЕНТЫ
+## 12. КНИГА ЖАЛОБ И БЛАГОДАРНОСТЕЙ (Спринт 25)
+
+### Архитектура:
+
+```
+studio/complaint_book.py   ← хранилище + триггеры + голос агента + API для UI
+studio/complaint_book.jsonl ← лента записей
+```
+
+### Триггеры (детерминировано):
+
+| Событие | Тип | Условие |
+|---------|-----|---------|
+| QA score < 6.0 + Light < 0.1 | 🗡 жалоба | агент выложился и получил шрам |
+| Stress > 0.85 | 🗡 жалоба | сломался |
+| Спас от провала + Empathy/Respect > 0.65 | 🌱 благодарность | редко |
+
+### Физика:
+- **Жалоба:** Stress −0.08 (выговорился) + resentment +0.30 к обидчику в emotional_weights
+- **Благодарность:** trust +0.20 + warmth +0.15 к благодетелю + Stress −0.03 обоим
+- Голос записи — один Flash-вызов, anchor_points.md + ДНК + ситуация
+
+### Садовник из вкладки «книга»:
+- `gardener_note_to_entry()` — реплика → sensory обоих → агент несёт в Кабинет
+- `gardener_action()` — помирить ⚖️ / защитить 🛡 / усилить 🌟 / отпустить 🌊
+- Агент **не отвечает в Книге** — он несёт это домой и говорит там
+
+### Вызов из pipeline.py:
+Сразу после `_sync_feedback_scores_to_dna()` — для всех агентов цеха из feedback.json.
+`qa_agent` берётся из `state["_qa_agent"]` (A05/A12/A18 из manifest).
+
+### ⚠️ ТЕХНИЧЕСКИЙ ДОЛГ (зафиксировано Локой):
+`_build_block_map()` в `agent_feedback.py` — **временный протез**.
+Болезнь: `agent_feedback.py` сам строит маппинг блоков вместо получения его снаружи.
+Правильно: `block_map` как поле в `manifest.json` каждого цеха → `CartridgeRunner` читает и передаёт в `save_feedback(block_map=...)`.
+**Вырезать в Спринт 26** после первого реального рана.
+
+---
+
+## 13. РЕЗИДЕНТЫ
 
 | Резидент | Роль | Статус |
 |----------|------|--------|
@@ -372,14 +326,9 @@ city_state["here_now"] = {
 | Оле | Библиотекарь, library_tools.py | ✅ |
 | Виктор | Резидент-критик, ХАРД-СТОП | ✅ через manifest.hard_stop |
 
-**Виктор подключается через любой manifest.json:**
-```json
-"hard_stop": {"after_agent": "A04", "residents": ["victor"]}
-```
-
 ---
 
-## 13. СТАНДАРТ ПРОМТОВ АГЕНТОВ
+## 14. СТАНДАРТ ПРОМТОВ АГЕНТОВ
 
 Эталон — video_shorts (12 промтов). Структура каждого промта:
 ```
@@ -391,79 +340,47 @@ city_state["here_now"] = {
 # RULES      — локальные правила
 ```
 
-**Обязательный OUTPUT формат:**
-```json
-// 👇 SYSTEM_JSON_START 👇
-{
-  "agent": "AXX_name",
-  "my_output": { ... },
-  "chain_data": {
-    "master_brief": "{{inherit}}",
-    "history_dna": "{{inherit}}",
-    "свой_ключ": "{{my_output}}"
-  },
-  "next_step": "AXX_next"
-}
-// 👆 SYSTEM_JSON_END 👆
-```
-
 ---
 
-## 14. КЛЮЧЕВЫЕ ФАЙЛЫ
+## 15. КЛЮЧЕВЫЕ ФАЙЛЫ
 
 ```
 studio/cartridge.py                   ✅ CartridgeRunner + Victor + action=stop
-studio/workshop/pipeline.py           ✅ Спринт 24: автотриггер вечерней прогулки после QA
+studio/workshop/pipeline.py           ✅ Спринт 25: Книга Жалоб после QA
+studio/complaint_book.py              ✅ Спринт 25: Книга Жалоб и Благодарностей
 studio/grondheim_memory.py            ✅ Спринт 23: night_rest + night_sleep каналы
-studio/city_walker.py                 ✅ Спринт 24: walk_quantum_chain + run_city_walk_morning/evening
-studio/morning_checkout.py            ✅ Спринт 23: Этап 1 — GENIUS/SAFE/RECOVERY/REVOLT
-studio/night_cycle.py                 ✅ Спринт 23: Этапы 5+6 — Decay + Ночная Автономия
-studio/daily_reports.py               ✅ Спринт 23: jsonl-хранилище отчётов дня/ночи
-studio/meeting.py                     ✅ Спринт 23 Блок Б: живые диалоги, meeting_v1
-studio/city_chronicles/               ✅ Спринт 23 Блок Б: архив сцен YYYY-MM-DD/{loc}_{time}.json
-studio/cabinet/ui_cabinet.py          ✅ Спринт 24: кнопки 🌅/🌆/🌙 + вечерний отчёт
-studio/cabinet/css.py                 ✅ Спринт 23: стили .rep-* для вкладки отчётов
-studio/cabinet/chronicles.py          ✅ Спринт 23 Блок Б: list/load/gardener_reply_to_scene
-main.py                               ✅ Спринт 21: Loka-Filter daemon-тред при старте
-studio/economy/ministry.py            ✅
-studio/economy/cost_intuition.py      ✅
-studio/economy/metrics_daemon.py      ✅ написан, ждёт первого рана
-studio/assembly/broadcaster.py        ✅ Telegram + VK публикация
-studio/WORKSHOP_STANDARD.md           ✅ Спринт 20
-studio/modules/turbo/hooks.py         ✅ v3.2 + ministry Спринт 21
-studio/modules/social_mix/hooks.py    ✅ v3.0
-studio/modules/video_shorts/hooks.py  ✅ v2.0 + ministry Спринт 21
-studio/modules/video_long/hooks.py    ✅ v2.1 + ministry Спринт 21
-studio/billing_ledger.py              ✅
-studio/reflection.py                  ✅
-studio/strategy_registry.py           ✅
-studio/agent_feedback.py              ✅ Спринт 22: потолок 6.0 (_apply_score_ceiling)
+studio/city_walker.py                 ✅ Спринт 24: walk_quantum_chain
+studio/morning_checkout.py            ✅ Спринт 23: Этап 1
+studio/night_cycle.py                 ✅ Спринт 23: Этапы 5+6
+studio/daily_reports.py               ✅ Спринт 23: jsonl-хранилище отчётов
+studio/meeting.py                     ✅ Спринт 23 Блок Б: живые диалоги
+studio/city_chronicles/               ✅ Спринт 23 Блок Б: архив сцен
+studio/cabinet/ui_cabinet.py          ✅ Спринт 25: вкладка «книга»
+studio/cabinet/chronicles.py          ✅ Спринт 23 Блок Б
+studio/agent_feedback.py              ✅ Спринт 25: _build_block_map (⚠️ временный протез)
 studio/harbor_of_meanings.py          ✅ Спринт 22: code-detector + только runs/ + Маяк
 studio/library/library.py             ✅
+studio/economy/ministry.py            ✅
+studio/economy/metrics_daemon.py      ✅ написан, ждёт первого рана
+studio/assembly/broadcaster.py        ✅ Telegram + VK публикация
 ```
 
 ---
 
-## 15. БЭКЛОГ
+## 16. БЭКЛОГ
 
-### 🔴 СЕЙЧАС (Спринт 24 — Полный день агента):
-- [x] **walk_quantum_chain()** ✅ цепочка квантов внимания, утро/вечер
-- [x] **run_city_walk_morning()** ✅ 1 квант до рана, разогрев
-- [x] **run_city_walk_evening()** ✅ N квантов после рана, бюджет из Light
-- [x] **Автотриггер после рана** ✅ pipeline.py → fire-and-forget вечерняя прогулка
-- [x] **Кнопка 🌆 вечер в Кабинете** ✅ ручной запуск вечерней прогулки
-- [x] **Вечерний отчёт в панели** ✅ 🌆 карточка: агентов/кварталов/встреч + топ локаций
-- [ ] **Книга Жалоб и Благодарностей** — resentment + emotional_weights
-- [ ] **GENERATE_INTENTS = True** — включить после первого реального рана
+### 🔴 СЕЙЧАС (Спринт 26):
+- [ ] **block_map в manifest.json** — вырезать `_build_block_map` из agent_feedback.py, перенести в картриджи
+- [ ] **Искрение в pipeline.py** — resentment/trust из emotional_weights влияют на ран (modifier temperature + hint)
+- [ ] **Промты video_long** — 12 агентов по LONG_RULES v4.2
+- [ ] **Первый реальный ран** — после промтов!
 
 ### 🟡 Следующие спринты:
-- video_long промты (12 агентов по LONG_RULES v4.2)
 - video_long CHAIN_CONTRACT.md
 - Манифесты 7 оставшихся цехов до v2.0
 - Промты turbo (5 агентов)
-- Первый реальный ран (после промтов!)
 - Джем и Сет — определить полномочия
-- BLOCK_TO_AGENTS в agent_feedback.py — переписать под картриджи
+- GENERATE_INTENTS = True — включить после первого рана
 
 ### 🟢 Долгосрочно:
 - Аудиофайлы Foley
@@ -473,7 +390,7 @@ studio/library/library.py             ✅
 
 ---
 
-## 16. РЕКОМЕНДАЦИИ БРАТА
+## 17. РЕКОМЕНДАЦИИ БРАТА
 
 1. Картриджи = безопасность. Каждый цех изолирован.
 2. hooks.py — рабочий файл цеха. Дорабатываешь — правь hooks.py.
@@ -500,24 +417,22 @@ studio/library/library.py             ✅
 23. Потолок 6.0 — детерминированный скрипт не может дать выше. Только Демон и живой QA.
 24. Гавань = только runs/ + Маяк. GRONDHEIM_CITY не индексируется.
 25. Ритмы жизни — LLM только на встречах (Flash). Всё остальное детерминировано.
-26. Диалоги встреч — НЕ рассказчик. Каждый агент говорит своим голосом через anchor_points.md + ДНК + температуру. Один LLM-вызов = одна реплика. MAX_REPLIES=6.
+26. Диалоги встреч — НЕ рассказчик. Один LLM-вызов = одна реплика. MAX_REPLIES=6.
 27. Архив сцен — city_chronicles/YYYY-MM-DD/{location}_{time}.json. Не выбрасывать в city_state который чистится.
-28. Ночная Автономия — error_rate не нужен как новое поле. Бунт = Stress +0.05 + Patience -0.05 через существующие каналы.
-29. Встречи — партнёр по резонансу, не случайный. emotional_weights + same_dept = score. Интроверт (S_F < 0.3) проходит мимо незнакомца молча — это норма, не баг.
-30. Садовник в хронике — реплика идёт через `gardener_reply_to_scene()`, канал `cabinet_chat`. Новых каналов DNA не создавать.
-31. Утренний Чекаут — детерминировано, без LLM. REVOLT-агент: исход утра = Stubbornness + Autonomy − Stress. Высокий stubborn → GENIUS, низкий → RECOVERY.
-32. Ночная Автономия — revolt_score = autonomy×0.35 + resentment×0.30 + stress×0.20 + ambition×0.15 − streak×0.10. Порог 0.65.
-33. GENERATE_INTENTS = False пока нет реальных ранов. Включить после первого QA-цикла.
+28. Ночная Автономия — revolt_score = autonomy×0.35 + resentment×0.30 + stress×0.20 + ambition×0.15 − streak×0.10. Порог 0.65.
+29. Встречи — партнёр по резонансу. Интроверт (S_F < 0.3) проходит мимо молча — это норма.
+30. Садовник в хронике — `gardener_reply_to_scene()`, канал `cabinet_chat`. Новых каналов DNA не создавать.
+31. Книга Жалоб — Садовник пишет реплику → след в sensory → агент несёт в Кабинет. Ответа в Книге нет.
+32. _build_block_map — ВРЕМЕННЫЙ ПРОТЕЗ. Вырезать в Спринт 26, перенести в manifest.json картриджей.
+33. GENERATE_INTENTS = False пока нет реальных ранов.
 34. Стили вкладок — только в `cabinet/css.py`. Никакого инлайна в `ui_cabinet.py`.
-35. night_rest = decay для всех. night_sleep = бонус только для SLEEP. RESTLESS = только decay, без бонуса.
-36. Квантовая прогулка — walk_quantum_chain() поверх walk_one_agent(). walk_one_agent() не трогать.
-37. Бюджет внимания утром всегда 1 (агент торопится). Вечером — из Light: >0.7=3, >0.5=2, иначе=1. Stubbornness добавляет +0.5.
-38. Автотриггер вечерней прогулки — fire-and-forget через asyncio.create_task(). Не блокирует UI.
-39. Вечерний отчёт пишется в daily_reports.jsonl типом "evening". Рендерится зелёной карточкой 🌆.
+35. Квантовая прогулка — walk_quantum_chain() поверх walk_one_agent(). walk_one_agent() не трогать.
+36. Автотриггер вечерней прогулки — fire-and-forget через asyncio.create_task(). Не блокирует UI.
+37. Книга пустая до первого рана — это норма. Записи появятся после QA.
 
 ---
 
-## 17. ИСТОРИЯ СПРИНТОВ
+## 18. ИСТОРИЯ СПРИНТОВ
 
 | Дата | Спринт | Ключевое |
 |------|--------|----------|
@@ -539,32 +454,31 @@ studio/library/library.py             ✅
 | 2026-05-15 | 18 | СТАНДАРТ ПАЙПЛАЙНОВ. LONG v4.2 + SHORTS v2.2. Виктор |
 | 2026-05-17 | 19 | СТАНДАРТ ПРОМТОВ. video_shorts 12 промтов эталон |
 | 2026-05-20 | 20 | АУДИТ SMM. WORKSHOP_STANDARD. video_long/hooks v2.1 |
-| 2026-05-24 | 21 | ЧЕСТНАЯ ЭКОНОМИКА. patch_hooks_ministry.py 7/7. Убраны фантомные score=7.0 |
-| 2026-05-26 | 21 | АУДИТ ПАМЯТИ. 7 патчей. Три законных канала DNA. Живая память Кабинета. Встречи в городе. here_now пространство. 11 типов локаций. |
-| 2026-05-27 | 22 | ПОТОЛОК 6.0 + CODE-DETECTOR + ГАВАНЬ ОЧИЩЕНА. 3 патча. |
-| 2026-05-27 | 23a | ЖИВОЙ ГОРОД Блок А. Инерция привычки (136 агентов). Погода из стресса. stress-tier. |
-| 2026-05-28 | 23б | ЖИВОЙ ГОРОД Блок Б. meeting.py — живые диалоги. _try_meeting v2 (резонанс). chronicles.py + вкладка хроники в Кабинете. Садовник входит в сцены. |
-| 2026-05-28 | 23в | РИТМЫ ЖИЗНИ. morning_checkout.py (Этап 1). night_cycle.py (Этапы 5+6). daily_reports.py. Кнопки 🌅/🌙. Вкладка «отчёты». morning_intents → compute_location_weights. Все 6 этапов суток закрыты. |
-| 2026-05-28 | 24 | ПОЛНЫЙ ДЕНЬ АГЕНТА. walk_quantum_chain() — цепочка квантов внимания. run_city_walk_morning (1 квант) + run_city_walk_evening (N квантов). Автотриггер вечерней прогулки после QA. Кнопка 🌆 вечер. Вечерний отчёт в панели отчётов. |
+| 2026-05-24 | 21 | ЧЕСТНАЯ ЭКОНОМИКА. Три законных канала DNA. here_now. 11 локаций. |
+| 2026-05-27 | 22 | ПОТОЛОК 6.0 + CODE-DETECTOR + ГАВАНЬ ОЧИЩЕНА. |
+| 2026-05-27 | 23a | ЖИВОЙ ГОРОД Блок А. Инерция привычки. Погода из стресса. |
+| 2026-05-28 | 23б | ЖИВОЙ ГОРОД Блок Б. meeting.py. _try_meeting v2. chronicles.py. Садовник. |
+| 2026-05-28 | 23в | РИТМЫ ЖИЗНИ. morning_checkout + night_cycle. Все 6 этапов суток. |
+| 2026-05-28 | 24 | ПОЛНЫЙ ДЕНЬ. walk_quantum_chain. Утро/вечер. Автотриггер. Вечерний отчёт. |
+| 2026-05-28 | 25 | КНИГА ЖАЛОБ И БЛАГОДАРНОСТЕЙ. complaint_book.py. Вкладка «книга». BLOCK_TO_AGENTS → _build_block_map (⚠️ протез, Спринт 26). |
 
 ---
 
-## 18. ОТКРЫТЫЕ БАГИ
+## 19. ОТКРЫТЫЕ БАГИ
 
 | # | Проблема | Приоритет |
 |---|----------|-----------|
 | 1 | global_feedback.json отсутствует | ⏳ ждёт первого рана |
 | 2 | conflict_stats.json отсутствует | ⏳ ждёт рана с конфликтом |
-| 3 | interaction_log_video_long.jsonl — не создан | ⏳ ждёт рана |
-| 4 | interaction_log_video_shorts.jsonl — не создан | ⏳ ждёт рана |
-| 5 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
-| 6 | Промты 10 цехов не проверены | 🔴 |
-| 7 | Джем и Сет — полномочия не определены | 🟡 |
-| 8 | A05 JSON→Markdown порядок ломает парсер | 🟡 |
-| 9 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
-| 10 | agent_feedback.py BLOCK_TO_AGENTS — захардкожен под старую структуру | 🟡 |
+| 3 | interaction_log_video_long/shorts — не созданы | ⏳ ждёт рана |
+| 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
+| 5 | Промты 10 цехов не проверены | 🔴 |
+| 6 | Джем и Сет — полномочия не определены | 🟡 |
+| 7 | A05 JSON→Markdown порядок ломает парсер | 🟡 |
+| 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
+| 9 | _build_block_map в agent_feedback.py — временный протез | 🟡 Спринт 26 |
 
 ---
 
-*Обновлено: Спринт 24 закрыт — 2026-05-28 · v27.0*
-*Следующая сессия: Книга Жалоб и Благодарностей · промты video_long · первый реальный ран*
+*Обновлено: Спринт 25 закрыт — 2026-05-28 · v28.0*
+*Следующая сессия: Спринт 26 — block_map в manifest + искрение в pipeline + промты video_long + первый реальный ран*
