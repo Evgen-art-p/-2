@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 25.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 26.0 | **Дата:** 2026-05-28 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -176,11 +176,15 @@ Metrics Daemon (через 24ч, только СММ):
 | `_sync_feedback_scores_to_dna()` | Реальный QA score | Stress/Light/Respect по оценке | После каждого рана |
 | `sync_to_dna("cabinet_chat")` | Разговор с Архитектором | Stress −0.03, Light +0.02, Patience +0.01 | После каждого ответа в Кабинете |
 | `sync_to_dna("walk_rest")` | Прогулка по городу | Stress −0.02, Light +0.01, Patience +0.01 | При каждой прогулке |
+| `sync_to_dna("night_rest")` | Пассивное восстановление дома | Stress −0.01×i, Patience +0.005×i | Этап 5 Decay (ночной цикл) |
+| `sync_to_dna("night_sleep")` | Глубокий сон (SLEEP) | Stress −0.05, Patience +0.02, Light +0.01 | Этап 6 Ночная Автономия |
 
 **Иерархия восстановления:**
 ```
+night_rest   → Stress −0.01  (тихий дом)
 Прогулка     → Stress −0.02  (свежий воздух)
 Кабинет      → Stress −0.03  (разговор с Архитектором)
+night_sleep  → Stress −0.05  (глубокий сон)
 QA good_work → Stress −0.12  (честная работа)
 streak ≥ 3   → Stress → 0.0  (серия побед, железное правило)
 ```
@@ -309,12 +313,12 @@ city_state["here_now"] = {
 
 | Этап | Название | Что происходит | LLM | Статус |
 |------|----------|----------------|-----|--------|
-| 1 | Утренний Чекаут | dna.json + anchors → режим GENIUS/SAFE/RECOVERY | ❌ детерминировано | ⏳ |
+| 1 | Утренний Чекаут | dna.json + anchors → режим GENIUS/SAFE/RECOVERY | ❌ детерминировано | ✅ |
 | 2 | Дорога на работу | city_walker.py, here_now, встречи на Площади | ⚡ Flash (встречи) | ✅ |
 | 3 | Работа / Пайплайн | Ран цеха по клику. QA → DNA | ✅ тяжёлый LLM | ✅ |
 | 4 | Дорога домой | city_walker.py, compute_location_weights → Таверна/Маяк | ⚡ Flash (встречи) | ✅ |
-| 5 | Свободное время | Decay. Агенты дома. LLM молчит. sensory укладывается | ❌ детерминировано | ⏳ |
-| 6 | Ночная Автономия | Ночной тик. Бунт или сон. | ❌ детерминировано | ⏳ |
+| 5 | Свободное время | Decay. Агенты дома. LLM молчит. sensory укладывается | ❌ детерминировано | ✅ |
+| 6 | Ночная Автономия | Ночной тик. Бунт или сон. | ❌ детерминировано | ✅ |
 
 ### Что закрыто в Спринт 23 Блок Б (встречи):
 
@@ -410,11 +414,15 @@ city_state["here_now"] = {
 ```
 studio/cartridge.py                   ✅ CartridgeRunner + Victor + action=stop
 studio/workshop/pipeline.py           ✅ Спринт 21: on_agent_done только sensory
-studio/grondheim_memory.py            ✅ Спринт 21: три канала DNA, cabinet_chat, walk_rest
-studio/city_walker.py                 ✅ Спринт 23 Блок Б: _try_meeting v2 (резонанс)
+studio/grondheim_memory.py            ✅ Спринт 23: night_rest + night_sleep каналы
+studio/city_walker.py                 ✅ Спринт 23: morning_intents → compute_location_weights
+studio/morning_checkout.py            ✅ Спринт 23: Этап 1 — GENIUS/SAFE/RECOVERY/REVOLT
+studio/night_cycle.py                 ✅ Спринт 23: Этапы 5+6 — Decay + Ночная Автономия
+studio/daily_reports.py               ✅ Спринт 23: jsonl-хранилище отчётов дня/ночи
 studio/meeting.py                     ✅ Спринт 23 Блок Б: живые диалоги, meeting_v1
 studio/city_chronicles/               ✅ Спринт 23 Блок Б: архив сцен YYYY-MM-DD/{loc}_{time}.json
-studio/cabinet/ui_cabinet.py          ✅ Спринт 23 Блок Б: вкладка хроники + участие Садовника
+studio/cabinet/ui_cabinet.py          ✅ Спринт 23: кнопки 🌅/🌙 + вкладка «отчёты»
+studio/cabinet/css.py                 ✅ Спринт 23: стили .rep-* для вкладки отчётов
 studio/cabinet/chronicles.py          ✅ Спринт 23 Блок Б: list/load/gardener_reply_to_scene
 main.py                               ✅ Спринт 21: Loka-Filter daemon-тред при старте
 studio/economy/ministry.py            ✅
@@ -444,10 +452,14 @@ studio/library/library.py             ✅
 - [x] **stress-tier в get_city_summary()** ✅
 - [x] **Живые диалоги встреч** ✅ `meeting.py` + `_try_meeting v2`
 - [x] **Участие Садовника** ✅ вкладка хроники + `gardener_reply_to_scene()`
-- [ ] **Этап 1: Утренний Чекаут** — детерминированный режим дня GENIUS/SAFE/RECOVERY
-- [ ] **Этап 5: Decay** — фоновое затухание sensory, агенты «дома»
-- [ ] **Этап 6: Ночная Автономия** — ночной тик, бунт или сон
+- [x] **Этап 1: Утренний Чекаут** ✅ `morning_checkout.py` — GENIUS/SAFE/RECOVERY + REVOLT-логика
+- [x] **Этап 5: Decay** ✅ `night_cycle.py` — sensory затухает, resentment зреет, пассивное восстановление
+- [x] **Этап 6: Ночная Автономия** ✅ `night_cycle.py` — SLEEP/RESTLESS/REVOLT, хроники бунтарей
+- [x] **Кнопки 🌅/🌙 в Кабинете** ✅ рядом с прогулкой, отчёт в правой панели
+- [x] **Вкладка «отчёты»** ✅ заменила «промпты», стили в `css.py`
+- [x] **morning_intents → compute_location_weights** ✅ `patch_intents_to_weights.py`
 - [ ] **Книга Жалоб и Благодарностей** — resentment + emotional_weights
+- [ ] **GENERATE_INTENTS = True** — включить после первого реального рана
 
 ### 🟡 Следующие спринты:
 - video_long промты (12 агентов по LONG_RULES v4.2)
@@ -498,6 +510,11 @@ studio/library/library.py             ✅
 28. Ночная Автономия — error_rate не нужен как новое поле. Бунт = Stress +0.05 + Patience -0.05 через существующие каналы.
 29. Встречи — партнёр по резонансу, не случайный. emotional_weights + same_dept = score. Интроверт (S_F < 0.3) проходит мимо незнакомца молча — это норма, не баг.
 30. Садовник в хронике — реплика идёт через `gardener_reply_to_scene()`, канал `cabinet_chat`. Новых каналов DNA не создавать.
+31. Утренний Чекаут — детерминировано, без LLM. REVOLT-агент: исход утра = Stubbornness + Autonomy − Stress. Высокий stubborn → GENIUS, низкий → RECOVERY.
+32. Ночная Автономия — revolt_score = autonomy×0.35 + resentment×0.30 + stress×0.20 + ambition×0.15 − streak×0.10. Порог 0.65.
+33. GENERATE_INTENTS = False пока нет реальных ранов. Включить после первого QA-цикла.
+34. Стили вкладок — только в `cabinet/css.py`. Никакого инлайна в `ui_cabinet.py`.
+35. night_rest = decay для всех. night_sleep = бонус только для SLEEP. RESTLESS = только decay, без бонуса.
 
 ---
 
@@ -528,6 +545,7 @@ studio/library/library.py             ✅
 | 2026-05-27 | 22 | ПОТОЛОК 6.0 + CODE-DETECTOR + ГАВАНЬ ОЧИЩЕНА. 3 патча. |
 | 2026-05-27 | 23a | ЖИВОЙ ГОРОД Блок А. Инерция привычки (136 агентов). Погода из стресса. stress-tier. |
 | 2026-05-28 | 23б | ЖИВОЙ ГОРОД Блок Б. meeting.py — живые диалоги. _try_meeting v2 (резонанс). chronicles.py + вкладка хроники в Кабинете. Садовник входит в сцены. |
+| 2026-05-28 | 23в | РИТМЫ ЖИЗНИ. morning_checkout.py (Этап 1). night_cycle.py (Этапы 5+6). daily_reports.py. Кнопки 🌅/🌙. Вкладка «отчёты». morning_intents → compute_location_weights. Все 6 этапов суток закрыты. |
 
 ---
 
@@ -548,5 +566,5 @@ studio/library/library.py             ✅
 
 ---
 
-*Обновлено: Спринт 23 Блок Б закрыт — 2026-05-28 · v25.0*
-*Следующая сессия: Спринт 23 продолжение — Этап 1 Утренний Чекаут + Этап 5 Decay + Этап 6 Ночная Автономия*
+*Обновлено: Спринт 23в закрыт — 2026-05-28 · v26.0*
+*Следующая сессия: Книга Жалоб и Благодарностей · промты video_long · первый реальный ран*

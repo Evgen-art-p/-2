@@ -1516,165 +1516,132 @@ def page_cabinet() -> None:
 
         if not reports:
             ui.html(
-                '<div style="text-align:center;padding:32px 16px;'
-                'font-family:JetBrains Mono;font-size:0.56rem;'
-                'color:rgba(140,150,180,0.3);">'
-                'отчётов пока нет<br>'
-                '<span style="font-size:0.5rem;color:rgba(140,150,180,0.2)">'
-                'нажми 🌅 день или 🌙 ночь</span>'
-                '</div>'
+                '<div class="rep-detail-empty" style="padding:32px 16px;">' +
+                'отчётов пока нет<br>' +
+                '<span style="font-size:0.56rem;color:rgba(160,170,200,0.3)">' +
+                'нажми 🌅 день или 🌙 ночь</span></div>'
             )
             return
 
-        # Кнопка очистки
         def _clear_reports():
             try:
-                from pathlib import Path
-                Path("studio/daily_reports.jsonl").unlink(missing_ok=True)
+                from pathlib import Path as _P
+                _P("studio/daily_reports.jsonl").unlink(missing_ok=True)
                 update_right_panel("reports")
                 ui.notify("Отчёты очищены", type="info")
             except Exception as e:
                 ui.notify(f"⚠ {e}", type="negative")
 
-        with ui.element("div").style(
-            "display:flex;justify-content:space-between;align-items:center;"
-            "padding:4px 8px 6px;"
-        ):
-            ui.html(
-                f'<span style="font-family:JetBrains Mono;font-size:0.52rem;'
-                f'color:rgba(140,150,180,0.35);">'
-                f'записей: {len(reports)}</span>'
-            )
+        with ui.element("div").classes("rep-header"):
+            ui.html(f'<span class="rep-count">записей: {len(reports)}</span>')
             ui.button("🗑", on_click=_clear_reports).props("flat dense").style(
-                "font-size:0.65rem;color:rgba(140,150,180,0.3);min-width:24px;"
+                "font-size:0.65rem;color:rgba(160,170,200,0.35);min-width:24px;"
             )
 
-        MODE_ICONS = {"GENIUS": "🔥", "NORMAL": "⚡", "SAFE": "🛡", "RECOVERY": "💤"}
-
-        with ui.element("div").style(
-            "overflow-y:auto;max-height:calc(100vh - 160px);scrollbar-width:thin;"
-        ):
+        with ui.element("div").classes("rep-scroll"):
             for report in reports:
-                rtype   = report.get("type", "")
-                ts      = format_ts(report.get("ts", ""))
-                summary = report.get("summary", {})
-                details = report.get("details", {})
-
+                rtype      = report.get("type", "")
+                ts         = format_ts(report.get("ts", ""))
+                summary    = report.get("summary", {})
+                details    = report.get("details", {})
                 is_morning = rtype == "morning"
-                icon  = "🌅" if is_morning else "🌙"
-                label = "Утренний Чекаут" if is_morning else "Ночной Цикл"
-                accent = "rgba(255,180,50,0.7)" if is_morning else "rgba(160,130,240,0.7)"
-                bg     = "rgba(255,180,50,0.03)" if is_morning else "rgba(108,80,200,0.03)"
-                border = "rgba(255,180,50,0.12)" if is_morning else "rgba(108,80,200,0.15)"
 
-                # Строка summary
+                icon      = "🌅" if is_morning else "🌙"
+                label     = "Утренний Чекаут" if is_morning else "Ночной Цикл"
+                card_cls  = "rep-card rep-card-morning" if is_morning else "rep-card rep-card-night"
+                title_cls = "rep-card-title-morning" if is_morning else "rep-card-title-night"
+
+                # Summary HTML
                 if is_morning:
                     g = summary.get("GENIUS", 0)
                     n = summary.get("NORMAL", 0)
                     s = summary.get("SAFE", 0)
                     r = summary.get("RECOVERY", 0)
-                    summary_line = (
-                        f'<span style="color:rgba(255,100,80,0.8)">🔥{g}</span> '
-                        f'<span style="color:rgba(255,200,80,0.6)">⚡{n}</span> '
-                        f'<span style="color:rgba(100,180,255,0.6)">🛡{s}</span> '
-                        f'<span style="color:rgba(140,150,180,0.5)">💤{r}</span>'
+                    summary_html = (
+                        f'<span class="rep-genius">🔥{g}</span> ' +
+                        f'<span class="rep-normal">⚡{n}</span> ' +
+                        f'<span class="rep-safe">🛡{s}</span> ' +
+                        f'<span class="rep-recovery">💤{r}</span>'
                     )
                 else:
                     sl = summary.get("SLEEP", 0)
                     rs = summary.get("RESTLESS", 0)
                     rv = summary.get("REVOLT", 0)
-                    summary_line = (
-                        f'<span style="color:rgba(140,150,180,0.5)">💤{sl}</span> '
-                        f'<span style="color:rgba(255,200,80,0.6)">😰{rs}</span> '
-                        f'<span style="color:rgba(255,100,80,0.9)">⚡{rv}</span>'
+                    summary_html = (
+                        f'<span class="rep-sleep">💤{sl}</span> ' +
+                        f'<span class="rep-restless">😰{rs}</span> ' +
+                        f'<span class="rep-revolt">⚡{rv}</span>'
                     )
 
-                expanded_state = {"open": False}
+                expanded = {"open": False}
 
-                with ui.element("div").style(
-                    f"padding:9px 10px;margin:4px 6px;"
-                    f"background:{bg};border:1px solid {border};"
-                    f"border-radius:8px;cursor:pointer;"
-                ) as card:
-                    # Заголовок — кликабельный
+                with ui.element("div").classes(card_cls) as card:
+                    # Хедер карточки
                     ui.html(
-                        f'<div style="display:flex;justify-content:space-between;'
-                        f'align-items:center;margin-bottom:4px;">'
-                        f'<span style="font-family:JetBrains Mono;font-size:0.65rem;'
-                        f'color:{accent};font-weight:500;">{icon} {label}</span>'
-                        f'<span style="font-family:JetBrains Mono;font-size:0.5rem;'
-                        f'color:rgba(140,150,180,0.4);">{ts} ▾</span>'
+                        f'<div class="rep-card-head">' +
+                        f'<span class="{title_cls}">{icon} {label}</span>' +
+                        f'<span class="rep-card-ts">{ts} ▾</span>' +
                         f'</div>'
                     )
-                    # Summary строка — всегда видна
-                    ui.html(
-                        f'<div style="font-family:JetBrains Mono;font-size:0.6rem;'
-                        f'margin-bottom:3px;">{summary_line}</div>'
-                    )
+                    # Summary — всегда видна
+                    ui.html(f'<div class="rep-summary">{summary_html}</div>')
 
                     # Детали — разворачиваются по клику
-                    with ui.element("div").style("display:none;margin-top:6px;") as detail_block:
+                    with ui.element("div").classes("rep-details") as detail_block:
                         if is_morning:
-                            for mode_key, mode_icon in [
-                                ("RECOVERY","💤"), ("SAFE","🛡"),
-                                ("GENIUS","🔥"), ("NORMAL","⚡")
+                            for mode_key, mode_cls, mode_icon in [
+                                ("RECOVERY", "rep-detail-morning", "💤"),
+                                ("SAFE",     "rep-detail-morning", "🛡"),
+                                ("GENIUS",   "rep-detail-morning", "🔥"),
+                                ("NORMAL",   "rep-detail-morning", "⚡"),
                             ]:
                                 agents = details.get(mode_key, [])
                                 if agents:
+                                    body = "<br>".join(a for a in agents[:8])
+                                    if len(agents) > 8:
+                                        body += f"<br>...и ещё {len(agents)-8}"
                                     ui.html(
-                                        f'<div style="font-family:JetBrains Mono;'
-                                        f'font-size:0.55rem;color:rgba(180,185,210,0.6);'
-                                        f'border-top:1px solid rgba(255,255,255,0.04);'
-                                        f'padding-top:4px;margin-top:3px;">'
-                                        f'<b>{mode_icon} {mode_key} ({len(agents)})</b><br>'
-                                        + "<br>".join(a for a in agents[:6])
-                                        + ("..." if len(agents) > 6 else "")
-                                        + "</div>"
+                                        f'<div class="rep-detail-block {mode_cls}">' +
+                                        f'<b>{mode_icon} {mode_key} ({len(agents)})</b><br>' +
+                                        body + '</div>'
                                     )
                         else:
                             revolts_d   = details.get("revolts", [])
                             resentful_d = details.get("resentful", [])
                             restless_d  = details.get("restless", [])
+
                             if revolts_d:
+                                body = "<br>".join(f"⚡ {r}" for r in revolts_d[:8])
+                                if len(revolts_d) > 8:
+                                    body += f"<br>...и ещё {len(revolts_d)-8}"
                                 ui.html(
-                                    f'<div style="font-family:JetBrains Mono;'
-                                    f'font-size:0.55rem;color:rgba(255,120,80,0.85);'
-                                    f'border-top:1px solid rgba(255,255,255,0.04);'
-                                    f'padding-top:4px;margin-top:3px;">'
-                                    f'<b>⚡ Бунтари ({len(revolts_d)})</b><br>'
-                                    + "<br>".join(f"⚡ {r}" for r in revolts_d[:8])
-                                    + ("..." if len(revolts_d) > 8 else "")
-                                    + "</div>"
+                                    '<div class="rep-detail-block rep-detail-revolts">' +
+                                    f'<b>⚡ Бунтари ({len(revolts_d)})</b><br>' +
+                                    body + '</div>'
                                 )
                             if resentful_d:
+                                body = "<br>".join(f"🔴 {r}" for r in resentful_d[:5])
                                 ui.html(
-                                    f'<div style="font-family:JetBrains Mono;'
-                                    f'font-size:0.55rem;color:rgba(220,100,100,0.75);'
-                                    f'margin-top:3px;">'
-                                    f'<b>🔴 Обиды ({len(resentful_d)})</b><br>'
-                                    + "<br>".join(f"🔴 {r}" for r in resentful_d[:5])
-                                    + "</div>"
+                                    '<div class="rep-detail-block rep-detail-resentful">' +
+                                    f'<b>🔴 Обиды ({len(resentful_d)})</b><br>' +
+                                    body + '</div>'
                                 )
                             if restless_d:
                                 ui.html(
-                                    f'<div style="font-family:JetBrains Mono;'
-                                    f'font-size:0.55rem;color:rgba(200,180,80,0.6);'
-                                    f'margin-top:3px;">'
-                                    f'<b>😰 Тревожный сон ({len(restless_d)})</b><br>'
-                                    + ", ".join(restless_d[:10])
-                                    + "</div>"
+                                    '<div class="rep-detail-block rep-detail-restless">' +
+                                    f'<b>😰 Тревожный сон ({len(restless_d)})</b><br>' +
+                                    ", ".join(restless_d[:12]) + '</div>'
                                 )
                             if not revolts_d and not resentful_d and not restless_d:
                                 ui.html(
-                                    '<div style="font-family:JetBrains Mono;'
-                                    'font-size:0.55rem;color:rgba(140,150,180,0.25);'
-                                    'padding-top:8px;text-align:center;">'
-                                    'все спят 💤 — город спокоен'
-                                    '</div>'
+                                    '<div class="rep-detail-empty">все спят 💤 — город спокоен</div>'
                                 )
 
-                    def _toggle(e, db=detail_block, es=expanded_state):
+                    def _toggle(e, db=detail_block, es=expanded):
                         es["open"] = not es["open"]
+                        db.classes(
+                            replace="rep-details" + (" open" if es["open"] else "")
+                        )
                         db.style("display:block;" if es["open"] else "display:none;")
 
                     card.on("click", _toggle)

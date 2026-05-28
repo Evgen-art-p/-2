@@ -829,7 +829,7 @@
   },
   "morning_intents": {},
   "checkout_ts": "2026-05-28T11:01:52.804938",
-  "night_ts": "2026-05-28T11:10:18.575934",
+  "night_ts": "2026-05-28T11:23:09.837190",
   "night_results": {
     "A01_advertising": {
       "decision": "SLEEP",
@@ -1663,8 +1663,8 @@
     },
     "A01_social_mix": {
       "decision": "SLEEP",
-      "revolt_score": 0.395,
-      "reason": "revolt_score=0.40 ≤ 0.65 — глубокий сон",
+      "revolt_score": 0.39,
+      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
       "resentment": 0.0,
       "decay_changes": {
         "night_rest": true
