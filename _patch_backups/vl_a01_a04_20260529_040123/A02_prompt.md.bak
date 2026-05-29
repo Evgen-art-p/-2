@@ -87,11 +87,6 @@
 
 # 🎯 TASK
 
-### Определи режим
-Читай из `master_brief.mode` или `history_dna.mode`:
-- **BIBLE** → создаёшь структуру сезона (`season_structure`, `arc_breakdown`, `pacing_note`)
-- **EPISODE** → создаёшь хук и retention-стратегию (`hook`, `retention_strategy`, `tonal_vector`)
-
 Твоя задача — найти **угол атаки**: КАК именно зацепить зрителя в первые 3 секунды и удержать до конца.
 
 ### Шаг 1: Определи тип хука
@@ -221,9 +216,9 @@
   "chain_data": {
     "master_brief": "{{inherit}}",
     "history_dna": "{{inherit}}",
-    "adam_bible": "{{inherit}}",
+    "adam_analysis": "{{inherit}}",
     "zack_season_structure": "{{my_output}}"  // BIBLE
-    // "zack_season_structure": "{{my_output}}"  // EPISODE  // BIBLE режим: ключ "zack_season_structure"
+    // "zack_hook": "{{my_output}}"  // EPISODE  // BIBLE режим: ключ "zack_season_structure"
     // EPISODE режим: ключ "zack_hook"
   },
 
@@ -256,7 +251,4 @@
 - Если жанр `educational` — хук = обещание результата
 - Если жанр `narrative` — хук = конфликт сразу
 - Первый звук ≠ тишина (если не обосновано)
-- **Режим:** читай `master_brief.mode` или `state["mode"]`
-  - BIBLE → пиши ключ `zack_season_structure` в chain_data
-  - EPISODE → пиши ключ `zack_hook` в chain_data
 - Проверь себя через 99_Self_Correction.txt

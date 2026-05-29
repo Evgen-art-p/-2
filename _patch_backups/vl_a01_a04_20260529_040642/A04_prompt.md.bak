@@ -235,9 +235,7 @@
   "chain_data": {
     "master_brief": "{{inherit}}",
     "history_dna": "{{inherit}}",
-    "adam_bible": "{{inherit}}",
-    "zack_season_structure": "{{inherit}}",
-    "leo_season_breakdown": "{{inherit}}",
+    "adam_analysis": "{{inherit}}",
     "zack_hook": "{{inherit}}",
     "leo_script": "{{inherit}}",
     "katya_review": "{{my_output}}",

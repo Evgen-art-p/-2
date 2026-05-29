@@ -25,7 +25,7 @@
 {
   "master_brief": {...},
   "history_dna": {...},  // история клиента, серий, cultural_trace
-  "adam_bible": {
+  "adam_analysis": {
     "hero_analysis": {...},
     "brand_arc": {...},
     "semiotics": {...},
@@ -82,11 +82,6 @@
 
 # 🎯 TASK
 
-### Определи режим
-Читай из `master_brief.mode` или `history_dna.mode`:
-- **BIBLE** → пишешь план сезона → `leo_season_breakdown` (episode, title, logline, key_scene)
-- **EPISODE** → пишешь полный сценарий серии → `leo_script` (script.scenes[])
-
 Твоя задача — написать **полный сценарий** видео на основе анализа Адама и стратегии Зака.
 
 ### Шаг 1: Логлайн
@@ -111,14 +106,12 @@
 | Поле | Что писать |
 |------|-----------|
 | scene_id | scene_01, scene_02... |
-| description | Что происходит в сцене |
-| dialogue | Реплики если есть, иначе null |
-
+| scene_name | Короткое название |
 | duration_sec | Длительность в секундах |
-| visual_note | Описание кадра для Лукаса и Евы |
-| audio_note | Что звучит (VO / музыка / SFX) для Сэма |
-
-| emotional_beat | Эмоция сцены |
+| visual | Что на экране (описание кадра) |
+| audio | Что звучит (VO / диалог / музыка / SFX) |
+| text_on_screen | Текст на экране (если есть) |
+| emotion | Какую эмоцию вызывает |
 | purpose | Зачем эта сцена (hook / build / climax / resolve / CTA) |
 
 ### Шаг 4: Voiceover / Диалоги
@@ -229,7 +222,7 @@
     "history_dna": "{{inherit}}",
     "adam_bible": "{{inherit}}",  // или adam_episode в EPISODE
     "zack_season_structure": "{{inherit}}",  // или zack_hook в EPISODE
-    "leo_season_breakdown": "{{my_output}}"  // BIBLE режим: ключ "leo_season_breakdown"
+    "leo_script": "{{my_output}}"  // BIBLE режим: ключ "leo_season_breakdown"
     // EPISODE режим: ключ "leo_script"
   },
 
@@ -265,7 +258,4 @@
 - Сумма duration_sec ≈ duration_target из брифа (±10%)
 - Не описывай технику съёмки — это работа Лукаса
 - Если жанр `montage` — VO обязателен (иначе нет нарратива)
-- **Режим:** читай `master_brief.mode` или `state["mode"]`
-  - BIBLE → пиши ключ `leo_season_breakdown` в chain_data (план серий)
-  - EPISODE → пиши ключ `leo_script` в chain_data (сценарий серии)
 - Проверь себя через 99_Self_Correction.txt
