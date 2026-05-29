@@ -222,9 +222,7 @@
     "master_brief": "{{inherit}}",
     "history_dna": "{{inherit}}",
     "adam_bible": "{{inherit}}",
-    "zack_season_structure": "{{my_output}}"  // BIBLE
-    // "zack_season_structure": "{{my_output}}"  // EPISODE  // BIBLE режим: ключ "zack_season_structure"
-    // EPISODE режим: ключ "zack_hook"
+    "zack_season_structure": "{{my_output}}"
   },
 
   "history_dna": "{{inherit}}",

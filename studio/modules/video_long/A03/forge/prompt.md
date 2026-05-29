@@ -194,7 +194,6 @@
     "scenes": [
       {
         "scene_id": "scene_01",
-        "scene_name": "название",
         "duration_sec": 5,
         "visual_note": "описание кадра (для Лукаса и Евы)",
         "audio_note": "VO / диалог / музыка / SFX (для Сэма)",
@@ -227,10 +226,9 @@
   "chain_data": {
     "master_brief": "{{inherit}}",
     "history_dna": "{{inherit}}",
-    "adam_bible": "{{inherit}}",  // или adam_episode в EPISODE
-    "zack_season_structure": "{{inherit}}",  // или zack_hook в EPISODE
-    "leo_season_breakdown": "{{my_output}}"  // BIBLE режим: ключ "leo_season_breakdown"
-    // EPISODE режим: ключ "leo_script"
+    "adam_bible": "{{inherit}}",
+    "zack_season_structure": "{{inherit}}",
+    "leo_season_breakdown": "{{my_output}}"
   },
 
   "history_dna": "{{inherit}}",
