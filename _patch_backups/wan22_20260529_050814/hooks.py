@@ -4,7 +4,7 @@
 # v2.1 — Синхронизация с CHAIN_CONTRACT_video_long v1.1:
 #   - mode всегда .lower() → "bible" / "episode"
 #   - A06 eva_visuals: поле кадров → "frames" (было key_frames)
-#   - A08 felix_vfx: поле клипов → "video_clips", промпт → "motion_prompt",
+#   - A08 felix_vfx: поле клипов → "video_clips", промпт → "veo_prompt_en",
 #                   камера → "camera_move"
 #   - lucas_storyboard: плоская структура shots[] (было storyboard→scenes→shots)
 #                       поле камеры → "camera_move" (было camera_movement)
@@ -572,7 +572,7 @@ def _bob_collect_media(chain: dict, deliverables: dict):
 
     # ── A08 Феликс: veo3_prompts ────────────────────────────────────
     # FIX v2.1: поле "video_clips" согласно CHAIN_CONTRACT (было key_frames/veo3_prompts)
-    #           поле промпта "motion_prompt" (было veo_prompt_en / veo3_prompt)
+    #           поле промпта "veo_prompt_en" (было veo3_prompt)
     #           поле камеры  "camera_move"   (было camera_movement)
     felix = chain.get("felix_vfx", {})
     if isinstance(felix, dict):
@@ -582,7 +582,7 @@ def _bob_collect_media(chain: dict, deliverables: dict):
                 "shot_id":  f.get("shot_id", ""),
                 "camera":   f.get("camera_move", ""),
                 "duration": f.get("duration_sec", 0),
-                "prompt":   f.get("motion_prompt", ""),
+                "prompt":   f.get("veo_prompt_en", ""),
                 "ref_ids":  f.get("ref_ids", []),
                 "vfx_layer": f.get("vfx_layer", ""),
             } for f in felix_clips]

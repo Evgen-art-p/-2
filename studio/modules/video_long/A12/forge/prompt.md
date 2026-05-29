@@ -117,7 +117,7 @@
 |----------|-----------|
 | eva_visuals.hero_prompts | Промпты для ключевых кадров + ref_ids |
 | eva_visuals.scene_prompts | Промпты для остальных сцен + ref_ids |
-| felix_vfx.scene_generation | Промпты для видео (Veo 3.1) + ref_ids |
+| felix_vfx.video_clips | Промпты для видео (Wan2.2 I2V) + ref_ids |
 | tracy_smm.thumbnail | Обложка |
 | sam_sound | Аудио |
 | tracy_smm.titles_and_descriptions | Публикация |

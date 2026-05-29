@@ -59,7 +59,7 @@
     → 05 Лукас Ленз    🎥  — режиссура + раскадровка + shot list + motion_intent
     → 06 Ева Эпик      🎨  — промпты изображений (Nano Banana 2, формат 16:9)
     → 07 Тим Титр      🔤  — типографика
-    → 08 Феликс FX     ✨  — промпты видео (Wan2.2 I2V) + VFX
+    → 08 Феликс FX     ✨  — промпты видео (Veo 3.1) + VFX
                             * логирует compatibility_snapshot →
                               studio/economy/data/interaction_log_video_long.jsonl
 
@@ -227,7 +227,7 @@ studio/culture/field_tracker.py (CulturalFieldTracker)
     → eva_visuals: { frame_id, prompt_en, ref_ids, timing }
     ↓
 Феликс (08) получает: eva_visuals + lucas_storyboard (motion_intent)
-    → motion_prompt (Wan2.2 I2V) + ref_ids (наследует от Евы)
+    → veo-промпты (Veo 3.1) + ref_ids (наследует от Евы)
     → ЛОГИРУЕТ compatibility_snapshot →
       studio/economy/data/interaction_log_video_long.jsonl
     ↓

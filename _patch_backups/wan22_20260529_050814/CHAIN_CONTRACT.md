@@ -10,7 +10,7 @@
 ##
 ## v1.1 — синхронизирован с hooks.py v2.1:
 ##   - eva_visuals: поле кадров → "frames" (единый стандарт)
-##   - felix_vfx: поле клипов → "video_clips", промпт → "motion_prompt",
+##   - felix_vfx: поле клипов → "video_clips", промпт → "veo_prompt_en",
 ##                добавлен "compatibility_snapshot"
 ##   - lucas_storyboard: плоская структура shots[] (camera_move единый стандарт)
 ##   - tracy_smm.thumbnail: A/B варианты (variant_a / variant_b)
@@ -154,7 +154,7 @@
   "video_clips": [{
     "frame_id",
     "shot_id",
-    "motion_prompt",
+    "veo_prompt_en",
     "ref_ids",
     "duration_sec",
     "camera_move",
@@ -258,7 +258,7 @@
 | # | Правило |
 |---|---------|
 | 1 | Ключ агента — строго из этой таблицы. Никаких `adam_arc`, `zack_structure`, `lucas_shots` и других вариаций |
-| 2 | `banana_prompt` и `motion_prompt` — ТОЛЬКО английский |
+| 2 | `banana_prompt` и `veo_prompt_en` — ТОЛЬКО английский |
 | 3 | Формат ВСЕГДА `16:9` — вертикальных в этом цехе не существует |
 | 4 | `ref_ids` — только реальные asset_id из `history_dna.character_memory` |
 | 5 | `history_dna` обновляет ТОЛЬКО A12 Боб |

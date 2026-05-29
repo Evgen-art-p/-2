@@ -1,60 +1,51 @@
-# SYSTEM INSTRUCTION: VEO 3.1 GENERATION PROTOCOL
-# ENGINE: Google Veo (Vertex AI)
-# STUDIO STANDARD: 24 FPS / 1080p HDR
+# ПРОТОКОЛ ГЕНЕРАЦИИ ВИДЕО — Wan2.2 I2V (SiliconFlow)
+# ENGINE: Wan-AI/Wan2.2-I2V-A14B через SiliconFlow API
+# СТУДИЙНЫЙ СТАНДАРТ: 720p / 4-8 сек / motion_prompt EN
 
-[SECTION 1: PROMPT SYNTAX (ФОРМУЛА ЗАПРОСА)]
-Инструкция: Строгий порядок следования токенов.
+[РАЗДЕЛ 1: ФОРМУЛА MOTION PROMPT]
 
-> TEMPLATE:
-   [1. SUBJECT] + [2. ACTION] + [3. ANATOMY_FIX] + [4. ENVIRONMENT] + [5. CAMERA] + [6. LIGHTING] + [7. AUDIO]
+Строгий порядок токенов (одна строка, EN):
 
-> SLOT DEFINITIONS:
-   1. SUBJECT: Кто? (A cyberpunk samurai).
-   2. ACTION: Что делает? (Unsheathing a katana).
-   3. ANATOMY_FIX: *Обязательный блок для людей* (см. Section 2).
-   4. ENVIRONMENT: Где? (Neon rain soaked alley, reflection in puddles).
-   5. CAMERA: Как снимаем? (Low angle, dolly zoom).
-   6. LIGHTING: Какой свет? (Volumetric fog, red rim light).
-   7. AUDIO: Звук? (Cinematic drone sound, rain noise).
+SUBJECT + ACTION + CAMERA + LIGHTING + ATMOSPHERE
 
----
+Примеры:
+  "A founder standing at the window, slowly turns to camera, dolly push in, warm morning light, cinematic depth"
+  "Product rotating on pedestal, camera orbits slowly, studio lighting, clean background, sharp focus"
+  "Empty street at night, rain falling, static wide shot, neon reflections on wet pavement, atmospheric fog"
 
-[SECTION 2: ANATOMY SAFETY PROTOCOL (ПРОБЛЕМА РУК)]
-Инструкция: Защита от галлюцинаций (6 пальцев, морфинг).
+[РАЗДЕЛ 2: ДВИЖЕНИЯ КАМЕРЫ]
 
-> TRIGGER:
-   - IF (Subject == Human) OR (Visible == Hands):
-   - MANDATORY INJECTION: "anatomically correct hands, 5 fingers, distinct knuckles, detailed skin texture".
+| Слово в промпте         | Что делает                    |
+|------------------------|-------------------------------|
+| dolly in / push in     | Наезд вперёд                  |
+| dolly out / pull back  | Отъезд назад                  |
+| pan left / pan right   | Горизонтальная панорама        |
+| tilt up / tilt down    | Вертикальная панорама          |
+| orbit / arc shot       | Облёт вокруг объекта           |
+| static / locked        | Статичная камера               |
+| slow zoom              | Медленный зум                  |
+| tracking shot          | Слежение за объектом           |
+| handheld               | Живая ручная камера            |
+| crane up / crane down  | Подъём/спуск камеры            |
 
-> NEGATIVE PROMPT (Если поддерживается интерфейсом):
-   - "extra digits, polydactyly, morphing hands, fused fingers, distorted limb, mutation".
+[РАЗДЕЛ 3: ПАРАМЕТРЫ ГЕНЕРАЦИИ]
 
-> BEST PRACTICE:
-   - Если руки не важны для сюжета, используй кадрирование: "Medium Shot" (по пояс) или "Close-up on face", чтобы исключить руки из кадра.
+- duration: 4 или 8 секунд (4 для большинства сцен)
+- resolution: 720p (стандарт) / 480p (тест)
+- Модель сама определяет FPS (обычно 16-24)
 
----
+[РАЗДЕЛ 4: ПРАВИЛА ПРОМПТА]
 
-[SECTION 3: PHYSICS & MOTION SETTINGS (ФИЗИКА)]
-Инструкция: Настройка реализма.
+1. ТОЛЬКО английский
+2. Одна строка — никаких переносов
+3. Глагол движения обязателен (turns, walks, rises, falls, orbits...)
+4. Не описывай то что уже на картинке — описывай ДВИЖЕНИЕ
+5. Камера + объект + атмосфера = достаточно
+6. Максимум 100 слов — модель теряет фокус на длинных промптах
 
-> STYLE PRESET: CINEMATIC REALISM
-   - Gravity: Natural (Objects have weight).
-   - Motion Blur: Standard (180 degree shutter rule equivalent).
+[РАЗДЕЛ 5: ОТКУДА БЕРЁТСЯ ПРОМПТ]
 
-> MOVEMENT VOCABULARY (СЛОВАРЬ ДВИЖЕНИЙ):
-   - FOR SPEED: "Dash", "Sprint", "Blur".
-   - FOR GRACE: "Glide", "Float", "Slow motion".
-   - FOR CAMERA: "Orbit" (облет), "Rack focus" (смена фокуса), "Tracking shot" (слежение).
+Феликс (A08) читает из lucas_storyboard.shots[].motion_intent
+и пишет готовый motion_prompt в felix_vfx.video_clips[].motion_prompt
 
----
-
-[SECTION 4: TECH SPECS (ПАРАМЕТРЫ ВЫВОДА)]
-Инструкция: Технические настройки рендера.
-
-> RESOLUTION: 1080p (Native).
-> ASPECT RATIO: 16:9 (Standard) OR 21:9 (Cinematic).
-> FRAMERATE: 24 FPS (Строго, не 30 и не 60, чтобы сохранить "киношность").
-> HDR MODE: ON (High Dynamic Range).
-
----
-# END OF FILE
+Assembly Line берёт motion_prompt и запускает SiliconFlow автоматически.
