@@ -604,54 +604,6 @@ def _sam_generate_audio(state: dict, human_text: str):
           f"SFX={n_sfx}  VO={n_vo}")
 
 
-
-# ═══════════════════════════════════════════════════════════════════
-# МОНТАЖЁР — автосборка после Боба
-# ═══════════════════════════════════════════════════════════════════
-
-def _monteur_after_bob(state: dict):
-    """
-    Вызывается хуком после _bob_finalize.
-    Проверяет chain_status APPROVED → запускает Монтажёра.
-    Монтажёр — резидент на все цеха видео.
-    """
-    last_output  = state.get("_last_output", {})
-    deliverables = last_output.get("deliverables", {})
-
-    if not deliverables:
-        print("[MONTEUR] ⚠️  deliverables пусты — сборку пропускаю")
-        return
-
-    chain_status = (last_output.get("my_output", {})
-                               .get("bob_marketing", {})
-                               .get("chain_status", ""))
-
-    if chain_status != "APPROVED":
-        print(f"[MONTEUR] ℹ️  chain_status={chain_status} — сборку не запускаю")
-        return
-
-    project_id = deliverables.get("project_id", state.get("project_id", ""))
-    slot_id    = state.get("_slot_id", "video_long")
-
-    print(f"[MONTEUR] 🎬 APPROVED → сборка: {project_id}")
-
-    try:
-        result = _run_monteur(
-            deliverables=deliverables,
-            project_id=project_id,
-            slot_id=slot_id,
-        )
-        state["_assembly_result"] = {
-            "status":     result.status,
-            "final_path": result.final_path,
-            "duration":   result.duration_sec,
-            "clips":      f"{result.clips_used}/{result.clips_total}",
-        }
-    except Exception as e:
-        print(f"[MONTEUR] ❌ Сборка упала: {e}")
-        state["_assembly_result"] = {"status": "FAILED", "error": str(e)}
-
-
 def _bob_finalize(state: dict, human_text: str):
     """
     Три шага:
