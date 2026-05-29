@@ -9,8 +9,7 @@ from pathlib import Path
 RESIDENTS_DIR = Path("studio/modules/residents")
 SET_DIR = RESIDENTS_DIR / "003_LEGACY_SET"
 OLE_DIR    = RESIDENTS_DIR / "004_OLE"      # Библиотекарь Оле
-VICTOR_DIR  = RESIDENTS_DIR / "005_VICTOR"   # Резидент-критик Виктор
-MONTEUR_DIR = RESIDENTS_DIR / "006_MONTEUR"  # Монтажёр — сборка финального ролика
+VICTOR_DIR = RESIDENTS_DIR / "005_VICTOR"   # Резидент-критик Виктор
 
 # Кеш промптов (dept → промпт)
 _prompt_cache: dict = {}
@@ -237,77 +236,3 @@ def run_victor_critique(chain_data: str, dept: str = "") -> dict:
         "critical_question": "",
         "recommendation":    "",
     }
-
-
-# ============================================================
-# 006_MONTEUR — Монтажёр (финальная сборка роликов)
-# ============================================================
-
-def run_monteur_assembly(
-    deliverables: dict,
-    project_id: str = "",
-    slot_id: str = "video_long",
-):
-    """Запускает Монтажёра — собирает финальный ролик из deliverables Боба.
-
-    Вызывается из hooks.py после _bob_finalize когда chain_status APPROVED.
-    Один Монтажёр работает со всеми цехами которые производят видео.
-
-    Args:
-        deliverables: dict из state["_last_output"]["deliverables"]
-        project_id:   ID проекта (для папки output/render/)
-        slot_id:      цех-источник (video_long, video_shorts, ...)
-
-    Returns:
-        AssemblyResult с полями:
-            status      — "DONE" | "PARTIAL" | "FAILED"
-            final_path  — путь к final.mp4 или None
-            duration_sec, clips_used, clips_total, has_audio, errors
-    """
-    try:
-        from studio.assembly.monteur import assemble
-    except ImportError as e:
-        print(f"[MONTEUR] ❌ monteur.py не найден: {e}")
-        # Возвращаем заглушку с нужными полями
-        class _FailResult:
-            status = "FAILED"
-            final_path = None
-            duration_sec = 0.0
-            clips_used = 0
-            clips_total = 0
-            has_audio = False
-            has_vo = False
-            has_sfx = False
-            errors = [str(e)]
-            assembled_at = ""
-        return _FailResult()
-
-    project_id = project_id or deliverables.get("project_id", "unknown")
-
-    print(f"[MONTEUR] 🎬 Запуск сборки: {project_id} (цех: {slot_id})")
-
-    result = assemble(
-        deliverables=deliverables,
-        project_id=project_id,
-        slot_id=slot_id,
-    )
-
-    # Логируем итог
-    if result.status == "DONE":
-        print(
-            f"[MONTEUR] ✅ {project_id} → {result.final_path} "
-            f"({result.clips_used}/{result.clips_total} клипов, "
-            f"{result.duration_sec:.1f}с)"
-        )
-    elif result.status == "PARTIAL":
-        print(
-            f"[MONTEUR] ⚠️  {project_id} — частично. "
-            f"Ошибки: {result.errors[:2]}"
-        )
-    else:
-        print(
-            f"[MONTEUR] ❌ {project_id} — сборка упала. "
-            f"Ошибки: {result.errors[:2]}"
-        )
-
-    return result

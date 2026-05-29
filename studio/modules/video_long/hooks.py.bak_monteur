@@ -29,16 +29,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from studio.fal_client import generate_with_refs, generate_image, add_to_catalog, load_catalog
 
-# Монтажёр — финальная сборка после Боба
-try:
-    from studio.residents_manager import run_monteur_assembly as _run_monteur
-    _MONTEUR_ENABLED = True
-    print("[MONTEUR] 🎬 Монтажёр подключён")
-except ImportError:
-    _MONTEUR_ENABLED = False
-    def _run_monteur(deliverables, project_id="", slot_id="video_long"):
-        print("[MONTEUR] ⚠️  residents_manager не найден — сборка пропущена")
-
 OUTPUT_DIR   = Path("output/generated")
 CLIENTS_DIR  = Path("clients")
 
@@ -79,9 +69,6 @@ def on_after_agent(state: dict, worker_id: str, human_text: str, meta: dict) -> 
         _episode_tracy_parallel(state, human_text)
     elif mode == "episode" and worker_id == "A12":
         _bob_finalize(state, human_text)
-        # Монтажёр запускается автоматически если chain_status APPROVED
-        if _MONTEUR_ENABLED:
-            _monteur_after_bob(state)
 
     return {}
 
