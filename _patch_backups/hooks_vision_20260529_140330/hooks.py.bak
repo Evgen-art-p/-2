@@ -61,8 +61,6 @@ def on_after_agent(state: dict, worker_id: str, human_text: str, meta: dict) -> 
         _episode_eva_parallel(state, human_text)
     elif worker_id == "A08":
         _felix_log_interaction(state, human_text)
-        if mode == "episode":
-            _felix_generate_clips(state, human_text)
     elif mode == "episode" and worker_id == "A11":
         _episode_tracy_parallel(state, human_text)
     elif mode == "episode" and worker_id == "A12":
@@ -169,12 +167,7 @@ def _bible_eva_sync(state: dict, human_text: str):
             return
         print(f"[BIBLE A06] Генерирую {category}: {name}")
         try:
-            raw = _generate_with_vision_check(
-            prompt=prompt, ref_ids=[], filename=filename,
-            agent_id="A06", slot_id=slot_id,
-            project_id=state.get("project_id", ""),
-            vision_rules="BIBLE режим: эталонный персонаж/локация. Строгая анатомия, профессиональное качество."
-        )
+            raw = _generate_with_retry(prompt, [], filename, "A06", slot_id)
             fp  = assets_dir / filename
             Path(raw).replace(fp)
             item.update({"path": str(fp), "ref_id": ref_id})
@@ -274,12 +267,7 @@ def _episode_eva_parallel(state: dict, human_text: str):
         print(f"[EPISODE A06] → кадр {idx+1}/{total}: {filename}"
               + (f"  refs={ref_ids}" if ref_ids else ""))
         try:
-            raw = _generate_with_vision_check(
-                prompt=prompt, ref_ids=ref_ids, filename=filename,
-                agent_id="A06", slot_id=slot_id,
-                project_id=state.get("project_id", ""),
-                vision_rules="EPISODE кадр: соответствие раскадровке Лукаса. Строгая анатомия, 16:9 формат."
-            )
+            raw = _generate_with_retry(prompt, ref_ids, filename, "A06", slot_id)
             fp  = project_dir / filename
             Path(raw).replace(fp)
             frame["path"] = str(fp)
@@ -769,179 +757,6 @@ def _bob_fill_outcome_signal(state: dict, my_output: dict):
 # ═══════════════════════════════════════════════════════════════════
 # УТИЛИТЫ
 # ═══════════════════════════════════════════════════════════════════
-
-
-def _generate_with_vision_check(prompt: str, ref_ids: list, filename: str,
-                                 agent_id: str, slot_id: str,
-                                 project_id: str = "",
-                                 vision_rules: str = "") -> str:
-    """
-    Генерирует картинку через fal.ai + проверяет ОТК через vision_client.
-    При REJECTED — брак архивируется в output/rejected/{project_id}/,
-    промпт корректируется через fix_hint, максимум 3 попытки.
-    Если vision_client недоступен — работает как _generate_with_retry.
-    """
-    try:
-        from studio.vision_client import generate_with_vision_check as _otk
-    except ImportError:
-        print(f"[{agent_id}] ⚠️  vision_client не найден — работаю без ОТК")
-        return _generate_with_retry(prompt, ref_ids, filename, agent_id, slot_id)
-
-    current_prompt  = [prompt]
-    negative_suffix = [""]
-
-    def _gen():
-        full = current_prompt[0]
-        if negative_suffix[0]:
-            full += f", --no {negative_suffix[0]}"
-        return _generate_with_retry(full, ref_ids, filename, agent_id, slot_id)
-
-    def _on_retry(attempt: int, fix_hint: str):
-        if fix_hint:
-            negative_suffix[0] = (negative_suffix[0] + ", " + fix_hint).strip(", ")
-            print(f"[{agent_id} ОТК] Добавляю в негатив: {fix_hint}")
-
-    return _otk(
-        generate_fn=_gen,
-        original_prompt=prompt,
-        agent_id=agent_id,
-        rules=vision_rules,
-        max_visual_retries=3,
-        on_retry=_on_retry,
-        project_id=project_id,
-    )
-
-
-def _felix_generate_clips(state: dict, human_text: str):
-    """
-    A08 ФЕЛИКС — генерация видео-клипов через SiliconFlow Wan2.2 I2V.
-    Читает felix_vfx.video_clips[], берёт картинки из eva_visuals.frames[].path,
-    для каждого клипа:
-      1. Генерирует mp4 через Wan2.2
-      2. Проверяет через ОТК (первый + последний кадр)
-      3. При REJECTED — брак в output/rejected/{project_id}/, перегенерирует
-      4. Пишет video_path обратно в state
-    """
-    try:
-        from studio.siliconflow_client import generate_video_with_retry
-    except ImportError:
-        print("[A08 Феликс] ❌ siliconflow_client не найден — пропускаю")
-        return
-
-    try:
-        from studio.vision_client import generate_with_vision_check as _otk
-        has_otk = True
-    except ImportError:
-        print("[A08 Феликс] ⚠️  vision_client не найден — ОТК для клипов отключён")
-        has_otk = False
-
-    data = _parse_json(human_text)
-    if not data:
-        print("[A08 Феликс] JSON не найден — пропускаю")
-        return
-
-    my_output   = data.get("my_output", data)
-    video_clips = my_output.get("video_clips", [])
-    if not video_clips:
-        print("[A08 Феликс] video_clips пуст — пропускаю")
-        return
-
-    # Карта frame_id/shot_id → path из eva_visuals.frames[]
-    chain      = state.get("chain_data", {})
-    eva_frames = (chain.get("eva_visuals", {}).get("frames", [])
-                  if isinstance(chain.get("eva_visuals"), dict) else [])
-    frame_map  = {f.get("frame_id", ""): f.get("path") for f in eva_frames}
-    shot_map   = {f.get("shot_id",  ""): f.get("path") for f in eva_frames}
-
-    project_id  = state.get("project_id", "")
-    project_dir = OUTPUT_DIR / (project_id or "vl_episode_unknown")
-    project_dir.mkdir(parents=True, exist_ok=True)
-    slot_id = state.get("_slot_id", "video_long")
-    total   = len(video_clips)
-
-    print(f"[A08 Феликс] 🎬 Генерация {total} клипов через Wan2.2 I2V...")
-
-    results = []
-    for idx, clip in enumerate(video_clips):
-        frame_id = clip.get("frame_id", "")
-        shot_id  = clip.get("shot_id",  "")
-        scene_id = clip.get("scene_id", "")
-        motion   = clip.get("motion_prompt", "")
-        duration = clip.get("duration_sec", 5)
-        camera   = clip.get("camera_move", "static")
-
-        img_path = frame_map.get(frame_id) or shot_map.get(shot_id)
-        if not img_path or not Path(img_path).exists():
-            print(f"[A08 Феликс] ❌ {frame_id or shot_id}: картинка не найдена")
-            clip["video_path"] = None
-            results.append(clip)
-            continue
-
-        if not motion:
-            print(f"[A08 Феликс] ❌ {frame_id}: motion_prompt пуст")
-            clip["video_path"] = None
-            results.append(clip)
-            continue
-
-        filename       = (f"{_slugify(str(scene_id))[:20]}_"
-                          f"{_slugify(str(shot_id or frame_id))[:15]}.mp4")
-        dest           = project_dir / filename
-        current_motion = [motion]
-
-        def _gen_clip():
-            path = generate_video_with_retry(
-                image_path=img_path,
-                motion_prompt=current_motion[0],
-                filename=filename,
-                duration=duration,
-                resolution="720p",
-                agent_id="A08",
-                slot_id=slot_id,
-            )
-            import shutil as _sh
-            _sh.move(path, dest)
-            return str(dest)
-
-        print(f"[A08 Феликс] → клип {idx+1}/{total}: {filename}")
-        try:
-            if has_otk:
-                def _on_retry(attempt, fix_hint):
-                    if fix_hint:
-                        current_motion[0] = motion + f", avoid: {fix_hint}"
-                        print(f"[A08 ОТК] motion_prompt скорректирован")
-
-                from studio.vision_client import generate_with_vision_check as _otk_fn
-                video_path = _otk_fn(
-                    generate_fn=_gen_clip,
-                    original_prompt=motion,
-                    agent_id="A08",
-                    rules=(f"Видео-клип. Камера: {camera}. "
-                           "Плавность движения, анатомия в первом и последнем кадре."),
-                    max_visual_retries=3,
-                    on_retry=_on_retry,
-                    project_id=project_id,
-                )
-            else:
-                video_path = _gen_clip()
-
-            clip["video_path"] = video_path
-            print(f"[A08 Феликс] ✅ {filename}")
-
-        except Exception as e:
-            print(f"[A08 Феликс] ❌ {frame_id}: {e}")
-            clip["video_path"] = None
-            clip["error"]      = str(e)
-
-        results.append(clip)
-
-    ok = sum(1 for c in results if c.get("video_path"))
-    print(f"[A08 Феликс] 🎬 Итог: {ok}/{total} клипов готово")
-
-    my_output["video_clips"] = results
-    if "my_output" in data:
-        data["my_output"] = my_output
-    _update_state(state, data)
-
 
 def _build_storyboard_map(storyboard) -> dict:
     """
