@@ -739,21 +739,15 @@ def _bob_collect_media(chain: dict, deliverables: dict):
     if isinstance(felix, dict):
         felix_clips = felix.get("video_clips", [])
         if felix_clips:
-            deliverables["video_clips"] = [{
-                "frame_id":      f.get("frame_id", ""),
-                "shot_id":       f.get("shot_id", ""),
-                "scene_id":      f.get("scene_id", ""),
-                "motion_prompt": f.get("motion_prompt", ""),
-                "camera_move":   f.get("camera_move", ""),
-                "duration_sec":  f.get("duration_sec", 0),
-                "ref_ids":       f.get("ref_ids", []),
-                "vfx_layer":     f.get("vfx_layer", "none"),
-                "video_path":    f.get("video_path"),
-                "clip_assessment": f.get("clip_assessment", {}),
+            deliverables["veo3_prompts"] = [{
+                "shot_id":  f.get("shot_id", ""),
+                "camera":   f.get("camera_move", ""),
+                "duration": f.get("duration_sec", 0),
+                "prompt":   f.get("motion_prompt", ""),
+                "ref_ids":  f.get("ref_ids", []),
+                "vfx_layer": f.get("vfx_layer", ""),
             } for f in felix_clips]
-            ok = sum(1 for c in deliverables["video_clips"] if c.get("video_path"))
-            total = len(deliverables["video_clips"])
-            print(f"[EPISODE A12]   video_clips : {ok}/{total} клипов с video_path")
+            print(f"[EPISODE A12]   veo3_prompts: {len(deliverables['veo3_prompts'])} клипов")
 
     # ── A10 Сэм, A09 Алекс, A07 Тим ────────────────────────────────
     for out_key, chain_key in [("audio", "sam_sound"), ("motion", "alex_motion"),
