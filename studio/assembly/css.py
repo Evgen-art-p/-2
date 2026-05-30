@@ -62,6 +62,26 @@ ASSEMBLY_CSS = r"""
 
 MONTEUR_CSS = r"""
 /* ── Мастерская Монтажёра ── */
+
+/* Аватар резидента — копия из CABINET_CSS */
+.cab-detail-avatar {
+  width: 220px; height: 220px; border-radius: 50%;
+  background: #141722; background-size: cover; background-position: center top;
+  border: 2px solid rgba(99,130,255,0.15);
+  margin: 0 auto 6px;
+}
+/* Кнопка "поговорить" — копия из CABINET_CSS */
+.cab-talk-btn {
+  width: 100%; margin-top: 8px;
+  background: rgba(167,139,250,0.08);
+  border: 1px solid rgba(167,139,250,0.15);
+  color: rgba(167,139,250,0.85);
+  font-family: JetBrains Mono, monospace;
+  font-size: 0.62rem; padding: 8px;
+  border-radius: 6px; cursor: pointer; text-align: center;
+  transition: all 0.15s;
+}
+.cab-talk-btn:hover { background: rgba(167,139,250,0.15); }
 .mt-proj-card{
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(255,255,255,0.07);
@@ -78,20 +98,20 @@ MONTEUR_CSS = r"""
 }
 .mt-proj-card.done{ opacity:0.55; }
 .mt-proj-id{
-  font-family:JetBrains Mono;font-size:0.65rem;
-  font-weight:700;color:rgba(220,225,240,0.9);margin-bottom:3px;
+  font-family:JetBrains Mono;font-size:0.72rem;
+  font-weight:700;color:rgba(220,225,240,0.95);margin-bottom:4px;
 }
 .mt-proj-meta{
-  font-family:JetBrains Mono;font-size:0.55rem;
-  color:rgba(140,150,180,0.5);margin-bottom:2px;
+  font-family:JetBrains Mono;font-size:0.65rem;
+  color:rgba(180,190,220,0.7);margin-bottom:3px;
 }
 .mt-proj-stats{
-  font-family:JetBrains Mono;font-size:0.58rem;
-  color:rgba(180,190,220,0.55);
+  font-family:JetBrains Mono;font-size:0.65rem;
+  color:rgba(200,210,230,0.75);
 }
 .mt-empty{
-  font-family:JetBrains Mono;font-size:0.6rem;
-  color:rgba(140,150,180,0.3);text-align:center;
+  font-family:JetBrains Mono;font-size:0.68rem;
+  color:rgba(180,190,220,0.45);text-align:center;
   padding:16px;line-height:1.7;
 }
 .mt-not-assembled{
@@ -158,27 +178,27 @@ MONTEUR_CSS = r"""
   font-size:0.7rem;color:rgba(220,225,240,0.85);line-height:1.5;
 }
 .mt-right-sec{
-  font-family:JetBrains Mono;font-size:0.52rem;
+  font-family:JetBrains Mono;font-size:0.6rem;
   font-weight:700;letter-spacing:0.1em;
-  text-transform:uppercase;color:rgba(140,150,180,0.35);
-  padding:3px 0 4px;margin-bottom:4px;
-  border-bottom:1px solid rgba(255,255,255,0.04);
+  text-transform:uppercase;color:rgba(180,190,220,0.6);
+  padding:5px 0 5px;margin-bottom:5px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
 }
 .mt-right-item{
-  padding:5px 2px;
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  margin-bottom:2px;
+  padding:6px 2px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  margin-bottom:3px;
 }
 .mt-right-id{
-  font-family:JetBrains Mono;font-size:0.6rem;
-  color:rgba(220,225,240,0.75);font-weight:600;
+  font-family:JetBrains Mono;font-size:0.68rem;
+  color:rgba(220,225,240,0.9);font-weight:600;
 }
 .mt-right-meta{
-  font-family:JetBrains Mono;font-size:0.54rem;
-  color:rgba(140,150,180,0.45);margin-top:1px;
+  font-family:JetBrains Mono;font-size:0.62rem;
+  color:rgba(180,190,220,0.65);margin-top:2px;
 }
 .mt-right-ts{
-  font-family:JetBrains Mono;font-size:0.5rem;
-  color:rgba(140,150,180,0.28);
+  font-family:JetBrains Mono;font-size:0.58rem;
+  color:rgba(160,170,200,0.5);
 }
 """

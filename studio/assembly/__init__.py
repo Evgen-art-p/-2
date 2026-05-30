@@ -510,7 +510,9 @@ def page_assembly():
             )
             with refs["workbench"]:
                 ui.html(
-                    '<div class="mt-empty" style="margin-top:80px">'
+                    '<div style="margin-top:80px;text-align:center;'
+                    'font-family:JetBrains Mono;font-size:0.85rem;'
+                    'color:rgba(200,210,230,0.6);line-height:1.7;">'
                     'Выбери проект слева</div>'
                 )
 
