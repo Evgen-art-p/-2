@@ -593,7 +593,7 @@ def page_assembly():
                 if greeting:
                     ui.html(
                         f'<div style="font-family:JetBrains Mono;font-size:0.52rem;'
-                        f'color:rgba(140,150,180,0.45);margin-top:3px;'
+                        f'color:rgba(180,190,220,0.7);margin-top:4px;'
                         f'font-style:italic;">{greeting[:60]}</div>'
                     )
 
@@ -610,7 +610,7 @@ def page_assembly():
                                 f'<div style="display:flex;align-items:center;'
                                 f'gap:5px;margin-bottom:3px;">'
                                 f'<span style="font-family:JetBrains Mono;'
-                                f'font-size:0.48rem;color:rgba(140,150,180,0.4);'
+                                f'font-size:0.56rem;color:rgba(180,190,220,0.7);'
                                 f'width:26px;">{lbl}</span>'
                                 f'<div style="flex:1;height:3px;background:'
                                 f'rgba(255,255,255,0.06);border-radius:2px;">'
@@ -618,7 +618,7 @@ def page_assembly():
                                 f'background:{color};border-radius:2px;"></div>'
                                 f'</div>'
                                 f'<span style="font-family:JetBrains Mono;'
-                                f'font-size:0.48rem;color:rgba(140,150,180,0.35);'
+                                f'font-size:0.56rem;color:rgba(180,190,220,0.6);'
                                 f'width:26px;text-align:right;">{val:.2f}</span>'
                                 f'</div>'
                             )

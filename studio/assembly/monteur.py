@@ -778,11 +778,8 @@ def _arthur_look(result: AssemblyResult, deliverables: dict) -> dict:
 Все три могут быть null. Это нормально."""
 
     user = (
-        f"{timeline_ctx}
-
-"
-        "Три кадра: начало, середина, конец.
-"
+        f"{timeline_ctx}\n\n"
+        "Три кадра: начало, середина, конец.\n"
         "Что осталось?"
     )
 
