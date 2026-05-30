@@ -1,20 +1,16 @@
-# КОНТРАКТ КЛЮЧЕЙ — VIDEO_LONG v1.1
+# КОНТРАКТ КЛЮЧЕЙ — VIDEO_LONG v1.2
 ## studio/modules/video_long/CHAIN_CONTRACT.md
 ##
 ## Это ЕДИНСТВЕННЫЙ источник правды по ключам chain_data.
 ## Если агент пишет ключ не из этого списка — ошибка.
 ## Если агент читает ключ не из этого списка — ошибка.
 ##
-## Редактировать только вместе с LONG_RULES.md раздел 10.
-## Не копировать в другие цеха.
-##
-## v1.1 — синхронизирован с hooks.py v2.1:
-##   - eva_visuals: поле кадров → "frames" (единый стандарт)
-##   - felix_vfx: поле клипов → "video_clips", промпт → "motion_prompt",
-##                добавлен "compatibility_snapshot"
-##   - lucas_storyboard: плоская структура shots[] (camera_move единый стандарт)
-##   - tracy_smm.thumbnail: A/B варианты (variant_a / variant_b)
-##   - Сквозные ключи: master_brief (единый стандарт студии)
+## v1.2 — синхронизирован с hooks.py Спринт 27:
+##   - felix_vfx.video_clips: добавлены video_path, clip_assessment, scene_id
+##   - sam_sound: добавлены audio_path, sfx_path, vo_path (хук A10)
+##   - deliverables: veo3_prompts → video_clips с video_path
+##   - bob_marketing: добавлен chain_status
+##   - final_dna: veo3_clips_count → video_clips_count
 
 ---
 
@@ -36,10 +32,7 @@
 | A11 Трейси | — | `tracy_smm` | `leo_script`, `eva_visuals`, `history_dna` |
 | A12 Боб | — | `bob_marketing` + `final_dna` | ВСЁ |
 
-**Сквозные ключи** (наследуют все агенты через `{{inherit}}`):
-- `master_brief`
-- `history_dna`
-- `mode`
+**Сквозные ключи** (`{{inherit}}`): `master_brief`, `history_dna`, `mode`
 
 ---
 
@@ -128,7 +121,8 @@
     "composition",
     "focus_point",
     "timing",
-    "path"  ← добавляет hooks.py после fal.ai
+    "self_assessment": { "verdict", "score", "note" },
+    "path"  ← добавляет hooks.py после fal.ai + ОТК
   }],
   "color_palette": ["hex_1", "hex_2", "hex_3"],
   "visual_notes": "строка"
@@ -148,17 +142,20 @@
 }
 ```
 
-### `felix_vfx`
+### `felix_vfx` ⚠️ hooks.py добавляет `video_path` после генерации Wan2.2
 ```json
 {
   "video_clips": [{
     "frame_id",
     "shot_id",
+    "scene_id",
     "motion_prompt",
     "ref_ids",
     "duration_sec",
     "camera_move",
-    "vfx_layer"
+    "vfx_layer",
+    "clip_assessment": { "verdict", "score", "note", "grid_observations" },
+    "video_path"  ← добавляет hooks.py после Wan2.2 I2V
   }],
   "compatibility_snapshot": {
     "technical": 0.0,
@@ -168,8 +165,9 @@
   "friction_note": "строка"
 }
 ```
-⚠️ Поле клипов — `video_clips`. Промпт — `veo_prompt_en` (ТОЛЬКО английский). Поле камеры — `camera_move`.
-⚠️ `compatibility_snapshot` обязателен — hooks.py логирует его в interaction_log.
+⚠️ Поле клипов — `video_clips`. Промпт — `motion_prompt` (ТОЛЬКО английский). Поле камеры — `camera_move`.
+⚠️ `compatibility_snapshot` обязателен — hooks.py логирует в interaction_log.
+⚠️ `video_path` — реальный mp4, не промпт. Добавляет хук после Wan2.2.
 
 ### `alex_motion`
 ```json
@@ -178,20 +176,51 @@
     "clip_id", "frame_id", "animation_type",
     "easing", "duration_sec", "note"
   }],
+  "edit_rhythm": {
+    "pattern": "steady | rising | pulsing",
+    "sync_to": "music | vo | action",
+    "cut_note": "строка"
+  },
   "motion_notes": "строка"
 }
 ```
 
-### `sam_sound`
+### `sam_sound` ⚠️ hooks.py добавляет audio_path, sfx_path, vo_path после генерации
 ```json
 {
   "sound_design": [{
     "scene_id", "track_mood", "sfx", "music_cue",
     "volume_note", "timecode_in", "timecode_out"
   }],
-  "master_mix_note": "строка"
+  "music": {
+    "prompt": "ТОЛЬКО английский",
+    "duration_sec": 0,
+    "mood": "строка",
+    "ducking_db": -12,
+    "audio_path": "строка ← добавляет hooks.py после ElevenLabs",
+    "audio_assessment": { "verdict", "score", "timeline", "note" }
+  },
+  "sfx_list": [{
+    "scene_id",
+    "sfx_prompt": "ТОЛЬКО английский",
+    "duration_sec": 0,
+    "timing_sec": 0,
+    "purpose": "строка",
+    "sfx_path": "строка ← добавляет hooks.py после ElevenLabs"
+  }],
+  "vo_lines": [{
+    "scene_id",
+    "text": "из leo_script.scenes[].dialogue",
+    "timing_sec": 0,
+    "voice_style": "warm | authoritative | energetic | whisper",
+    "vo_path": "строка ← добавляет hooks.py после CosyVoice"
+  }],
+  "master_mix_note": "строка",
+  "mutations": [],
+  "self_reflection": { "mood_match", "would_reuse_fragment", "tension_point" }
 }
 ```
+⚠️ `audio_path`, `sfx_path`, `vo_path` — реальные mp3. Добавляет хук A10 после ElevenLabs/CosyVoice.
 
 ### `tracy_smm` ⚠️ hooks.py добавляет `path` к обложкам после генерации
 ```json
@@ -203,6 +232,7 @@
       "ref_ids": [],
       "text_overlay": "строка",
       "emotion": "строка",
+      "thumbnail_assessment": { "verdict", "score", "note" },
       "path"  ← добавляет hooks.py после fal.ai
     },
     "variant_b": {
@@ -210,46 +240,61 @@
       "ref_ids": [],
       "text_overlay": "строка",
       "emotion": "строка",
+      "thumbnail_assessment": { "verdict", "score", "note" },
       "path"  ← добавляет hooks.py после fal.ai
     }
   },
-  "teaser_plan": [{
-    "platform", "format", "duration_sec", "hook_text", "posting_time"
-  }],
+  "teaser_plan": [{ "platform", "format", "duration_sec", "hook_text", "posting_time" }],
   "seo": { "title", "description", "hashtags", "keywords" },
   "smm_notes": "строка"
 }
 ```
-⚠️ Thumbnail всегда в двух вариантах (A/B) — hooks.py генерирует оба параллельно.
 
 ### `bob_marketing` + `final_dna`
 ```json
 {
-  "marketing_review": {
-    "viral_score": 0.0,
-    "audience_fit": "строка",
-    "distribution_strategy": "строка"
-  },
-  "deliverables": {
-    "key_frames":   [{ собранные кадры от Евы }],
-    "storyboard":   [{ shots от Лукаса }],
-    "thumbnail":    { "variant_a": { "path" }, "variant_b": { "path" } },
-    "veo3_prompts": [{ клипы от Феликса }],
-    "audio":        { sam_sound },
-    "motion":       { alex_motion },
-    "typography":   { tim_typography }
-  },
-  "narrative_entry": { "episode", "summary", "cliffhanger", "key_shot" },
-  "learnings_pack": { "viral_score", "best_practices", "avoid_next", "client_feedback" },
-  "client_relationship": { "trust", "revision_pressure", "creative_freedom" },
-  "outcome_signal": { "viral_score", "client_feedback", "retention_peak" }
+  "chain_status": "APPROVED | FAILED",
+  "failed_checks": [],
+  "marketing_notes": "личный взгляд продюсера — не для системы",
+  "viral_score": null,
+  "audience_fit": "строка",
+  "distribution_strategy": "строка"
 }
+
+"deliverables": {
+  "project_id": "строка",
+  "platform": "строка",
+  "key_frames": [{
+    "frame_id", "shot_id", "scene_id",
+    "banana_prompt", "ref_ids", "format", "path"
+  }],
+  "video_clips": [{
+    "frame_id", "shot_id", "scene_id",
+    "motion_prompt", "camera_move", "duration_sec",
+    "ref_ids", "vfx_layer",
+    "video_path"  ← реальный mp4 от Феликса
+  }],
+  "thumbnail": {
+    "concept": "строка",
+    "variant_a": { "banana_prompt", "ref_ids", "text_overlay", "path" },
+    "variant_b": { "banana_prompt", "ref_ids", "text_overlay", "path" }
+  },
+  "audio": { sam_sound целиком — с audio_path, sfx_path, vo_path },
+  "typography": { tim_typography },
+  "motion": { alex_motion },
+  "description": "строка",
+  "hashtags": [],
+  "posting_time": "строка"
+}
+
 "final_dna": {
-  "project_id", "mode", "episode", "viral_score",
-  "retention_peak", "key_frames_count", "veo3_clips_count",
+  "project_id", "mode", "episode",
+  "key_frames_count", "video_clips_count",
   "platform", "duration_sec"
 }
 ```
+⚠️ `deliverables.video_clips` — не `veo3_prompts`. Содержат `video_path` (реальные mp4).
+⚠️ `chain_status` — обязательное поле. Хук `_monteur_after_bob` проверяет его.
 
 ---
 
@@ -257,52 +302,34 @@
 
 | # | Правило |
 |---|---------|
-| 1 | Ключ агента — строго из этой таблицы. Никаких `adam_arc`, `zack_structure`, `lucas_shots` и других вариаций |
+| 1 | Ключ агента — строго из этой таблицы |
 | 2 | `banana_prompt` и `motion_prompt` — ТОЛЬКО английский |
-| 3 | Формат ВСЕГДА `16:9` — вертикальных в этом цехе не существует |
+| 3 | Формат ВСЕГДА `16:9` |
 | 4 | `ref_ids` — только реальные asset_id из `history_dna.character_memory` |
 | 5 | `history_dna` обновляет ТОЛЬКО A12 Боб |
 | 6 | `client_relationship` обновляет ТОЛЬКО A12 Боб |
-| 7 | `interaction_log` пишет ТОЛЬКО A08 Феликс, заполняет outcome ТОЛЬКО A12 |
+| 7 | `interaction_log` пишет ТОЛЬКО A08 Феликс, outcome_signal заполняет ТОЛЬКО A12 |
 | 8 | `cultural_trace` генерирует ТОЛЬКО A12 через CulturalFieldTracker |
 | 9 | Перед написанием нового промта — сверить INPUT и chain_data с этой таблицей |
-| 10 | Скопировал промт из другого цеха — удали и напиши заново по этому контракту |
-| 11 | `motion_intent` — рекомендация Лукаса, не директива. Феликс может отступить — логирует в `friction_note` |
-| 12 | `katya_verdict` и `victor_critique` — гейт ХАРД-СТОП. Без APPROVED/APPROVED_WITH_EDITS PROD не запускается |
-| 13 | `lucas_storyboard.shots` — плоский массив, не вложенный. Не путать со структурой `storyboard→scenes→shots` |
-| 14 | `tracy_smm.thumbnail` — всегда `variant_a` и `variant_b`. Промт A11 генерирует оба варианта |
-| 15 | `felix_vfx.video_clips` — поле клипов только так. `veo_prompt_en` — поле промпта |
-| 16 | `eva_visuals.frames` — поле кадров только так |
+| 10 | `motion_intent` — рекомендация Лукаса, не директива |
+| 11 | `katya_verdict` и `victor_critique` — гейт ХАРД-СТОП |
+| 12 | `lucas_storyboard.shots` — плоский массив, не вложенный |
+| 13 | `tracy_smm.thumbnail` — всегда `variant_a` и `variant_b` |
+| 14 | `felix_vfx.video_clips[*].video_path` — реальный mp4, не промпт |
+| 15 | `eva_visuals.frames` — поле кадров только так |
+| 16 | `sam_sound.music.audio_path` — реальный mp3, добавляет хук A10 |
+| 17 | `deliverables.video_clips` — не `veo3_prompts`. Монтажёр читает именно это |
+| 18 | `bob_marketing.chain_status` = APPROVED → хук запускает Монтажёра автоматически |
 
 ---
 
 ## КАК ПРОВЕРИТЬ СВОЙ ПРОМТ
 
-Три вопроса перед сохранением:
-
-1. **INPUT** — все ключи которые агент читает, есть в колонке "Читает" этой таблицы?
+1. **INPUT** — все ключи которые агент читает, есть в колонке "Читает"?
 2. **my_output** — структура совпадает со структурой выше?
 3. **chain_data** — агент пишет только свой ключ, остальное `{{inherit}}`?
 
-Если хотя бы одно "нет" — промт не готов.
-
 ---
 
-## ОТЛИЧИЯ ОТ VIDEO_SHORTS
-
-| Параметр | VIDEO_LONG | VIDEO_SHORTS |
-|----------|-----------|-------------|
-| Режимы | BIBLE + EPISODE | PILOT + EPISODE |
-| Формат | 16:9 | 9:16 |
-| Гейт A04 | Катя → `katya_review` / `katya_verdict` | Тэг Тони → `tony_seo` / `tony_verdict` |
-| qa_agent A12 | Боб Блокбастер → `bob_marketing` + `final_dna` | Тамб Том → `tom_thumbnail` + `final_dna` |
-| Кадры A06 | Ева → `eva_visuals` (16:9, Nano Banana 2, поле `frames`) | Вера A07 → `vera_visual` (9:16) |
-| Видео A08 | Феликс → `felix_vfx` + `video_clips` | Стэн A08 → `stan_video` |
-| Между кадрами и видео | A07 Тим → `tim_typography` | нет |
-| Сквозные ключи | `master_brief`, `history_dna`, `mode` | `master_brief`, `history_dna`, `mode` |
-| interaction_log | `interaction_log_video_long.jsonl` | `interaction_log_video_shorts.jsonl` |
-
----
-
-*VIDEO_LONG v1.1 | Контракт ключей | Спринт 19*
-*Источник: LONG_RULES v4.2 раздел 10 | Синхронизирован с hooks.py v2.1*
+*VIDEO_LONG v1.2 | Контракт ключей | Спринт 27 | 2026-05-30*
+*Синхронизирован с hooks.py Спринт 27: хук A10, video_path в video_clips, Монтажёр*
