@@ -239,16 +239,6 @@ PIPELINE_MODES = {
         "checkpoint_at": [3],
         "description": "Все агенты, checkpoint после A03 (сценарий)"
     },
-    "bible": {
-        "label": "📖 Библия",
-        "stop_after": None,
-        "description": "Создание вселенной: мир, персонажи, стиль, план сезона (A01-A04 + хард-стоп)"
-    },
-    "episode": {
-        "label": "🎬 Эпизод",
-        "stop_after": None,
-        "description": "Экранизация серии по готовой Библии (history_dna обязателен)"
-    },
     "web_story": {
         "label": "🌐 Web Story",
         "stop_after": None,
@@ -266,7 +256,7 @@ PIPELINE_MODES = {
 # ─── Маппинг цеха → режим работы ────────────────────────
 DEPT_TO_RUNTYPE = {
     "social_mix":   "social",
-    "video_long":   "episode",
+    "video_long":   "full",
     "video_shorts": "social",
     "web_story":    "web_story",
     "market_hit":   "social",
@@ -2378,6 +2368,38 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                         ui.label('⚡V').style('font-size:10px;')
                     avatars_ref['elements']['VICTOR'] = _victor_el
 
+                # Тоггл режима — только для цеха соцсетей
+                if dept == 'social_mix':
+                    mode_refs = {}
+                    with ui.element('div').style(
+                        'display:flex; align-items:center; gap:6px; '
+                        'background:rgba(255,255,255,0.05); border-radius:20px; '
+                        'padding:4px 8px; flex-shrink:0;'
+                    ):
+                        ui.html('<span style="font-size:0.6rem; color:rgba(255,255,255,0.35); '
+                                'letter-spacing:0.12em; margin-right:4px;">РЕЖИМ</span>')
+
+                        def _set_plan():
+                            state['run_type'] = 'content_plan'
+                            mode_refs['plan'].style('background:rgba(99,179,237,0.3); color:#63b3ed;')
+                            mode_refs['post'].style('background:transparent; color:rgba(255,255,255,0.35);')
+                            ui.notify('📝 Контент-план (A01–A04)', type='info', timeout=2000)
+
+                        def _set_post():
+                            state['run_type'] = 'social'
+                            mode_refs['post'].style('background:rgba(72,187,120,0.3); color:#68d391;')
+                            mode_refs['plan'].style('background:transparent; color:rgba(255,255,255,0.35);')
+                            ui.notify('📱 Производство поста (все агенты)', type='info', timeout=2000)
+
+                        _plan_active = state['run_type'] == 'content_plan'
+                        _btn_s = 'border:none; border-radius:14px; padding:3px 12px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; cursor:pointer; transition:all 0.2s;'
+
+                        mode_refs['plan'] = ui.button('📝 ПЛАН', on_click=_set_plan).props('flat no-caps').style(
+                            _btn_s + ('background:rgba(99,179,237,0.3); color:#63b3ed;' if _plan_active else 'background:transparent; color:rgba(255,255,255,0.35);')
+                        )
+                        mode_refs['post'] = ui.button('📱 ПОСТ', on_click=_set_post).props('flat no-caps').style(
+                                _btn_s + ('background:rgba(72,187,120,0.3); color:#68d391;' if not _plan_active else 'background:transparent; color:rgba(255,255,255,0.35);')
+                            )
         
         # ─── LEFT PANEL ─────────────────────────────────
         with ui.element('div').classes('area-left'):
@@ -2481,7 +2503,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                         ''')
 
 
-                    # ── ЦЕНТРАЛЬНАЯ ГРУППА: CONTINUE | 🏭 | 🔌 | РЕЖИМЫ ──
+                    # ── ЦЕНТРАЛЬНАЯ ГРУППА: CONTINUE | 🏭 ────────────────
                     with ui.element('div').style('display:flex; gap:6px; align-items:center; justify-content:center;'):
                         ui.button('▶ CONTINUE', on_click=lambda: continue_cartridge_pipeline()).props('flat no-caps').style(
                             'padding:6px 14px; border-radius:8px; font-size:0.72rem; font-weight:700; '
@@ -2498,80 +2520,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                             'border:1px solid rgba(140,108,255,0.3); '
                             'color:rgba(140,108,255,0.8); background:rgba(140,108,255,0.07);'
                         ).tooltip('Менеджер картриджей')
-
-                        # ── Режимы: social_mix ──
-                        if dept == 'social_mix':
-                            _sm_refs = {}
-                            with ui.element('div').style(
-                                'display:flex; align-items:center; gap:6px; '
-                                'background:rgba(255,255,255,0.05); border-radius:20px; '
-                                'padding:4px 8px; flex-shrink:0;'
-                            ):
-                                ui.html('<span style="font-size:0.6rem; color:rgba(255,255,255,0.35); '
-                                        'letter-spacing:0.12em; margin-right:4px;">РЕЖИМ</span>')
-
-                                def _set_plan():
-                                    state['run_type'] = 'content_plan'
-                                    _sm_refs['plan'].style('background:rgba(99,179,237,0.3); color:#63b3ed;')
-                                    _sm_refs['post'].style('background:transparent; color:rgba(255,255,255,0.35);')
-                                    ui.notify('📝 Контент-план (A01–A04)', type='info', timeout=2000)
-
-                                def _set_post():
-                                    state['run_type'] = 'social'
-                                    _sm_refs['post'].style('background:rgba(72,187,120,0.3); color:#68d391;')
-                                    _sm_refs['plan'].style('background:transparent; color:rgba(255,255,255,0.35);')
-                                    ui.notify('📱 Производство поста (все агенты)', type='info', timeout=2000)
-
-                                _plan_active = state['run_type'] == 'content_plan'
-                                _btn_s = ('border:none; border-radius:14px; padding:3px 12px; '
-                                          'font-size:0.7rem; font-weight:700; letter-spacing:0.05em; '
-                                          'cursor:pointer; transition:all 0.2s;')
-
-                                _sm_refs['plan'] = ui.button('📝 ПЛАН', on_click=_set_plan).props('flat no-caps').style(
-                                    _btn_s + ('background:rgba(99,179,237,0.3); color:#63b3ed;'
-                                              if _plan_active else 'background:transparent; color:rgba(255,255,255,0.35);')
-                                )
-                                _sm_refs['post'] = ui.button('📱 ПОСТ', on_click=_set_post).props('flat no-caps').style(
-                                    _btn_s + ('background:rgba(72,187,120,0.3); color:#68d391;'
-                                              if not _plan_active else 'background:transparent; color:rgba(255,255,255,0.35);')
-                                )
-
-                        # ── Режимы: video_long ──
-                        if dept == 'video_long':
-                            _vl_refs = {}
-                            with ui.element('div').style(
-                                'display:flex; align-items:center; gap:6px; '
-                                'background:rgba(255,255,255,0.05); border-radius:20px; '
-                                'padding:4px 8px; flex-shrink:0;'
-                            ):
-                                ui.html('<span style="font-size:0.6rem; color:rgba(255,255,255,0.35); '
-                                        'letter-spacing:0.12em; margin-right:4px;">РЕЖИМ</span>')
-
-                                def _set_bible():
-                                    state['run_type'] = 'bible'
-                                    _vl_refs['bible'].style('background:rgba(139,92,246,0.3); color:#a78bfa;')
-                                    _vl_refs['episode'].style('background:transparent; color:rgba(255,255,255,0.35);')
-                                    ui.notify('📖 Библия — создание вселенной (A01–A04)', type='info', timeout=2000)
-
-                                def _set_episode():
-                                    state['run_type'] = 'episode'
-                                    _vl_refs['episode'].style('background:rgba(52,211,153,0.3); color:#34d399;')
-                                    _vl_refs['bible'].style('background:transparent; color:rgba(255,255,255,0.35);')
-                                    ui.notify('🎬 Эпизод — экранизация по Библии', type='info', timeout=2000)
-
-                                _bible_active = state['run_type'] == 'bible'
-                                _vl_btn_s = ('border:none; border-radius:14px; padding:3px 12px; '
-                                             'font-size:0.7rem; font-weight:700; letter-spacing:0.05em; '
-                                             'cursor:pointer; transition:all 0.2s;')
-
-                                _vl_refs['bible'] = ui.button('📖 BIBLE', on_click=_set_bible).props('flat no-caps').style(
-                                    _vl_btn_s + ('background:rgba(139,92,246,0.3); color:#a78bfa;'
-                                                 if _bible_active else 'background:transparent; color:rgba(255,255,255,0.35);')
-                                )
-                                _vl_refs['episode'] = ui.button('🎬 EPISODE', on_click=_set_episode).props('flat no-caps').style(
-                                    _vl_btn_s + ('background:rgba(52,211,153,0.3); color:#34d399;'
-                                                 if not _bible_active else 'background:transparent; color:rgba(255,255,255,0.35);')
-                                )
 
                     # ── ПРАВАЯ ГРУППА: WORD | PDF ─────────────────────────
                     with ui.row().style('gap: 8px; justify-content: flex-end;'):
