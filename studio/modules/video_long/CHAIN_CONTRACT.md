@@ -1,16 +1,16 @@
-# КОНТРАКТ КЛЮЧЕЙ — VIDEO_LONG v1.2
+# КОНТРАКТ КЛЮЧЕЙ — VIDEO_LONG v1.3
 ## studio/modules/video_long/CHAIN_CONTRACT.md
 ##
 ## Это ЕДИНСТВЕННЫЙ источник правды по ключам chain_data.
 ## Если агент пишет ключ не из этого списка — ошибка.
 ## Если агент читает ключ не из этого списка — ошибка.
 ##
-## v1.2 — синхронизирован с hooks.py Спринт 27:
-##   - felix_vfx.video_clips: добавлены video_path, clip_assessment, scene_id
-##   - sam_sound: добавлены audio_path, sfx_path, vo_path (хук A10)
-##   - deliverables: veo3_prompts → video_clips с video_path
-##   - bob_marketing: добавлен chain_status
-##   - final_dna: veo3_clips_count → video_clips_count
+## v1.3 — синхронизирован с патчем Спринт 30:
+##   - lucas_storyboard.shots: добавлены shot_type, character_id
+##   - felix_vfx.video_clips: наследует shot_type, character_id от Лукаса
+##   - deliverables.video_clips: Боб копирует shot_type, character_id от Феликса
+##   - Правила 19–22: shot_type сквозь цепочку Лукас → Феликс → Боб → Монтажёр
+##   - Добавлена lipsync логика в Монтажёре для dialog shots
 
 ---
 
@@ -109,6 +109,18 @@
 }
 ```
 ⚠️ Плоский массив `shots[]` — не вложенный. Поле камеры — `camera_move` (не camera_movement).
+
+**Правило разметки `shot_type` для Лукаса:**
+
+| shot_type | Когда | character_id |
+|-----------|-------|-------------|
+| `"dialog"` | персонаж говорит, framing `close_up`/`medium`, `dialogue` в сцене не null | имя персонажа из `history_dna.character_memory` |
+| `"action"` | движение, реакция, рот не важен | `null` |
+| `"broll"` | пейзаж, объект, атмосфера | `null` |
+
+ПРАВИЛО: если сцена с `dialogue` и `framing == close_up` или `medium` → `dialog`.
+Если `dialogue null` или `framing == wide/aerial` → `broll` или `action`.
+Не ставь `dialog` на групповые планы где рот не виден.
 
 ### `eva_visuals` ⚠️ hooks.py добавляет `path` после генерации
 ```json
@@ -274,6 +286,8 @@
   }],
   "video_clips": [{
     "frame_id", "shot_id", "scene_id",
+    "shot_type",     ← НОВОЕ Спринт 30 (копирует от Феликса)
+    "character_id",  ← НОВОЕ Спринт 30 (копирует от Феликса)
     "motion_prompt", "camera_move", "duration_sec",
     "ref_ids", "vfx_layer",
     "video_path"  ← реальный mp4 от Феликса
@@ -324,6 +338,10 @@
 | 16 | `sam_sound.music.audio_path` — реальный mp3, добавляет хук A10 |
 | 17 | `deliverables.video_clips` — не `veo3_prompts`. Монтажёр читает именно это |
 | 18 | `bob_marketing.chain_status` = APPROVED → хук запускает Монтажёра автоматически |
+| 19 | `lucas_storyboard.shots[*].shot_type` — обязательное поле. Лукас размечает каждый шот |
+| 20 | `shot_type` передаётся сквозь цепочку: Лукас → Феликс → Боб → Монтажёр |
+| 21 | `character_id` — только для dialog shots. Для action/broll = null |
+| 22 | Монтажёр читает `shot_type` из `deliverables.video_clips` — не угадывает |
 
 ---
 
@@ -335,5 +353,5 @@
 
 ---
 
-*VIDEO_LONG v1.2 | Контракт ключей | Спринт 27 | 2026-05-30*
-*Синхронизирован с hooks.py Спринт 27: хук A10, video_path в video_clips, Монтажёр*
+*VIDEO_LONG v1.3 | Контракт ключей | Спринт 30 | 2026-05-31*
+*Синхронизирован с патчем Спринт 30: shot_type, character_id (Лукас → Феликс → Боб → Монтажёр), lipsync логика*
