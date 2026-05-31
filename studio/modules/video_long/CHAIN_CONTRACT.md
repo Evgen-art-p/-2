@@ -101,7 +101,9 @@
     "camera_move",
     "motion_intent",
     "duration_sec",
-    "composition_note"
+    "composition_note",
+    "shot_type",     ← "dialog" | "action" | "broll" — НОВОЕ Спринт 30
+    "character_id"   ← имя персонажа или null — НОВОЕ Спринт 30
   }],
   "storyboard_notes": "строка"
 }
@@ -149,6 +151,8 @@
     "frame_id",
     "shot_id",
     "scene_id",
+    "shot_type",     ← наследует от lucas_storyboard — НОВОЕ Спринт 30
+    "character_id",  ← наследует от lucas_storyboard — НОВОЕ Спринт 30
     "motion_prompt",
     "ref_ids",
     "duration_sec",

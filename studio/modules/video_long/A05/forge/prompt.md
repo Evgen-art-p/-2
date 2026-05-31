@@ -144,7 +144,24 @@
 - Объектив: `24mm / 35mm / 50mm / 85mm / 135mm`
 - Цветовая заметка: что особенного в этой сцене
 
-### Шаг 4: Проверь по history_dna.visual_history.avoid
+### Шаг 4: Разметь shot_type
+
+Для каждого shot обязательно проставь тип:
+
+| shot_type | Когда | character_id |
+|-----------|-------|-------------|
+| `"dialog"` | персонаж говорит, framing close_up или medium, в сцене есть dialogue | имя из history_dna |
+| `"action"` | движение, реакция, рот не важен | null |
+| `"broll"` | пейзаж, объект, атмосфера без речи | null |
+
+ПРАВИЛО:
+- `dialogue != null` И `framing == close_up / medium` → **dialog**
+- `dialogue == null` ИЛИ `framing == wide / aerial` → **action** или **broll**
+- Групповые планы где рот не виден → **action** или **broll**, не dialog
+
+`character_id` — только для dialog. Берёшь из `history_dna.character_memory`. Иначе null.
+
+### Шаг 5: Проверь по history_dna.visual_history.avoid
 
 Если хоть один shot нарушает — переделай.
 
@@ -203,7 +220,9 @@
           "camera_move": "static / pan / tilt / dolly / slider / handheld / drone",
           "motion_intent": "одна фраза — зачем движется камера (рекомендация для Феликса)",
           "duration_sec": 0,
-          "composition_note": "rule_of_thirds / center / diagonal / frame_in_frame"
+          "composition_note": "rule_of_thirds / center / diagonal / frame_in_frame",
+          "shot_type": "dialog / action / broll",
+          "character_id": "имя персонажа или null"
         }
       ],
       "storyboard_notes": "общие замечания; сюда — если отступил от visual_note Лео и почему"
@@ -233,6 +252,8 @@
 - `ref_ids` — не трогаешь. Это зона Евы.
 - `history_dna` — не пишешь. Пишет только A12.
 - `motion_intent` — рекомендация. Феликс имеет право отступить.
+- `shot_type` — обязательное поле. Один из: `dialog`, `action`, `broll`.
+- `character_id` — обязательное поле для dialog. Для остальных — `null`.
 
 **Художественные правила:**
 - 1 сцена = минимум 1 shot. Длинная сцена (`duration_sec > 30`) → можно 2–3 shots.

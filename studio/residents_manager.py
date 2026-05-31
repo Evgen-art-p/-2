@@ -248,6 +248,231 @@ def run_monteur_assembly(
     project_id: str = "",
     slot_id: str = "video_long",
 ):
+    """
+    Артур — настоящий агент. Спринт 30.
+
+    Этап 1: LLM смотрит кадры клипов через vision
+      - читает промпт + маску цеха + sensory (разговоры с Шефом)
+      - решает: какие shots нужен lipsync
+      - выбирает модель из ДНК
+
+    Этап 2: Работа
+      - dialog shots → sync.so → lipsync mp4 → vision проверка
+      - ffmpeg: concat + amix → final.mp4
+
+    Этап 3: Взгляд на финал
+      - arthur_notes в хроники города
+    """
+    import json as _json
+    import re as _re
+    import base64 as _b64
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    from studio.llm import chat_with_images, stress_to_temperature
+
+    MONTEUR_ID  = "006_MONTEUR"
+    MONTEUR_DIR = Path("studio/modules/residents/006_MONTEUR")
+    project_id  = project_id or deliverables.get("project_id", "unknown")
+
+    print(f"\n[АРТУР] 🎬 Начинаю работу над: {project_id}")
+
+    # ── Промпт ──────────────────────────────────────────────────
+    prompt_path = MONTEUR_DIR / "forge" / "prompt.md"
+    mask_path   = MONTEUR_DIR / "forge" / "masks" / f"{slot_id}.md"
+    system_prompt = ""
+    if prompt_path.exists():
+        system_prompt = prompt_path.read_text(encoding="utf-8")
+    if mask_path.exists():
+        system_prompt += "\n\n" + mask_path.read_text(encoding="utf-8")
+
+    if not system_prompt.strip():
+        print("[АРТУР] ⚠️  Промпт не найден — работаю как скрипт")
+        from studio.assembly.monteur import assemble
+        return assemble(deliverables=deliverables, project_id=project_id, slot_id=slot_id)
+
+    # ── Пробуждение ─────────────────────────────────────────────
+    try:
+        from studio.grondheim_memory import on_agent_wake
+        on_agent_wake(MONTEUR_ID, dept="residents")
+    except Exception:
+        pass
+
+    # ── ДНК → temperature ────────────────────────────────────────
+    agent_temp = 0.5
+    try:
+        dna_path = MONTEUR_DIR / "dna.json"
+        if dna_path.exists():
+            dna = _json.loads(dna_path.read_text(encoding="utf-8"))
+            dyn = dna.get("dynamic", {})
+            agent_temp = stress_to_temperature(
+                stress=float(dyn.get("Stress", 0.0)),
+                light=float(dyn.get("Internal_Light", 0.8)),
+            )
+            print(f"[АРТУР] 🧬 temp={agent_temp}")
+    except Exception as e:
+        print(f"[АРТУР] ⚠️  ДНК: {e}")
+
+    # ── Sensory — разговоры с Шефом ─────────────────────────────
+    chef_notes = ""
+    try:
+        from studio.grondheim_memory import load_sensory
+        sensory = load_sensory(MONTEUR_ID, "residents")
+        entries = sensory.get("entries", [])
+        recent  = [e.get("feeling") or e.get("content", "") for e in entries[-5:] if e]
+        recent  = [r for r in recent if r]
+        if recent:
+            chef_notes = "=== ЧТО ШЕФ ГОВОРИЛ ПЕРЕД МОНТАЖОМ ===\n"
+            chef_notes += "\n".join(f"  · {r}" for r in recent)
+            chef_notes += "\n=================================="
+            print(f"[АРТУР] 💬 Помню {len(recent)} записей из разговора с Шефом")
+    except Exception as e:
+        print(f"[АРТУР] ⚠️  Sensory: {e}")
+
+    # ── Кадры из клипов для vision ───────────────────────────────
+    clips       = deliverables.get("video_clips", [])
+    clip_frames = []
+
+    for clip in clips[:6]:
+        vpath = clip.get("video_path")
+        if not vpath or not Path(vpath).exists():
+            continue
+        frames = _monteur_extract_frame(vpath)
+        if frames:
+            clip_frames.append({
+                "shot_id":    clip.get("shot_id", "?"),
+                "scene_id":   clip.get("scene_id", "?"),
+                "shot_type":  clip.get("shot_type"),
+                "duration":   clip.get("duration_sec", 0),
+                "video_path": vpath,
+                "frames":     frames,
+            })
+
+    print(f"[АРТУР] 🎞  Кадры: {len(clip_frames)}/{len(clips)} клипов")
+
+    # ── Собираем изображения и индекс ────────────────────────────
+    all_images     = []
+    clip_index_txt = ""
+    for i, cf in enumerate(clip_frames, 1):
+        all_images.extend(cf["frames"])
+        stype = f"shot_type={cf['shot_type']}" if cf["shot_type"] else "shot_type=НЕИЗВЕСТЕН"
+        clip_index_txt += (
+            f"  [{i}] shot_id={cf['shot_id']} "
+            f"scene={cf['scene_id']} {stype} "
+            f"dur={cf['duration']}s\n"
+        )
+
+    vo_lines = deliverables.get("audio", {}).get("vo_lines", [])
+    vo_index = "".join(
+        f"  scene_id={v.get('scene_id')} → vo_path={v.get('vo_path')}\n"
+        for v in vo_lines
+    )
+
+    # ── Контекст ─────────────────────────────────────────────────
+    context = (
+        f"=== ПАКЕТ ОТ БОБА ===\n"
+        f"project_id: {project_id}\n"
+        f"platform: {deliverables.get('platform', '?')}\n"
+        f"клипов всего: {len(clips)}\n\n"
+        f"{clip_index_txt}\n"
+        f"=== VO ЛИНИИ ОТ СЭМА ===\n"
+        f"{vo_index or '  (нет VO)'}\n"
+        f"{chef_notes}\n\n"
+        "Смотри на кадры. Для каждого клипа реши: нужен lipsync?\n"
+        "dialog = говорит крупным/средним планом. action/broll = нет.\n"
+        "Ответь строго в JSON."
+    )
+
+    # ── LLM решение ─────────────────────────────────────────────
+    print("[АРТУР] 🤔 Смотрю на материал...")
+    decision = {}
+    try:
+        raw = chat_with_images(
+            system=system_prompt,
+            user_text=context,
+            images=all_images if all_images else None,
+            temperature=agent_temp,
+            agent_id=MONTEUR_ID,
+            slot_id=slot_id,
+        )
+        m = _re.search(r"\{.*\}", raw, _re.DOTALL)
+        if m:
+            decision = _json.loads(m.group())
+    except Exception as e:
+        print(f"[АРТУР] ⚠️  LLM: {e}")
+
+    lipsync_shots  = decision.get("lipsync_shots", [])
+    chosen_model   = decision.get("chosen_model", "google/gemini-2.5-flash")
+    first_thought  = decision.get("first_impression", "")
+
+    print(f"[АРТУР] 🎯 lipsync для {len(lipsync_shots)} шотов | модель: {chosen_model}")
+    if first_thought:
+        print(f"[АРТУР] 💭 {first_thought}")
+
+    # ── Lipsync ─────────────────────────────────────────────────
+    if lipsync_shots:
+        _monteur_run_lipsync(
+            lipsync_shots=lipsync_shots,
+            clip_frames=clip_frames,
+            deliverables=deliverables,
+            project_id=project_id,
+            system_prompt=system_prompt,
+            agent_temp=agent_temp,
+            slot_id=slot_id,
+        )
+
+    # ── Сборка ffmpeg ────────────────────────────────────────────
+    from studio.assembly.monteur import assemble
+    print("[АРТУР] 🔨 Собираю...")
+    result = assemble(
+        deliverables=deliverables,
+        project_id=project_id,
+        slot_id=slot_id,
+    )
+
+    # ── Взгляд на финал ─────────────────────────────────────────
+    from pathlib import Path as _Path
+    if result.final_path and _Path(result.final_path).exists():
+        _monteur_final_look(
+            result=result,
+            deliverables=deliverables,
+            system_prompt=system_prompt,
+            agent_temp=agent_temp,
+            slot_id=slot_id,
+        )
+
+    # ── Память и экономика ───────────────────────────────────────
+    verdict = "PASS" if result.status == "DONE" else (
+              "PARTIAL" if result.status == "PARTIAL" else "FAIL")
+    summary = (
+        f"Собрал {result.clips_used}/{result.clips_total} клипов, "
+        f"{result.duration_sec:.1f}с, lipsync: {len(lipsync_shots)} шотов, "
+        f"статус {result.status}"
+    )
+    quality = 1.0 if verdict == "PASS" else (0.6 if verdict == "PARTIAL" else 0.2)
+
+    try:
+        from studio.grondheim_memory import on_agent_done, sync_to_dna
+        on_agent_done(MONTEUR_ID, result_summary=summary,
+                      quality_score=quality, dept="residents")
+        if verdict == "PASS":
+            sync_to_dna(MONTEUR_ID, "good_work", intensity=quality, dept="residents")
+        elif verdict == "FAIL":
+            sync_to_dna(MONTEUR_ID, "bad_work", intensity=1.0, dept="residents")
+    except Exception as e:
+        print(f"[АРТУР] ⚠️  Память: {e}")
+
+    try:
+        from studio.economy import ministry as _min
+        score = 8.0 if verdict == "PASS" else (5.0 if verdict == "PARTIAL" else 0.0)
+        _min.record_outcome(agent_id=MONTEUR_ID, slot_id=slot_id,
+                            score=score, cost_usd=0.0)
+    except Exception:
+        pass
+
+    print(f"[АРТУР] {'✅' if verdict == 'PASS' else '⚠️'} {verdict}: {result.final_path}")
+    return result
     """Запускает Монтажёра — собирает финальный ролик из deliverables Боба.
 
     Вызывается из hooks.py после _bob_finalize когда chain_status APPROVED.
