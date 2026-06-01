@@ -137,10 +137,125 @@ def get_ole_system_prompt(mode="home"):
 
 
 def invalidate_ole_cache():
-    """Sbrosit' kesh promptov Ole."""
+    """Сбрасывает кеш промптов Оле."""
     global _prompt_cache
     for k in [k for k in list(_prompt_cache) if k.startswith("ole_")]:
         del _prompt_cache[k]
+
+
+def run_ole_remember(
+    title: str,
+    event: str,
+    significance: str,
+    loss_if_forgotten: str,
+    memory_type: str,
+    storage: str,
+    source: str = "",
+) -> dict:
+    """
+    Оле принимает событие в память города.
+
+    Оле сама решает — стоит ли сохранять.
+    Если loss_if_forgotten пустой или натянутый — вернёт None.
+
+    memory_type: lesson | tradition | warning | inspiration | identity
+    storage:     library | harbor | chronicles | reference
+    """
+    try:
+        from studio.memory_tools import remember
+        result = remember(
+            title=title,
+            event=event,
+            significance=significance,
+            loss_if_forgotten=loss_if_forgotten,
+            memory_type=memory_type,
+            storage=storage,
+            source=source,
+        )
+        if result:
+            print(f"[ОЛЕ] ✅ Принято в память: '{title}'")
+        else:
+            print(f"[ОЛЕ] ✗ Отклонено: '{title}' — loss_if_forgotten не убедителен")
+        return result or {}
+    except Exception as e:
+        print(f"[ОЛЕ] ❌ run_ole_remember: {e}")
+        return {}
+
+
+def run_ole_remind(
+    query: str,
+    memory_type: str = None,
+    storage: str = None,
+    top_k: int = 3,
+) -> list[dict]:
+    """
+    Оле ищет в памяти города — для инжекта в контекст агента.
+
+    Используется в pipeline.py → build_agent_context()
+    когда агент идёт по уже пройденному пути.
+
+    Возвращает список memory_entry или [] если память пуста.
+    """
+    try:
+        from studio.memory_tools import remind, format_for_agent
+        results = remind(query=query, memory_type=memory_type,
+                         storage=storage, top_k=top_k)
+        return results
+    except Exception as e:
+        print(f"[ОЛЕ] ❌ run_ole_remind: {e}")
+        return []
+
+
+def run_ole_release(entry_id: str, reason: str) -> bool:
+    """
+    Оле отпускает запись памяти.
+
+    Не удаление — отпущенное остаётся в архиве с причиной.
+    reason обязателен.
+    """
+    try:
+        from studio.memory_tools import release
+        return release(entry_id=entry_id, reason=reason)
+    except Exception as e:
+        print(f"[ОЛЕ] ❌ run_ole_release: {e}")
+        return False
+
+
+def run_ole_decline(title: str, reason: str, source: str = "") -> dict:
+    """
+    Оле отказывает событию во входе в память.
+
+    "Нет. Это не войдёт в память города."
+    Отказ записывается — история решений сохраняется.
+    reason обязателен.
+    """
+    try:
+        from studio.memory_tools import decline
+        return decline(title=title, reason=reason, source=source)
+    except Exception as e:
+        print(f"[ОЛЕ] ❌ run_ole_decline: {e}")
+        return {}
+
+
+def get_ole_memory_for_agent(query: str, max_chars: int = 1500) -> str:
+    """
+    Рюкзак памяти — для инжекта в контекст агента в pipeline.
+
+    Вызывается из build_agent_context() рядом с get_harbor_knowledge().
+    Возвращает отформатированный текст или '' если памяти нет.
+    """
+    try:
+        from studio.memory_tools import remind, format_for_agent
+        results = remind(query=query, top_k=3)
+        if not results:
+            return ""
+        formatted = format_for_agent(results, max_chars=max_chars)
+        if formatted:
+            print(f"[ОЛЕ→РЮКЗАК] 🧠 {len(results)} записей памяти для агента")
+        return formatted
+    except Exception as e:
+        print(f"[ОЛЕ] ❌ get_ole_memory_for_agent: {e}")
+        return ""
 
 
 # ============================================================
