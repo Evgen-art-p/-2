@@ -9061,6 +9061,9 @@
       "recommend_for_agent"
     ],
     "Creator_Seal": "Пирсинг на пупке",
+    "Balance_GND": 50.0,
+    "Conversion_Limit": "",
+    "Backing_Status": "",
     "_image_path": "00_REGISTRY_NFT\\images\\OLE.png",
     "Workshop_ID": "residents",
     "Turbo_Role": "administrator",
@@ -9069,7 +9072,6 @@
     "Pull_Vector": "В Библиотеку (всегда дома), К Маяку Пробуждения (новые знания извне), В Гавань Смыслов (поиск в архивах)",
     "Hidden_Taste": "Визуал: Тёплый свет настольной лампы, запах старых страниц. Стимул: Новая книга на полке. Реакция: Читает, аннотирует, раскладывает по секциям.",
     "Trigger_Keywords": "что почитать, книга, библиотека, полка, рекомендация, знания, привязанность, сторителлинг",
-    "Balance_GND": 50.0,
     "Balance_Tepl": 50.0,
     "DNA_Static": {
       "Stubbornness": 0.5,
@@ -9077,13 +9079,10 @@
       "Social_Filter": 0.7,
       "Empathy": 0.9,
       "Autonomy_Level": 0.4,
-      "Resonance_Frequency": 0.5
+      "Resonance_Frequency": 0.85
     },
-    "_timestamp": "2026-04-11T12:51:17.048910",
-    "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9",
-    "Owner_ID": "P_0000000000",
-    "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000"
+    "_timestamp": "2026-06-01T03:52:27.801840",
+    "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9"
   },
   {
     "Rarity": "Common",

@@ -11,7 +11,7 @@
     "Social_Filter": 0.7,
     "Empathy": 0.9,
     "Autonomy_Level": 0.4,
-    "Resonance_Frequency": 0.5
+    "Resonance_Frequency": 0.85
   },
   "resonance": {
     "pull_vector": "В Библиотеку (всегда дома), К Маяку Пробуждения (новые знания извне), В Гавань Смыслов (поиск в архивах)",
