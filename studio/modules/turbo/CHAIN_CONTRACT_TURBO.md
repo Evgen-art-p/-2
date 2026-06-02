@@ -1,4 +1,4 @@
-# КОНТРАКТ КЛЮЧЕЙ — TURBO v2.0
+# КОНТРАКТ КЛЮЧЕЙ — TURBO v2.1
 ## studio/modules/turbo/CHAIN_CONTRACT_TURBO.md
 ##
 ## Это ЕДИНСТВЕННЫЙ источник правды по ключам chain_data цеха TURBO.
@@ -7,12 +7,12 @@
 ##
 ## Редактировать только вместе с TURBO_RULES.md.
 ##
-## v2.0 — синхронизация с hooks.py v4.0 и TURBO_RULES v4.0:
-##   - veo3_* → wan_* (Veo3 устарел, используем Wan2.2 I2V)
-##   - vizor_visual.key_frames: video_path, self_assessment (новые поля)
-##   - mimi_sound: расширена структурой audio-путей
-##   - t5_deliverables: veo3_prompts → wan_clips
-##   - Добавлен self-review этап A03
+## v2.1 — уточнение механики вызовов:
+##   - A02 вызывается ДВАЖДЫ (промпты → audio review)
+##   - A03 вызывается ТРИЖДЫ (промпты → self-review → clip-review)
+##   - chain_check добавлен в таблицу (пишет A05)
+##   - clip_assessment добавлен в vizor_visual.key_frames
+##   - mimi_sound.music теперь dict с prompt, audio_path, audio_assessment
 
 ---
 
@@ -33,23 +33,50 @@
 | A02 | T2 Мими | `mimi_sound` | `master_brief`, `stella_strategy` |
 | A03 | T3 Визор | `vizor_visual` | `master_brief`, `stella_strategy` |
 | A04 | T4 Постпро | `postpro` | `master_brief`, `stella_strategy`, `mimi_sound`, `vizor_visual` |
-| A05 | T5 Финализатор | `thumbnail`, `final_dna` | ВСЁ |
+| A05 | T5 Финализатор | `thumbnail`, `chain_check`, `final_dna` | ВСЁ |
 
 **Ключи которые hooks.py пишет самостоятельно** (агенты не трогают):
-- `vizor_visual` ← hooks.py добавляет `path`, `video_path`, `quality_score`, `quality`, `self_assessment`
-- `mimi_sound` ← hooks.py добавляет `music_path`, `sfx_list[*].sfx_path`, `vo_lines[*].vo_path`
+- `vizor_visual` ← hooks.py добавляет `path`, `video_path`, `quality_score`, `quality`, `self_assessment`, `clip_assessment`
+- `mimi_sound` ← hooks.py добавляет `music.audio_path`, `music.audio_assessment`, `sfx_list[*].sfx_path`, `vo_lines[*].vo_path`
+- `chain_check` ← hooks.py читает из my_output A05 и прокидывает в chain_data
 - `t5_deliverables` ← hooks.py собирает после A05
 
 ---
 
-## ПАРАЛЛЕЛЬНЫЙ ЗАПУСК
+## ПОРЯДОК ВЫЗОВОВ АГЕНТОВ
 
-A02 и A03 работают **параллельно**.
-A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
+```
+A01 → один вызов
 
-⚠️ A03 вызывается **дважды**:
-- Вызов 1: агент пишет промпты → hooks.py генерирует картинки → кладёт в `state["vision_images"]`
-- Вызов 2: агент видит картинки → пишет `self_assessment` → hooks.py применяет вердикты → запускает Wan2.2
+A02 → ДВАЖДЫ:
+  Вызов 1: агент пишет промпты
+           hooks.py → ElevenLabs музыка + SFX + CosyVoice VO
+           state["audio_files"] = [music_path]
+  Вызов 2: агент слушает трек через chat_with_audio()
+           пишет audio_assessment (APPROVED/REJECTED)
+           REJECTED → hooks.py перегенерирует с revised_prompt
+
+A03 → ТРИЖДЫ:
+  Вызов 1: агент пишет промпты (banana + wan)
+           hooks.py → Nano Banana PNG + vision OTK
+           state["vision_images"] = [png_paths]
+  Вызов 2: агент смотрит на PNG через chat_with_images()
+           пишет self_assessment (APPROVED/REJECTED)
+           REJECTED → hooks.py перегенерирует кадр
+           hooks.py → Wan2.2 I2V → mp4 клипы + ffmpeg grid
+           state["vision_images"] = [grid_frames]
+  Вызов 3: агент смотрит на grid клипов через chat_with_images()
+           пишет clip_assessment (APPROVED/REJECTED)
+           REJECTED → hooks.py перегенерирует клип
+
+A04 → один вызов
+
+A05 → один вызов
+  Chain Integrity Check → chain_status APPROVED/BLOCKED
+  hooks.py читает chain_status из my_output → кладёт в chain_data
+  APPROVED → hooks.py запускает 006_MONTEUR → final.mp4
+  BLOCKED  → Монтажёр не запускается
+```
 
 ---
 
@@ -93,7 +120,7 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 
 ---
 
-### `mimi_sound` ⚠️ hooks.py добавляет audio-пути после генерации
+### `mimi_sound` ⚠️ hooks.py добавляет audio-пути и assessment после вызовов
 ```json
 {
   "audio_match": {
@@ -106,38 +133,46 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
     "emotion": "energetic | chill | dramatic | funny | dark",
     "instruments": ["bass", "synth", "clap"]
   },
-  "sfx_map": [
+  "music": {
+    "prompt": "ТОЛЬКО английский — для ElevenLabs",
+    "duration_sec": 35,
+    "ducking_db": -12,
+    "audio_path": null,
+    "audio_assessment": null
+  },
+  "sfx_list": [
     {
+      "sfx_prompt": "whoosh cinematic",
+      "duration_sec": 1.5,
+      "timing_sec": 0.0,
       "segment": "0-1.5s",
-      "sfx": "whoosh",
-      "purpose": "строка"
+      "purpose": "строка",
+      "sfx_path": null
+    }
+  ],
+  "vo_lines": [
+    {
+      "text": "из micro_script.voiceover",
+      "timing_sec": 1.5,
+      "segment": "1.5-5s",
+      "voice_style": "строка",
+      "vo_path": null
     }
   ],
   "beat_map": [
-    {
-      "time_sec": 0.0,
-      "beat": "DROP",
-      "edit_note": "строка"
-    }
+    {"time_sec": 0.0, "beat": "DROP", "edit_note": "строка"}
   ],
-  "voiceover": {
-    "needed": true,
-    "tone": "строка",
-    "pace": "строка"
-  },
-  "suno_prompt": "ТОЛЬКО английский",
-  "music_path": null,
-  "sfx_list": [],
-  "vo_lines": []
+  "suno_prompt": "то же что music.prompt — для совместимости"
 }
 ```
-⚠️ `suno_prompt` — только английский. hooks.py передаёт в ElevenLabs.
-⚠️ `music_path`, `sfx_list[*].sfx_path`, `vo_lines[*].vo_path` — агент ставит null/[]. hooks.py заполнит.
-⚠️ `sfx_map` — hooks.py преобразует в `sfx_list` с реальными путями.
+⚠️ `music.prompt` — только английский. hooks.py передаёт в ElevenLabs.
+⚠️ `music.audio_path`, `music.audio_assessment` — агент ставит null. hooks.py заполнит.
+⚠️ `sfx_list[*].sfx_path`, `vo_lines[*].vo_path` — агент ставит null. hooks.py заполнит.
+⚠️ Fallback: если агент написал `suno_prompt` вместо `music.prompt` — hooks.py подхватит.
 
 ---
 
-### `vizor_visual` ⚠️ hooks.py добавляет пути и self_assessment после генерации
+### `vizor_visual` ⚠️ hooks.py добавляет пути и assessments после вызовов
 ```json
 {
   "style": "строка из 10_Style_Matrix",
@@ -155,7 +190,7 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
     {
       "segment": "0-1.5s",
       "purpose": "hook",
-      "shot_type": "close-up",
+      "shot_type": "close-up | medium | wide | dialog",
       "composition": "rule_of_thirds",
       "camera_move": "zoom-in",
       "focus_point": "строка",
@@ -178,7 +213,8 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
       "video_path": null,
       "quality_score": null,
       "quality": null,
-      "self_assessment": null
+      "self_assessment": null,
+      "clip_assessment": null
     }
   ],
   "tech_checklist": {
@@ -197,8 +233,9 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 ⚠️ Формат ВСЕГДА `9:16`.
 ⚠️ `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec` — обязательны. hooks.py читает для Wan2.2 I2V.
 ⚠️ ~~`veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec`~~ — УСТАРЕЛИ. Не использовать.
-⚠️ `path`, `video_path`, `quality_score`, `quality`, `self_assessment` — агент ставит `null`. hooks.py заполнит.
+⚠️ `path`, `video_path`, `quality_score`, `quality`, `self_assessment`, `clip_assessment` — агент ставит `null`. hooks.py заполнит.
 ⚠️ `ref_ids` — только asset_id из `stella_strategy.selected_assets`.
+⚠️ `shot_type` несёт сквозь цепочку до Монтажёра — `dialog` → lipsync.
 
 ---
 
@@ -208,48 +245,72 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
   "edit_plan": [
     {
       "segment": "0-1.5s",
-      "timecode_in": "0.0",
-      "timecode_out": "1.5",
-      "transition": "строка",
-      "retention_note": "строка",
-      "loop_point": false,
-      "beat_sync": "строка"
+      "cuts": 0,
+      "transition_out": "cut",
+      "speed": "1x",
+      "beat_sync": "DROP at 0.0s"
     }
   ],
-  "captions": [
-    {
-      "segment": "0-1.5s",
-      "timecode_in": "0.0",
-      "timecode_out": "1.5",
-      "text": "строка",
-      "style": "строка",
-      "animation": "строка",
-      "accent_word": "строка"
-    }
-  ],
-  "retention_strategy": {
-    "peak_moment": "строка",
-    "loop_point": "строка",
-    "open_loop": "строка",
-    "easter_egg": "строка"
+  "rhythm": {
+    "source_bpm": "из mimi_sound.mood.bpm",
+    "avg_cut_sec": 2,
+    "total_cuts": 12,
+    "sync_to": "beat_map"
   },
   "loop": {
     "last_frame": "строка",
     "first_frame": "строка",
     "connection": "строка",
-    "seamless_score": "X/10"
+    "seamless_score": "X/10",
+    "wan_correction": {
+      "last_clip_segment": "25-30s",
+      "last_clip_note": "строка или null",
+      "first_clip_segment": "0-1.5s",
+      "first_clip_note": "строка или null"
+    }
   },
-  "postpro_notes": "строка"
+  "retention_map": [
+    {"time": "0-5s", "attention": "high", "risk": "low", "solution": "строка"}
+  ],
+  "easter_egg": "строка",
+  "captions": {
+    "style": {"font": "строка", "size": "large", "color": "#FFFFFF"},
+    "segments": [
+      {"segment": "0-1.5s", "text": "строка", "position": "center", "animation": "pop", "accent_word": "строка"}
+    ]
+  }
 }
 ```
+
+---
+
+### `chain_check` — пишет A05, читает hooks.py
+```json
+{
+  "chain_status": "APPROVED | BLOCKED",
+  "failed_checks": [],
+  "assigned_to": "строка или null",
+  "checks": {
+    "frames_have_path":      "PASS | FAIL",
+    "frames_self_review":    "PASS | FAIL",
+    "clips_have_video_path": "PASS | FAIL",
+    "clips_clip_review":     "PASS | FAIL",
+    "audio_has_path":        "PASS | FAIL",
+    "audio_review":          "PASS | FAIL",
+    "timings_match":         "PASS | FAIL"
+  }
+}
+```
+⚠️ A05 пишет в `my_output.chain_check`. hooks.py читает и кладёт в `chain_data`.
+⚠️ `APPROVED` → Монтажёр запускается. `BLOCKED` → не запускается.
 
 ---
 
 ### `thumbnail` ⚠️ hooks.py добавляет `path`, `quality_score`, `quality`
 ```json
 {
-  "concept": "строка",
   "variant_a": {
+    "concept": "строка",
     "banana_prompt": "ТОЛЬКО английский",
     "ref_ids": ["asset_id"],
     "text_overlay": "строка",
@@ -261,6 +322,7 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
     "quality": null
   },
   "variant_b": {
+    "concept": "строка",
     "banana_prompt": "ТОЛЬКО английский",
     "ref_ids": ["asset_id"],
     "text_overlay": "строка",
@@ -274,7 +336,6 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 }
 ```
 ⚠️ Всегда два варианта A/B.
-⚠️ `concept` — на уровне `thumbnail`, не внутри вариантов.
 
 ---
 
@@ -282,16 +343,16 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 ```json
 {
   "project_id": "строка",
+  "mode": "TURBO",
+  "chain_status": "APPROVED | BLOCKED",
   "platform": "строка",
-  "duration_sec": 0,
-  "key_frames_count": 0,
-  "clips_count": 0,
-  "format": "9:16",
-  "viral_score": 0.0,
-  "style_tags": ["строка"],
-  "best_practices": ["строка"],
-  "avoid_next": ["строка"],
-  "client_feedback": "строка"
+  "duration_sec": 30,
+  "key_frames_count": 5,
+  "clips_count": 5,
+  "has_audio": true,
+  "has_vo": false,
+  "what_worked": "строка",
+  "improve_next": "строка"
 }
 ```
 ⚠️ Пишет ТОЛЬКО T5 Финализатор (A05).
@@ -315,14 +376,14 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
   ],
   "audio": {
     "music": {"audio_path": "строка или null", "ducking_db": -12},
-    "sfx_list": [{"prompt", "sfx_path", "segment", "timing_sec"}],
+    "sfx_list": [{"sfx_prompt", "sfx_path", "segment", "timing_sec"}],
     "vo_lines": [{"text", "vo_path", "segment", "timing_sec"}]
   },
   "captions": {},
   "publication": {}
 }
 ```
-⚠️ ~~`veo3_prompts`~~ → `wan_clips`. Переименовано в v2.0.
+⚠️ `wan_clips` вместо ~~`veo3_prompts`~~.
 ⚠️ Агенты этот ключ не пишут.
 
 ---
@@ -332,10 +393,10 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 | # | Правило |
 |---|---------|
 | 1 | Ключ агента — строго из этой таблицы |
-| 2 | `banana_prompt`, `wan_motion_prompt`, `suno_prompt` — ТОЛЬКО английский |
+| 2 | `banana_prompt`, `wan_motion_prompt`, `music.prompt` — ТОЛЬКО английский |
 | 3 | Формат ВСЕГДА `9:16` |
 | 4 | `ref_ids` — только реальные asset_id из `stella_strategy.selected_assets` |
-| 5 | `path`, `video_path`, `quality_score`, `quality`, `self_assessment` — агент ставит `null` |
+| 5 | `path`, `video_path`, `quality_score`, `quality`, `self_assessment`, `clip_assessment`, `audio_assessment` — агент ставит `null` |
 | 6 | `final_dna` и `t5_deliverables` пишет ТОЛЬКО T5 / hooks.py |
 | 7 | `project_id` задаёт ТОЛЬКО T1 Стелла |
 | 8 | `total_duration_sec` — источник истины для хронометража |
@@ -346,23 +407,25 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 | 13 | T2 и T3 работают параллельно — не читают друг друга |
 | 14 | В chain_data писать `"{{inherit}}"` |
 | 15 | **🔴 `veo3_*` поля — УСТАРЕЛИ. Не использовать. Только `wan_*`** |
-| 16 | A03 вызывается дважды: Этап 1 (промпты) → Этап 2 (self-review) |
+| 16 | **🔴 A02 вызывается ДВАЖДЫ: Вызов 1 (промпты + генерация) → Вызов 2 (audio review)** |
+| 17 | **🔴 A03 вызывается ТРИЖДЫ: Вызов 1 (промпты) → Вызов 2 (self-review картинок) → Вызов 3 (clip-review клипов)** |
+| 18 | **🔴 `chain_status: BLOCKED` → Монтажёр не запускается. Цепочка возвращается.** |
+| 19 | `shot_type = "dialog"` + `vo_path` → lipsync в Монтажёре |
 
 ---
 
-## ИЗМЕНЕНИЯ v2.0 vs v1.0
+## ИЗМЕНЕНИЯ v2.1 vs v2.0
 
-| Что | v1.0 | v2.0 |
+| Что | v2.0 | v2.1 |
 |-----|------|------|
-| Анимационные поля | `veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec` | `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec` |
-| `vizor_visual` новые поля | — | `video_path`, `self_assessment` |
-| `mimi_sound` новые поля | — | `music_path`, `sfx_list`, `vo_lines` |
-| `t5_deliverables` | `veo3_prompts[]` | `wan_clips[]`, `audio{}` |
-| A03 вызовов | 1 | 2 (промпты + self-review) |
-| ОТК картинок | Gemini score | vision_client PASS/REJECT |
-| Выход | JSON-пакет | final.mp4 |
+| A02 вызовов | 1 | **2** (промпты → audio review) |
+| A03 вызовов | 2 | **3** (промпты → self-review → clip-review) |
+| `chain_check` в таблице | ❌ | ✅ A05 пишет, hooks.py прокидывает |
+| `clip_assessment` в key_frames | ❌ | ✅ |
+| `mimi_sound.music` | строка `suno_prompt` | dict `{prompt, audio_path, audio_assessment}` |
+| ОТК таблица | неполная | ✅ все 5 слоёв |
 
 ---
 
-*TURBO v2.0 | Контракт ключей | 2026-06-02*
-*Синхронизирован с: hooks.py v4.0, TURBO_RULES v4.0, A03 prompt v4.0*
+*TURBO v2.1 | Контракт ключей | 2026-06-02*
+*Синхронизирован с: hooks.py v4.0, TURBO_RULES v4.1*
