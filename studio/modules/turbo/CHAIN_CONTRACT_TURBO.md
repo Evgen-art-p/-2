@@ -1,19 +1,18 @@
-# КОНТРАКТ КЛЮЧЕЙ — TURBO v1.0
-## studio/modules/turbo/CHAIN_CONTRACT.md
+# КОНТРАКТ КЛЮЧЕЙ — TURBO v2.0
+## studio/modules/turbo/CHAIN_CONTRACT_TURBO.md
 ##
 ## Это ЕДИНСТВЕННЫЙ источник правды по ключам chain_data цеха TURBO.
 ## Если агент пишет ключ не из этого списка — ошибка.
 ## Если агент читает ключ не из этого списка — ошибка.
 ##
 ## Редактировать только вместе с TURBO_RULES.md.
-## Не копировать в другие цеха.
 ##
-## v1.0 — первичная синхронизация с hooks.py v3.2 и TURBO_RULES v3.1:
-##   - Задокументированы все реальные ключи которые читает/пишет hooks.py
-##   - Зафиксирована двойная нотация: T-имена в промптах, A-нотация в системе
-##   - vizor_visual.key_frames: добавлены veo3-поля (читает hooks.py при сборке)
-##   - t5_deliverables: ключ который hooks.py пишет в chain_data (не путать с my_output)
-##   - quality_score / quality: поля добавляемые hooks.py после генерации
+## v2.0 — синхронизация с hooks.py v4.0 и TURBO_RULES v4.0:
+##   - veo3_* → wan_* (Veo3 устарел, используем Wan2.2 I2V)
+##   - vizor_visual.key_frames: video_path, self_assessment (новые поля)
+##   - mimi_sound: расширена структурой audio-путей
+##   - t5_deliverables: veo3_prompts → wan_clips
+##   - Добавлен self-review этап A03
 
 ---
 
@@ -23,9 +22,6 @@
 |---------|---------|-----------------|
 | Кодовые имена персонажей | **T1–T5** | Промпты агентов, chain_data ключи, TURBO_RULES |
 | Системные ID | **A01–A05** | Папки на диске, worker_id в pipeline, manifest.json, hooks.py |
-
-Пример: агент называет себя T3 Визором в тексте, pipeline находит его по `worker_id == "A03"`.
-Ключи chain_data — по T-имени (т.е. `vizor_visual`, не `a03_visual`).
 
 ---
 
@@ -39,20 +35,21 @@
 | A04 | T4 Постпро | `postpro` | `master_brief`, `stella_strategy`, `mimi_sound`, `vizor_visual` |
 | A05 | T5 Финализатор | `thumbnail`, `final_dna` | ВСЁ |
 
-**Сквозные ключи** (наследуют все агенты через `{{inherit}}`):
-- `master_brief`
-- `stella_strategy` ← наследуют T2, T3, T4, T5
-
-**Ключи которые hooks.py пишет в chain_data самостоятельно** (агенты не трогают):
-- `vizor_visual` ← перезаписывает hooks.py после генерации кадров A03 (добавляет `path`, `quality_score`, `quality`)
-- `t5_deliverables` ← hooks.py собирает и пишет после генерации обложек A05
+**Ключи которые hooks.py пишет самостоятельно** (агенты не трогают):
+- `vizor_visual` ← hooks.py добавляет `path`, `video_path`, `quality_score`, `quality`, `self_assessment`
+- `mimi_sound` ← hooks.py добавляет `music_path`, `sfx_list[*].sfx_path`, `vo_lines[*].vo_path`
+- `t5_deliverables` ← hooks.py собирает после A05
 
 ---
 
 ## ПАРАЛЛЕЛЬНЫЙ ЗАПУСК
 
-A02 и A03 работают **параллельно** — оба читают `stella_strategy`, не читают друг друга.
+A02 и A03 работают **параллельно**.
 A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
+
+⚠️ A03 вызывается **дважды**:
+- Вызов 1: агент пишет промпты → hooks.py генерирует картинки → кладёт в `state["vision_images"]`
+- Вызов 2: агент видит картинки → пишет `self_assessment` → hooks.py применяет вердикты → запускает Wan2.2
 
 ---
 
@@ -63,115 +60,192 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 {
   "project_id": "TURBO_YYYYMMDD_XXX",
   "script": {
-    "segments": [
+    "micro_script": [
       {
-        "segment": 1,
+        "segment": "0-1.5s",
         "timing": "0–1.5s",
         "purpose": "hook",
         "description": "строка",
-        "dialogue": "строка",
+        "voiceover": "строка или null",
         "visual_note": "строка"
       }
     ],
     "total_duration_sec": 30
   },
-  "selected_assets": ["asset_id из каталога — максимум 6"],
-  "seo_brief": {
-    "title": "строка",
-    "keywords": ["строка"],
-    "hook_text": "строка"
+  "selected_assets": {
+    "characters": [{"id": "char_xxx", "name": "строка", "role": "строка"}],
+    "locations":  [{"id": "loc_xxx",  "name": "строка", "role": "строка"}],
+    "props": [],
+    "notes": "строка"
+  },
+  "seo": {
+    "hashtags": {"niche": [], "medium": [], "broad": []},
+    "description": "строка",
+    "posting_time": {"best_time": "строка", "timezone": "MSK"}
   },
   "platform": "строка",
-  "style_tags": ["строка"],
-  "strategy_notes": "строка"
+  "style_tags": ["строка"]
 }
 ```
-⚠️ `project_id` задаёт T1 Стелла (A01). Формат: `TURBO_YYYYMMDD_XXX`.
-⚠️ `total_duration_sec` — источник истины о хронометраже для всех агентов.
-⚠️ `selected_assets` — только реальные asset_id из каталога, максимум 6.
+⚠️ `project_id` — формат `TURBO_YYYYMMDD_XXX`, задаёт только T1.
+⚠️ `total_duration_sec` — источник истины для всех агентов.
+⚠️ `micro_script[*].voiceover` — hooks.py читает для генерации VO через CosyVoice.
 
-### `mimi_sound`
+---
+
+### `mimi_sound` ⚠️ hooks.py добавляет audio-пути после генерации
 ```json
 {
+  "audio_match": {
+    "type": "trending | original | hybrid",
+    "track": "строка",
+    "rationale": "строка"
+  },
+  "mood": {
+    "bpm": 128,
+    "emotion": "energetic | chill | dramatic | funny | dark",
+    "instruments": ["bass", "synth", "clap"]
+  },
+  "sfx_map": [
+    {
+      "segment": "0-1.5s",
+      "sfx": "whoosh",
+      "purpose": "строка"
+    }
+  ],
   "beat_map": [
     {
-      "segment": 1,
-      "timecode_in": "0.0",
-      "timecode_out": "1.5",
-      "track_mood": "строка",
-      "bpm": 0,
-      "sfx": ["строка"],
-      "music_cue": "строка",
-      "volume_note": "строка"
+      "time_sec": 0.0,
+      "beat": "DROP",
+      "edit_note": "строка"
     }
   ],
-  "suno_prompt": "строка (английский)",
-  "master_mix_note": "строка"
+  "voiceover": {
+    "needed": true,
+    "tone": "строка",
+    "pace": "строка"
+  },
+  "suno_prompt": "ТОЛЬКО английский",
+  "music_path": null,
+  "sfx_list": [],
+  "vo_lines": []
 }
 ```
-⚠️ `suno_prompt` — только английский.
+⚠️ `suno_prompt` — только английский. hooks.py передаёт в ElevenLabs.
+⚠️ `music_path`, `sfx_list[*].sfx_path`, `vo_lines[*].vo_path` — агент ставит null/[]. hooks.py заполнит.
+⚠️ `sfx_map` — hooks.py преобразует в `sfx_list` с реальными путями.
 
-### `vizor_visual` ⚠️ hooks.py добавляет `path`, `quality_score`, `quality` после генерации
+---
+
+### `vizor_visual` ⚠️ hooks.py добавляет пути и self_assessment после генерации
 ```json
 {
-  "format": "9:16",
-  "platform": "строка",
+  "style": "строка из 10_Style_Matrix",
+  "palette": {
+    "primary": "#hex",
+    "secondary": "#hex",
+    "accent": "#hex"
+  },
+  "platform_specs": {
+    "resolution": "1080x1920",
+    "fps": 30,
+    "safe_zone": "строка"
+  },
   "key_frames": [
     {
-      "segment": 1,
+      "segment": "0-1.5s",
       "purpose": "hook",
+      "shot_type": "close-up",
+      "composition": "rule_of_thirds",
+      "camera_move": "zoom-in",
+      "focus_point": "строка",
+      "transition_out": "cut",
+      "lighting": {
+        "source": "строка",
+        "direction": "строка",
+        "mood": "строка",
+        "color_temp": "строка"
+      },
+      "props": ["строка"],
+      "texture": "строка",
       "banana_prompt": "ТОЛЬКО английский",
       "ref_ids": ["asset_id из selected_assets"],
-      "composition": "строка",
-      "focus_point": "строка",
-      "veo3_prompt": "ТОЛЬКО английский",
-      "veo3_camera_motion": "строка",
-      "veo3_duration_sec": 3,
+      "style_tags": ["из 10_Style_Matrix"],
+      "wan_motion_prompt": "ТОЛЬКО английский",
+      "wan_camera_move": "static | zoom_in | zoom_out | pan_left | pan_right | tilt_up | tilt_down",
+      "wan_duration_sec": 4,
       "path": null,
+      "video_path": null,
       "quality_score": null,
-      "quality": null
+      "quality": null,
+      "self_assessment": null
     }
   ],
-  "visual_notes": "строка"
+  "tech_checklist": {
+    "safe_zone": "pass | fail",
+    "palette_consistent": "pass | fail",
+    "banana_formula": "pass | fail",
+    "wan_prompts": "pass | fail",
+    "style_tags": "pass | fail",
+    "anatomy_fix": "pass | fail",
+    "ref_ids_filled": "pass | fail",
+    "verdict": "READY | NEEDS_FIX"
+  }
 }
 ```
-⚠️ Поле кадров — `key_frames` (не frames, не shots).
-⚠️ Формат ВСЕГДА `9:16` — горизонтальных кадров в этом цехе не существует.
-⚠️ `path`, `quality_score`, `quality` — агент ставит `null`. hooks.py заполнит.
-⚠️ `veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec` — обязательны: hooks.py собирает `veo3_prompts` в deliverables из этих полей.
-⚠️ `ref_ids` — только asset_id из `stella_strategy.selected_assets`. Не выдумывать.
+⚠️ Поле кадров — `key_frames`. Не `frames`, не `shots`.
+⚠️ Формат ВСЕГДА `9:16`.
+⚠️ `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec` — обязательны. hooks.py читает для Wan2.2 I2V.
+⚠️ ~~`veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec`~~ — УСТАРЕЛИ. Не использовать.
+⚠️ `path`, `video_path`, `quality_score`, `quality`, `self_assessment` — агент ставит `null`. hooks.py заполнит.
+⚠️ `ref_ids` — только asset_id из `stella_strategy.selected_assets`.
+
+---
 
 ### `postpro`
 ```json
 {
   "edit_plan": [
     {
-      "segment": 1,
+      "segment": "0-1.5s",
       "timecode_in": "0.0",
       "timecode_out": "1.5",
       "transition": "строка",
       "retention_note": "строка",
-      "loop_point": false
+      "loop_point": false,
+      "beat_sync": "строка"
     }
   ],
   "captions": [
     {
+      "segment": "0-1.5s",
       "timecode_in": "0.0",
       "timecode_out": "1.5",
       "text": "строка",
-      "style": "строка"
+      "style": "строка",
+      "animation": "строка",
+      "accent_word": "строка"
     }
   ],
   "retention_strategy": {
     "peak_moment": "строка",
     "loop_point": "строка",
-    "open_loop": "строка"
+    "open_loop": "строка",
+    "easter_egg": "строка"
+  },
+  "loop": {
+    "last_frame": "строка",
+    "first_frame": "строка",
+    "connection": "строка",
+    "seamless_score": "X/10"
   },
   "postpro_notes": "строка"
 }
 ```
 
-### `thumbnail` ⚠️ hooks.py добавляет `path`, `quality_score`, `quality` после генерации
+---
+
+### `thumbnail` ⚠️ hooks.py добавляет `path`, `quality_score`, `quality`
 ```json
 {
   "concept": "строка",
@@ -199,10 +273,10 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
   }
 }
 ```
-⚠️ Thumbnail всегда в двух вариантах (A/B) — hooks.py генерирует оба.
-⚠️ `ref_ids` обязательны для обоих вариантов.
-⚠️ `concept` — на уровне `thumbnail`, не дублируется внутри вариантов.
-⚠️ `path`, `quality_score`, `quality` — агент ставит `null`. hooks.py заполнит.
+⚠️ Всегда два варианта A/B.
+⚠️ `concept` — на уровне `thumbnail`, не внутри вариантов.
+
+---
 
 ### `final_dna`
 ```json
@@ -211,6 +285,7 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
   "platform": "строка",
   "duration_sec": 0,
   "key_frames_count": 0,
+  "clips_count": 0,
   "format": "9:16",
   "viral_score": 0.0,
   "style_tags": ["строка"],
@@ -219,41 +294,36 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
   "client_feedback": "строка"
 }
 ```
-⚠️ `final_dna` пишет ТОЛЬКО T5 Финализатор (A05).
+⚠️ Пишет ТОЛЬКО T5 Финализатор (A05).
 
 ---
 
-## КЛЮЧ КОТОРЫЙ ПИШЕТ ТОЛЬКО hooks.py
-
-### `t5_deliverables` (пишет hooks.py в chain_data после A05 — агенты не трогают)
+### `t5_deliverables` — пишет ТОЛЬКО hooks.py
 ```json
 {
   "project_id": "строка",
   "status": "ready_to_publish | incomplete",
   "thumbnail": {
-    "variant_a": { "banana_prompt", "text_overlay", "emotion", "ref_ids", "style_tags", "path", "quality_score", "quality" },
-    "variant_b": { "banana_prompt", "text_overlay", "emotion", "ref_ids", "style_tags", "path", "quality_score", "quality" }
+    "variant_a": {"banana_prompt", "text_overlay", "emotion", "ref_ids", "style_tags", "path", "quality_score", "quality"},
+    "variant_b": {"banana_prompt", "text_overlay", "emotion", "ref_ids", "style_tags", "path", "quality_score", "quality"}
   },
   "key_frames": [
-    {
-      "segment", "purpose", "prompt", "ref_ids",
-      "format": "9:16",
-      "path", "quality_score", "quality"
-    }
+    {"segment", "purpose", "prompt", "ref_ids", "format": "9:16", "path", "video_path", "quality_score", "quality"}
   ],
-  "veo3_prompts": [
-    {
-      "segment", "camera", "duration", "prompt", "ref_ids"
-    }
+  "wan_clips": [
+    {"segment", "wan_camera_move", "wan_duration_sec", "wan_motion_prompt", "ref_ids"}
   ],
-  "sound": {},
-  "voice_over": {},
-  "music": {},
+  "audio": {
+    "music": {"audio_path": "строка или null", "ducking_db": -12},
+    "sfx_list": [{"prompt", "sfx_path", "segment", "timing_sec"}],
+    "vo_lines": [{"text", "vo_path", "segment", "timing_sec"}]
+  },
   "captions": {},
   "publication": {}
 }
 ```
-⚠️ Этот ключ в my_output агента не пишется. Только hooks.py.
+⚠️ ~~`veo3_prompts`~~ → `wan_clips`. Переименовано в v2.0.
+⚠️ Агенты этот ключ не пишут.
 
 ---
 
@@ -261,66 +331,38 @@ A04 ждёт обоих. Порядок: A01 → (A02 ∥ A03) → A04 → A05.
 
 | # | Правило |
 |---|---------|
-| 1 | Ключ агента — строго из этой таблицы. Никаких `vizor_frames`, `stella_strat`, `mimi_audio` |
-| 2 | `banana_prompt`, `veo3_prompt`, `suno_prompt` — ТОЛЬКО английский |
-| 3 | Формат ВСЕГДА `9:16` — горизонтальных кадров в этом цехе не существует |
+| 1 | Ключ агента — строго из этой таблицы |
+| 2 | `banana_prompt`, `wan_motion_prompt`, `suno_prompt` — ТОЛЬКО английский |
+| 3 | Формат ВСЕГДА `9:16` |
 | 4 | `ref_ids` — только реальные asset_id из `stella_strategy.selected_assets` |
-| 5 | `path`, `quality_score`, `quality` — агент ставит `null`. Заполняет hooks.py |
-| 6 | `final_dna` и `t5_deliverables` пишет ТОЛЬКО T5 Финализатор / hooks.py |
-| 7 | `project_id` задаёт ТОЛЬКО T1 Стелла через `stella_strategy.project_id` |
-| 8 | `total_duration_sec` в `stella_strategy.script` — источник истины для хронометража |
-| 9 | `vizor_visual.key_frames` — содержат veo3-поля (`veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec`). Без них hooks.py не соберёт `veo3_prompts` в deliverables |
-| 10 | `thumbnail` — всегда два варианта `variant_a` и `variant_b`. Один вариант — ошибка |
-| 11 | worker_id в коде и manifest — A-нотация (A01–A05). В промптах и chain_data ключах — T-имена |
-| 12 | JSON ВСЕГДА ПЕРВЫМ — до любого Markdown текста |
-| 13 | T2 и T3 работают параллельно — не читают результаты друг друга |
-| 14 | В chain_data писать `"{{inherit}}"` — не перечислять чужие ключи руками |
+| 5 | `path`, `video_path`, `quality_score`, `quality`, `self_assessment` — агент ставит `null` |
+| 6 | `final_dna` и `t5_deliverables` пишет ТОЛЬКО T5 / hooks.py |
+| 7 | `project_id` задаёт ТОЛЬКО T1 Стелла |
+| 8 | `total_duration_sec` — источник истины для хронометража |
+| 9 | `vizor_visual.key_frames` содержат `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec` — без них нет анимации |
+| 10 | `thumbnail` — всегда два варианта A/B |
+| 11 | worker_id в коде — A-нотация. В промптах — T-имена |
+| 12 | JSON ВСЕГДА ПЕРВЫМ |
+| 13 | T2 и T3 работают параллельно — не читают друг друга |
+| 14 | В chain_data писать `"{{inherit}}"` |
+| 15 | **🔴 `veo3_*` поля — УСТАРЕЛИ. Не использовать. Только `wan_*`** |
+| 16 | A03 вызывается дважды: Этап 1 (промпты) → Этап 2 (self-review) |
 
 ---
 
-## ПРОТИВОРЕЧИЯ ЗАФИКСИРОВАННЫЕ ПРИ АУДИТЕ v1.0
+## ИЗМЕНЕНИЯ v2.0 vs v1.0
 
-Найдены при сравнении TURBO_RULES v3.1 ↔ hooks.py v3.2. Требуют правки в коде или правилах:
-
-| # | Что | Где расходится | Статус |
-|---|-----|----------------|--------|
-| 1 | `t5_deliverables` | hooks.py пишет этот ключ в chain_data (строка 383), но TURBO_RULES секция 2 называет его просто `deliverables`. Ключ нигде не был задокументирован | ✅ Зафиксирован в этом контракте |
-| 2 | `vizor_visual` в chain_data | hooks.py (строка 223) явно пишет `vizor_visual` в chain_data через `_write_chain_key`. A05 читает оттуда же (строка 298). Но в TURBO_RULES это не было явно прописано | ✅ Зафиксирован в этом контракте |
-| 3 | `veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec` | hooks.py читает эти поля из `vizor_visual.key_frames[]` (строки 330–336) при сборке deliverables, но структура нигде не была задокументирована. A03 мог не знать что их надо класть | ✅ Добавлены в структуру `vizor_visual` |
-| 4 | `quality_score` / `quality` | hooks.py добавляет эти поля в кадры и обложки (строки 209–211, 283–285), но они не были в структурах. Агент не знал что писать в `path` | ✅ Добавлены в структуры, агент ставит `null` |
-| 5 | Fallback `a01_strategy` в `_get_project_id` | hooks.py (строка 421) ищет `a01_strategy` как fallback, хотя стандартный ключ — `stella_strategy`. Безопасно, но не задокументировано | 🟡 Безопасный fallback, оставить в коде, знать команде |
-
----
-
-## КАК ПРОВЕРИТЬ ПРОМТ АГЕНТА
-
-Три вопроса перед сохранением:
-
-1. **INPUT** — все ключи которые агент читает, есть в колонке "Читает" сводной таблицы?
-2. **my_output** — структура совпадает со структурой выше? Ключ обёрнут (`"vizor_visual": { ... }`, не плоский)?
-3. **chain_data** — агент пишет только свой ключ, остальное `{{inherit}}`?
-
-Если хотя бы одно "нет" — промт не готов.
+| Что | v1.0 | v2.0 |
+|-----|------|------|
+| Анимационные поля | `veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec` | `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec` |
+| `vizor_visual` новые поля | — | `video_path`, `self_assessment` |
+| `mimi_sound` новые поля | — | `music_path`, `sfx_list`, `vo_lines` |
+| `t5_deliverables` | `veo3_prompts[]` | `wan_clips[]`, `audio{}` |
+| A03 вызовов | 1 | 2 (промпты + self-review) |
+| ОТК картинок | Gemini score | vision_client PASS/REJECT |
+| Выход | JSON-пакет | final.mp4 |
 
 ---
 
-## ОТЛИЧИЯ ОТ VIDEO_LONG И VIDEO_SHORTS
-
-| Параметр | TURBO | VIDEO_LONG | VIDEO_SHORTS |
-|----------|-------|-----------|-------------|
-| Агентов | 5 | 12 | ~8 |
-| Параллельность | A02 ∥ A03 | нет | нет |
-| Формат | 9:16 | 16:9 | 9:16 |
-| Ключевые кадры | `vizor_visual.key_frames` | `eva_visuals.frames` | `vera_visual` |
-| QA агент | T5 Финализатор / A05 | A04 Катя (ХАРД-СТОП) | Тэг Тони |
-| Гейт | нет ХАРД-СТОПа | `katya_verdict` | `tony_verdict` |
-| Обложки | T5 / A05 → `thumbnail` | A11 Трейси → `tracy_smm.thumbnail` | A11 Трейси |
-| interaction_log | `interaction_log_turbo.jsonl` | `interaction_log_video_long.jsonl` | `interaction_log_video_shorts.jsonl` |
-| Режимы | только TURBO | BIBLE + EPISODE | PILOT + EPISODE |
-| project_id формат | `TURBO_YYYYMMDD_XXX` | из `adam_bible/episode` | из пилота |
-
----
-
-*TURBO v1.0 | Контракт ключей | Спринт 19*
-*Источник: TURBO_RULES v3.1 | Синхронизирован с hooks.py v3.2*
-*Аудит: сверены TURBO_RULES ↔ hooks.py ↔ AGENT_WRITING_STANDARD v1.0*
+*TURBO v2.0 | Контракт ключей | 2026-06-02*
+*Синхронизирован с: hooks.py v4.0, TURBO_RULES v4.0, A03 prompt v4.0*

@@ -1,24 +1,27 @@
 # 📜 TURBO PIPELINE — ЭТАЛОННЫЕ ПРАВИЛА
 ## Студия "Шесть пальцев" | Быстрый конвейер шортсов
 
-**Версия:** 3.1
-**Дата:** 2026-05-16
+**Версия:** 4.0
+**Дата:** 2026-06-02
 **Режим:** TURBO (5 агентов)
-**Модель:** Nano Banana 2 (Gemini 3 Flash Image)
-**Генерация:** Внутри пайплайна (A03 кадры, A05 обложки)
+**Модель изображений:** Nano Banana 2 (fal-ai/nano-banana-2)
+**Модель анимации:** Wan2.2 I2V (SiliconFlow)
+**Озвучка:** ElevenLabs (музыка + SFX) + CosyVoice (VO)
+**Монтаж:** ffmpeg через 006_MONTEUR
 
 ---
 
-## ⚡ ЧТО ИЗМЕНИЛОСЬ В ВЕРСИИ 3.1
+## ⚡ ЧТО ИЗМЕНИЛОСЬ В ВЕРСИИ 4.0
 
 | # | Изменение | Почему |
 |---|-----------|--------|
-| 1 | **Двойная нотация** зафиксирована явно | T1–T5 = кодовые имена персонажей (в промптах и chain_data). A01–A05 = системные ID (папки, worker_id в pipeline). Путаница ломала hooks.py |
-| 2 | **hooks.py v3.2** — `worker_id "T3"/"T5"` → `"A03"/"A05"` | Конвейер не запускал генерацию — pipeline передаёт A-нотацию, а хуки ждали T-нотацию |
-| 3 | **agent_id** в `_generate_with_retries` → `"A03"/"A05"` | billing_ledger записывал генерацию под несуществующими агентами |
-| 4 | **`_get_project_id`** — добавлен fallback на `a01_strategy` | Защита от потери project_id если pipeline генерирует ключи по worker_id |
-| 5 | **Секция 13** — исправлены имена resonance-файлов | `resonance_log.json` не существует. Реально: `emotional_weights.json` + `event_log.json` |
-| 6 | **manifest.json** — `qa_agent: "A05"`, A-нотация везде | Стандарт студии. Было `"T5"` — петля памяти не закрывалась |
+| 1 | **Veo3 → Wan2.2 I2V** | Veo3 недоступен. Wan2.2 через SiliconFlow |
+| 2 | **Поля анимации переименованы** | `veo3_prompt` → `wan_motion_prompt`, `veo3_camera_motion` → `wan_camera_move`, `veo3_duration_sec` → `wan_duration_sec` |
+| 3 | **A02 Мими — реальная озвучка** | hooks.py вызывает ElevenLabs (музыка + SFX) и CosyVoice (VO) |
+| 4 | **A03 — self-review (два этапа)** | Агент смотрит на свои кадры и пишет APPROVED/REJECTED. Не сдаёт вслепую |
+| 5 | **ОТК через vision_client** | PASS/REJECT по стандарту video_long. Брак → `output/rejected/` |
+| 6 | **Монтажёр после A05** | hooks.py запускает 006_MONTEUR → ffmpeg → `final.mp4` |
+| 7 | **Ministry score учитывает клипы и аудио** | Более честная оценка рана |
 
 ---
 
@@ -27,76 +30,55 @@
 ```
 A01 / T1 Стелла Стратег (🧠) — стратегия + сценарий + SEO + подбор ассетов
         │
-        ├──→ A02 / T2 Мими Мем (🎵) — звук     ⎤
-        │                                        ⎥ ПАРАЛЛЕЛЬНО
-        └──→ A03 / T3 Визор (🎬) — визуал       ⎦
-                    │              │             🔴 A03 ГЕНЕРИТ КАДРЫ через fal.ai
-                    └──────┬───────┘
-                           ▼
+        ├──→ A02 / T2 Мими Мем (🎵) — звук (промпты)     ⎤
+        │         hooks.py → ElevenLabs музыка + SFX      ⎥ ПАРАЛЛЕЛЬНО
+        │         hooks.py → CosyVoice VO (если нужен)    ⎥
+        │                                                   ⎥
+        └──→ A03 / T3 Визор (🎬) — визуал (промпты)       ⎦
+                    hooks.py → Nano Banana картинки
+                    A03 Этап 2 → self-review (смотрит сам)
+                    hooks.py → Wan2.2 I2V → mp4 клипы
+                    │
+                    └──────────────────┐
+                                       ▼
               A04 / T4 Постпро (✂️) — монтаж + retention + субтитры
-                           │
-                           ▼
-              A05 / T5 Финализатор (🏁) — обложка + финальная сборка [qa_agent]
-                                          🔴 A05 ГЕНЕРИТ ОБЛОЖКИ через fal.ai
+                                       │
+                                       ▼
+              A05 / T5 Финализатор (🏁) — обложки + deliverables [qa_agent]
+                    hooks.py → Nano Banana обложки
+                    hooks.py → 006_MONTEUR → ffmpeg → final.mp4
 ```
-
-### Потоки данных:
-- A01 → A02 + A03 (параллельно)
-- A02 + A03 → A04 (оба потока)
-- A04 → A05 (вся цепочка)
-
-### ⚠️ Двойная нотация — важно понимать
-
-| Нотация | Где используется | Пример |
-|---------|-----------------|--------|
-| **T1–T5** (кодовые имена) | Промпты агентов, chain_data ключи, TURBO_RULES | `stella_strategy`, `vizor_visual` |
-| **A01–A05** (системные ID) | Папки на диске, worker_id в pipeline, manifest.json, hooks.py | `worker_id == "A03"` |
-
-Это не противоречие — это два уровня одной системы. Агент называет себя T3 Визором в тексте, а pipeline находит его по папке `A03/`.
 
 ---
 
 ## 2. ПРОТОКОЛ chain_data
 
-Каждый агент получает данные через `chain_data` и добавляет свой `my_output`.
-
-| Агент | worker_id | Получает | Добавляет | Передаёт |
-|-------|-----------|----------|-----------|----------|
-| T1 Стелла | A01 | master_brief | stella_strategy | → A02, A03 |
-| T2 Мими | A02 | master_brief, stella_strategy | mimi_sound | → A04 |
-| T3 Визор | A03 | master_brief, stella_strategy | vizor_visual (с **путями** к кадрам) | → A04 |
-| T4 Постпро | A04 | master_brief, stella_strategy, mimi_sound, vizor_visual | postpro | → A05 |
-| T5 Финализатор | A05 | ВСЁ | thumbnail (с **путями**), deliverables, final_dna | → DONE |
-
-### Наследование:
-- `"master_brief": "{{inherit}}"` — передавать без изменений
-- `"stella_strategy": "{{inherit}}"` — передавать без изменений
-- `"my_key": "{{my_output}}"` — вставить свой результат
+| Агент | worker_id | Получает | Добавляет |
+|-------|-----------|----------|-----------|
+| T1 Стелла | A01 | master_brief | stella_strategy |
+| T2 Мими | A02 | master_brief, stella_strategy | mimi_sound (+ audio paths от hooks) |
+| T3 Визор | A03 | master_brief, stella_strategy | vizor_visual (+ paths от hooks) |
+| T4 Постпро | A04 | master_brief, stella_strategy, mimi_sound, vizor_visual | postpro |
+| T5 Финализатор | A05 | ВСЁ | thumbnail (+ paths), t5_deliverables, final_dna |
 
 ---
 
 ## 3. ФОРМАТ ВЫВОДА
 
-### Порядок: JSON → Markdown
-Все агенты выводят в одном порядке:
-1. **JSON** — для системы (машиночитаемые данные) — **ВСЕГДА ПЕРВЫМ**
-2. **Markdown** — для Шефа (человекочитаемый отчёт)
+**Порядок: JSON → Markdown. JSON ВСЕГДА ПЕРВЫМ.**
 
-### JSON-маркеры:
 ```
 👇 SYSTEM_JSON_START 👇
 { ... }
 👆 SYSTEM_JSON_END 👆
 ```
-Парсер ищет JSON по маркерам `SYSTEM_JSON_START` / `SYSTEM_JSON_END`.
 
 ---
 
 ## 4. СЕГМЕНТАЦИЯ
 
-### Стелла (T1 / A01) определяет сегменты. Все остальные агенты следуют её разбивке.
+Стелла (T1 / A01) определяет сегменты. Все следуют её разбивке.
 
-Стандартная разбивка для 30-секундного шортса:
 | Сегмент | Тайминг | Назначение |
 |---------|---------|------------|
 | 1 | 0–1.5s | hook |
@@ -105,179 +87,218 @@ A01 / T1 Стелла Стратег (🧠) — стратегия + сцена�
 | 4 | 15–25s | climax |
 | 5 | 25–30s | cta_loop |
 
-**Важно:** `total_duration_sec` из `stella_strategy.script` — источник истины для всех.
-
 ---
 
 ## 5. ЗОНЫ ОТВЕТСТВЕННОСТИ
 
-| Зона | Хозяин (имя / worker_id) | Кто НЕ делает |
-|------|--------------------------|---------------|
+| Зона | Хозяин | Кто НЕ делает |
+|------|--------|---------------|
 | Сценарий, сегменты, тайминги | T1 Стелла / A01 | — |
 | Подбор ассетов (selected_assets) | T1 Стелла / A01 | — |
-| Звук, BPM, SFX, beat_map, Suno | T2 Мими / A02 | — |
-| Key frames, Banana-промпты, Veo3-промпты | T3 Визор / A03 | — |
-| ref_ids в ключевых кадрах | T3 Визор / A03 | — |
-| **🔴 Генерация ключевых кадров (fal.ai)** | **hooks.py** (перехватывает A03) | A03 пишет промпты — система генерит |
+| Звук: suno_prompt, sfx_map, beat_map, voiceover | T2 Мими / A02 | — |
+| 🔴 Генерация музыки (ElevenLabs) | hooks.py после A02 | — |
+| 🔴 Генерация SFX (ElevenLabs batch) | hooks.py после A02 | — |
+| 🔴 Генерация VO (CosyVoice) | hooks.py после A02 | — |
+| Key frames: banana_prompt, wan_motion_prompt, ref_ids | T3 Визор / A03 | — |
+| 🔴 Генерация кадров (Nano Banana) | hooks.py после A03 Этап 1 | — |
+| 🔴 Self-review кадров | T3 Визор / A03 Этап 2 | — |
+| 🔴 Генерация клипов (Wan2.2 I2V) | hooks.py после A03 Этап 2 | — |
 | Монтаж, retention, loop, субтитры | T4 Постпро / A04 | — |
-| **Обложка (thumbnail A/B)** | **T5 Финализатор / A05** | A03 НЕ делает обложку |
-| **🔴 Генерация обложек (fal.ai)** | **hooks.py** (перехватывает A05) | A05 пишет промпты — система генерит |
-| Финальная сборка (deliverables) | T5 Финализатор / A05 | — |
-| DNA (архив проекта) | T5 Финализатор / A05 | — |
-| Закрытие петли памяти [qa_agent] | T5 Финализатор / A05 | — |
+| Обложка thumbnail A/B | T5 Финализатор / A05 | — |
+| 🔴 Генерация обложек (Nano Banana) | hooks.py после A05 | — |
+| 🔴 Финальная сборка (ffmpeg → final.mp4) | hooks.py → 006_MONTEUR | — |
+| Финальная сборка deliverables | T5 Финализатор / A05 | — |
 
 ---
 
-## 6. KNOWLEDGE BASE
+## 6. ПОЛЯ АНИМАЦИИ — WAN2.2 I2V
 
-### Общие для всех агентов:
-| Файл | Назначение |
-|------|------------|
-| 00_Constructor.txt | Универсальный конструктор смыслов |
-| 99_Self_Correction.txt | ОТК — финальная проверка |
+**Было (Veo3 — устарело):**
+- ~~`veo3_prompt`~~
+- ~~`veo3_camera_motion`~~
+- ~~`veo3_duration_sec`~~
 
-### Индивидуальные — указаны в промпте каждого агента.
+**Стало (Wan2.2 I2V):**
+- `wan_motion_prompt` — что движется и как (на английском)
+- `wan_camera_move` — движение камеры (static / pan_left / pan_right / zoom_in / zoom_out / tilt_up / tilt_down)
+- `wan_duration_sec` — длительность клипа в секундах (3–10)
 
-### Актуальная модель генерации:
-- **Nano Banana 2** (Gemini 3 Flash Image)
-- Subject Consistency: до 5 персонажей, 10 объектов
-- Text Rendering: улучшенная читаемость текста
-- Visual Reasoning: понимание контекста сцены
+**Формула wan_motion_prompt:**
+```
+[что движется] [как движется], [атмосфера], [камера если особая]
+```
 
----
-
-## 7. РАБОТА С АССЕТАМИ
-
-### Подбор: T1 Стелла (A01)
-- Ищет в каталоге по TAGS, MOOD, USE_CASES
-- Максимум 6 ассетов на шортс
-- Формат: `selected_assets` в JSON
-
-### Использование: T3 Визор (A03)
-- Каждый key_frame содержит `ref_ids` — список asset_id
-- В промпте: `Figure N` = позиция в `ref_ids` (1-indexed)
-- Порядок: персонажи → локации → пропы
-- `visual_anchor` — включать ДОСЛОВНО
-
-### Обложка: T5 Финализатор (A05)
-- `ref_ids` обязательны для обоих вариантов обложки (A/B)
+Примеры:
+- `"Character walks towards camera slowly, cinematic depth of field"`
+- `"Leaves falling gently, soft wind, static shot"`
+- `"Camera pans right revealing the city skyline at golden hour"`
 
 ---
 
-## 8. ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (v3.1)
+## 7. SELF-REVIEW A03 ВИЗОРА (два этапа)
 
-### Ключевые кадры (T3 Визор / A03):
-1. A03 пишет `banana_prompt` и `ref_ids` для каждого кадра
-2. **hooks.py перехватывает** ответ A03 (`worker_id == "A03"`)
-3. Система вызывает `generate_with_refs()` или `generate_image()` для каждого кадра
-4. Gemini Flash проверяет качество каждой картинки (до 5 ретраев)
-5. Готовые картинки сохраняются в `output/generated/{project_id}/`
-6. Пути записываются в `key_frames[].path`
-7. Обновлённый `state` передаётся дальше по пайплайну
+### Этап 1 — до генерации:
+- Визор пишет `banana_prompt` и `wan_motion_prompt` для каждого кадра
+- hooks.py генерирует картинки через Nano Banana
+- vision_client проверяет: PASS/REJECT → брак в `output/rejected/`
 
-### Обложки (T5 Финализатор / A05):
-1. A05 пишет `banana_prompt` и `ref_ids` для variant_a и variant_b
-2. **hooks.py перехватывает** ответ A05 (`worker_id == "A05"`)
-3. Система вызывает `generate_with_refs()` или `generate_image()` для каждой обложки
-4. Gemini Flash проверяет качество (до 5 ретраев)
-5. Готовые картинки сохраняются в `output/generated/{project_id}/`
-6. Пути записываются в `thumbnail.variant_a.path` и `thumbnail.variant_b.path`
-7. deliverables собираются с готовыми путями
+### Этап 2 — после генерации:
+- hooks.py кладёт пути картинок в `state["vision_images"]`
+- pipeline вызывает A03 повторно с картинками в контексте
+- Визор смотрит на каждый кадр своими глазами
+- Пишет `self_assessment` для каждого: APPROVED/REJECTED + `revised_prompt`
+- hooks.py применяет: REJECTED → перегенерация с новым промптом (max 3 попытки)
+- Только после self-review → анимация Wan2.2 I2V
 
-### Параметры вызова:
-- `agent_id`: `"A03"` (для кадров), `"A05"` (для обложек)
-- `slot_id`: `"turbo"`
-- `format`: `"9:16"`
-- Все вызовы записываются в `billing_ledger`
+### Критерии APPROVED:
+- Анатомия чистая
+- Промпт выполнен
+- Сила кадра ≥ 7/10
+- Нет артефактов
 
-### Качество — Gemini Flash:
-| Score | Статус |
-|-------|--------|
-| ≥ 6 | ✅ принято |
-| < 6 | 🔄 ретрай (промпт + Fix: notes) |
-| 5 попыток не дали ≥ 6 | ⚠️ fallback — берём лучшую |
+---
 
-### Форматы генерации:
-| Тип | Формат | Модель | agent_id |
-|-----|--------|--------|----------|
-| Ключевые кадры | 9:16 | Nano Banana 2 | A03 |
-| Обложки A/B | 9:16 | Nano Banana 2 | A05 |
+## 8. ГЕНЕРАЦИЯ — ПОЛНЫЙ ЦИКЛ
 
-### Пути к результатам:
+### Картинки (A03 Этап 1, A05):
+1. Агент пишет `banana_prompt` + `ref_ids`
+2. hooks.py → `generate_with_refs()` или `generate_image()`
+3. vision_client → PASS/REJECT (брак в `output/rejected/{project_id}/`)
+4. При REJECT: fix_hint → негатив → retry (max 5)
+5. Путь → `key_frames[].path`
+
+### Self-review (A03 Этап 2):
+1. hooks.py → `state["vision_images"]` = пути картинок
+2. pipeline → вызывает A03 с `chat_with_images`
+3. A03 пишет `self_assessment` по каждому кадру
+4. hooks.py → REJECTED кадры перегенерируются с `revised_prompt`
+
+### Анимация (hooks.py после A03 Этап 2):
+1. Читает `vizor_visual.key_frames[*].path` (картинка)
+2. Читает `vizor_visual.key_frames[*].wan_motion_prompt`
+3. `siliconflow_client.generate_video_with_retry()` → mp4
+4. Путь → `key_frames[].video_path`
+
+### Озвучка (hooks.py после A02):
+1. Музыка: `mimi_sound.suno_prompt` → `elevenlabs_client.generate_music()` → mp3
+2. SFX: `mimi_sound.sfx_map[]` → `elevenlabs_client.generate_sfx_batch()` → mp3
+3. VO: `stella_strategy.script.micro_script[].voiceover` → `siliconflow_client.generate_speech()` → mp3
+
+### Монтаж (hooks.py после A05):
+1. Читает `t5_deliverables` + клипы из `vizor_visual`
+2. Адаптирует в формат 006_MONTEUR
+3. `residents_manager.run_monteur_assembly()` → `ffmpeg` → `final.mp4`
+4. Результат: `output/render/{project_id}/final.mp4`
+
+---
+
+## 9. OTK — СТАНДАРТ КАЧЕСТВА
+
+| Слой | Инструмент | Вердикт | Брак |
+|------|-----------|---------|------|
+| Картинки | vision_client (Gemini) | PASS / REJECT | output/rejected/ |
+| Self-review | A03 сам | APPROVED / REJECTED | revised_prompt |
+| Клипы | — | — | — |
+| Звук | — | — | — |
+
+---
+
+## 10. СТРУКТУРА КЛЮЧЕЙ
+
+### `vizor_visual.key_frames[]` — АКТУАЛЬНАЯ (v4.0)
+```json
+{
+  "segment": "0-1.5s",
+  "purpose": "hook",
+  "shot_type": "close-up",
+  "composition": "rule_of_thirds",
+  "camera_move": "zoom-in",
+  "banana_prompt": "английский промпт для Nano Banana",
+  "ref_ids": ["char_xxx", "loc_xxx"],
+  "style_tags": ["из 10_Style_Matrix"],
+  "wan_motion_prompt": "английский промпт для Wan2.2 I2V",
+  "wan_camera_move": "zoom_in",
+  "wan_duration_sec": 4,
+  "path": null,
+  "video_path": null,
+  "quality_score": null,
+  "quality": null,
+  "self_assessment": null
+}
+```
+
+### `mimi_sound` — АКТУАЛЬНАЯ (v4.0)
+```json
+{
+  "audio_match": {"type": "original", "track": "...", "rationale": "..."},
+  "mood": {"bpm": 128, "emotion": "energetic", "instruments": ["bass", "synth"]},
+  "sfx_map": [
+    {"segment": "0-1.5s", "sfx": "whoosh", "purpose": "attract attention"}
+  ],
+  "beat_map": [
+    {"time_sec": 0.0, "beat": "DROP", "edit_note": "hook start"}
+  ],
+  "voiceover": {"needed": true, "tone": "energetic", "pace": "fast"},
+  "suno_prompt": "английский промпт для ElevenLabs",
+  "music_path": null,
+  "sfx_list": [],
+  "vo_lines": []
+}
+```
+
+---
+
+## 11. ПУТИ К РЕЗУЛЬТАТАМ
+
 ```
 output/generated/{project_id}/
-├── frame_01_{segment}_{purpose}.png
+├── frame_01_{segment}_{purpose}.png      ← картинки
 ├── frame_02_{segment}_{purpose}.png
-├── frame_03_{segment}_{purpose}.png
-├── frame_04_{segment}_{purpose}.png
-├── frame_05_{segment}_{purpose}.png
-├── thumb_variant_a.png
-└── thumb_variant_b.png
+├── clip_01_{segment}_{purpose}.mp4       ← клипы Wan2.2
+├── clip_02_{segment}_{purpose}.mp4
+├── thumb_variant_a.png                   ← обложки
+├── thumb_variant_b.png
+├── music_{project_id}.mp3               ← озвучка
+└── vo_{segment}.mp3
+
+output/render/{project_id}/
+└── final.mp4                            ← финальный ролик
+
+output/rejected/{project_id}/
+├── frame_01_attempt1.png                ← брак
+└── frame_01_attempt1.json               ← карточка брака
 ```
 
 ---
 
-## 9. ОБЩИЕ ПРАВИЛА (ВСЕ АГЕНТЫ)
+## 12. ОБЩИЕ ПРАВИЛА (ВСЕ АГЕНТЫ)
 
 1. Обращение к пользователю: **«Шеф»**
 2. Промпты генерации — на **АНГЛИЙСКОМ**
 3. Объяснения — на **русском**
-4. Формат видео: **9:16** (вертикальный) — горизонтальных кадров НЕ СУЩЕСТВУЕТ
+4. Формат видео: **9:16** (вертикальный)
 5. Проверка через `99_Self_Correction.txt` — обязательна
-6. Запрещённые слова — проверять по `22_Social_Forbidden_And_Safety.txt`
-7. Safe zone — проверять по `16B_Social_Platform_Specs.txt`
-8. Banana-промпты — СТРОГО по формуле «Слоёный пирог» из `03_Tech_Banana.txt`
-9. Veo 3 промпты — СТРОГО по формуле из `02B_Tech_Veo_Shorts.txt`
-10. Style tags — ТОЛЬКО из `10_Style_Matrix.txt`
-11. **🔴 JSON ВСЕГДА ПЕРВЫМ — до любого Markdown текста**
-12. **🔴 `path` в key_frames и thumbnail оставлять `null` — система заполнит**
-13. **🔴 worker_id в коде = A-нотация (A01–A05). В промптах — T-имена (T1 Стелла и т.д.)**
+6. Banana-промпты — СТРОГО по формуле «Слоёный пирог» из `03_Tech_Banana.txt`
+7. ~~Veo3 промпты~~ → **wan_motion_prompt** — краткое описание движения на английском
+8. Style tags — ТОЛЬКО из `10_Style_Matrix.txt`
+9. **🔴 JSON ВСЕГДА ПЕРВЫМ**
+10. **🔴 `path`, `video_path` — оставлять `null`**
+11. **🔴 `veo3_*` поля — УСТАРЕЛИ. Не использовать.**
+12. **🔴 Использовать: `wan_motion_prompt`, `wan_camera_move`, `wan_duration_sec`**
 
 ---
 
-## 10. PROJECT ID
-
-Формат: `TURBO_YYYYMMDD_XXX`
-- YYYYMMDD = дата создания
-- XXX = порядковый номер за день (001, 002...)
-
-Задаёт T1 Стелла (A01), наследуется всеми.
-Ключ в chain_data: `stella_strategy.project_id`
-
----
-
-## 11. СТАТУСЫ
-
-| Статус | Агент (имя / worker_id) | Значение |
-|--------|------------------------|----------|
-| `strategy_done` | T1 Стелла / A01 | завершил |
-| `sound_done` | T2 Мими / A02 | завершил |
-| `visual_done` | T3 Визор / A03 | завершил (кадры сгенерированы) |
-| `post-prod_done` | T4 Постпро / A04 | завершил |
-| `ready_to_publish` | T5 Финализатор / A05 | пакет готов (обложки + deliverables) |
-| `NEEDS_FIX` | — | требуется доработка (указать что) |
-
----
-
-## 12. MANIFEST.JSON — ЭТАЛОН
+## 13. MANIFEST.JSON — ЭТАЛОН
 
 ```json
 {
   "id": "turbo",
   "label": "⚡ TURBO Шортсы",
-  "icon": "⚡",
   "version": "2.0",
-  "description": "Быстрый конвейер шортсов: A01→(A02∥A03)→A04→A05",
   "run_type": "turbo",
-  "phases": {
-    "TURBO": ["A01","A02","A03","A04","A05"]
-  },
+  "phases": {"TURBO": ["A01","A02","A03","A04","A05"]},
   "turbo_workers": ["A01","A02","A03","A04","A05"],
   "turbo_parallel": [["A02","A03"]],
-  "checkpoint_after": [],
-  "stop_after": null,
-  "revision_loop": null,
-  "conflict_mode": "divergent",
   "qa_agent": "A05",
   "interaction_log": "economy/data/interaction_log_turbo.jsonl",
   "memory_layers": ["personal","project","runtime","interaction"]
@@ -286,53 +307,32 @@ output/generated/{project_id}/
 
 ---
 
-## 13. АРХИТЕКТУРА ПАМЯТИ (v3.1)
-
-Четыре слоя — стандарт студии:
+## 14. АРХИТЕКТУРА ПАМЯТИ
 
 ```
-Personal    → dna.json
-              sensory/sensory_memory.json
-              resonance/emotional_weights.json  ← отношения к коллегам
-              resonance/event_log.json          ← значимые события (Loka-Filter)
-              core/anchors.json
+Personal    → dna.json, sensory/sensory_memory.json
+              resonance/emotional_weights.json
+              resonance/event_log.json
 Project     → final_dna (A05 пишет в chain_data)
-Runtime     → chain_data (передаётся A01→A05)
+Runtime     → chain_data (A01→A05)
 Interaction → studio/economy/data/interaction_log_turbo.jsonl
 ```
 
-Что пишется автоматически после каждого рана:
-- `sensory_memory.json` каждого агента — рабочее событие
-- `interaction_log_turbo.jsonl` — передача данных между агентами
-- `dna.json` — Stress/Internal_Light через `sync_to_dna()`
-- `profile_vector` в `dna.json` — Character Drift при score ≥ 0.8
+---
 
-quality_score считается по `my_output` (не `deliverables`):
-- my_output есть, нет галлюцинаций → 0.8 (good_work)
-- my_output есть, есть галлюцинации → 0.5 (нейтрально)
-- нет my_output → 0.3 (bad_work)
+## 15. СРАВНЕНИЕ ВЕРСИЙ
+
+| Параметр | v3.1 | v4.0 |
+|----------|------|------|
+| Анимация | Veo3 (недоступен) | Wan2.2 I2V (SiliconFlow) |
+| Поля анимации | veo3_prompt / veo3_camera_motion | wan_motion_prompt / wan_camera_move |
+| ОТК картинок | Gemini score 1-10 | vision_client PASS/REJECT |
+| Self-review | ❌ | ✅ A03 смотрит сам |
+| Озвучка | Только промпты | ElevenLabs + CosyVoice реальные файлы |
+| Монтаж | ❌ | ✅ 006_MONTEUR → final.mp4 |
+| Выход | JSON-пакет | final.mp4 |
 
 ---
 
-## 14. СРАВНЕНИЕ ВЕРСИЙ
-
-| Параметр | v2.0 | v3.0 | v3.1 |
-|----------|------|------|------|
-| Модель генерации | Nano Banana | Nano Banana 2 | Nano Banana 2 |
-| Генерация кадров | Вручную | Авто (hooks.py) | Авто (hooks.py) |
-| Генерация обложек | Вручную | Авто (hooks.py) | Авто (hooks.py) |
-| Порядок вывода | MD → JSON | JSON → MD | JSON → MD |
-| `path` в JSON | Отсутствовал | `null` | `null` |
-| worker_id хуков | — | T3/T5 ❌ | A03/A05 ✅ |
-| agent_id биллинга | — | T3/T5 ❌ | A03/A05 ✅ |
-| Gemini QA | — | ✅ | ✅ |
-| Ретраи | — | до 5 | до 5 |
-| qa_agent | — | T5 ❌ | A05 ✅ |
-| Двойная нотация | — | не задокументирована | ✅ явно |
-| resonance-файлы | — | resonance_log ❌ | event_log ✅ |
-| manifest v2.0 | — | ✅ | ✅ |
-
----
-
-*Студия "Шесть пальцев" | Версия 3.1 | 2026-05-16*
-*A-нотация в системе, T-имена в промптах. hooks.py v3.2. Manifest v2.0.*
+*Студия "Шесть пальцев" | Версия 4.0 | 2026-06-02*
+*Wan2.2 I2V. Self-review. vision_client OTK. ElevenLabs. 006_MONTEUR.*
