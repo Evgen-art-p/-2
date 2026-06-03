@@ -26,7 +26,7 @@ CITY_STATE  = Path("studio/city_state.json")
 # ── Флаг: генерировать ли Картридж Намерений через Flash ──────
 # True = один LLM-вызов на GENIUS/NORMAL агента утром
 # False = только детерминированный режим (быстро, бесплатно)
-GENERATE_INTENTS = False  # включи когда будешь готов к токенам
+GENERATE_INTENTS = True   # агенты читают память и строят намерения
 
 
 # ════════════════════════════════════════════════════════════════
@@ -166,12 +166,68 @@ async def _generate_intent(
         stress  = float(dynamic.get("Stress",         0.0))
         light   = float(dynamic.get("Internal_Light", 0.8))
 
+        # ── Личная память из city_traces.json ────────────────────
+        memory_block = ""
+        try:
+            import json as _j
+            from pathlib import Path as _P
+            traces_path = _P("studio/city_traces.json")
+            if traces_path.exists():
+                traces = _j.loads(traces_path.read_text(encoding="utf-8"))
+
+                # Куда ходил
+                streaks = traces.get("location_streaks", {}).get(agent_name, [])
+                if streaks:
+                    locs = ", ".join(
+                        f"{s['location']} ({s['visits']}р, стресс {s['avg_stress']})" 
+                        for s in streaks[:3]
+                    )
+                    memory_block += f"Последние 30 дней ты чаще всего бывал: {locs}.\n"
+
+                # С кем встречался
+                meetings = traces.get("meeting_frequency", {})
+                my_pairs = [
+                    v for v in meetings.values()
+                    if v.get("agent_a") == agent_name or v.get("agent_b") == agent_name
+                ]
+                if my_pairs:
+                    top = my_pairs[0]
+                    partner = top["agent_b"] if top["agent_a"] == agent_name else top["agent_a"]
+                    memory_block += (
+                        f"Чаще всего встречался с {partner} "
+                        f"({top['meetings']}р, качество {top.get('avg_quality', '?')}).\n"
+                    )
+
+                # Что бормотал
+                themes = traces.get("voice_themes", {}).get(agent_name, [])
+                if themes:
+                    words = ", ".join(t["word"] for t in themes[:5])
+                    memory_block += f"Слова которые ты повторял: {words}.\n"
+
+                # Бунтовал ли
+                revolt = traces.get("revolt_patterns", {}).get(agent_name)
+                if revolt and revolt.get("revolts", 0) > 0:
+                    memory_block += (
+                        f"Последние дни: {revolt['revolts']} бунтов, "
+                        f"средний стресс при бунте {revolt.get('avg_stress_at_revolt', '?')}.\n"
+                    )
+        except Exception as _te:
+            pass
+        # ── END памяти ───────────────────────────────────────────
+
+        memory_section = (
+            f"\n=== ТВОИ СЛЕДЫ (последние 30 дней) ===\n{memory_block}"
+            f"=== КОНЕЦ СЛЕДОВ ===\n"
+        ) if memory_block else ""
+
         prompt = (
                 f"Ты — {agent_name}. {agent_profession}.\n"
-                f"Утро. Режим дня: {mode}. Стресс: {stress:.2f}. Энергия: {light:.2f}.\n\n"
-                f"Что тебя тянет сегодня? Набрось 2-3 намерения на свободное время.\n"
-                f"Каждое — локация или действие (Таверна / Маяк / Библиотека / домой / Гавань).\n\n"
-                f"Ответь ТОЛЬКО списком, без объяснений:\n"
+                f"Утро. Режим дня: {mode}. Стресс: {stress:.2f}. Энергия: {light:.2f}.\n"
+                f"{memory_section}\n"
+                f"Исходя из своей памяти и текущего состояния — что тебя тянет сегодня?\n"
+                f"Набрось 2-3 намерения на свободное время.\n"
+                f"Каждое — локация или действие. Отвечай от себя, не объясняй.\n\n"
+                f"Ответь ТОЛЬКО списком:\n"
                 f"1. ...\n2. ...\n3. ..."
             )
 
@@ -242,6 +298,13 @@ async def run_morning_checkout(
         finch_morning(on_progress=on_progress)
     except Exception as e:
         print(f"[CHECKOUT] ⚠ Финч не смог обойти сад: {e}")
+
+    # 📊 Следы города — Слой 2 (раз в сутки, если пульс обновился)
+    try:
+        from studio.city_traces import maybe_run_traces
+        maybe_run_traces(last_n_days=30)
+    except Exception as e:
+        print(f"[CHECKOUT] ⚠ city_traces: {e}")
 
 
     # Загружаем city_state (читаем night_results если есть)
@@ -318,8 +381,8 @@ async def run_morning_checkout(
                 pass
             # ── END ПУЛЬС ──
 
-            # Картридж Намерений — только GENIUS/NORMAL
-            if use_intents and mode in ("GENIUS", "NORMAL"):
+            # Картридж Намерений — все режимы получают личную память
+            if use_intents:
                 info_path = agent_dir / "info.json"
                 profession = ""
                 if info_path.exists():
