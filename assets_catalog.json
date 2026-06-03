@@ -29,6 +29,19 @@
       "client": "шесть_пальцев"
     },
     {
+      "id": "upload_1780520219_MONTEUR",
+      "name": "Monteur",
+      "category": "character",
+      "visual_anchor": "Загруженный файл: MONTEUR.png",
+      "mood": [],
+      "file_path": "C:\\Users\\Евгений\\Desktop\\студия 2\\runs\\2026-06-03_sandbox_episode_235628\\assets\\characters\\MONTEUR.png",
+      "file_name": "MONTEUR.png",
+      "subfolder": "characters",
+      "source": "upload",
+      "client": "_sandbox",
+      "ref_level": "inspiration"
+    },
+    {
       "id": "шесть_пальцев_1778366643_оле",
       "name": "Оле",
       "category": "character",

@@ -941,6 +941,19 @@ def _a05_record_ministry(state: dict) -> None:
 
     except Exception as e:
         print(f"[TURBO A05] ⚠ ministry.record_outcome: {e}")
+    finally:
+        # ── РАБОЧИЙ СТАТУС: агенты освобождены после рана ────────
+        try:
+            from studio.city_pulse import log_work_end as _lwe
+            _slot = state.get("_slot_id", "turbo")
+            _pid  = state.get("project_id", "")
+            for _aid in ["A01", "A02", "A03", "A04", "A05"]:
+                _lwe(agent=_aid, dept="turbo",
+                     slot_id=_slot, project_id=_pid, status="DONE")
+            print("[TURBO A05] 🏁 work_end → все 5 агентов turbo свободны")
+        except Exception:
+            pass
+        # ── END РАБОЧИЙ СТАТУС ──
 
 
 # ============================================================

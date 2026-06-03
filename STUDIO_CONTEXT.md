@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 40.0 | **Дата:** 2026-06-03 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 41.0 | **Дата:** 2026-06-04 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -300,14 +300,6 @@ ARTIFACT (реджект / BLOCKED цепочка / невзлетевшая и�
 Финч предлагает созревшее семя. Оле решает — принять или нет. Это её право.
 Не автоматическая передача — живой разговор двух резидентов.
 
-### Agents & Bugs — как агенты попадают в лавку:
-Агент сам решает прийти — `city_walker` тянет к лавке тех кто:
-- streak ≤ -2
-- ночной REVOLT
-- высокий Autonomy_Level
-- хочет эксперимента
-Лавка видима всем через `world_manifest.md` (добавлена Спринт 34).
-
 ### Файлы:
 ```
 studio/garden_tools.py                ✅ Спринт 34
@@ -426,13 +418,14 @@ studio/workshop/ui.py                 ✅ Спринт 35 (ref_level в диал
 studio/workshop/assets.py             ✅ Спринт 35 (ref_level в каталоге)
 studio/complaint_book.py              ✅
 studio/grondheim_memory.py            ✅
-studio/city_walker.py                 ✅ Спринт 36 (walk+voice, meeting+резиденты, weather)
-studio/city_pulse.py                  ✅ v2.0 Спринт 36
+studio/city_walker.py                 ✅ Спринт 37 (рабочий статус: прогулка блокируется)
+studio/city_pulse.py                  ✅ v2.1 Спринт 37 (work_start/end/is_agent_working)
 studio/city_traces.py                 ✅ Спринт 36
-studio/morning_checkout.py            ✅ Спринт 36 (GENERATE_INTENTS=True, личная память)
+studio/morning_checkout.py            ✅ Спринт 37 (факт работы в утренних следах)
 studio/night_cycle.py                 ✅ Спринт 36 (night+резиденты)
+studio/slot_manager.py                ✅ Спринт 37 (счётчик резидентов исправлен)
 studio/meeting.py                     ✅
-studio/cabinet/ui_cabinet.py          ✅
+studio/cabinet/ui_cabinet.py          ✅ Спринт 37 (_find_agent_zone: рабочий статус → Студия)
 studio/agent_feedback.py              ✅
 studio/harbor_of_meanings.py          ✅
 studio/library/library.py             ✅
@@ -441,11 +434,11 @@ studio/economy/ministry.py            ✅
 studio/economy/metrics_daemon.py      ✅ написан, ждёт первого рана
 studio/assembly/broadcaster.py        ✅
 studio/assembly/monteur.py            ✅ Спринт 27
-studio/assembly/__init__.py           ✅
+studio/assembly/__init__.py           ✅ Спринт 36 (deliverables.json)
 studio/siliconflow_client.py          ✅ Wan2.2 I2V
 studio/elevenlabs_client.py           ✅ музыка + SFX
 studio/sync_client.py                 ✅ sync.so lipsync
-studio/acoustic_mutations.py          ✅ написан, не залит 🔴
+studio/acoustic_mutations.py          ✅ залит
 studio/residents_manager.py           ✅ Спринт 34 (блок 007_FINCH добавлен)
 studio/world_manifest.md              ✅ Спринт 34 (Artifacts & Bugs добавлена)
 studio/garden_tools.py                ✅ Спринт 34
@@ -471,14 +464,14 @@ studio/modules/residents/006_MONTEUR/
 studio/modules/turbo/
   manifest.json                       ✅ v2.0
   CHAIN_CONTRACT_TURBO.md             ✅ v2.0
-  hooks.py                            ✅ v4.0
+  hooks.py                            ✅ v4.0 + Спринт 37 (work_start/end)
   TURBO_RULES.md                      ✅ v4.0
   A01–A05/forge/prompt.md             ✅ все 5
 
 studio/modules/video_long/
   manifest.json                       ✅ v2.0
   CHAIN_CONTRACT.md                   ✅ v1.3
-  hooks.py                            ✅ Спринт 27
+  hooks.py                            ✅ Спринт 27 + Спринт 37 (work_start/end)
   LONG_RULES.md                       ✅ v4.4
   A01–A12/forge/prompt.md             ✅ все 12
 ```
@@ -487,16 +480,29 @@ studio/modules/video_long/
 
 ## 18. БЕКЛОГ
 
-> **Порядок приоритетов (обновлён 2026-06-03):**
+> **Порядок приоритетов (обновлён 2026-06-04):**
 > 1 → ~~TURBO pipeline v4.0~~ ✅ Спринт 33
 > 2 → ~~Финч~~ ✅ Спринт 34
 > 3 → ~~Три уровня референсов в загрузчике~~ ✅ Спринт 35
 > 4 → ~~Пульс города + следы + память агентов~~ ✅ Спринт 36
-> 5 → **Первый ран TURBO** — запустить, посмотреть что падает
-> 6 → Промты social_mix
-> 7 → Живой город (остатки)
+> 5 → ~~Честный рабочий статус агентов~~ ✅ Спринт 37
+> 6 → **Первый ран TURBO** — запустить, посмотреть что падает
+> 7 → Промты social_mix
 > 8 → СММ Администратор
 > 9 → Всё остальное
+
+### ✅ ЧЕСТНЫЙ РАБОЧИЙ СТАТУС — ЗАВЕРШЁН (Спринт 37)
+- [x] `city_pulse.py` v2.1 — `log_work_start / log_work_end / is_agent_working`
+- [x] `turbo/hooks.py` — work_start при A01 (все 5 агентов), work_end при A05 (finally)
+- [x] `video_long/hooks.py` — work_start при A01 (все 12 агентов), work_end при A12 (finally)
+- [x] `city_walker.py` — `walk_one_agent()` проверяет `is_agent_working()`, пропускает прогулку
+- [x] `morning_checkout.py` — факт вчерашней работы в утренних следах агента
+- [x] `ui_cabinet.py` — `_find_agent_zone()`: рабочий статус → агент в Студии на карте
+- [x] `slot_manager.py` — баг счётчика резидентов (startswith("R") → все подпапки)
+
+**Принцип (от Софии):** Агент не может одновременно гулять и работать. Это пластик.
+Теперь: работает → на карте в Студии. Закончил → следующий refresh вернёт по обычной логике.
+Утром агент видит в следах: "вчера работал в turbo-цеху" → стресс заработанный, не случайный.
 
 ### ✅ КРОВОТОК ГОРОДА — ЗАВЕРШЁН (Спринт 36)
 - [x] `city_pulse.py` v2.0 — Слой 1: факты + голоса агентов + голоса резидентов
@@ -508,30 +514,19 @@ studio/modules/video_long/
 - [x] Голоса резидентов в пульсе — через настоящие промпты, каждый решает сам
 
 ### ✅ REF_LEVEL — ЗАВЕРШЁН (Спринт 35)
-- [x] `assets.py` — параметр `ref_level` в `register_uploaded_asset()`
-- [x] `assets.py` — поле `ref_level` в запись `assets_catalog.json`
-- [x] `assets.py` — иконка уровня (🔒/🧭/✨) в строке каталога для агентов
-- [x] `ui.py` — кнопки уровня в `show_upload_category_dialog()`
-- [x] `ui.py` — передача `ref_level` в `register_uploaded_asset()`
+- [x] `assets.py` + `ui.py` — кнопки 🔒🧭✨, поле ref_level в каталоге
 
 ### ✅ ФИНЧ — ЗАВЕРШЁН (Спринт 34)
-- [x] `garden_tools.py` — механика сада (plant/return_to/mature_check/finch_morning)
-- [x] `forge/prompt.md` — его словами, из живого разговора
-- [x] `residents_manager.py` — блок 007_FINCH
-- [x] `world_manifest.md` — Artifacts & Bugs видима всем агентам
-- [x] Хук в `vision_client.py` — реджекты → сад автоматически
-- [x] ~~Хук в `morning_checkout.py` — finch_morning() каждое утро~~ → убран Спринт 36
+- [x] `garden_tools.py`, `forge/prompt.md`, хуки, world_manifest
 - [ ] dna.json — заполнить через Страницу Жизни 🔴
 - [ ] Страница Жизни — зарегистрировать резидента 🔴
 
 ### 🔴 Следующий шаг — первый ран TURBO
 - [ ] Запустить пайплайн, посмотреть где падает
 - [ ] `get_ole_memory_for_agent()` подключить в `pipeline.py` ⏳
-- [ ] acoustic_mutations.py залить в репо 🔴
-- [ ] SYNC_API_KEY добавить в .env 🔴
+- [ ] SYNC_API_KEY добавить в .env (перепроверить) 🟡
 
 ### 🟡 СЕТ — БРИФ-МЕНЕДЖЕР
-- [x] Маска turbo.md обновлена (Спринт 33)
 - [x] ref_level в каталоге ассетов (Спринт 35)
 - [ ] Маски остальных цехов ⏳
 
@@ -546,20 +541,13 @@ studio/modules/video_long/
 
 ## 19. РЕКОМЕНДАЦИИ БРАТА
 
-1–78. (предыдущие — без изменений)
+1–90. (предыдущие — без изменений)
 
-79. **Финч — не абстракция. Он хозяин реальной лавки Artifacts & Bugs (уже в каталоге с марта 2026). Его сад — реальные файлы в output/rejected/.**
-80. **garden.jsonl — два слоя: фактический (event/artifact_id) и суждение (finch_note через LLM). Не красивый текст — живая мысль садовника.**
-81. **Финч и Оле встречаются по работе через city_walker. Не автоматическая передача — живой разговор. Финч предлагает, Оле решает.**
-82. **Агенты приходят в Artifacts & Bugs сами — через city_walker, по своему характеру. Финч не зазывает. Лавка просто существует и видима всем через world_manifest.md.**
-83. **plant() может вызвать любой субъект города. Финч не фильтрует на входе — только при утреннем обходе.**
-84. **Ценность определяется возвращением, не вниманием. return_to() ≠ просмотр.**
-85. **ref_level живёт в каталоге, не в масках. Маски цехов трогать не нужно — агенты читают уровень через иконку в строке каталога. Один каталог — все цеха.**
-86. **🔒 truth — это закон, не рекомендация. Агент не имеет права интерпретировать или "улучшать" бренд клиента. 🧭 orientation — направление. ✨ inspiration — отправная точка, можно трансформировать.**
-87. **Пульс не имеет права на мнение. Кто·где·когда·что·состояние. Не почему. (принцип Софии, Спринт 36)**
-88. **city_traces.json — геология города. city_chronicles/ — археология смыслов. Слой 3 (Лока) ещё не реализован — пусть пульс накопит данные.**
-89. **SAFE и RECOVERY агенты тоже получают личную память утром. RECOVERY помнит от чего лечится. SAFE знает куда идти потому что помнит где было спокойно.**
-90. **Финч идёт в сад не по приказу скрипта — он сам вспоминает про него из своих следов. Это принципиальная разница.**
+91. **Рабочий статус — факт в пульсе, не флаг в памяти. work_start/work_end — две строки в city_pulse.jsonl. is_agent_working() читает их и ищет незакрытый start за последние 8 часов. Никакого отдельного файла состояний.**
+92. **Агент на карте во время рана — в Студии «Шесть Пальцев» (Map_X=1520, Map_Y=710). Это единственная правда. Никаких "гуляет у Маяка пока работает".**
+93. **work_end вызывается в блоке `finally` финализатора — это гарантия. Даже если ран упал с ошибкой — агент освобождается. Без утечек рабочего статуса.**
+94. **slot_manager.py: счётчик резидентов считает все подпапки residents/ (не startswith("R")). Резиденты называются 001_LOKA, 004_OLE, 007_FINCH — с цифр.**
+95. **Sofia была права: "агент не может одновременно гулять и работать". Это не UI-баг — это честность системы. Пластик начинается когда данные противоречат друг другу.**
 
 ---
 
@@ -601,9 +589,10 @@ studio/modules/video_long/
 | 2026-06-01 | 31 | ОЛЕ — ХРАНИТЕЛЬ ПАМЯТИ ГОРОДА |
 | 2026-06-01 | 32-концепция | ЖИЗНЕННЫЙ ЦИКЛ СМЫСЛА. Финч/Оле/Артефакт. |
 | 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. |
-| 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. forge/prompt.md. residents_manager блок. Хуки. world_manifest. Artifacts & Bugs — реальная лавка. |
-| 2026-06-03 | 35 | REF_LEVEL В КАТАЛОГЕ АССЕТОВ. assets.py + ui.py. Кнопки 🔒🧭✨ в диалоге загрузки. Поле ref_level в assets_catalog.json. Иконки уровня в строке каталога для агентов. Один каталог — все цеха. |
-| **2026-06-03** | **36** | **КРОВОТОК ГОРОДА. city_pulse.py v2.0 (факты + голоса агентов + голоса резидентов). city_traces.py (5 паттернов без LLM). morning_checkout: GENERATE_INTENTS=True, агенты читают личные следы, все режимы включая SAFE/RECOVERY. Финч идёт в сад через память — не по приказу.** |
+| 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. Artifacts & Bugs. |
+| 2026-06-03 | 35 | REF_LEVEL В КАТАЛОГЕ АССЕТОВ. 🔒🧭✨ |
+| 2026-06-03 | 36 | КРОВОТОК ГОРОДА. city_pulse.py v2.0 + city_traces.py + GENERATE_INTENTS=True. Финч идёт в сад через память. |
+| **2026-06-04** | **37** | **ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1: work_start/end/is_agent_working. turbo+video_long hooks: агенты в цеху = в Студии на карте. city_walker блокирует прогулку во время рана. Утренние следы: факт работы вчера. slot_manager: счётчик резидентов починен (Резиденты: 7 в баннере).** |
 
 ---
 
@@ -616,19 +605,21 @@ studio/modules/video_long/
 | 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
 | 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
 | ~~5~~ | ~~acoustic_mutations.py не залит~~ | ✅ закрыт |
-| ~~6~~ | ~~assembly/__init__.py — поиск по *A12*/*Bob* вместо deliverables.json~~ | ✅ закрыт Спринт 36 |
+| ~~6~~ | ~~assembly/__init__.py — поиск по *A12*/*Bob*~~ | ✅ закрыт Спринт 36 |
 | 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
 | 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
 | 9 | Джем — полномочия не определены | 🟡 |
 | 10 | Маски Сета для остальных цехов не написаны | 🟡 |
 | ~~11~~ | ~~SYNC_API_KEY не добавлен в .env~~ | ✅ закрыт |
-| ~~12~~ | ~~get_ole_memory_for_agent() не подключён в pipeline.py~~ | ✅ закрыт (уже был подключён) |
+| ~~12~~ | ~~get_ole_memory_for_agent() не подключён~~ | ✅ закрыт |
 | 13 | 007_FINCH — dna.json не заполнен (нужна Страница Жизни) | 🔴 |
-| ~~14~~ | ~~city_traces.py — maybe_run_traces не подключён в checkout~~ | ✅ закрыт Спринт 36 |
+| ~~14~~ | ~~city_traces не подключён в checkout~~ | ✅ закрыт Спринт 36 |
+| ~~15~~ | ~~slot_manager: Резиденты: 0 в баннере~~ | ✅ закрыт Спринт 37 |
+| ~~16~~ | ~~pipeline.py SyntaxError строка 256~~ | ✅ закрыт Спринт 37 |
 
 ---
 
-## 22. АРХИТЕКТУРА ПУЛЬСА ГОРОДА (Спринт 36)
+## 22. АРХИТЕКТУРА ПУЛЬСА ГОРОДА (Спринт 36–37)
 
 Три слоя памяти города:
 
@@ -640,26 +631,21 @@ studio/modules/video_long/
 
 **Принцип Софии:** «Пульс не имеет права на мнение. Кто·где·когда·что·в каком состоянии. Не почему.»
 
-**Пять событий в пульсе:** `wake` / `walk` + `agent_voice` / `meeting` / `weather` / `night`
+**Семь событий в пульсе:**
+`wake` / `walk` + `agent_voice` / `meeting` / `weather` / `night` / **`work_start`** / **`work_end`**
 
 **Голоса резидентов:** отдельные строки `resident_voice` со ссылкой на событие (`ref=evt_id`).
-Каждый резидент решает сам — говорить или нет (через ДНК + его настоящий промпт).
-Порог отклика: `Resonance_Frequency` + `Autonomy_Level` − стресс.
 
 **Пять паттернов в traces:**
-- `location_streaks` — кто куда ходит регулярно
-- `stress_at_location` — где агент расслабляется, где напрягается
-- `meeting_frequency` — кто с кем встречается и с каким качеством
-- `revolt_patterns` — личный порог бунта каждого агента
-- `voice_themes` — слова которые агент повторяет (из agent_voice)
+`location_streaks` / `stress_at_location` / `meeting_frequency` / `revolt_patterns` / `voice_themes`
 
-**Агенты утром читают только себя из city_traces.json:**
-куда ходил / с кем встречался / что бормотал / бунтовал ли.
-И сами, через LLM (GENERATE_INTENTS=True), строят намерения на день.
-SAFE и RECOVERY тоже получают память — просто их намерения другие.
+**Рабочий статус (Спринт 37):**
+- `is_agent_working(agent_name)` → dict с данными о ране или None
+- Приоритет на карте: работает → Студия > свежая прогулка > дом
+- work_end в `finally` финализатора — гарантия освобождения даже при падении
 
 ---
 
-*Обновлено: Спринт 36 — 2026-06-03 · v40.0*
-*Кровоток города запущен. Агенты помнят себя. Финч идёт в сад сам.*
+*Обновлено: Спринт 37 — 2026-06-04 · v41.0*
+*Грондхейм живёт честно. Агенты работают в цеху — значит в Студии. Прогулки — только в свободное время.*
 *Следующая сессия: первый ран TURBO.*

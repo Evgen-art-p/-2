@@ -53,9 +53,21 @@ _DEFAULT_LOG = Path("studio/economy/data/interaction_log_video_long.jsonl")
 # ═══════════════════════════════════════════════════════════════════
 
 def on_before_agent(state: dict, worker_id: str, context: str) -> str:
-    """A01 — инъекция history_dna. Остальные — без изменений."""
+    """A01 — инъекция history_dna + work_start для всех агентов цеха."""
     if worker_id == "A01":
         context = _inject_history_dna(state, context)
+        # ── РАБОЧИЙ СТАТУС: все агенты video_long начинают работу ──
+        try:
+            from studio.city_pulse import log_work_start as _lws
+            _slot = state.get("_slot_id", "video_long")
+            _pid  = state.get("project_id", "")
+            for _aid in ["A01","A02","A03","A04","A05",
+                         "A06","A07","A08","A09","A10","A11","A12"]:
+                _lws(agent=_aid, dept="video_long", slot_id=_slot, project_id=_pid)
+            print(f"[VL] 🏭 work_start → все 12 агентов video_long в цеху")
+        except Exception as _we:
+            pass
+        # ── END РАБОЧИЙ СТАТУС ──
     return context
 
 
@@ -750,6 +762,20 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
 
     except Exception as e:
         print(f"[VL A12] ⚠ ministry.record_outcome: {e}")
+    finally:
+        # ── РАБОЧИЙ СТАТУС: все агенты video_long свободны ────────
+        try:
+            from studio.city_pulse import log_work_end as _lwe
+            _slot = state.get("_slot_id", "video_long")
+            _pid  = state.get("project_id", "")
+            for _aid in ["A01","A02","A03","A04","A05",
+                         "A06","A07","A08","A09","A10","A11","A12"]:
+                _lwe(agent=_aid, dept="video_long",
+                     slot_id=_slot, project_id=_pid, status="DONE")
+            print("[VL A12] 🏁 work_end → все 12 агентов video_long свободны")
+        except Exception:
+            pass
+        # ── END РАБОЧИЙ СТАТУС ──
 
 
 def _bob_collect_media(chain: dict, deliverables: dict):

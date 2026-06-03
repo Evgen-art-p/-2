@@ -372,7 +372,7 @@ def page_cabinet() -> None:
 
     def _find_agent_zone(agent, dept_id, last_walk_loc, locations_by_name):
         """Определить в какой зоне находится агент.
-        Приоритет: свежая прогулка (< 30 мин) > дом.
+        Приоритет: работает в цеху → Студия > свежая прогулка (< 30 мин) > дом.
         Резиденты → Высотка, рабочие → Квартал Мастеров.
         """
         def _fuzzy_find(keyword):
@@ -383,6 +383,19 @@ def page_cabinet() -> None:
                 if kw in clean or clean in kw:
                     return loc
             return None
+
+        # ── РАБОЧИЙ СТАТУС: агент в цеху → всегда в Студии ──────
+        try:
+            from studio.city_pulse import is_agent_working as _iaw
+            name = agent.get("Official_Name") or agent.get("label", "")
+            _work = _iaw(name)
+            if _work:
+                studio_loc = _fuzzy_find("Студия")
+                if studio_loc:
+                    return studio_loc
+        except Exception:
+            pass
+        # ── END РАБОЧИЙ СТАТУС ──
 
         # Если агент гулял — проверяем свежесть прогулки
         if last_walk_loc:

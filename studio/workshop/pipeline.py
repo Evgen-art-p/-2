@@ -253,8 +253,7 @@ def _get_colleague_relations(worker_id: str, dept: str, agent_ids: list) -> str:
     result = ["=== 🤝 ОТНОШЕНИЯ В ЦЕХЕ (из жизни города) ==="]
     result.extend(f"  • {line}" for line in lines)
     result.append("=== КОНЕЦ ОТНОШЕНИЙ ===")
-    return "
-".join(result)
+    return "\n".join(result)
 
 
 def build_settings_ctx(state: dict) -> str:

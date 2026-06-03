@@ -324,7 +324,7 @@ class SlotManager:
             return 0
         return sum(
             1 for d in residents_dir.iterdir()
-            if d.is_dir() and d.name.startswith("R")
+            if d.is_dir() and not d.name.startswith(".")
         )
 
     def summary(self) -> dict:
