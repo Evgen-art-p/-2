@@ -174,6 +174,13 @@ def update_city_weather():
         state["avg_stress"] = avg_stress  # сохраняем для UI
 
         print(f"[CITY] 🌤 Погода: avg_stress={avg_stress:.2f} → {state['weather']}")
+        # ── ПУЛЬС: weather ───────────────────────────────────────
+        try:
+            from studio.city_pulse import log_pulse as _lpw
+            _lpw("weather", weather=state["weather"], avg_stress=round(avg_stress, 3))
+        except Exception:
+            pass
+        # ── END ПУЛЬС ──
 
     save_city_state(state)
     return state
@@ -574,6 +581,33 @@ def compute_location_weights(
         # pull_vector бонус УБРАН — выбор по текущему состоянию агента
 
         weights[name] = round(max(0.02, w), 3)
+
+    # ══ ГЛОБАЛЬНОЕ СОБЫТИЕ · Суточный Тик ══
+    # Шеф объявил событие → одна локация получает буст для ВСЕХ агентов.
+    # Читаем из city_state.global_event_boost, применяем и не трогаем ttl здесь.
+    # TTL декрементируется в run_daily_tick после прогулки (в _clear_event_boost).
+    try:
+        _cs_ev = {}
+        if CITY_STATE.exists():
+            import json as _jev
+            _cs_ev = _jev.loads(CITY_STATE.read_text(encoding="utf-8"))
+        _boost = _cs_ev.get("global_event_boost", {})
+        _boost_loc   = _boost.get("location", "")
+        _boost_power = float(_boost.get("power", 0.0))
+        if _boost_loc and _boost_power > 0:
+            for _loc_name in list(weights.keys()):
+                if _loc_name == _boost_loc:
+                    old_w = weights[_loc_name]
+                    weights[_loc_name] = round(min(0.98, old_w + _boost_power), 3)
+                    print(
+                        f"[EVENT BOOST] 📢 {_boost_loc}: "
+                        f"+{_boost_power:.2f} "
+                        f"({old_w:.2f}→{weights[_loc_name]:.2f})"
+                    )
+                    break
+    except Exception as _ev_err:
+        pass
+    # ══ END ГЛОБАЛЬНОЕ СОБЫТИЕ ══
 
     # ══ КАРТРИДЖ НАМЕРЕНИЙ · Спринт 23 ══
     # Читаем утренние намерения агента из city_state.
@@ -1014,6 +1048,25 @@ async def walk_one_agent(agent: dict, city_state: dict,
     )
     if meeting:
         print(f"[CITY] 💬 {name} встретил {meeting['met']} в {meeting['location']}")
+        # ── ПУЛЬС: meeting + голоса резидентов ──────────────────
+        try:
+            from studio.city_pulse import log_pulse as _lpm, notify_residents as _nr
+            _dyn_m = dna.get("dynamic", {})
+            _ed = dict(
+                agent_a=name, agent_b=meeting["met"],
+                dept_a=workshop, location=meeting["location"],
+                type=meeting.get("type", ""),
+                quality=round(float(meeting.get("quality", 0.0)), 3),
+                stress_a=round(float(_dyn_m.get("Stress", 0.0)), 3),
+                known=meeting.get("known", False),
+                silent=meeting.get("silent", False),
+            )
+            _eid = _lpm("meeting", **_ed)
+            import threading as _th
+            _th.Thread(target=_nr, args=("meeting", _eid, _ed), daemon=True).start()
+        except Exception:
+            pass
+        # ── END ПУЛЬС ──
     # ══ END ПРОСТРАНСТВО ══
 
     # ═══ МАЯК ПРОБУЖДЕНИЯ: web_search если агент пришёл на Маяк ═══
@@ -1091,6 +1144,24 @@ async def walk_one_agent(agent: dict, city_state: dict,
         except Exception as e:
             print(f"[ГАВАНЬ] ❌ {name}: ошибка в Гавани — {e}")
             harbor_result = "Что-то помешало сосредоточиться в Гавани."
+
+    # ── ПУЛЬС: walk + agent_voice ────────────────────────────────
+    try:
+        from studio.city_pulse import log_pulse as _lp
+        _dyn_w = dna.get("dynamic", {})
+        _lp("walk",
+            agent=name, dept=workshop,
+            location=chosen_location,
+            stress=round(float(_dyn_w.get("Stress", 0.0)), 3),
+            light=round(float(_dyn_w.get("Internal_Light", 0.8)), 3),
+            weather=city_state.get("weather", ""),
+            mode=city_state.get("morning_modes", {})
+                .get(f"{folder}_{workshop}", {}).get("mode", ""),
+            agent_voice=response[:150] if response else "",
+        )
+    except Exception:
+        pass
+    # ── END ПУЛЬС ──
 
     # ── Память прогулки: единый формат · Спринт 21 ──
     # Переводим на record_sensory_event() — унификация двух форматов.

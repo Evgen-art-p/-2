@@ -470,6 +470,27 @@ async def run_night_cycle(
             # Применяем последствия
             _apply_night_decision(dna_path, dna, folder, dept, decision)
 
+            # ── ПУЛЬС: night + голоса резидентов ────────────────
+            try:
+                from studio.city_pulse import log_pulse as _lpn, notify_residents as _nr
+                _dyn_n = dna.get("dynamic", {})
+                _ed_n = dict(
+                    agent=agent_name, dept=dept, decision=decision,
+                    revolt_score=round(float(night.get("revolt_score", 0.0)), 3),
+                    stress=round(float(_dyn_n.get("Stress", 0.0)), 3),
+                    light=round(float(_dyn_n.get("Internal_Light", 0.8)), 3),
+                    resentment=round(float(night.get("resentment", 0.0)), 3),
+                )
+                _eid_n = _lpn("night", **_ed_n)
+                if decision in ("REVOLT", "RESTLESS"):
+                    import threading as _th
+                    _th.Thread(
+                        target=_nr, args=("night", _eid_n, _ed_n), daemon=True
+                    ).start()
+            except Exception:
+                pass
+            # ── END ПУЛЬС ──
+
             # Хроника бунта
             if decision == "REVOLT":
                 _write_revolt_chronicle(agent_name, folder, night["reason"])

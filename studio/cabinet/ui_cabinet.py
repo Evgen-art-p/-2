@@ -87,6 +87,8 @@ def page_cabinet() -> None:
         "residents_list": None, "city_zone": None,
         "search_input": None, "search_results": None,
         "right_tabs": {}, "right_panels": {},
+        "tick_btn": None,       # кнопка Суточного Тика
+        "event_input": None,    # поле ввода события
         # === CHRONICLES_PATCH:refs ===
         "chronicle_wrap": None,   # центр-обёртка вида хроники
         "chronicle_body": None,   # лента реплик
@@ -691,6 +693,115 @@ def page_cabinet() -> None:
             except Exception:
                 print(f"[NIGHT] ❌ {e}")
 
+
+    # ═══ СУТОЧНЫЙ ТИК ═══
+
+    async def _do_daily_tick():
+        """
+        Суточный Тик — один клик проживает весь день города.
+
+        Последовательность:
+          1. Утренний Чекаут (режимы + утренняя прогулка)
+          2. Вечерняя прогулка (квантовые цепочки)
+          3. Ночной цикл (Decay + Автономия)
+
+        Фаза WORK (пайплайны цехов) не затрагивается — это отдельное решение Шефа.
+        В конце открывает Хроники — читай что стряслось.
+        """
+        if state.get("_tick_running"):
+            ui.notify("⏳ Тик уже идёт...", type="warning")
+            return
+        state["_tick_running"] = True
+
+        # Блокируем кнопку визуально
+        tick_btn = refs.get("tick_btn")
+        if tick_btn:
+            tick_btn.style(
+                "opacity:0.5;cursor:not-allowed;"
+                "background:rgba(212,175,55,0.04);"
+                "border:1px solid rgba(212,175,55,0.12);"
+            )
+
+        try:
+            # ── Шаг 1: Утро ──────────────────────────────────────
+            await _do_morning_checkout()
+
+            # ── Шаг 2: Вечер ─────────────────────────────────────
+            await _do_evening_walk()
+
+            # ── Шаг 3: Ночь ──────────────────────────────────────
+            await _do_night_cycle()
+
+            # ── Финал: открываем хроники ──────────────────────────
+            _refresh_map()
+            reload_all_agents()
+            update_residents()
+            update_city_zone()
+            switch_tab("chronicles")
+            update_right_panel("chronicles")
+
+            ui.notify("✅ День прожит. Читай хроники.", type="positive")
+            print("[TICK] 🖐 Суточный тик завершён")
+
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            try:
+                ui.notify(f"❌ Тик упал: {e}", type="negative")
+            except Exception:
+                print(f"[TICK] ❌ {e}")
+        finally:
+            state["_tick_running"] = False
+            # Разблокируем кнопку
+            if tick_btn:
+                tick_btn.style(
+                    "opacity:1;cursor:pointer;"
+                    "background:rgba(212,175,55,0.08);"
+                    "border:1px solid rgba(212,175,55,0.35);"
+                    "color:#d4af37;"
+                )
+
+    def _announce_event():
+        """
+        Пустить слух — записать глобальное событие в city_state.json.
+        Выбранная локация получает временный буст веса для всех агентов.
+        Буст применяется при следующем Суточном Тике (ttl=1 тик).
+        """
+        event_text = (refs.get("event_input") and refs["event_input"].value or "").strip()
+        loc_name   = state.get("event_location", "")
+
+        if not event_text:
+            ui.notify("Напиши событие", type="warning")
+            return
+
+        try:
+            from studio.city_walker import load_city_state, save_city_state, add_city_event
+
+            city = load_city_state()
+
+            # Глобальный буст: локация получает +0.4 к весу на 1 тик
+            if loc_name:
+                city["global_event_boost"] = {
+                    "location": loc_name,
+                    "power":    0.40,
+                    "ttl":      1,          # сгорает после следующего тика
+                    "reason":   event_text,
+                }
+
+            save_city_state(city)
+            add_city_event(f"📢 {event_text}" + (f" → {loc_name}" if loc_name else ""))
+
+            # Сброс поля
+            if refs.get("event_input"):
+                refs["event_input"].set_value("")
+
+            msg = f"Слух пущен: «{event_text}»"
+            if loc_name:
+                msg += f" · агентов потянет в {loc_name}"
+            ui.notify(msg, type="positive")
+            _refresh_map()
+
+        except Exception as e:
+            ui.notify(f"⚠ {e}", type="negative")
 
     # ═══ RIGHT PANEL ═══
 
@@ -2063,6 +2174,90 @@ def page_cabinet() -> None:
                         ui.html('<span class="cab-map-title">🌆 грондхейм</span>')
                         refs["map_weather"] = ui.html('<span class="cab-map-weather">загрузка...</span>')
                         with ui.row().style("gap:6px"):
+                            # ── СУТОЧНЫЙ ТИК — главная кнопка ──────────────────
+                            _tick_el = ui.element("div").classes("cab-map-btn").style(
+                                "cursor:pointer;"
+                                "background:rgba(212,175,55,0.08);"
+                                "border:1px solid rgba(212,175,55,0.35);"
+                                "color:#d4af37;"
+                                "font-weight:700;"
+                                "font-size:0.72rem;"
+                                "padding:5px 14px;"
+                            ).on("click", lambda: ui.timer(0, _do_daily_tick, once=True))
+                            with _tick_el:
+                                ui.html("🖐 Тик")
+                            refs["tick_btn"] = _tick_el
+
+                            # ── РАЗДЕЛИТЕЛЬ ─────────────────────────────────────
+                            ui.html(
+                                '<div style="width:1px;height:20px;'
+                                'background:rgba(255,255,255,0.08);'
+                                'align-self:center;"></div>'
+                            )
+
+                            # ── ОБЪЯВИТЬ СОБЫТИЕ ────────────────────────────────
+                            with ui.element("div").style(
+                                "display:flex;align-items:center;gap:5px;"
+                                "background:rgba(108,80,200,0.04);"
+                                "border:1px solid rgba(108,80,200,0.18);"
+                                "border-radius:8px;padding:3px 8px;"
+                            ):
+                                refs["event_input"] = ui.input(
+                                    placeholder="📢 событие..."
+                                ).props("borderless dense").style(
+                                    "width:130px;"
+                                    "font-family:JetBrains Mono;font-size:0.6rem;"
+                                    "color:rgba(220,225,240,0.85);"
+                                    "background:transparent;"
+                                ).on("keydown.enter", lambda e: _announce_event())
+
+                                # Select локаций из каталога
+                                _locs = [
+                                    loc["name"]
+                                    for loc in _load_map_locations()
+                                ]
+                                state["event_location"] = _locs[0] if _locs else ""
+                                if _locs:
+                                    ui.select(
+                                        _locs,
+                                        value=_locs[0],
+                                        on_change=lambda e: state.update(
+                                            {"event_location": e.value}
+                                        ),
+                                    ).props("dense borderless dark options-dense").style(
+                                        "font-family:JetBrains Mono;font-size:0.58rem;"
+                                        "color:rgba(160,130,240,0.85);"
+                                        "min-width:100px;max-width:140px;"
+                                    )
+
+                                ui.element("div").classes("cab-map-btn").style(
+                                    "cursor:pointer;"
+                                    "background:rgba(108,80,200,0.10);"
+                                    "border:none;"
+                                    "color:rgba(160,130,240,0.9);"
+                                    "padding:3px 8px;"
+                                    "font-size:0.6rem;"
+                                ).on("click", lambda: _announce_event()).tooltip(
+                                    "Буст локации на 1 тик"
+                                )
+                                with ui.element("div").style(
+                                    "cursor:pointer;"
+                                    "color:rgba(160,130,240,0.9);"
+                                    "font-family:JetBrains Mono;font-size:0.6rem;"
+                                    "padding:2px 6px;"
+                                    "border-radius:4px;"
+                                    "background:rgba(108,80,200,0.10);"
+                                ).on("click", lambda: _announce_event()):
+                                    ui.html("пустить слух")
+
+                            # ── РАЗДЕЛИТЕЛЬ ─────────────────────────────────────
+                            ui.html(
+                                '<div style="width:1px;height:20px;'
+                                'background:rgba(255,255,255,0.06);'
+                                'align-self:center;"></div>'
+                            )
+
+                            # ── РУЧНЫЕ КНОПКИ (остаются для точечного управления)
                             with ui.element("div").classes("cab-map-btn walk").style("cursor:pointer").on(
                                 "click", lambda: ui.timer(0, _do_city_walk, once=True)
                             ):

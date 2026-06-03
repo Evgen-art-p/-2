@@ -673,6 +673,9 @@ def _bob_finalize(state: dict, human_text: str):
     _update_state(state, data)
     print("[EPISODE A12] ✅ deliverables собраны")
 
+    # Сохраняем deliverables на диск — Мастерская читает отсюда
+    _save_deliverables(state, deliverables)
+
     cultural_trace = _bob_cultural_trace(state)
     _bob_update_history_dna(state, my_output, cultural_trace)
     _bob_update_dna_json(state, my_output)
@@ -980,6 +983,60 @@ def _bob_fill_outcome_signal(state: dict, my_output: dict):
         print(f"[EPISODE A12] ✅ outcome_signal → patch-запись добавлена")
     except Exception as e:
         print(f"[EPISODE A12] ❌ Ошибка записи outcome_signal: {e}")
+
+
+# ═══════════════════════════════════════════════════════════════════
+# СОХРАНЕНИЕ DELIVERABLES НА ДИСК
+# ═══════════════════════════════════════════════════════════════════
+
+def _save_deliverables(state: dict, deliverables: dict) -> None:
+    """
+    Сохраняет deliverables в runs/{project_id}/deliverables.json.
+
+    Это единственный источник правды для Мастерской (assembly/__init__.py).
+    Записываем сюда всё что нужно UI:
+      - project_id, platform, slot_id
+      - video_clips (с video_path)
+      - key_frames (с path)
+      - thumbnail (variant_a/variant_b с path)
+      - audio (music.audio_path, sfx_list, vo_lines)
+      - saved_at — метка времени
+
+    Файл пишется атомарно: сначала во временный, потом переименовываем.
+    """
+    project_id = (
+        deliverables.get("project_id")
+        or state.get("project_id", "")
+    )
+    if not project_id:
+        print("[EPISODE A12] ⚠️  project_id пуст — deliverables.json не сохраняю")
+        return
+
+    runs_dir = Path("runs") / project_id
+    runs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Добавляем служебные поля для UI
+    payload = dict(deliverables)
+    payload["slot_id"]   = state.get("_slot_id", "video_long")
+    payload["saved_at"]  = datetime.datetime.utcnow().isoformat()
+
+    dest = runs_dir / "deliverables.json"
+    tmp  = runs_dir / "deliverables.json.tmp"
+
+    try:
+        tmp.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        tmp.replace(dest)
+        clips_ok = sum(1 for c in payload.get("video_clips", []) if c.get("video_path"))
+        clips_total = len(payload.get("video_clips", []))
+        print(f"[EPISODE A12] 💾 deliverables.json → {dest}  "
+              f"клипов: {clips_ok}/{clips_total}")
+    except Exception as e:
+        print(f"[EPISODE A12] ❌ deliverables.json не записан: {e}")
+        if tmp.exists():
+            tmp.unlink(missing_ok=True)
 
 
 # ═══════════════════════════════════════════════════════════════════

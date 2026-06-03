@@ -302,6 +302,21 @@ async def run_morning_checkout(
             mode = result["mode"]
             summary[mode] = summary.get(mode, 0) + 1
             count += 1
+            # ── ПУЛЬС: wake ──────────────────────────────────────
+            try:
+                from studio.city_pulse import log_pulse as _lp
+                _dyn = dna.get("dynamic", {})
+                _lp("wake",
+                    agent=agent_name, dept=dept,
+                    stress=round(float(_dyn.get("Stress", 0.0)), 3),
+                    light=round(float(_dyn.get("Internal_Light", 0.8)), 3),
+                    patience=round(float(_dyn.get("Patience", 1.0)), 3),
+                    mode=mode, streak=int(_dyn.get("streak", 0)),
+                    night_revolt=result.get("night_revolt", False),
+                )
+            except Exception:
+                pass
+            # ── END ПУЛЬС ──
 
             # Картридж Намерений — только GENIUS/NORMAL
             if use_intents and mode in ("GENIUS", "NORMAL"):

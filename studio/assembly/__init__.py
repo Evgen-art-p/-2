@@ -68,7 +68,7 @@ def _parse_bob_file(path: Path) -> dict | None:
 
 
 def _find_projects() -> list[dict]:
-    """Все проекты из runs/ с APPROVED от Боба."""
+    """Все проекты из runs/ у которых есть deliverables.json от Боба."""
     projects = []
     if not RUNS_DIR.exists():
         return projects
@@ -76,32 +76,36 @@ def _find_projects() -> list[dict]:
     for run_dir in sorted(RUNS_DIR.iterdir(), reverse=True):
         if not run_dir.is_dir():
             continue
-        bob_files = (
-            list(run_dir.glob("*A12*.md")) +
-            list(run_dir.glob("*[Bb]ob*.md"))
-        )
-        for bob_file in bob_files:
-            data = _parse_bob_file(bob_file)
-            if not data:
-                continue
-            deliverables = data.get("deliverables", {})
-            if not deliverables:
-                continue
-            final_dna  = data.get("my_output", {}).get("final_dna", {})
-            project_id = deliverables.get("project_id", run_dir.name)
-            assembly   = get_assembly_status(project_id)
-            projects.append({
-                "project_id":      project_id,
-                "platform":        deliverables.get("platform", "—"),
-                "slot":            final_dna.get("mode", "—").lower(),
-                "clips_count":     len(deliverables.get("video_clips", [])),
-                "frames_count":    len(deliverables.get("key_frames", [])),
-                "has_audio":       bool(deliverables.get("audio")),
-                "assembly_status": assembly.get("status", "NOT_ASSEMBLED"),
-                "deliverables":    deliverables,
-                "final_dna":       final_dna,
-            })
-            break  # один проект из папки
+
+        # Читаем deliverables.json — единственный источник правды
+        d_path = run_dir / "deliverables.json"
+        if not d_path.exists():
+            continue
+
+        try:
+            deliverables = json.loads(d_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"[МАСТЕРСКАЯ] ⚠️  {d_path}: не читается — {e}")
+            continue
+
+        if not deliverables:
+            continue
+
+        project_id = deliverables.get("project_id", run_dir.name)
+        assembly   = get_assembly_status(project_id)
+
+        projects.append({
+            "project_id":      project_id,
+            "platform":        deliverables.get("platform", "—"),
+            "slot":            deliverables.get("slot_id", "—"),
+            "clips_count":     len(deliverables.get("video_clips", [])),
+            "frames_count":    len(deliverables.get("key_frames", [])),
+            "has_audio":       bool(deliverables.get("audio")),
+            "assembly_status": assembly.get("status", "NOT_ASSEMBLED"),
+            "deliverables":    deliverables,
+            # final_dna оставляем пустым — он не нужен UI Мастерской
+            "final_dna":       {},
+        })
 
     return projects
 
