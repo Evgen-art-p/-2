@@ -66,7 +66,8 @@ def find_final_mds(force=False):
             try:
                 text = md.read_text(encoding="utf-8")
                 is_final = (
-                    md.name.startswith("A05")
+                    # A05+deliverables: turbo Финализатор (не Лукас storyboard)
+                    md.name.startswith("A05") and '"'"'deliverables'"'"' in text
                     or "final_dna" in text
                     or ("Финализатор" in md.name and ('"thumbnails"' in text or '"key_frames"' in text))
                 )

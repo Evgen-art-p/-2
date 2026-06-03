@@ -1581,6 +1581,41 @@ async def run_city_walk_evening(
     dept_label = workshops[0] if workshops and len(workshops) == 1 else "цех"
     add_city_event(f"Агенты {dept_label} вернулись с вечерней прогулки")
 
+    # ══ HIGHLIGHT: самые интересные встречи всплывают на карте · Задача 4 ══
+    # Читаем сегодняшние хроники — конфликты и спасения сразу видны Садовнику.
+    # Не надо идти в вкладку хроник вручную.
+    try:
+        import json as _hj
+        from datetime import datetime as _hdt
+        _today = _hdt.now().strftime("%Y-%m-%d")
+        _chron_dir = Path("studio/city_chronicles") / _today
+        if _chron_dir.exists():
+            _highlights = []
+            for _fp in sorted(_chron_dir.glob("*.json"), reverse=True)[:20]:
+                try:
+                    _sc = _hj.loads(_fp.read_text(encoding="utf-8"))
+                    if _sc.get("schema") != "meeting_v1":
+                        continue
+                    _itype = _sc.get("interaction", {}).get("type", "")
+                    if _itype in ("conflict", "rescue", "praise"):
+                        _p = _sc.get("participants", {})
+                        _a = _p.get("a", {}).get("name", "?")
+                        _b = _p.get("b", {}).get("name", "?")
+                        _loc = _sc.get("location", "")
+                        _icons = {"conflict": "⚡", "rescue": "🤝", "praise": "⭐"}
+                        _icon = _icons.get(_itype, "💬")
+                        _highlights.append(
+                            f"{_icon} {_itype}: {_a} и {_b} в {_loc}"
+                        )
+                except Exception:
+                    continue
+            for _hl in _highlights[:3]:  # не больше 3 в events
+                add_city_event(_hl)
+                print(f"[CITY] 📰 Highlight: {_hl}")
+    except Exception as _hl_err:
+        print(f"[CITY] ⚠ Highlight: {_hl_err}")
+    # ══ END HIGHLIGHT ══
+
     # ── Отчёт в daily_reports · Спринт 24 ──
     try:
         from studio.daily_reports import save_report as _save_rep

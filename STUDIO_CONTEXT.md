@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 38.0 | **Дата:** 2026-06-03 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 39.0 | **Дата:** 2026-06-03 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -385,9 +385,15 @@ clips_clip_review / audio_has_path / audio_review / timings_match
 ## 15а. СЕТ — БРИФ-МЕНЕДЖЕР (Спринт 28)
 
 **Три уровня референсов в брифе:**
-- 🔒 `truth` — бренд клиента
-- 🧭 `orientation` — рефы от заказчика
-- ✨ `inspiration` — внутренние эталоны студии
+- 🔒 `truth` — бренд клиента (нельзя менять — это закон)
+- 🧭 `orientation` — рефы от заказчика (направление, не догма)
+- ✨ `inspiration` — внутренние эталоны студии (дефолт при загрузке)
+
+**Реализация (Спринт 35):**
+Уровень задаётся при загрузке файла через Asset Bay — кнопки в диалоге.
+Хранится в `assets_catalog.json` как поле `ref_level` каждого ассета.
+Агенты видят уровень через иконку в строке каталога (🔒 / 🧭 / ✨).
+Работает для всех цехов — каталог единый, читается везде.
 
 ---
 
@@ -411,7 +417,8 @@ clips_clip_review / audio_has_path / audio_review / timings_match
 ```
 studio/cartridge.py                   ✅
 studio/workshop/pipeline.py           ✅ Спринт 25
-studio/workshop/ui.py                 ✅ Спринт 28
+studio/workshop/ui.py                 ✅ Спринт 35 (ref_level в диалоге загрузки)
+studio/workshop/assets.py             ✅ Спринт 35 (ref_level в каталоге)
 studio/complaint_book.py              ✅
 studio/grondheim_memory.py            ✅
 studio/city_walker.py                 ✅
@@ -435,6 +442,7 @@ studio/acoustic_mutations.py          ✅ написан, не залит 🔴
 studio/residents_manager.py           ✅ Спринт 34 (блок 007_FINCH добавлен)
 studio/world_manifest.md              ✅ Спринт 34 (Artifacts & Bugs добавлена)
 studio/garden_tools.py                ✅ Спринт 34
+assets_catalog.json                   ✅ поле ref_level (Спринт 35)
 
 studio/modules/residents/007_FINCH/
   forge/prompt.md                     ✅ Спринт 34
@@ -475,17 +483,24 @@ studio/modules/video_long/
 > **Порядок приоритетов (обновлён 2026-06-03):**
 > 1 → ~~TURBO pipeline v4.0~~ ✅ Спринт 33
 > 2 → ~~Финч~~ ✅ Спринт 34
-> 3 → **Первый ран TURBO** — запустить, посмотреть что падает
-> 4 → Сет — три уровня референсов в загрузчике воркшопа
+> 3 → ~~Три уровня референсов в загрузчике~~ ✅ Спринт 35
+> 4 → **Первый ран TURBO** — запустить, посмотреть что падает
 > 5 → Промты social_mix
 > 6 → Живой город (остатки)
 > 7 → СММ Администратор
 > 8 → Всё остальное
 
+### ✅ REF_LEVEL — ЗАВЕРШЁН (Спринт 35)
+- [x] `assets.py` — параметр `ref_level` в `register_uploaded_asset()`
+- [x] `assets.py` — поле `ref_level` в запись `assets_catalog.json`
+- [x] `assets.py` — иконка уровня (🔒/🧭/✨) в строке каталога для агентов
+- [x] `ui.py` — кнопки уровня в `show_upload_category_dialog()`
+- [x] `ui.py` — передача `ref_level` в `register_uploaded_asset()`
+
 ### ✅ ФИНЧ — ЗАВЕРШЁН (Спринт 34)
 - [x] `garden_tools.py` — механика сада (plant/return_to/mature_check/finch_morning)
 - [x] `forge/prompt.md` — его словами, из живого разговора
-- [x] `residents_manager.py` — блок 007_FINCH (get_finch_system_prompt, run_finch_morning и др.)
+- [x] `residents_manager.py` — блок 007_FINCH
 - [x] `world_manifest.md` — Artifacts & Bugs видима всем агентам
 - [x] Хук в `vision_client.py` — реджекты → сад автоматически
 - [x] Хук в `morning_checkout.py` — finch_morning() каждое утро
@@ -500,7 +515,7 @@ studio/modules/video_long/
 
 ### 🟡 СЕТ — БРИФ-МЕНЕДЖЕР
 - [x] Маска turbo.md обновлена (Спринт 33)
-- [ ] Три уровня референсов в загрузчике воркшопа ⏳
+- [x] ref_level в каталоге ассетов (Спринт 35)
 - [ ] Маски остальных цехов ⏳
 
 ### 🟡 ПРОМТЫ SOCIAL_MIX
@@ -523,6 +538,8 @@ studio/modules/video_long/
 82. **Агенты приходят в Artifacts & Bugs сами — через city_walker, по своему характеру. Финч не зазывает. Лавка просто существует и видима всем через world_manifest.md.**
 83. **plant() может вызвать любой субъект города. Финч не фильтрует на входе — только при утреннем обходе.**
 84. **Ценность определяется возвращением, не вниманием. return_to() ≠ просмотр.**
+85. **ref_level живёт в каталоге, не в масках. Маски цехов трогать не нужно — агенты читают уровень через иконку в строке каталога. Один каталог — все цеха.**
+86. **🔒 truth — это закон, не рекомендация. Агент не имеет права интерпретировать или "улучшать" бренд клиента. 🧭 orientation — направление. ✨ inspiration — отправная точка, можно трансформировать.**
 
 ---
 
@@ -563,8 +580,9 @@ studio/modules/video_long/
 | 2026-05-31 | 30в | АРТУР ФИНАЛЬНЫЙ. accept_material(). |
 | 2026-06-01 | 31 | ОЛЕ — ХРАНИТЕЛЬ ПАМЯТИ ГОРОДА |
 | 2026-06-01 | 32-концепция | ЖИЗНЕННЫЙ ЦИКЛ СМЫСЛА. Финч/Оле/Артефакт. |
-| 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. Саморазвивающаяся экосистема. |
-| **2026-06-03** | **34** | **ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА.** garden_tools.py. forge/prompt.md (его словами). residents_manager блок. Хуки vision_client + morning_checkout. world_manifest обновлён. Artifacts & Bugs — реальная лавка. Финч и Оле встречаются живо через city_walker. |
+| 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. |
+| 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. forge/prompt.md. residents_manager блок. Хуки. world_manifest. Artifacts & Bugs — реальная лавка. |
+| **2026-06-03** | **35** | **REF_LEVEL В КАТАЛОГЕ АССЕТОВ.** assets.py + ui.py. Кнопки 🔒🧭✨ в диалоге загрузки. Поле ref_level в assets_catalog.json. Иконки уровня в строке каталога для агентов. Один каталог — все цеха. |
 
 ---
 
@@ -588,6 +606,6 @@ studio/modules/video_long/
 
 ---
 
-*Обновлено: Спринт 34 — 2026-06-03 · v38.0*
-*Финч рождён. Сад открыт. Artifacts & Bugs — реальная лавка.*
-*Следующая сессия: первый ран TURBO → Сет референсы.*
+*Обновлено: Спринт 35 — 2026-06-03 · v39.0*
+*ref_level в каталоге. Три уровня референсов работают для всех цехов.*
+*Следующая сессия: первый ран TURBO.*

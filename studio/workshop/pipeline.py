@@ -172,6 +172,91 @@ def _get_lighthouse_knowledge(worker_id: str, dept: str) -> str:
         return ""
 
 
+def _get_colleague_relations(worker_id: str, dept: str, agent_ids: list) -> str:
+    """
+    Читает emotional_weights агента к коллегам по текущему цеху.
+    Возвращает текстовый блок для инжекта в контекст — или пустую строку.
+
+    Правило трёх каналов: только READ, никакой записи в DNA.
+    Это информационный инжект — агент знает с кем работает сегодня.
+
+    Пороги:
+      Тёплый союз:   warmth > 0.65 AND trust > 0.65
+      Холодок:       warmth < 0.35
+      Соперничество: rivalry > 0.50
+      Уважение:      respect > 0.75
+    """
+    if not _GRONDHEIM_ENABLED:
+        return ""
+    if not agent_ids:
+        return ""
+
+    try:
+        from studio.grondheim_memory import load_emotional_weights
+    except ImportError:
+        return ""
+
+    try:
+        weights = load_emotional_weights(worker_id, dept)
+    except Exception:
+        return ""
+
+    if not weights:
+        return ""
+
+    lines = []
+    for colleague_id in agent_ids:
+        if colleague_id == worker_id:
+            continue
+
+        rel = weights.get(colleague_id) or weights.get(colleague_id.upper())
+        if not rel:
+            continue
+
+        warmth  = float(rel.get("warmth",  0.5))
+        trust   = float(rel.get("trust",   0.5))
+        respect = float(rel.get("respect", 0.5))
+        rivalry = float(rel.get("rivalry", 0.0))
+        memory  = rel.get("memory", "")
+
+        notes = []
+
+        # Тёплый союз — работают слаженно
+        if warmth > 0.65 and trust > 0.65:
+            notes.append(f"с {colleague_id} тёплые отношения — вы слаженно работаете")
+            if memory:
+                notes.append(f"  (помнишь: {memory[:80]})")
+
+        # Глубокое уважение
+        elif respect > 0.75 and warmth >= 0.4:
+            notes.append(f"к {colleague_id} глубокое профессиональное уважение")
+
+        # Соперничество — не конфликт, но напряжение
+        elif rivalry > 0.50:
+            notes.append(
+                f"с {colleague_id} есть соперничество — "
+                "сосредоточься на своей задаче, не на нём"
+            )
+
+        # Холодок / напряжение
+        elif warmth < 0.35:
+            notes.append(
+                f"с {colleague_id} сейчас напряжение — "
+                "будь профессионален, не давай личному мешать работе"
+            )
+
+        lines.extend(notes)
+
+    if not lines:
+        return ""
+
+    result = ["=== 🤝 ОТНОШЕНИЯ В ЦЕХЕ (из жизни города) ==="]
+    result.extend(f"  • {line}" for line in lines)
+    result.append("=== КОНЕЦ ОТНОШЕНИЙ ===")
+    return "
+".join(result)
+
+
 def build_settings_ctx(state: dict) -> str:
     """Формирует блок PROJECT SETTINGS для агентов"""
     return (
@@ -219,6 +304,20 @@ def build_agent_context(
         if soul_ctx:
             context += soul_ctx + "\n\n"
 
+    # ══ Отношения с коллегами (из emotional_weights города) ══
+    _pipeline_agents = list(state.get("results", {}).keys())
+    # Добавляем агентов из manifest если есть
+    _manifest_agents = state.get("_agent_ids", [])
+    _all_colleagues = list(dict.fromkeys(_pipeline_agents + _manifest_agents))
+    if _all_colleagues:
+        _relations_ctx = _get_colleague_relations(
+            worker_id, state.get("active_dept", ""), _all_colleagues
+        )
+        if _relations_ctx:
+            context += _relations_ctx + "\n\n"
+            print(f"[RELATIONS] 🤝 {worker_id}: отношения с коллегами инжектированы")
+    # ══ END Отношения ══
+
     # ══ Рюкзак Знаний — данные с Маяка Пробуждения ══
     backpack = _get_lighthouse_knowledge(worker_id, state.get("active_dept", ""))
     if backpack:
@@ -236,6 +335,20 @@ def build_agent_context(
             context += harbor_ctx + "\n\n"
             print(f"[РЮКЗАК] ⚓ {worker_id} получил знания из Гавани ({len(harbor_ctx)} симв.)")
     # ══ END ══
+
+    # ══ Память города (Оле) — культурное ядро ══
+    # get_ole_memory_for_agent() ищет в city_memory.jsonl записи
+    # релевантные текущей задаче. Агент получает живую мудрость города.
+    try:
+        from studio.residents_manager import get_ole_memory_for_agent as _ole_mem
+        _ole_query = state.get("master_brief", "")[:200] or worker_id
+        _ole_ctx = _ole_mem(query=_ole_query, max_chars=1200)
+        if _ole_ctx:
+            context += _ole_ctx + "\n\n"
+            print(f"[ОЛЕ→РЮКЗАК] 🧠 {worker_id} получил память города")
+    except Exception as _ole_err:
+        print(f"[ОЛЕ] ⚠ {worker_id}: {_ole_err}")
+    # ══ END Оле ══
 
     context += settings_ctx
 

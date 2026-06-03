@@ -1554,6 +1554,54 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                 f'border-radius: 8px; padding: 10px 8px; font-weight: 700; font-size: 13px; cursor: pointer;'
             )
 
+            ui.label('Уровень референса').style(
+                'font-size: 11px; color: rgba(255,255,255,0.4); '
+                'letter-spacing: 0.08em; margin-bottom: 6px;'
+            )
+            _ref_selected = {'level': 'inspiration'}
+            _ref_btns = {}
+            _REF_LEVELS = {
+                'truth':       ('🔒', 'Truth',       '#ff6ec7', 'бренд клиента — нельзя менять'),
+                'orientation': ('🧭', 'Orientation', '#00d4ff', 'рефы от заказчика'),
+                'inspiration': ('✨', 'Inspiration', '#ffa500', 'внутренние эталоны студии'),
+            }
+            with ui.element('div').style(
+                'display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px;'
+            ):
+                def _make_ref_click(rid):
+                    def _on():
+                        _ref_selected['level'] = rid
+                        for _bid, _rb in _ref_btns.items():
+                            _ic, _lb, _co, _ = _REF_LEVELS[_bid]
+                            if _bid == rid:
+                                _rb.style(
+                                    f'background: {_co}22; color: {_co}; '
+                                    f'border: 2px solid {_co}; border-radius: 8px; '
+                                    f'padding: 8px 6px; font-weight: 700; font-size: 12px; cursor: pointer;'
+                                )
+                            else:
+                                _rb.style(
+                                    'background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.45); '
+                                    'border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; '
+                                    'padding: 8px 6px; font-size: 12px; cursor: pointer;'
+                                )
+                    return _on
+                for _rid, (_ic, _lb, _co, _hint) in _REF_LEVELS.items():
+                    _active = (_rid == 'inspiration')
+                    _style = (
+                        f'background: {_co}22; color: {_co}; '
+                        f'border: 2px solid {_co}; border-radius: 8px; '
+                        f'padding: 8px 6px; font-weight: 700; font-size: 12px; cursor: pointer;'
+                        if _active else
+                        'background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.45); '
+                        'border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; '
+                        'padding: 8px 6px; font-size: 12px; cursor: pointer;'
+                    )
+                    _rb = ui.button(f'{_ic} {_lb}', on_click=_make_ref_click(_rid)).props(
+                        'flat unelevated'
+                    ).style(_style).tooltip(_hint)
+                    _ref_btns[_rid] = _rb
+
             name_input = ui.input('Имя ассета', value=suggested_name).style(
                 'width: 100%; margin-bottom: 12px;'
             ).props('dark dense')
@@ -1571,6 +1619,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                         name=asset_name,
                         client_slug=state.get("current_client", "_sandbox"),
                         move_to_subfolder=True,
+                        ref_level=_ref_selected["level"],
                     )
 
                     final_path = _P(registered['file_path']) if registered else filepath

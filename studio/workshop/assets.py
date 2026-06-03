@@ -66,8 +66,11 @@ def _load_asset_catalog(force_reload: bool = False) -> str:
                 if isinstance(mood, list):
                     mood = ", ".join(mood[:3])
 
+                _rl = asset.get('ref_level', '')
+                _ri = {'truth': '🔒', 'orientation': '🧭', 'inspiration': '✨'}.get(_rl, '')
+                _rp = f'{_ri} ' if _ri else ''
                 lines.append(
-                    f"{asset.get('id','?')} | {asset.get('name','?')} | "
+                    f"{_rp}{asset.get('id','?')} | {asset.get('name','?')} | "
                     f"{asset.get('category','?')} | {anchor_short} | {mood}"
                 )
             lines.append("")
@@ -160,6 +163,7 @@ def register_uploaded_asset(
     mood: str = "",
     client_slug: str = "",
     move_to_subfolder: bool = True,
+    ref_level: str = "inspiration",
 ) -> dict | None:
     """
     Перемещает файл в подпапку категории,
@@ -210,6 +214,7 @@ def register_uploaded_asset(
             "subfolder": get_category_folder(category),
             "source": "upload",
             "client": client_slug or "_sandbox",
+            "ref_level": ref_level or "inspiration",
         }
 
         # Дедупликация
