@@ -11,8 +11,6 @@ SET_DIR = RESIDENTS_DIR / "003_LEGACY_SET"
 OLE_DIR    = RESIDENTS_DIR / "004_OLE"
 VICTOR_DIR  = RESIDENTS_DIR / "005_VICTOR"
 MONTEUR_DIR = RESIDENTS_DIR / "006_MONTEUR"
-FINCH_DIR   = RESIDENTS_DIR / "007_FINCH"
-
 
 _prompt_cache: dict = {}
 
@@ -252,110 +250,6 @@ def run_victor_critique(chain_data: str, dept: str = "") -> dict:
         "recommendation":    "",
     }
 
-
-
-# ============================================================
-# 007_FINCH
-# ============================================================
-
-def _load_finch_prompt() -> str:
-    """Загружает промпт Финча из forge/prompt.md."""
-    cache_key = "finch_prompt"
-    if cache_key in _prompt_cache:
-        return _prompt_cache[cache_key]
-    path = FINCH_DIR / "forge" / "prompt.md"
-    result = path.read_text(encoding="utf-8") if path.exists() else ""
-    _prompt_cache[cache_key] = result
-    return result
-
-
-def get_finch_system_prompt() -> str:
-    """Системный промпт Финча для LLM-вызовов."""
-    return _load_finch_prompt()
-
-
-def invalidate_finch_cache():
-    """Сбросить кеш промпта Финча."""
-    global _prompt_cache
-    _prompt_cache.pop("finch_prompt", None)
-
-
-def run_finch_morning(on_progress=None) -> dict:
-    """
-    Утренний обход сада Финча.
-    Финч думает о каждом семени вслух — через LLM.
-    Результат пишется в studio/garden.jsonl.
-
-    Вызывается из morning_checkout.py автоматически.
-    Можно вызвать вручную для диагностики.
-    """
-    try:
-        from studio.garden_tools import finch_morning
-        return finch_morning(on_progress=on_progress)
-    except Exception as e:
-        print(f"[ФИНЧ] ❌ run_finch_morning: {e}")
-        return {}
-
-
-def get_finch_garden_state() -> dict:
-    """
-    Возвращает текущее состояние сада для Кабинета.
-    seeds / growing / ole / compost / total
-    """
-    try:
-        from studio.garden_tools import get_garden_state
-        return get_garden_state()
-    except Exception as e:
-        print(f"[ФИНЧ] ❌ get_finch_garden_state: {e}")
-        return {"seeds": [], "growing": [], "ole": [], "compost": [], "total": 0}
-
-
-def finch_plant(
-    artifact_id: str,
-    title: str,
-    reason: str,
-    planted_by: str,
-    source: str = "manual",
-    context: dict = None,
-) -> dict:
-    """
-    Посадить семя в сад Финча.
-    Может вызвать любой субъект города.
-    """
-    try:
-        from studio.garden_tools import plant
-        return plant(
-            artifact_id=artifact_id,
-            title=title,
-            reason=reason,
-            planted_by=planted_by,
-            source=source,
-            context=context or {},
-        )
-    except Exception as e:
-        print(f"[ФИНЧ] ❌ finch_plant: {e}")
-        return {}
-
-
-def finch_return_to(
-    artifact_id: str,
-    returned_by: str,
-    context: str = "",
-) -> bool:
-    """
-    Зафиксировать возвращение к артефакту.
-    Возвращение ≠ просмотр. Только осознанное повторное обращение.
-    """
-    try:
-        from studio.garden_tools import return_to
-        return return_to(
-            artifact_id=artifact_id,
-            returned_by=returned_by,
-            context=context,
-        )
-    except Exception as e:
-        print(f"[ФИНЧ] ❌ finch_return_to: {e}")
-        return False
 
 # ============================================================
 # 006_MONTEUR

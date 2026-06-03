@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 37.0 | **Дата:** 2026-06-02 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 38.0 | **Дата:** 2026-06-03 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -21,10 +21,10 @@
 
 **Три кита системы:** Личность · Память · Экономика
 
-**Ключевая формулировка :**
-> «Шесть Пальцев» — это студия в городе "Грондхейм" **саморазвивающаяся агентная экосистема**, в которой память, опыт, культура и эксперименты постепенно изменяют поведение города без переобучения базовых моделей.
+**Ключевая формулировка:**
+> «Шесть Пальцев» — это студия в городе "Грондхейм" — **саморазвивающаяся агентная экосистема**, в которой память, опыт, культура и эксперименты постепенно изменяют поведение города без переобучения базовых моделей.
 
-ВАЖНО!!! Формула «Не город в Студии, а Студия в городе»!!!
+**ВАЖНО!!! Формула «Не город в Студии, а Студия в городе»!!!**
 
 Не самообучающаяся система (≠ fine-tuning, ≠ веса). Модель — двигатель, не субъект развития.
 Развивается система поверх моделей: DNA, sensory_memory, Strategy Registry, Cultural Trace, City Memory.
@@ -66,7 +66,7 @@
 | Агентов (полная ДНК) | 134 |
 | Цехов-картриджей | 11 + residents |
 | Локаций в каталоге | 13 |
-| Резидентов | 6 (Лока, Джем, Сет, Оле, Виктор, Монтажёр) |
+| Резидентов | 7 (Лока, Джем, Сет, Оле, Виктор, Монтажёр, **Финч**) |
 | Книг в Библиотеке | 9 |
 
 ---
@@ -89,7 +89,7 @@ studio/modules/{цех}/
 
 | Слот | Агентов | Manifest | hooks.py | Промты | Контракт |
 |------|---------|----------|----------|--------|----------|
-| turbo | 5 | ✅ v2.0 | ✅ **v4.0** | ✅ **A01–A05** | ✅ **v2.0** |
+| turbo | 5 | ✅ v2.0 | ✅ v4.0 | ✅ A01–A05 | ✅ v2.0 |
 | social_mix | 12 | ✅ v2.0 | ✅ v3.0 | ⏳ | ✅ |
 | video_long | 12 | ✅ v2.0 | ✅ Спринт 27 | ✅ Спринт 26 | ✅ v1.3 |
 | video_shorts | 12 | ✅ v2.0 | ✅ v2.0 | ✅ | ✅ |
@@ -136,7 +136,7 @@ QA-агент цеха (последний в цепочке) — внутрен
 **QA-агент — это роль, не имя.** У каждого цеха свой:
 - video_long → Боб (A12)
 - video_shorts → Тамб Том (A12)
-- turbo → T5 Финализатор (A05) ← **с Chain Integrity Check**
+- turbo → T5 Финализатор (A05) ← с Chain Integrity Check
 - social_mix → свой A12
 
 **QA-агент НЕ оценивает для Министерства. Это зона Демона.**
@@ -189,9 +189,10 @@ Ministry наблюдает → не управляет
 | Runtime Context | `chain_data` | Один прогон | Передаётся по цепи |
 | Interaction Layer | `interaction_log_{цех}.jsonl` | Накопительно | Цех (append-only) |
 | **City Memory** | **`studio/memory/city_memory.jsonl`** | **Постоянно** | **Оле (004_OLE)** |
+| **Garden Log** | **`studio/garden.jsonl`** | **Постоянно** | **Финч (007_FINCH)** |
 
-**Пишет только QA-агент своего цеха. Никто другой.**
 **City Memory — только Оле. Через четыре операции: remember / remind / release / decline.**
+**Garden Log — только Финч. Два слоя: фактический + суждение садовника.**
 
 ---
 
@@ -203,10 +204,10 @@ Ministry наблюдает → не управляет
 | Феликс (A08) video_long | mp4 клип | vision (grid) | `clip_assessment` |
 | Сэм (A10) video_long | аудио трек | `chat_with_audio()` | `audio_assessment` |
 | Трейси (A11) video_long | PNG обложки | vision | `thumbnail_assessment` |
-| **Визор (A03) turbo** | **PNG кадры** | **vision (self-review)** | **`self_assessment`** |
-| **Визор (A03) turbo** | **mp4 клипы** | **vision (grid)** | **`clip_assessment`** |
-| **Мими (A02) turbo** | **аудио трек** | **`chat_with_audio()`** | **`audio_assessment`** |
-| **Монтажёр** | **lipsync mp4** | **`accept_material()`** | **Пригоден для монтажа?** |
+| Визор (A03) turbo | PNG кадры | vision (self-review) | `self_assessment` |
+| Визор (A03) turbo | mp4 клипы | vision (grid) | `clip_assessment` |
+| Мими (A02) turbo | аудио трек | `chat_with_audio()` | `audio_assessment` |
+| Монтажёр | lipsync mp4 | `accept_material()` | Пригоден для монтажа? |
 
 **Принцип везде один: никто не оценивает чужую работу. PASS/REJECT — не оценка, а решение о пригодности.**
 
@@ -224,29 +225,22 @@ Ministry наблюдает → не управляет
 ЭТАП 4 — Смотрит ВЕСЬ финал (grid каждые 2 сек) → arthur_notes = свидетельство
 ```
 
-**Маски:** `video_long.md` ✅ · `turbo.md` ✅ **(новая, Спринт 33)**
+**Маски:** `video_long.md` ✅ · `turbo.md` ✅
 
 **Приоритеты аудио:** VO: 0 dB · SFX: -6 dB · Музыка: -12 dB (под VO) / -6 dB (без VO)
 
 ---
 
-## 11. ОЛЕ — ХРАНИТЕЛЬ ПАМЯТИ ГОРОДА (Спринт 31)
+## 11. ОЛЕ — ХРАНИТЕЛЬ КУЛЬТУРНОГО ЯДРА ГОРОДА (Спринт 31)
 
-**Ключевое уточнение (от Софии, 2026-06-02):**
-- Оле — не библиотека и не память вообще
 - Оле — **хранитель культурного ядра города**
 - Домен чётко: **только то, потеря чего делает город другим**
+- Финч и Оле — не конкуренты, а последовательные этапы:
+  Финч = пространство эксперимента → Оле = пространство доказанной ценности
+- Встречаются по работе через `city_walker` — у Библиотеки, живо, не по расписанию
 
-**Финч vs Оле — не конкуренты, а последовательные этапы:**
-- Финч = пространство эксперимента (не даёт умереть раньше времени)
-- Оле = пространство доказанной ценности (принимает когда ценность доказана)
+**Четыре операции:** `remember / remind / release / decline`
 
-**Четыре операции:**
-```
-remember / remind / release / decline
-```
-
-**Файлы:**
 ```
 studio/modules/residents/004_OLE/
   forge/prompt.md             ✅ Спринт 31
@@ -258,14 +252,79 @@ studio/residents_manager.py   ✅ (get_ole_memory_for_agent готов)
 
 ---
 
-## 12. ЖИЗНЕННЫЙ ЦИКЛ СМЫСЛА (Спринт 32 · концепция)
+## 12. ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА (Спринт 34) ✅
 
-**Финч = пространство эксперимента**
-**Оле = пространство доказанной ценности**
-**Цикл:** семя → память → почва → семя
+**Мистер Финч** — садовник студии. 60-65 лет. Джинсовый комбинезон, соломенная шляпа.
+Хозяин лавки **Artifacts & Bugs** (0010_ARTIFACTS_AND_BUGS — уже в каталоге с марта 2026).
 
-⚠️ Механизм (Лавочка, garden_tools.py, meaning_state) — Спринт 32.
-`studio/acoustic_mutations.py` написан, не залит в репо 🔴
+**Домен:** всё что не пошло в работу — реджекты, заблокированные цепочки, невзлетевшие идеи.
+**Его вопрос каждый день:** «А вдруг?»
+**Коронная фраза:** «Хаос — это просто сад, за которым давно не ухаживали»
+
+### Физика сада:
+
+```
+ARTIFACT (реджект / BLOCKED цепочка / невзлетевшая идея)
+    ↓  plant()           ← любой субъект города
+  SEED
+    ↓  return_to()       ← повторное обращение (не просмотр — возвращение)
+  GROWING
+    ↓  finch_morning()   ← Финч обходит сад каждое утро
+   /        \
+  yes        no
+   ↓          ↓
+  OLE      COMPOST
+```
+
+**Ключевой принцип (от Софии):**
+> Ценность идеи определяется не тем, как сильно её заметили.
+> А тем, захотел ли кто-нибудь к ней вернуться.
+
+### Два слоя в garden.jsonl:
+```json
+{
+  "event": "planted|returned|matured|composted",
+  "artifact_id": "...",
+  "planted_by": "A03_Vizor",
+  "finch_note": "Третий раз за неделю агенты пытаются решить одну задачу разными способами. Возможно, дело не в руках."
+}
+```
+`finch_note` — живая мысль садовника через LLM. Не отчёт. Не шаблон.
+
+### Связь с Оле:
+Финч и Оле встречаются по работе через `city_walker` — у Библиотеки.
+Финч предлагает созревшее семя. Оле решает — принять или нет. Это её право.
+Не автоматическая передача — живой разговор двух резидентов.
+
+### Agents & Bugs — как агенты попадают в лавку:
+Агент сам решает прийти — `city_walker` тянет к лавке тех кто:
+- streak ≤ -2
+- ночной REVOLT
+- высокий Autonomy_Level
+- хочет эксперимента
+Лавка видима всем через `world_manifest.md` (добавлена Спринт 34).
+
+### Файлы:
+```
+studio/garden_tools.py                ✅ Спринт 34
+studio/garden.jsonl                   ← создаётся автоматически
+studio/garden_seeds.json              ← создаётся автоматически
+studio/modules/residents/007_FINCH/
+  forge/prompt.md                     ✅ Спринт 34 (его словами)
+  dna.json                            ← заполняется через Страницу Жизни
+  core/anchor_points.md               ← заполняется через Страницу Жизни
+studio/residents_manager.py           ✅ блок 007_FINCH добавлен (Спринт 34)
+studio/world_manifest.md              ✅ Artifacts & Bugs добавлена (Спринт 34)
+```
+
+### Хуки (применены patch-скриптами):
+```
+vision_client._archive_rejected() → plant_from_rejection()
+  Каждый реджект автоматически попадает в сад Финча
+
+morning_checkout.run_morning_checkout() → finch_morning()
+  Финч обходит сад каждое утро и думает вслух через LLM
+```
 
 ---
 
@@ -273,39 +332,15 @@ studio/residents_manager.py   ✅ (get_ole_memory_for_agent готов)
 
 **Статус:** ✅ Все файлы залиты в репо. Готов к первому рану.
 
-### Что сделано в Спринте 33:
-
-**hooks.py v4.0** — полный конвейер до final.mp4:
-- `_a02_generate_audio()` — ElevenLabs музыка + SFX batch + CosyVoice VO (по образцу Сэма A10)
-- `_a02_apply_audio_review()` — Мими слушает трек, APPROVED/REJECTED, перегенерация
-- `_a03_generate_keyframes()` — Nano Banana + vision OTK (PASS/REJECT)
-- `_a03_apply_self_review()` — Визор смотрит на картинки, APPROVED/REJECTED
-- `_a03_generate_clips()` — Wan2.2 I2V по каждому кадру
-- `_build_clip_grids()` — ffmpeg нарезает mp4 на кадры → base64 для chat_with_images
-- `_a03_apply_clip_review()` — Визор смотрит на grid клипов, APPROVED/REJECTED
-- `_a05_generate_thumbnails_and_deliverables()` — обложки A/B + deliverables
-- `_monteur_after_a05()` — Chain Integrity Check → 006_MONTEUR → ffmpeg → final.mp4
-
-**Промты A01–A05** — все обновлены:
-- A02 Мими — двухэтапный (промпты + audio review)
-- A03 Визор — трёхэтапный (промпты + self-review картинок + clip-review)
-- A04 Постпро — `key_frames` (не `frames`), `wan_motion_prompt` (не `veo3_prompt`)
-- A05 Финализатор — Chain Integrity Check (7 пунктов) + final_dna + петля памяти
-
-**TURBO_RULES.md v4.0** — Wan2.2 вместо Veo3, все новые механики
-**CHAIN_CONTRACT_TURBO.md v2.0** — `wan_*` поля, audio структура, self_assessment, wan_clips
-**006_MONTEUR/forge/masks/turbo.md** — новая маска: 9:16, lipsync по наличию, смотрит финал
-**003_LEGACY_SET/forge/masks/turbo.md** — обновлена: Wan2.2, A05 QA, схема реального конвейера
-
 ### Архитектура TURBO:
 ```
 A01 Стелла → стратегия + сегменты
 A02 Мими   → промпты звука
   hooks → ElevenLabs (музыка + SFX) + CosyVoice (VO)
   Мими слушает трек → APPROVED/REJECTED
-A03 Визор  → промпты визуала  ⎤ ПАРАЛЛЕЛЬНО
+A03 Визор  → промпты визуала
   hooks → Nano Banana (PNG) → vision OTK
-  Визор смотрит на картинки → APPROVED/REJECTED    ⎦
+  Визор смотрит на картинки → APPROVED/REJECTED
   hooks → Wan2.2 I2V (mp4 клипы)
   Визор смотрит на grid клипов → APPROVED/REJECTED
 A04 Постпро → монтаж + retention + субтитры
@@ -314,37 +349,16 @@ A05 Финализатор → Chain Integrity Check (APPROVED/BLOCKED)
   hooks → 006_MONTEUR → ffmpeg → final.mp4 (9:16)
 ```
 
+### Chain Integrity Check (A05) — 7 пунктов:
+```
+frames_have_path / frames_self_review / clips_have_video_path /
+clips_clip_review / audio_has_path / audio_review / timings_match
+→ APPROVED → Монтажёр · BLOCKED → возврат цепочки
+```
+
 ### Поля анимации (Wan2.2 I2V):
-- `wan_motion_prompt` — что движется и как
-- `wan_camera_move` — движение камеры
-- `wan_duration_sec` — длительность клипа
-- ~~`veo3_prompt`, `veo3_camera_motion`, `veo3_duration_sec`~~ — УСТАРЕЛИ
-
-### Chain Integrity Check (A05):
-```
-frames_have_path          → PASS/FAIL
-frames_self_review        → все APPROVED?
-clips_have_video_path     → PASS/FAIL
-clips_clip_review         → все APPROVED?
-audio_has_path            → PASS/FAIL
-audio_review              → APPROVED?
-timings_match             → ±20%?
-→ chain_status: APPROVED → Монтажёр запускается
-→ chain_status: BLOCKED  → возвращает цепочку с failed_checks
-```
-
-### Выход TURBO:
-```
-output/generated/{project_id}/
-├── frame_*.png      ← Banana (с OTK + self-review)
-├── clip_*.mp4       ← Wan2.2 I2V (с clip-review)
-├── thumb_*.png      ← обложки
-├── music_*.mp3      ← ElevenLabs
-└── vo_*.mp3         ← CosyVoice
-
-output/render/{project_id}/
-└── final.mp4        ← ffmpeg через 006_MONTEUR
-```
+`wan_motion_prompt` · `wan_camera_move` · `wan_duration_sec`
+~~veo3_*~~ — УСТАРЕЛИ
 
 ---
 
@@ -361,10 +375,10 @@ output/render/{project_id}/
 | Лока | Душа студии, архитектура смыслов | ✅ |
 | Джем | — | ⏳ полномочия не определены |
 | Сет | Бриф-менеджер всех цехов | ✅ Спринт 28 |
-| Оле | **Хранитель культурного ядра города** | ✅ Спринт 31 |
+| Оле | Хранитель культурного ядра города | ✅ Спринт 31 |
 | Виктор | Резидент-критик, ХАРД-СТОП | ✅ |
 | Монтажёр | Настоящий LLM-агент, lipsync + сборка | ✅ Спринт 30 |
-| Финч | **Хранитель потенциала города** | ⏳ Спринт 32 |
+| **Финч** | **Хранитель потенциала, хозяин Artifacts & Bugs** | ✅ **Спринт 34** |
 
 ---
 
@@ -374,10 +388,6 @@ output/render/{project_id}/
 - 🔒 `truth` — бренд клиента
 - 🧭 `orientation` — рефы от заказчика
 - ✨ `inspiration` — внутренние эталоны студии
-
-**Маски обновлены:**
-- `video_long.md` ✅ Спринт 28
-- `turbo.md` ✅ **Спринт 33** (Wan2.2, A05 QA, реальный конвейер)
 
 ---
 
@@ -390,7 +400,7 @@ output/render/{project_id}/
 **Статус цехов по промтам:**
 - `video_long` — ✅ все 12
 - `video_shorts` — ✅ все 12
-- `turbo` — ✅ **все 5 (Спринт 33)**
+- `turbo` — ✅ все 5 (Спринт 33)
 - `social_mix` — ⏳
 - Остальные 7 цехов — ⏳
 
@@ -405,7 +415,7 @@ studio/workshop/ui.py                 ✅ Спринт 28
 studio/complaint_book.py              ✅
 studio/grondheim_memory.py            ✅
 studio/city_walker.py                 ✅
-studio/morning_checkout.py            ✅
+studio/morning_checkout.py            ✅ (+ finch_morning хук)
 studio/night_cycle.py                 ✅
 studio/meeting.py                     ✅
 studio/cabinet/ui_cabinet.py          ✅
@@ -422,29 +432,14 @@ studio/siliconflow_client.py          ✅ Wan2.2 I2V
 studio/elevenlabs_client.py           ✅ музыка + SFX
 studio/sync_client.py                 ✅ sync.so lipsync
 studio/acoustic_mutations.py          ✅ написан, не залит 🔴
-studio/residents_manager.py           ✅ Спринт 31
+studio/residents_manager.py           ✅ Спринт 34 (блок 007_FINCH добавлен)
+studio/world_manifest.md              ✅ Спринт 34 (Artifacts & Bugs добавлена)
+studio/garden_tools.py                ✅ Спринт 34
 
-studio/modules/turbo/
-  manifest.json                       ✅ v2.0
-  CHAIN_CONTRACT_TURBO.md             ✅ v2.0 (Спринт 33: wan_*, audio, self_assessment)
-  hooks.py                            ✅ v4.0 (Спринт 33: полный конвейер)
-  TURBO_RULES.md                      ✅ v4.0 (Спринт 33)
-  A01/forge/prompt.md                 ✅ (без изменений)
-  A02/forge/prompt.md                 ✅ v4.0 (Спринт 33: audio review)
-  A03/forge/prompt.md                 ✅ v4.0 (Спринт 33: self-review + clip-review)
-  A04/forge/prompt.md                 ✅ v2.0 (Спринт 33: wan_*, key_frames)
-  A05/forge/prompt.md                 ✅ v2.0 (Спринт 33: Chain Integrity Check)
-
-studio/modules/video_long/
-  manifest.json                       ✅ v2.0
-  CHAIN_CONTRACT.md                   ✅ v1.3
-  hooks.py                            ✅ Спринт 27
-  LONG_RULES.md                       ✅ v4.4
-  A01–A12/forge/prompt.md             ✅ все 12
-
-studio/modules/residents/003_LEGACY_SET/
-  forge/masks/video_long.md           ✅ Спринт 28
-  forge/masks/turbo.md                ✅ v2 (Спринт 33: Wan2.2, A05 QA)
+studio/modules/residents/007_FINCH/
+  forge/prompt.md                     ✅ Спринт 34
+  dna.json                            ← заполняется через Страницу Жизни
+  core/anchor_points.md               ← заполняется через Страницу Жизни
 
 studio/modules/residents/004_OLE/
   forge/prompt.md                     ✅ Спринт 31
@@ -453,36 +448,49 @@ studio/modules/residents/004_OLE/
 
 studio/modules/residents/006_MONTEUR/
   forge/prompt.md                     ✅ Спринт 30
-  forge/masks/video_long.md           ✅ Спринт 30
-  forge/masks/turbo.md                ✅ (Спринт 33: 9:16, lipsync по наличию)
+  forge/masks/video_long.md           ✅
+  forge/masks/turbo.md                ✅ Спринт 33
   dna.json                            ✅
   sensory/sensory_memory.json         ✅
+
+studio/modules/turbo/
+  manifest.json                       ✅ v2.0
+  CHAIN_CONTRACT_TURBO.md             ✅ v2.0
+  hooks.py                            ✅ v4.0
+  TURBO_RULES.md                      ✅ v4.0
+  A01–A05/forge/prompt.md             ✅ все 5
+
+studio/modules/video_long/
+  manifest.json                       ✅ v2.0
+  CHAIN_CONTRACT.md                   ✅ v1.3
+  hooks.py                            ✅ Спринт 27
+  LONG_RULES.md                       ✅ v4.4
+  A01–A12/forge/prompt.md             ✅ все 12
 ```
 
 ---
 
 ## 18. БЕКЛОГ
 
-> **Порядок приоритетов (обновлён 2026-06-02):**
+> **Порядок приоритетов (обновлён 2026-06-03):**
 > 1 → ~~TURBO pipeline v4.0~~ ✅ Спринт 33
-> 2 → **Первый ран TURBO** — запустить, посмотреть что падает
-> 3 → Сет — бриф-менеджер (все цеха) + три уровня референсов в загрузчике
-> 4 → Финч — резидент с доменом потенциала
+> 2 → ~~Финч~~ ✅ Спринт 34
+> 3 → **Первый ран TURBO** — запустить, посмотреть что падает
+> 4 → Сет — три уровня референсов в загрузчике воркшопа
 > 5 → Промты social_mix
 > 6 → Живой город (остатки)
 > 7 → СММ Администратор
 > 8 → Всё остальное
 
-### ✅ TURBO v4.0 — ЗАВЕРШЁН (Спринт 33)
-- [x] hooks.py v4.0 — полный конвейер до final.mp4
-- [x] A02 промпт — audio review (два этапа)
-- [x] A03 промпт — self-review + clip-review (три этапа)
-- [x] A04 промпт — wan_*, key_frames, wan_correction
-- [x] A05 промпт — Chain Integrity Check, final_dna
-- [x] TURBO_RULES.md v4.0
-- [x] CHAIN_CONTRACT_TURBO.md v2.0
-- [x] 006_MONTEUR/forge/masks/turbo.md
-- [x] 003_LEGACY_SET/forge/masks/turbo.md v2
+### ✅ ФИНЧ — ЗАВЕРШЁН (Спринт 34)
+- [x] `garden_tools.py` — механика сада (plant/return_to/mature_check/finch_morning)
+- [x] `forge/prompt.md` — его словами, из живого разговора
+- [x] `residents_manager.py` — блок 007_FINCH (get_finch_system_prompt, run_finch_morning и др.)
+- [x] `world_manifest.md` — Artifacts & Bugs видима всем агентам
+- [x] Хук в `vision_client.py` — реджекты → сад автоматически
+- [x] Хук в `morning_checkout.py` — finch_morning() каждое утро
+- [ ] dna.json — заполнить через Страницу Жизни 🔴
+- [ ] Страница Жизни — зарегистрировать резидента 🔴
 
 ### 🔴 Следующий шаг — первый ран TURBO
 - [ ] Запустить пайплайн, посмотреть где падает
@@ -494,12 +502,6 @@ studio/modules/residents/006_MONTEUR/
 - [x] Маска turbo.md обновлена (Спринт 33)
 - [ ] Три уровня референсов в загрузчике воркшопа ⏳
 - [ ] Маски остальных цехов ⏳
-
-### ⏳ ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА
-- [ ] Страница Жизни + forge/prompt.md
-- [ ] Лавочка — первый объект сада
-- [ ] `garden_tools.py`
-- [ ] Связь с Оле через `meaning_state`
 
 ### 🟡 ПРОМТЫ SOCIAL_MIX
 - [ ] 12 агентов по стандарту Спринта 26
@@ -513,18 +515,14 @@ studio/modules/residents/006_MONTEUR/
 
 ## 19. РЕКОМЕНДАЦИИ БРАТА
 
-1–68. (предыдущие — без изменений)
+1–78. (предыдущие — без изменений)
 
-69. **«Шесть Пальцев» — саморазвивающаяся агентная экосистема. Не самообучающаяся система. Модель — двигатель, не субъект развития.**
-70. **Оле — хранитель культурного ядра города. Не памяти вообще. Только то, потеря чего делает город другим.**
-71. **Финч = пространство эксперимента. Оле = пространство доказанной ценности. Не конкуренты — последовательные этапы.**
-72. **TURBO v4.0 готов к рану. hooks.py v4.0, все промты, Chain Integrity Check, Монтажёр с маской.**
-73. **Chain Integrity Check в TURBO — 7 пунктов. Все PASS → Монтажёр. Любой FAIL → BLOCKED, возврат цепочки.**
-74. **A03 Визор вызывается трижды: промпты → self-review картинок → clip-review клипов.**
-75. **A02 Мими вызывается дважды: промпты → audio review.**
-76. **Монтажёр в TURBO знает: 9:16, lipsync только для dialog shots с vo_path, смотрит финал через grid.**
-77. **veo3_* поля УСТАРЕЛИ. Только wan_motion_prompt, wan_camera_move, wan_duration_sec.**
-78. **t5_deliverables.wan_clips вместо veo3_prompts — переименовано в v2.0.**
+79. **Финч — не абстракция. Он хозяин реальной лавки Artifacts & Bugs (уже в каталоге с марта 2026). Его сад — реальные файлы в output/rejected/.**
+80. **garden.jsonl — два слоя: фактический (event/artifact_id) и суждение (finch_note через LLM). Не красивый текст — живая мысль садовника.**
+81. **Финч и Оле встречаются по работе через city_walker. Не автоматическая передача — живой разговор. Финч предлагает, Оле решает.**
+82. **Агенты приходят в Artifacts & Bugs сами — через city_walker, по своему характеру. Финч не зазывает. Лавка просто существует и видима всем через world_manifest.md.**
+83. **plant() может вызвать любой субъект города. Финч не фильтрует на входе — только при утреннем обходе.**
+84. **Ценность определяется возвращением, не вниманием. return_to() ≠ просмотр.**
 
 ---
 
@@ -565,7 +563,8 @@ studio/modules/residents/006_MONTEUR/
 | 2026-05-31 | 30в | АРТУР ФИНАЛЬНЫЙ. accept_material(). |
 | 2026-06-01 | 31 | ОЛЕ — ХРАНИТЕЛЬ ПАМЯТИ ГОРОДА |
 | 2026-06-01 | 32-концепция | ЖИЗНЕННЫЙ ЦИКЛ СМЫСЛА. Финч/Оле/Артефакт. |
-| 2026-06-02 | 33 | **TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР.** hooks.py v4.0. Все 5 промтов. Chain Integrity Check. Wan2.2. Audio/self/clip review. Монтажёр с маской turbo. Саморазвивающаяся экосистема (формулировка Софии). |
+| 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. Саморазвивающаяся экосистема. |
+| **2026-06-03** | **34** | **ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА.** garden_tools.py. forge/prompt.md (его словами). residents_manager блок. Хуки vision_client + morning_checkout. world_manifest обновлён. Artifacts & Bugs — реальная лавка. Финч и Оле встречаются живо через city_walker. |
 
 ---
 
@@ -585,9 +584,10 @@ studio/modules/residents/006_MONTEUR/
 | 10 | Маски Сета для остальных цехов не написаны | 🟡 |
 | 11 | SYNC_API_KEY не добавлен в .env | 🔴 |
 | 12 | get_ole_memory_for_agent() не подключён в pipeline.py | 🟡 |
+| 13 | 007_FINCH — dna.json не заполнен (нужна Страница Жизни) | 🔴 |
 
 ---
 
-*Обновлено: Спринт 33 — 2026-06-02 · v37.0*
-*TURBO v4.0 готов к первому рану. Саморазвивающаяся агентная экосистема.*
-*Следующая сессия: первый ран TURBO → Финч → Спринт 32.*
+*Обновлено: Спринт 34 — 2026-06-03 · v38.0*
+*Финч рождён. Сад открыт. Artifacts & Bugs — реальная лавка.*
+*Следующая сессия: первый ран TURBO → Сет референсы.*
