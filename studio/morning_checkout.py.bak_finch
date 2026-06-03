@@ -236,13 +236,6 @@ async def run_morning_checkout(
                 await result
 
     await log(f"🌅 Утренний Чекаут · {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    # 🌱 Финч обходит сад каждое утро
-    try:
-        from studio.garden_tools import finch_morning
-        finch_morning(on_progress=on_progress)
-    except Exception as e:
-        print(f"[CHECKOUT] ⚠ Финч не смог обойти сад: {e}")
-
 
     # Загружаем city_state (читаем night_results если есть)
     city_state = {}

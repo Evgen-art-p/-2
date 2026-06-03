@@ -142,21 +142,6 @@ def _archive_rejected(
         print(f"[ОТК архив] ⚠️  Не удалось записать карточку: {e}")
 
     print(f"[ОТК архив] 📁 Брак → {dest_file.relative_to(Path('.'))}")
-    # 🌱 Финч получает реджект — сажает в сад
-    try:
-        from studio.garden_tools import plant_from_rejection
-        plant_from_rejection(
-            archived_file=str(dest_file),
-            agent_id=agent_id,
-            reason=result.get("reason", ""),
-            original_prompt=original_prompt,
-            artifacts=result.get("artifacts", []),
-            fix_hint=result.get("fix_hint", ""),
-            project_id=project_id,
-        )
-    except Exception:
-        pass  # Финч не должен ломать ОТК
-
     return str(dest_file)
 
 
