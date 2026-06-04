@@ -874,20 +874,20 @@ def dashboard_page():
         )
 
     def render_council_grid():
-        """Центральная область Совета: плитки → чат → поле ввода внизу."""
+        """Центральная область в режиме Совета — плитки + чат."""
         el = refs["metrics_grid"]
         if not el:
             return
         el.clear()
         el.style(
             "display:flex;flex-direction:column;"
-            "gap:0;margin:0;flex:1;min-height:0;overflow:hidden;"
+            "gap:0;margin:0;flex:1;min-height:0;"
         )
         with el:
-            # ── Плитки резидентов ─────────────────────────────────────
+            # ── Четыре плитки резидентов вверху ──────────────────────
             with ui.element("div").style(
                 "display:grid;grid-template-columns:repeat(4,1fr);"
-                "gap:10px;padding:14px 20px 12px;flex-shrink:0;"
+                "gap:12px;padding:16px 20px 12px;flex-shrink:0;"
                 "border-bottom:1px solid rgba(99,130,255,0.08);"
             ):
                 for _res in COUNCIL_RESIDENTS:
@@ -897,82 +897,75 @@ def dashboard_page():
                     _color = _res["color"]
                     _ava   = _get_council_avatar(_rid)
                     _sel   = (state.get("council_resident") or {}).get("id") == _rid
-                    _bdr   = "1px solid " + _color + "99" if _sel else "1px solid rgba(99,130,255,0.12)"
-                    _bg    = "rgba(99,130,255,0.08)" if _sel else "rgba(99,130,255,0.03)"
-
-                    with ui.element("div").style(
+                    _border = "1px solid " + _color + "88" if _sel else "1px solid rgba(99,130,255,0.10)"
+                    _bg     = "rgba(99,130,255,0.07)" if _sel else "rgba(99,130,255,0.03)"
+                    _tile_style = (
                         "display:flex;flex-direction:column;align-items:center;"
                         "justify-content:center;padding:10px 6px;"
-                        "background:" + _bg + ";border:" + _bdr + ";"
-                        "border-radius:8px;cursor:pointer;user-select:none;"
-                        "min-height:80px;"
-                    ).on("click", lambda _, r=_res: (
-                        select_council_resident(r),
-                        render_council_grid(),
-                    )):
+                        "background:" + _bg + ";border:" + _border + ";"
+                        "border-radius:8px;cursor:pointer;"
+                    )
+                    _tile = ui.element("div").style(_tile_style)
+                    _tile.on("click", lambda _, r=_res: select_council_resident(r))
+                    with _tile:
                         if _ava:
-                            ui.html(
-                                "<div style='width:40px;height:40px;border-radius:50%;"
-                                "background-image:url("" + _ava + "");"
+                            _img_style = (
+                                "width:44px;height:44px;border-radius:50%;"
+                                "background-image:url('" + _ava + "');"
                                 "background-size:cover;background-position:center;"
-                                "margin-bottom:5px;flex-shrink:0;'></div>"
+                                "margin-bottom:6px;border:2px solid " + _color + "44;"
                             )
+                            ui.html("<div style='" + _img_style + "'></div>")
                         else:
-                            ui.html(
-                                "<div style='font-size:1.5rem;margin-bottom:5px;"
-                                "line-height:1;'>" + _emoji + "</div>"
-                            )
-                        ui.html(
-                            "<div style='font-family:JetBrains Mono;font-size:0.58rem;"
-                            "color:" + _color + ";font-weight:500;"
-                            "text-align:center;line-height:1.2;'>" + _label + "</div>"
+                            ui.html("<div style='font-size:1.6rem;margin-bottom:4px;'>" + _emoji + "</div>")
+                        _lbl_style = (
+                            "font-family:JetBrains Mono;font-size:0.6rem;"
+                            "color:" + _color + ";font-weight:600;text-align:center;"
                         )
+                        ui.html("<div style='" + _lbl_style + "'>" + _label + "</div>")
 
-            # ── Лента чата ────────────────────────────────────────────
-            refs["council_chat_el"] = ui.element("div").classes(
-                "council-chat-scroll"
-            ).style(
-                "flex:1;overflow-y:auto;padding:12px 20px;"
-                "scrollbar-width:thin;min-height:0;"
-            )
-            render_council_chat()
-
-            # ── Поле ввода внизу ──────────────────────────────────────
+            # ── Поле ввода ────────────────────────────────────────────
             with ui.element("div").style(
-                "padding:10px 20px 14px;flex-shrink:0;"
-                "border-top:1px solid rgba(99,130,255,0.08);"
-                "background:rgba(20,23,34,0.6);"
+                "padding:12px 20px 8px;flex-shrink:0;"
+                "border-bottom:1px solid rgba(99,130,255,0.08);"
             ):
                 with ui.row().style("gap:8px;align-items:flex-end;width:100%;"):
                     refs["council_input"] = ui.textarea(
-                        placeholder="задай вопрос резиденту... (выбери плитку выше)"
+                        placeholder="задай вопрос выбранному резиденту..."
                     ).props("borderless autogrow").style(
                         "flex:1;background:#141722;"
-                        "border:1px solid rgba(99,130,255,0.10);"
+                        "border:1px solid rgba(99,130,255,0.08);"
                         "border-radius:6px;color:rgba(220,225,240,0.92);"
-                        "font-family:JetBrains Mono;font-size:0.78rem;"
-                        "padding:8px 12px;min-height:42px;max-height:90px;"
+                        "font-family:JetBrains Mono;font-size:0.8rem;"
+                        "padding:8px 12px;min-height:44px;max-height:100px;"
                     )
                     refs["council_input"].on(
                         "keydown.ctrl.enter",
                         lambda e: send_council_message()
                     )
                     ui.button(
-                        "▶",
+                        "▶ спросить",
                         on_click=send_council_message,
                     ).style(
                         "background:rgba(108,140,255,0.12);"
                         "border:1px solid rgba(108,140,255,0.2);"
                         "color:#6c8cff;font-family:JetBrains Mono;"
-                        "font-size:0.7rem;padding:8px 14px;"
-                        "border-radius:6px;height:36px;flex-shrink:0;"
+                        "font-size:0.65rem;padding:8px 16px;"
+                        "border-radius:6px;height:36px;"
                     )
                 ui.html(
-                    "<div style='font-family:JetBrains Mono;font-size:0.48rem;"
-                    "color:rgba(140,150,180,0.3);margin-top:3px;'>"
-                    "Ctrl+Enter — отправить</div>"
+                    "<div style='font-family:JetBrains Mono;font-size:0.5rem;"
+                    "color:rgba(140,150,180,0.3);margin-top:4px;'>"
+                    "Ctrl+Enter · выбери резидента выше</div>"
                 )
 
+            refs["council_chat_el"] = ui.element("div").classes(
+                "council-chat-scroll"
+            ).style(
+                "flex:1;overflow-y:auto;padding:12px 20px;"
+                "scrollbar-width:thin;"
+            )
+            render_council_chat()
     async def send_council_message():
         """Произвольный вопрос к выбранному резиденту."""
         inp = refs.get("council_input")
@@ -1364,8 +1357,6 @@ def dashboard_page():
     def render_detail():
         el = refs["detail_panel"]
         if not el:
-            return
-        if state.get("center_view") == "council":
             return
         el.clear()
 
