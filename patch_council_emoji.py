@@ -1,52 +1,33 @@
 """
-patch_council_emoji.py — убирает аватары из плиток, везде эмодзи
+patch_council_emoji.py
+Убирает аватары из плиток — везде эмодзи.
+Заодно фиксит сломанный url() с кавычками.
 """
 import shutil, subprocess
 from pathlib import Path
 
 DASHBOARD = Path("studio/economy/ui_dashboard.py")
 
-OLD = '''                    with _tile:
-                        if _ava:
-                            _img_style = (
-                                "width:44px;height:44px;border-radius:50%;"
-                                "background-image:url('" + _ava + "');"
+OLD = '''                        if _ava:
+                            ui.html(
+                                "<div style='width:40px;height:40px;border-radius:50%;"
+                                "background-image:url("" + _ava + "");"
                                 "background-size:cover;background-position:center;"
-                                "margin-bottom:6px;border:2px solid " + _color + "44;"
+                                "margin-bottom:5px;flex-shrink:0;'></div>"
                             )
-                            ui.html("<div style='" + _img_style + "'></div>")
                         else:
-                            ui.html("<div style='font-size:1.6rem;margin-bottom:4px;'>" + _emoji + "</div>")
-                        _lbl_style = (
-                            "font-family:JetBrains Mono;font-size:0.6rem;"
-                            "color:" + _color + ";font-weight:600;text-align:center;"
-                        )
-                        ui.html("<div style='" + _lbl_style + "'>" + _label + "</div>")'''
+                            ui.html(
+                                "<div style='font-size:1.5rem;margin-bottom:5px;"
+                                "line-height:1;'>" + _emoji + "</div>"
+                            )'''
 
-NEW = '''                    with _tile:
-                        ui.html("<div style='font-size:1.6rem;margin-bottom:4px;line-height:1;'>" + _emoji + "</div>")
-                        _lbl_style = (
-                            "font-family:JetBrains Mono;font-size:0.6rem;"
-                            "color:" + _color + ";font-weight:600;text-align:center;"
-                        )
-                        ui.html("<div style='" + _lbl_style + "'>" + _label + "</div>")'''
+NEW = '''                        ui.html(
+                                "<div style='font-size:1.6rem;margin-bottom:5px;"
+                                "line-height:1;'>" + _emoji + "</div>"
+                            )'''
 
 src = DASHBOARD.read_text(encoding="utf-8")
-
-if OLD not in src:
-    print("❌ Блок не найден — ищем альтернативу")
-    # Ищем любой if _ava блок
-    if "if _ava:" in src:
-        import re
-        # Находим позицию
-        idx = src.find("                    with _tile:")
-        if idx != -1:
-            print(f"  Нашли 'with _tile:' на позиции {idx}")
-            snippet = src[idx:idx+600]
-            print(f"  Контекст:\n{snippet[:300]}")
-    else:
-        print("  'if _ava:' не найден вообще")
-else:
+if OLD in src:
     bak = DASHBOARD.with_suffix(".py.bak6")
     shutil.copy2(DASHBOARD, bak)
     src = src.replace(OLD, NEW)
@@ -57,4 +38,13 @@ else:
     else:
         print(f"❌ {r.stderr}")
         shutil.copy2(bak, DASHBOARD)
-        print("↩ Бэкап восстановлен")
+        print("↩ Бэкап")
+else:
+    print("❌ Блок не найден")
+    # Показываем что реально в файле вместо if _ava
+    idx = src.find("if _ava:")
+    if idx != -1:
+        print(f"Найден 'if _ava:' на позиции {idx}, контекст:")
+        print(repr(src[idx-100:idx+400]))
+    else:
+        print("'if _ava:' вообще не найден в файле")

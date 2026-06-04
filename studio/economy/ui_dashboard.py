@@ -910,16 +910,8 @@ def dashboard_page():
                         select_council_resident(r),
                         render_council_grid(),
                     )):
-                        if _ava:
-                            ui.html(
-                                "<div style='width:40px;height:40px;border-radius:50%;"
-                                "background-image:url("" + _ava + "");"
-                                "background-size:cover;background-position:center;"
-                                "margin-bottom:5px;flex-shrink:0;'></div>"
-                            )
-                        else:
-                            ui.html(
-                                "<div style='font-size:1.5rem;margin-bottom:5px;"
+                        ui.html(
+                                "<div style='font-size:1.6rem;margin-bottom:5px;"
                                 "line-height:1;'>" + _emoji + "</div>"
                             )
                         ui.html(

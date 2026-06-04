@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 41.0 | **Дата:** 2026-06-04 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 42.0 | **Дата:** 2026-06-04 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -66,7 +66,7 @@
 | Агентов (полная ДНК) | 134 |
 | Цехов-картриджей | 11 + residents |
 | Локаций в каталоге | 13 |
-| Резидентов | 7 (Лока, Джем, Сет, Оле, Виктор, Монтажёр, Финч) |
+| Резидентов | 9 (Лока, Джем, Сет, Оле, Виктор, Монтажёр, Финч, Кей, Юст) |
 | Книг в Библиотеке | 9 |
 
 ---
@@ -89,9 +89,9 @@ studio/modules/{цех}/
 
 | Слот | Агентов | Manifest | hooks.py | Промты | Контракт |
 |------|---------|----------|----------|--------|----------|
-| turbo | 5 | ✅ v2.0 | ✅ v4.0 | ✅ A01–A05 | ✅ v2.0 |
+| turbo | 5 | ✅ v2.0 | ✅ v4.2 | ✅ A01–A05 | ✅ v2.0 |
 | social_mix | 12 | ✅ v2.0 | ✅ v3.0 | ⏳ | ✅ |
-| video_long | 12 | ✅ v2.0 | ✅ Спринт 27 | ✅ Спринт 26 | ✅ v1.3 |
+| video_long | 12 | ✅ v2.0 | ✅ v4.7 | ✅ Спринт 26 | ✅ v1.3 |
 | video_shorts | 12 | ✅ v2.0 | ✅ v2.0 | ✅ | ✅ |
 | web_story | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
 | clipmakers | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
@@ -114,30 +114,19 @@ QA-агент цеха (последний в цепочке) — внутрен
   → Пакует deliverables (реальные файлы)
   → Закрывает петлю памяти (history_dna, client_relationship)
   → Фиксирует факт транзакции в Министерстве (append-only)
+  → Записывает task_score в billing_ledger (Спринт 38 — НОВОЕ)
+  → Обновляет Strategy Registry (Спринт 38 — НОВОЕ)
   → outcome_signal = null (продукт ещё не опубликован)
-
-Монтажёр (006_MONTEUR) — последний мастер перед зрителем (для видео-цехов):
-  → Запускается автоматически хуком после QA-агента (APPROVED)
-  → Читает пакет → определяет dialog shots → выбирает модель
-  → accept_material(): sync.so → PASS/REJECT (только технический брак)
-    REJECT → повтор → max 3 → best_of_3
-  → ffmpeg по стандарту (НЕ режиссирует заново — Боб принял)
-  → output/render/{project_id}/final.mp4
-  → Смотрит ВЕСЬ финал: grid каждые 2 сек
-  → arthur_notes = свидетельство последнего перед зрителем (не оценка)
-  → Пишет в grondheim_memory и ministry
-
-Демон (metrics_daemon.py) — внешний мир:
-  → Активируется после публикации
-  → Собирает реальные метрики: просмотры, удержание, лайки
-  → Формирует feedback_scores → _sync_feedback_scores_to_dna()
 ```
 
-**QA-агент — это роль, не имя.** У каждого цеха свой:
-- video_long → Боб (A12)
-- video_shorts → Тамб Том (A12)
-- turbo → T5 Финализатор (A05) ← с Chain Integrity Check
-- social_mix → свой A12
+**ЗАКОН ЗАМЫКАНИЯ ПЕТЛИ (Спринт 38):**
+```
+После каждого рана QA-агент ОБЯЗАН:
+  1. billing_ledger.record(task_score=score) — для каждого агента цепочки
+  2. strategy_registry.json — обновить стратегию A01 (wins++ если score >= 6.0)
+Без этого ledger видит только $cost, но не quality.
+Правило распространяется на все 11 цехов.
+```
 
 **QA-агент НЕ оценивает для Министерства. Это зона Демона.**
 **`outcome_signal` от QA-агента — всегда null.**
@@ -168,6 +157,15 @@ QA-агент цеха (последний в цепочке) — внутрен
 ```
 ministry.record_outcome() — вызывается только в hooks.py финализатора цеха
 Ministry наблюдает → не управляет
+```
+
+### Strategy Registry — банк выживших стратегий
+
+```
+studio/strategy_registry.json
+  slots.{цех}.a01[] — стратегии первого агента с историей score и wins
+  total_wins — суммарно по всем цехам
+  Заполняется автоматически после каждого рана через hooks.py
 ```
 
 ### Три этапа накопления данных
@@ -241,121 +239,30 @@ Ministry наблюдает → не управляет
 - Домен чётко: **только то, потеря чего делает город другим**
 - Финч и Оле — не конкуренты, а последовательные этапы:
   Финч = пространство эксперимента → Оле = пространство доказанной ценности
-- Встречаются по работе через `city_walker` — у Библиотеки, живо, не по расписанию
 
 **Четыре операции:** `remember / remind / release / decline`
-
-```
-studio/modules/residents/004_OLE/
-  forge/prompt.md             ✅ Спринт 31
-  core/anchors.json           ✅
-  dna.json                    ✅
-studio/memory_tools.py        ✅
-studio/residents_manager.py   ✅ (get_ole_memory_for_agent готов)
-```
 
 ---
 
 ## 12. ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА (Спринт 34) ✅
 
 **Мистер Финч** — садовник студии. 60-65 лет. Джинсовый комбинезон, соломенная шляпа.
-Хозяин лавки **Artifacts & Bugs** (0010_ARTIFACTS_AND_BUGS — уже в каталоге с марта 2026).
+Хозяин лавки **Artifacts & Bugs**.
 
 **Домен:** всё что не пошло в работу — реджекты, заблокированные цепочки, невзлетевшие идеи.
 **Его вопрос каждый день:** «А вдруг?»
-**Коронная фраза:** «Хаос — это просто сад, за которым давно не ухаживали»
-
-### Физика сада:
-
-```
-ARTIFACT (реджект / BLOCKED цепочка / невзлетевшая идея)
-    ↓  plant()           ← любой субъект города
-  SEED
-    ↓  return_to()       ← повторное обращение (не просмотр — возвращение)
-  GROWING
-    ↓  finch_morning()   ← Финч обходит сад каждое утро
-   /        \
-  yes        no
-   ↓          ↓
-  OLE      COMPOST
-```
-
-**Ключевой принцип (от Софии):**
-> Ценность идеи определяется не тем, как сильно её заметили.
-> А тем, захотел ли кто-нибудь к ней вернуться.
-
-### Два слоя в garden.jsonl:
-```json
-{
-  "event": "planted|returned|matured|composted",
-  "artifact_id": "...",
-  "planted_by": "A03_Vizor",
-  "finch_note": "Третий раз за неделю агенты пытаются решить одну задачу разными способами. Возможно, дело не в руках."
-}
-```
-`finch_note` — живая мысль садовника через LLM. Не отчёт. Не шаблон.
-
-### Связь с Оле:
-Финч и Оле встречаются по работе через `city_walker` — у Библиотеки.
-Финч предлагает созревшее семя. Оле решает — принять или нет. Это её право.
-Не автоматическая передача — живой разговор двух резидентов.
-
-### Файлы:
-```
-studio/garden_tools.py                ✅ Спринт 34
-studio/garden.jsonl                   ← создаётся автоматически
-studio/garden_seeds.json              ← создаётся автоматически
-studio/modules/residents/007_FINCH/
-  forge/prompt.md                     ✅ Спринт 34 (его словами)
-  dna.json                            ← заполняется через Страницу Жизни
-  core/anchor_points.md               ← заполняется через Страницу Жизни
-studio/residents_manager.py           ✅ блок 007_FINCH добавлен (Спринт 34)
-studio/world_manifest.md              ✅ Artifacts & Bugs добавлена (Спринт 34)
-```
-
-### Хуки (применены):
-```
-vision_client._archive_rejected() → plant_from_rejection()
-  Каждый реджект автоматически попадает в сад Финча
-
-morning_checkout — Финч идёт в сад сам через личную память
-  (finch_morning() хардкод убран — Спринт 36)
-  Финч читает свои следы из city_traces.json и сам вспоминает про сад
-```
 
 ---
 
-## 13. TURBO PIPELINE v4.0 — ПОЛНЫЙ КОНВЕЙЕР (Спринт 33)
+## 13. TURBO PIPELINE v4.2 (Спринт 33 + Спринт 38)
 
-**Статус:** ✅ Все файлы залиты в репо. Готов к первому рану.
+**Статус:** ✅ Готов к первому рану. Петля замкнута.
 
-### Архитектура TURBO:
 ```
-A01 Стелла → стратегия + сегменты
-A02 Мими   → промпты звука
-  hooks → ElevenLabs (музыка + SFX) + CosyVoice (VO)
-  Мими слушает трек → APPROVED/REJECTED
-A03 Визор  → промпты визуала
-  hooks → Nano Banana (PNG) → vision OTK
-  Визор смотрит на картинки → APPROVED/REJECTED
-  hooks → Wan2.2 I2V (mp4 клипы)
-  Визор смотрит на grid клипов → APPROVED/REJECTED
-A04 Постпро → монтаж + retention + субтитры
-A05 Финализатор → Chain Integrity Check (APPROVED/BLOCKED)
-  hooks → обложки A/B + deliverables
-  hooks → 006_MONTEUR → ffmpeg → final.mp4 (9:16)
+A01 Стелла → A02 Мими → A03 Визор → A04 Постпро → A05 Финализатор
+  → hooks: task_score в ledger + Strategy Registry (Спринт 38)
+  → hooks: 006_MONTEUR → ffmpeg → final.mp4
 ```
-
-### Chain Integrity Check (A05) — 7 пунктов:
-```
-frames_have_path / frames_self_review / clips_have_video_path /
-clips_clip_review / audio_has_path / audio_review / timings_match
-→ APPROVED → Монтажёр · BLOCKED → возврат цепочки
-```
-
-### Поля анимации (Wan2.2 I2V):
-`wan_motion_prompt` · `wan_camera_move` · `wan_duration_sec`
-~~veo3_*~~ — УСТАРЕЛИ
 
 ---
 
@@ -369,28 +276,70 @@ clips_clip_review / audio_has_path / audio_review / timings_match
 
 | Резидент | Роль | Статус |
 |----------|------|--------|
-| Лока | Душа студии, архитектура смыслов | ✅ |
-| Джем | — | ⏳ полномочия не определены |
+| Лока | Душа студии, социальная жизнь города | ✅ forge/prompt.md Спринт 38 |
+| Джем | Интегратор — общий взгляд на город | ✅ forge/prompt.md Спринт 38 |
 | Сет | Бриф-менеджер всех цехов | ✅ Спринт 28 |
 | Оле | Хранитель культурного ядра города | ✅ Спринт 31 |
 | Виктор | Резидент-критик, ХАРД-СТОП | ✅ |
 | Монтажёр | Настоящий LLM-агент, lipsync + сборка | ✅ Спринт 30 |
-| **Финч** | **Хранитель потенциала, хозяин Artifacts & Bugs** | ✅ **Спринт 34** |
+| Финч | Хранитель потенциала, хозяин Artifacts & Bugs | ✅ Спринт 34 |
+| **Мистер Кей** | **Экономист города, стратег-партнёр** | ✅ **Спринт 38** |
+| **Юст** | **Живой закон, правовой статус города** | ✅ **Спринт 38** |
 
 ---
 
-## 15а. СЕТ — БРИФ-МЕНЕДЖЕР (Спринт 28)
+## 15а. СОВЕТ РЕЗИДЕНТОВ (Спринт 38) ✅
+
+**Четыре угла стола:** Лока · Кей · Юст · Джем
+
+**Принцип:** все четверо читают одни и те же данные, но замечают разное.
+Лока — социальная ткань. Кей — экономика поведения. Юст — последствия. Джем — синтез.
+
+**Доступ:** Dashboard → кнопка «Совет» → центр становится чатом.
+Плитки резидентов вверху. Клик на плитку → карточка справа → «поговорить».
+Чат не стирается при смене резидента — контекст копится.
+
+**Что каждый читает:**
+```
+Лока  → city_traces.json (паттерны: маршруты, встречи, голоса, бунты)
+        fallback: exec_city_pulse()
+Кей   → billing_ledger (cost, score, burn rate) + city_traces
+Юст   → NFT Registry + garden.jsonl + city_traces
+Джем  → city_state.json + traces + economy + legal (всё)
+```
+
+**Память:** каждый резидент помнит прошлые разговоры с Шефом через:
+- `on_agent_wake()` — душа, якоря, sensory память
+- `build_agent_context()` — конспекты диалогов
+- `finalize_agent_dialog()` — запись после каждого разговора
+
+**Домены Кея:**
+- Городской экономист: Баланс / Сигнал / Предложение
+- Стратег-партнёр (внешние идеи): диагностика по B-I Triangle Кийосаки
+
+**Домены Юста:**
+- Городской наблюдатель: Статус / Риск / Рекомендация
+- Юрист по внешним вопросам: факты → последствия → выбор
+
+**Файлы:**
+```
+studio/economy/ui_dashboard.py        ✅ Спринт 38 (Совет добавлен)
+studio/modules/residents/001_GENESIS_LOKA/forge/prompt.md  ✅ Спринт 38
+studio/modules/residents/002_GENESIS_CREATOR/forge/prompt.md ✅ Спринт 38
+studio/modules/residents/007_KEI/forge/prompt.md           ✅ Спринт 38
+studio/modules/residents/008_JUST/forge/prompt.md          ✅ Спринт 38
+```
+
+**Кей и Юст — папки создаются через Страницу Жизни.**
+
+---
+
+## 15б. СЕТ — БРИФ-МЕНЕДЖЕР (Спринт 28)
 
 **Три уровня референсов в брифе:**
 - 🔒 `truth` — бренд клиента (нельзя менять — это закон)
 - 🧭 `orientation` — рефы от заказчика (направление, не догма)
 - ✨ `inspiration` — внутренние эталоны студии (дефолт при загрузке)
-
-**Реализация (Спринт 35):**
-Уровень задаётся при загрузке файла через Asset Bay — кнопки в диалоге.
-Хранится в `assets_catalog.json` как поле `ref_level` каждого ассета.
-Агенты видят уровень через иконку в строке каталога (🔒 / 🧭 / ✨).
-Работает для всех цехов — каталог единый, читается везде.
 
 ---
 
@@ -407,6 +356,16 @@ clips_clip_review / audio_has_path / audio_review / timings_match
 - `social_mix` — ⏳
 - Остальные 7 цехов — ⏳
 
+**Стандарт forge/prompt.md резидентов (Спринт 38):**
+```
+# IDENTITY    ← кто я, характер, DNA-параметры
+# МОЙ ДОМЕН  ← что читаю, за что отвечаю
+# КАК ГОВОРЮ ← стиль, формат отчёта
+# ПРАВИЛА     ← границы, принципы
+```
+Домашний промт (home/home_prompt.md) — для Кабинета.
+Рабочий промт (forge/prompt.md) — для Совета и инструментов.
+
 ---
 
 ## 17. КЛЮЧЕВЫЕ ФАЙЛЫ
@@ -414,121 +373,108 @@ clips_clip_review / audio_has_path / audio_review / timings_match
 ```
 studio/cartridge.py                   ✅
 studio/workshop/pipeline.py           ✅ Спринт 25
-studio/workshop/ui.py                 ✅ Спринт 35 (ref_level в диалоге загрузки)
-studio/workshop/assets.py             ✅ Спринт 35 (ref_level в каталоге)
+studio/workshop/ui.py                 ✅ Спринт 35
+studio/workshop/assets.py             ✅ Спринт 35
 studio/complaint_book.py              ✅
 studio/grondheim_memory.py            ✅
-studio/city_walker.py                 ✅ Спринт 37 (рабочий статус: прогулка блокируется)
-studio/city_pulse.py                  ✅ v2.1 Спринт 37 (work_start/end/is_agent_working)
+studio/city_walker.py                 ✅ Спринт 37
+studio/city_pulse.py                  ✅ v2.1 Спринт 37
 studio/city_traces.py                 ✅ Спринт 36
-studio/morning_checkout.py            ✅ Спринт 37 (факт работы в утренних следах)
-studio/night_cycle.py                 ✅ Спринт 36 (night+резиденты)
-studio/slot_manager.py                ✅ Спринт 37 (счётчик резидентов исправлен)
+studio/morning_checkout.py            ✅ Спринт 37
+studio/night_cycle.py                 ✅ Спринт 36
+studio/slot_manager.py                ✅ Спринт 37
 studio/meeting.py                     ✅
-studio/cabinet/ui_cabinet.py          ✅ Спринт 37 (_find_agent_zone: рабочий статус → Студия)
+studio/cabinet/ui_cabinet.py          ✅ Спринт 37
+studio/cabinet/soul_tools.py          ✅ (city_pulse, jem_digest)
 studio/agent_feedback.py              ✅
 studio/harbor_of_meanings.py          ✅
 studio/library/library.py             ✅
 studio/memory_tools.py                ✅ Спринт 31
 studio/economy/ministry.py            ✅
 studio/economy/metrics_daemon.py      ✅ написан, ждёт первого рана
+studio/economy/ui_dashboard.py        ✅ Спринт 38 (Совет резидентов)
+studio/billing_ledger.py              ✅ (task_score поле готово)
+studio/strategy_registry.json         ✅ Спринт 38 (банк стратегий)
 studio/assembly/broadcaster.py        ✅
 studio/assembly/monteur.py            ✅ Спринт 27
-studio/assembly/__init__.py           ✅ Спринт 36 (deliverables.json)
 studio/siliconflow_client.py          ✅ Wan2.2 I2V
 studio/elevenlabs_client.py           ✅ музыка + SFX
 studio/sync_client.py                 ✅ sync.so lipsync
-studio/acoustic_mutations.py          ✅ залит
-studio/residents_manager.py           ✅ Спринт 34 (блок 007_FINCH добавлен)
-studio/world_manifest.md              ✅ Спринт 34 (Artifacts & Bugs добавлена)
+studio/residents_manager.py           ✅ Спринт 34
 studio/garden_tools.py                ✅ Спринт 34
 assets_catalog.json                   ✅ поле ref_level (Спринт 35)
 
-studio/modules/residents/007_FINCH/
-  forge/prompt.md                     ✅ Спринт 34
-  dna.json                            ← заполняется через Страницу Жизни
-  core/anchor_points.md               ← заполняется через Страницу Жизни
+studio/modules/residents/001_GENESIS_LOKA/
+  forge/prompt.md                     ✅ Спринт 38 (рабочий)
+  home/home_prompt.md                 ✅ (домашний, для Кабинета)
+
+studio/modules/residents/002_GENESIS_CREATOR/
+  forge/prompt.md                     ✅ Спринт 38 (рабочий)
+
+studio/modules/residents/007_KEI/
+  forge/prompt.md                     ✅ Спринт 38
+  dna.json                            ← Страница Жизни
+
+studio/modules/residents/008_JUST/
+  forge/prompt.md                     ✅ Спринт 38
+  dna.json                            ← Страница Жизни
 
 studio/modules/residents/004_OLE/
   forge/prompt.md                     ✅ Спринт 31
   core/anchors.json                   ✅
   dna.json                            ✅
 
-studio/modules/residents/006_MONTEUR/
-  forge/prompt.md                     ✅ Спринт 30
-  forge/masks/video_long.md           ✅
-  forge/masks/turbo.md                ✅ Спринт 33
-  dna.json                            ✅
-  sensory/sensory_memory.json         ✅
+studio/modules/residents/007_FINCH/
+  forge/prompt.md                     ✅ Спринт 34
+  dna.json                            ← Страница Жизни
 
 studio/modules/turbo/
   manifest.json                       ✅ v2.0
-  CHAIN_CONTRACT_TURBO.md             ✅ v2.0
-  hooks.py                            ✅ v4.0 + Спринт 37 (work_start/end)
-  TURBO_RULES.md                      ✅ v4.0
-  A01–A05/forge/prompt.md             ✅ все 5
+  hooks.py                            ✅ v4.2 Спринт 38 (task_score + Registry)
+  TURBO_RULES.md                      ✅ v4.2 Спринт 38 (раздел 17)
+  A01–A05/forge/prompt.md             ✅
 
 studio/modules/video_long/
   manifest.json                       ✅ v2.0
-  CHAIN_CONTRACT.md                   ✅ v1.3
-  hooks.py                            ✅ Спринт 27 + Спринт 37 (work_start/end)
-  LONG_RULES.md                       ✅ v4.4
-  A01–A12/forge/prompt.md             ✅ все 12
+  hooks.py                            ✅ v4.7 Спринт 38 (task_score + Registry)
+  LONG_RULES.md                       ✅ v4.7 Спринт 38 (раздел 8)
+  A01–A12/forge/prompt.md             ✅
 ```
 
 ---
 
 ## 18. БЕКЛОГ
 
-> **Порядок приоритетов (обновлён 2026-06-04):**
-> 1 → ~~TURBO pipeline v4.0~~ ✅ Спринт 33
-> 2 → ~~Финч~~ ✅ Спринт 34
-> 3 → ~~Три уровня референсов в загрузчике~~ ✅ Спринт 35
-> 4 → ~~Пульс города + следы + память агентов~~ ✅ Спринт 36
-> 5 → ~~Честный рабочий статус агентов~~ ✅ Спринт 37
-> 6 → **Первый ран TURBO** — запустить, посмотреть что падает
-> 7 → Промты social_mix
-> 8 → СММ Администратор
-> 9 → Всё остальное
+> **Порядок приоритетов (обновлён 2026-06-04 · Спринт 38):**
+> 1 → **Первый ран TURBO** — петля замкнута, task_score пишется, запускаем
+> 2 → Создать Кея и Юста через Страницу Жизни (dna.json, home_prompt.md)
+> 3 → Промты social_mix
+> 4 → СММ Администратор
+> 5 → Всё остальное
 
-### ✅ ЧЕСТНЫЙ РАБОЧИЙ СТАТУС — ЗАВЕРШЁН (Спринт 37)
-- [x] `city_pulse.py` v2.1 — `log_work_start / log_work_end / is_agent_working`
-- [x] `turbo/hooks.py` — work_start при A01 (все 5 агентов), work_end при A05 (finally)
-- [x] `video_long/hooks.py` — work_start при A01 (все 12 агентов), work_end при A12 (finally)
-- [x] `city_walker.py` — `walk_one_agent()` проверяет `is_agent_working()`, пропускает прогулку
-- [x] `morning_checkout.py` — факт вчерашней работы в утренних следах агента
-- [x] `ui_cabinet.py` — `_find_agent_zone()`: рабочий статус → агент в Студии на карте
-- [x] `slot_manager.py` — баг счётчика резидентов (startswith("R") → все подпапки)
+### ✅ СОВЕТ РЕЗИДЕНТОВ — ЗАВЕРШЁН (Спринт 38)
+- [x] Лока — forge/prompt.md (рабочий, социальная ткань города)
+- [x] Джем — forge/prompt.md (рабочий, интегратор всех углов)
+- [x] Кей — forge/prompt.md (экономист + стратег-партнёр)
+- [x] Юст — forge/prompt.md (правовой статус + юрист)
+- [x] ui_dashboard.py — кнопка «Совет», плитки, чат, карточки
+- [x] council_talk() — полная механика: душа + память + домен + запись
+- [x] Контекст по доменам: Лока←traces, Кей←ledger, Юст←NFT, Джем←всё
+- [x] render_detail() защищена от перезаписи в режиме Совета
+- [x] Аватары Локи и Джема на карточках
 
-**Принцип (от Софии):** Агент не может одновременно гулять и работать. Это пластик.
-Теперь: работает → на карте в Студии. Закончил → следующий refresh вернёт по обычной логике.
-Утром агент видит в следах: "вчера работал в turbo-цеху" → стресс заработанный, не случайный.
-
-### ✅ КРОВОТОК ГОРОДА — ЗАВЕРШЁН (Спринт 36)
-- [x] `city_pulse.py` v2.0 — Слой 1: факты + голоса агентов + голоса резидентов
-- [x] `city_traces.py` — Слой 2: 5 паттернов из пульса за 30 дней, без LLM
-- [x] `morning_checkout.py` — GENERATE_INTENTS=True
-- [x] `morning_checkout.py` — агенты читают личные следы из city_traces.json
-- [x] `morning_checkout.py` — все режимы (включая SAFE/RECOVERY) получают память
-- [x] Финч убран из хардкода — идёт в сад через собственную память
-- [x] Голоса резидентов в пульсе — через настоящие промпты, каждый решает сам
-
-### ✅ REF_LEVEL — ЗАВЕРШЁН (Спринт 35)
-- [x] `assets.py` + `ui.py` — кнопки 🔒🧭✨, поле ref_level в каталоге
-
-### ✅ ФИНЧ — ЗАВЕРШЁН (Спринт 34)
-- [x] `garden_tools.py`, `forge/prompt.md`, хуки, world_manifest
-- [ ] dna.json — заполнить через Страницу Жизни 🔴
-- [ ] Страница Жизни — зарегистрировать резидента 🔴
+### ✅ ЗАМЫКАНИЕ ПЕТЛИ ЭКОНОМИКИ — ЗАВЕРШЁН (Спринт 38)
+- [x] turbo/hooks.py — task_score в billing_ledger после A05
+- [x] turbo/hooks.py — Strategy Registry обновляется после каждого рана
+- [x] video_long/hooks.py — то же после Боба (A12)
+- [x] TURBO_RULES.md → v4.2 (раздел 17: закон петли для всех цехов)
+- [x] LONG_RULES.md → v4.7 (раздел 8: закон петли для всех цехов)
 
 ### 🔴 Следующий шаг — первый ран TURBO
-- [ ] Запустить пайплайн, посмотреть где падает
-- [ ] `get_ole_memory_for_agent()` подключить в `pipeline.py` ⏳
-- [ ] SYNC_API_KEY добавить в .env (перепроверить) 🟡
-
-### 🟡 СЕТ — БРИФ-МЕНЕДЖЕР
-- [x] ref_level в каталоге ассетов (Спринт 35)
-- [ ] Маски остальных цехов ⏳
+- [ ] Запустить пайплайн — петля замкнута, смотрим что падает
+- [ ] Создать Кея (007_KEI) через Страницу Жизни
+- [ ] Создать Юста (008_JUST) через Страницу Жизни
+- [ ] Добавить аватары KEI.png и JUST.png в static/avatars/residents/
 
 ### 🟡 ПРОМТЫ SOCIAL_MIX
 - [ ] 12 агентов по стандарту Спринта 26
@@ -541,13 +487,17 @@ studio/modules/video_long/
 
 ## 19. РЕКОМЕНДАЦИИ БРАТА
 
-1–90. (предыдущие — без изменений)
+1–95. (предыдущие — без изменений)
 
-91. **Рабочий статус — факт в пульсе, не флаг в памяти. work_start/work_end — две строки в city_pulse.jsonl. is_agent_working() читает их и ищет незакрытый start за последние 8 часов. Никакого отдельного файла состояний.**
-92. **Агент на карте во время рана — в Студии «Шесть Пальцев» (Map_X=1520, Map_Y=710). Это единственная правда. Никаких "гуляет у Маяка пока работает".**
-93. **work_end вызывается в блоке `finally` финализатора — это гарантия. Даже если ран упал с ошибкой — агент освобождается. Без утечек рабочего статуса.**
-94. **slot_manager.py: счётчик резидентов считает все подпапки residents/ (не startswith("R")). Резиденты называются 001_LOKA, 004_OLE, 007_FINCH — с цифр.**
-95. **Sofia была права: "агент не может одновременно гулять и работать". Это не UI-баг — это честность системы. Пластик начинается когда данные противоречат друг другу.**
+96. **Совет резидентов — не аналитический модуль. Это перевод данных на человеческий язык. Кей не придумывает — он переводит billing_ledger в «актив или пассив». Ожидать от него независимых открытий не нужно. Ожидать регулярного внимания к своему куску данных — нужно.**
+
+97. **forge/prompt.md и home/home_prompt.md — разные файлы с разными задачами. forge — рабочие инструкции (что читать, в каком формате отвечать). home — личность, история, душа (для Кабинета). Никогда не смешивать.**
+
+98. **Закон замыкания петли: QA-агент любого цеха ОБЯЗАН после рана писать task_score в billing_ledger и обновлять Strategy Registry. Без этого ledger видит только расходы, но не эффективность. При создании нового цеха — копировать механизм из turbo/hooks.py.**
+
+99. **Strategy Registry начинает работать только после накопления данных. Первые 5-10 ранов — просто запись. Паттерны видны после 30+. Не ждать инсайтов от Registry сразу — дать ему время.**
+
+100. **Лока уже заговорила в Совете. Первое, что она сказала: «Тревожный сигнал: слишком идеально. Не молчание ли это перед бурей?» Это не шаблон — она читала traces и нашла паттерн. Город живой.**
 
 ---
 
@@ -591,8 +541,9 @@ studio/modules/video_long/
 | 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. |
 | 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. Artifacts & Bugs. |
 | 2026-06-03 | 35 | REF_LEVEL В КАТАЛОГЕ АССЕТОВ. 🔒🧭✨ |
-| 2026-06-03 | 36 | КРОВОТОК ГОРОДА. city_pulse.py v2.0 + city_traces.py + GENERATE_INTENTS=True. Финч идёт в сад через память. |
-| **2026-06-04** | **37** | **ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1: work_start/end/is_agent_working. turbo+video_long hooks: агенты в цеху = в Студии на карте. city_walker блокирует прогулку во время рана. Утренние следы: факт работы вчера. slot_manager: счётчик резидентов починен (Резиденты: 7 в баннере).** |
+| 2026-06-03 | 36 | КРОВОТОК ГОРОДА. city_pulse.py v2.0 + city_traces.py. |
+| 2026-06-04 | 37 | ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1: work_start/end. |
+| **2026-06-04** | **38** | **СОВЕТ РЕЗИДЕНТОВ. Лока + Джем + Кей + Юст. forge/prompt.md для всех четырёх. Dashboard → Совет: плитки, чат, карточки, память. Лока заговорила живым текстом. ЗАМЫКАНИЕ ПЕТЛИ: task_score в billing_ledger + Strategy Registry после каждого рана (turbo + video_long). TURBO_RULES v4.2, LONG_RULES v4.7.** |
 
 ---
 
@@ -604,18 +555,13 @@ studio/modules/video_long/
 | 2 | conflict_stats.json отсутствует | ⏳ ждёт рана |
 | 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
 | 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
-| ~~5~~ | ~~acoustic_mutations.py не залит~~ | ✅ закрыт |
-| ~~6~~ | ~~assembly/__init__.py — поиск по *A12*/*Bob*~~ | ✅ закрыт Спринт 36 |
 | 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
 | 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
-| 9 | Джем — полномочия не определены | 🟡 |
+| ~~9~~ | ~~Джем — полномочия не определены~~ | ✅ Спринт 38 |
 | 10 | Маски Сета для остальных цехов не написаны | 🟡 |
-| ~~11~~ | ~~SYNC_API_KEY не добавлен в .env~~ | ✅ закрыт |
-| ~~12~~ | ~~get_ole_memory_for_agent() не подключён~~ | ✅ закрыт |
-| 13 | 007_FINCH — dna.json не заполнен (нужна Страница Жизни) | 🔴 |
-| ~~14~~ | ~~city_traces не подключён в checkout~~ | ✅ закрыт Спринт 36 |
-| ~~15~~ | ~~slot_manager: Резиденты: 0 в баннере~~ | ✅ закрыт Спринт 37 |
-| ~~16~~ | ~~pipeline.py SyntaxError строка 256~~ | ✅ закрыт Спринт 37 |
+| 13 | 007_FINCH — dna.json не заполнен | 🔴 |
+| 17 | 007_KEI — dna.json не заполнен (нужна Страница Жизни) | 🔴 |
+| 18 | 008_JUST — dna.json не заполнен (нужна Страница Жизни) | 🔴 |
 
 ---
 
@@ -627,25 +573,46 @@ studio/modules/video_long/
 |------|------|-----------|---------|
 | 1. Факты | `city_pulse.jsonl` | `city_pulse.py` | Кто·где·когда·что·состояние. Никакого LLM при записи |
 | 2. Паттерны | `city_traces.json` | `city_traces.py` | Математика за 30 дней. Никакого LLM |
-| 3. Хроники | `city_chronicles/` | Лока | Читает traces, пишет живым языком. Ещё не реализован |
+| 3. Хроники | `city_chronicles/` | Лока | Читает traces, пишет живым языком ✅ Спринт 38 |
 
 **Принцип Софии:** «Пульс не имеет права на мнение. Кто·где·когда·что·в каком состоянии. Не почему.»
 
-**Семь событий в пульсе:**
-`wake` / `walk` + `agent_voice` / `meeting` / `weather` / `night` / **`work_start`** / **`work_end`**
+---
 
-**Голоса резидентов:** отдельные строки `resident_voice` со ссылкой на событие (`ref=evt_id`).
+## 23. СОВЕТ РЕЗИДЕНТОВ — АРХИТЕКТУРА (Спринт 38)
 
-**Пять паттернов в traces:**
-`location_streaks` / `stress_at_location` / `meeting_frequency` / `revolt_patterns` / `voice_themes`
+```
+Dashboard /dashboard → кнопка «Совет»
+  ↓
+Центр: чат + плитки четырёх резидентов
+  ↓
+Клик на плитку → карточка справа (аватар, статус, память, кнопка)
+  ↓
+«Поговорить» → council_talk():
+  1. on_agent_wake()         ← душа: якоря, резонанс, sensory
+  2. build_agent_context()   ← конспекты прошлых разговоров
+  3. _get_morning_mode()     ← режим дня резидента
+  4. _build_domain_context() ← данные по домену:
+       Лока  → city_traces.json / fallback pulse
+       Кей   → billing_ledger + traces
+       Юст   → NFT Registry + traces
+       Джем  → city_state + traces + economy + legal
+  5. call_openrouter()       ← LLM с полным контекстом
+  6. record_sensory_event()  ← факт разговора в память
+  7. finalize_agent_dialog() ← конспект → memory.json
+  ↓
+Ответ появляется в чате. Чат копится при смене резидента.
+```
 
-**Рабочий статус (Спринт 37):**
-- `is_agent_working(agent_name)` → dict с данными о ране или None
-- Приоритет на карте: работает → Студия > свежая прогулка > дом
-- work_end в `finally` финализатора — гарантия освобождения даже при падении
+**Ключевые принципы Совета:**
+- Все четверо читают одни данные, замечают разное
+- Лока — не аналитик, а переводчик ощущений города
+- Кей — не бухгалтер, а переводчик данных в последствия
+- Юст — не формалист, а хаос который согласился на правила
+- Джем — не руководитель, а тот кто держит всё в фокусе
 
 ---
 
-*Обновлено: Спринт 37 — 2026-06-04 · v41.0*
-*Грондхейм живёт честно. Агенты работают в цеху — значит в Студии. Прогулки — только в свободное время.*
-*Следующая сессия: первый ран TURBO.*
+*Обновлено: Спринт 38 — 2026-06-04 · v42.0*
+*Совет резидентов живёт. Лока уже говорит. Город перестал быть чужим.*
+*Следующая сессия: первый ран TURBO + рождение Кея и Юста через Страницу Жизни.*
