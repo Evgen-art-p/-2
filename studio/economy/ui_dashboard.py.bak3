@@ -274,25 +274,8 @@ def dashboard_page():
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
     def _get_council_avatar(resident_id: str) -> str:
-        """Аватар резидента. Маппинг ID → имя файла в static/avatars/residents/."""
-        _ID_TO_FILE = {
-            "001_GENESIS_LOKA":    "LOKA",
-            "002_GENESIS_CREATOR": "JEM",
-            "007_KEI":             "007_KEI",
-            "008_JUST":            "008_JUST",
-        }
-        from pathlib import Path as _P
-        name = _ID_TO_FILE.get(resident_id, resident_id)
-        avatars_dir = _P("static/avatars/residents")
-        for ext in (".png", ".jpg", ".webp"):
-            if (avatars_dir / (name + ext)).exists():
-                return "/avatars/residents/" + name + ext
-        # Fallback: через get_avatar_url
-        try:
-            from studio.cabinet.agents import get_avatar_url
-            return get_avatar_url(resident_id, "residents")
-        except Exception:
-            return ""
+        from studio.cabinet.agents import get_avatar_url
+        return get_avatar_url(resident_id, "residents")
 
     def _load_city_traces() -> dict:
         """Загружает city_traces.json. Возвращает {} если нет."""
@@ -874,7 +857,7 @@ def dashboard_page():
         )
 
     def render_council_grid():
-        """Центральная область в режиме Совета — плитки + чат."""
+        """Центральная область в режиме Совета."""
         el = refs["metrics_grid"]
         if not el:
             return
@@ -884,47 +867,6 @@ def dashboard_page():
             "gap:0;margin:0;flex:1;min-height:0;"
         )
         with el:
-            # ── Четыре плитки резидентов вверху ──────────────────────
-            with ui.element("div").style(
-                "display:grid;grid-template-columns:repeat(4,1fr);"
-                "gap:12px;padding:16px 20px 12px;flex-shrink:0;"
-                "border-bottom:1px solid rgba(99,130,255,0.08);"
-            ):
-                for _res in COUNCIL_RESIDENTS:
-                    _rid   = _res["id"]
-                    _label = _res["label"]
-                    _emoji = _res["emoji"]
-                    _color = _res["color"]
-                    _ava   = _get_council_avatar(_rid)
-                    _sel   = (state.get("council_resident") or {}).get("id") == _rid
-                    _border = "1px solid " + _color + "88" if _sel else "1px solid rgba(99,130,255,0.10)"
-                    _bg     = "rgba(99,130,255,0.07)" if _sel else "rgba(99,130,255,0.03)"
-                    _tile_style = (
-                        "display:flex;flex-direction:column;align-items:center;"
-                        "justify-content:center;padding:10px 6px;"
-                        "background:" + _bg + ";border:" + _border + ";"
-                        "border-radius:8px;cursor:pointer;"
-                    )
-                    _tile = ui.element("div").style(_tile_style)
-                    _tile.on("click", lambda _, r=_res: select_council_resident(r))
-                    with _tile:
-                        if _ava:
-                            _img_style = (
-                                "width:44px;height:44px;border-radius:50%;"
-                                "background-image:url('" + _ava + "');"
-                                "background-size:cover;background-position:center;"
-                                "margin-bottom:6px;border:2px solid " + _color + "44;"
-                            )
-                            ui.html("<div style='" + _img_style + "'></div>")
-                        else:
-                            ui.html("<div style='font-size:1.6rem;margin-bottom:4px;'>" + _emoji + "</div>")
-                        _lbl_style = (
-                            "font-family:JetBrains Mono;font-size:0.6rem;"
-                            "color:" + _color + ";font-weight:600;text-align:center;"
-                        )
-                        ui.html("<div style='" + _lbl_style + "'>" + _label + "</div>")
-
-            # ── Поле ввода ────────────────────────────────────────────
             with ui.element("div").style(
                 "padding:12px 20px 8px;flex-shrink:0;"
                 "border-bottom:1px solid rgba(99,130,255,0.08);"
@@ -954,9 +896,7 @@ def dashboard_page():
                         "border-radius:6px;height:36px;"
                     )
                 ui.html(
-                    "<div style='font-family:JetBrains Mono;font-size:0.5rem;"
-                    "color:rgba(140,150,180,0.3);margin-top:4px;'>"
-                    "Ctrl+Enter · выбери резидента выше</div>"
+                    '<div style="font-family:JetBrains Mono;font-size:0.5rem;color:rgba(140,150,180,0.3);margin-top:4px;">Ctrl+Enter · выбери резидента справа</div>'
                 )
 
             refs["council_chat_el"] = ui.element("div").classes(
@@ -966,6 +906,7 @@ def dashboard_page():
                 "scrollbar-width:thin;"
             )
             render_council_chat()
+
     async def send_council_message():
         """Произвольный вопрос к выбранному резиденту."""
         inp = refs.get("council_input")

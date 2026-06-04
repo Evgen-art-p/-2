@@ -274,25 +274,8 @@ def dashboard_page():
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
     def _get_council_avatar(resident_id: str) -> str:
-        """Аватар резидента. Маппинг ID → имя файла в static/avatars/residents/."""
-        _ID_TO_FILE = {
-            "001_GENESIS_LOKA":    "LOKA",
-            "002_GENESIS_CREATOR": "JEM",
-            "007_KEI":             "007_KEI",
-            "008_JUST":            "008_JUST",
-        }
-        from pathlib import Path as _P
-        name = _ID_TO_FILE.get(resident_id, resident_id)
-        avatars_dir = _P("static/avatars/residents")
-        for ext in (".png", ".jpg", ".webp"):
-            if (avatars_dir / (name + ext)).exists():
-                return "/avatars/residents/" + name + ext
-        # Fallback: через get_avatar_url
-        try:
-            from studio.cabinet.agents import get_avatar_url
-            return get_avatar_url(resident_id, "residents")
-        except Exception:
-            return ""
+        from studio.cabinet.agents import get_avatar_url
+        return get_avatar_url(resident_id, "residents")
 
     def _load_city_traces() -> dict:
         """Загружает city_traces.json. Возвращает {} если нет."""
@@ -897,8 +880,8 @@ def dashboard_page():
                     _color = _res["color"]
                     _ava   = _get_council_avatar(_rid)
                     _sel   = (state.get("council_resident") or {}).get("id") == _rid
-                    _border = "1px solid " + _color + "88" if _sel else "1px solid rgba(99,130,255,0.10)"
-                    _bg     = "rgba(99,130,255,0.07)" if _sel else "rgba(99,130,255,0.03)"
+                    _border = "2px solid " + _color if _sel else "1px solid rgba(99,130,255,0.12)"
+                    _bg     = "rgba(99,130,255,0.10)" if _sel else "rgba(99,130,255,0.04)"
                     _tile_style = (
                         "display:flex;flex-direction:column;align-items:center;"
                         "justify-content:center;padding:10px 6px;"
