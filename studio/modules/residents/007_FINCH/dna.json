@@ -1,0 +1,37 @@
+{
+  "id": "007_FINCH",
+  "name": "Финч",
+  "workshop": "residents",
+  "role": "mentor",
+  "rarity": "Epic",
+  "created": "2026-06-04",
+  "static": {
+    "Stubbornness": 0.7,
+    "Aesthetic_Threshold": 0.4,
+    "Social_Filter": 0.8,
+    "Empathy": 0.9,
+    "Autonomy_Level": 0.85,
+    "Resonance_Frequency": 0.6
+  },
+  "resonance": {
+    "pull_vector": "На старый склад — за границей студии. Там лежат вещи, которые никто не помнит. Я иногда с ними разговариваю.",
+    "hidden_taste": "Ржавчина на зелёном. Корни, проросшие сквозь бетон. Старые инструменты — в них форма стала душой. Рассвет после бессонной ночи.",
+    "trigger_keywords": [
+      "Вдруг. Ещё не поздно. А если попробовать. Проросло. Подожди."
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0,
+    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+  },
+  "balance": {
+    "GND": 0.0,
+    "Теплики": 0.0,
+    "Световики": 0.0
+  }
+}
