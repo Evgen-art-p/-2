@@ -9249,7 +9249,7 @@
   {
     "Rarity": "Epic",
     "Object_Type_Class": "agent",
-    "ID_Object": "007_KEI",
+    "ID_Object": "008_KEI",
     "Official_Name": "Мистер Кей",
     "Object_Type": "Character",
     "Author_Signature": "[JAM] 6F-Origin",
@@ -9293,13 +9293,13 @@
       "Autonomy_Level": 0.8,
       "Resonance_Frequency": 0.6
     },
-    "_timestamp": "2026-06-05T01:04:18.697963",
+    "_timestamp": "2026-06-05T07:17:24.766830",
     "_Creator_Seal_Hash": "9c066b33a384fb7596f09fb772441b99bb554c8513336840d2a09fade4eb0134"
   },
   {
     "Rarity": "Epic",
     "Object_Type_Class": "agent",
-    "ID_Object": "008_JUST",
+    "ID_Object": "009_JUST",
     "Official_Name": "Юст",
     "Object_Type": "Character",
     "Author_Signature": "[JAM] 6F-Origin",
@@ -9346,7 +9346,7 @@
       "Autonomy_Level": 0.75,
       "Resonance_Frequency": 0.5
     },
-    "_timestamp": "2026-06-05T03:21:39.116131",
+    "_timestamp": "2026-06-05T07:18:56.328828",
     "_Creator_Seal_Hash": "c8bcaec4c12ca5e77965c06f0e9a26d7c7d84d8fa200fabf9838a8d5edc9c9eb"
   }
 ]

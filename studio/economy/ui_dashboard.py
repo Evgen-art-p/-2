@@ -257,16 +257,16 @@ def dashboard_page():
     COUNCIL_RESIDENTS = [
         {"id": "001_GENESIS_LOKA",    "label": "Лока",       "emoji": "🌿", "color": "#50fa7b"},
         {"id": "002_GENESIS_CREATOR", "label": "Джем",       "emoji": "🎯", "color": "#6c8cff"},
-        {"id": "007_KEI",             "label": "Мистер Кей", "emoji": "📊", "color": "#c9a84c"},
-        {"id": "008_JUST",            "label": "Юст",        "emoji": "⚖️", "color": "#a78bfa"},
+        {"id": "008_KEI",             "label": "Мистер Кей", "emoji": "📊", "color": "#c9a84c"},
+        {"id": "009_JUST",            "label": "Юст",        "emoji": "⚖️", "color": "#a78bfa"},
     ]
 
     # Домен → что читает каждый резидент
     COUNCIL_DOMAIN = {
         "001_GENESIS_LOKA":    "social",   # city_traces → социальная ткань
         "002_GENESIS_CREATOR": "all",      # всё: traces + state + pulse
-        "007_KEI":             "economy",  # billing_ledger + traces
-        "008_JUST":            "legal",    # NFT Registry + traces
+        "008_KEI":             "economy",  # billing_ledger + traces
+        "009_JUST":            "legal",    # NFT Registry + traces
     }
 
     def _load_forge_prompt(resident_id: str) -> str:
@@ -278,8 +278,8 @@ def dashboard_page():
         _ID_TO_FILE = {
             "001_GENESIS_LOKA":    "LOKA",
             "002_GENESIS_CREATOR": "JEM",
-            "007_KEI":             "007_KEI",
-            "008_JUST":            "008_JUST",
+            "008_KEI":             "008_KEI",
+            "009_JUST":            "009_JUST",
         }
         from pathlib import Path as _P
         name = _ID_TO_FILE.get(resident_id, resident_id)
