@@ -94,30 +94,16 @@ def _find_projects() -> list[dict]:
         project_id = deliverables.get("project_id", run_dir.name)
         assembly   = get_assembly_status(project_id)
 
-        slot_id = deliverables.get("slot_id", "")
-
-        # social_mix: считаем картинки вместо клипов
-        if slot_id == "social_mix":
-            images = deliverables.get("images", [])
-            if not images and deliverables.get("image_path"):
-                images = [{"path": deliverables["image_path"]}]
-            clips_count  = 0
-            frames_count = len(images)
-            has_audio    = False
-        else:
-            clips_count  = len(deliverables.get("video_clips", []))
-            frames_count = len(deliverables.get("key_frames", []))
-            has_audio    = bool(deliverables.get("audio"))
-
         projects.append({
             "project_id":      project_id,
             "platform":        deliverables.get("platform", "—"),
-            "slot":            slot_id or "—",
-            "clips_count":     clips_count,
-            "frames_count":    frames_count,
-            "has_audio":       has_audio,
+            "slot":            deliverables.get("slot_id", "—"),
+            "clips_count":     len(deliverables.get("video_clips", [])),
+            "frames_count":    len(deliverables.get("key_frames", [])),
+            "has_audio":       bool(deliverables.get("audio")),
             "assembly_status": assembly.get("status", "NOT_ASSEMBLED"),
             "deliverables":    deliverables,
+            # final_dna оставляем пустым — он не нужен UI Мастерской
             "final_dna":       {},
         })
 
@@ -176,7 +162,7 @@ def page_assembly():
         el.clear()
         with el:
             if not state["projects"]:
-                ui.html('<div class="mt-empty">Нет проектов<br>Запусти пайплайн — появятся здесь</div>')
+                ui.html('<div class="mt-empty">Нет проектов<br>с APPROVED от Боба</div>')
                 return
             for proj in state["projects"]:
                 pid = proj["project_id"]
@@ -211,16 +197,10 @@ def page_assembly():
         if not el:
             return
         el.clear()
-        d    = proj["deliverables"]
-        fd   = proj["final_dna"]
-        pid  = proj["project_id"]
-        slot = proj.get("slot", "")
+        d  = proj["deliverables"]
+        fd = proj["final_dna"]
+        pid = proj["project_id"]
         assembly = get_assembly_status(pid)
-
-        # ── SOCIAL MIX: превью поста ─────────────────────────────
-        if slot == "social_mix":
-            _render_social_workbench(el, d, pid)
-            return
 
         with el:
             # ── Финальный ролик ──────────────────────────────────

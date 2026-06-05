@@ -191,47 +191,8 @@ def parse_agent_response(raw: str) -> tuple[str, dict]:
 
 
 def _collect_images_for_vision(state) -> list:
-    """Собирает base64 изображений для vision API.
-
-    Два источника:
-      1. state["vision_images"] — пути от hooks.py (A06 self-review, A11 Федя и др.)
-      2. state["uploaded_files"] — файлы загруженные Шефом вручную через UI
-    """
-    import base64 as _b64
-    import mimetypes as _mt
-
+    """Собирает base64 изображений из загруженных файлов для vision API"""
     images = []
-
-    # ── Источник 1: hooks.py → state["vision_images"] ────────────────
-    # Хук кладёт список путей к PNG после генерации картинки.
-    # Pipeline видит их и передаёт агенту через chat_with_images.
-    hook_images = state.get("vision_images", [])
-    if hook_images:
-        for item in hook_images:
-            # Поддерживаем два формата:
-            # - строка (путь к файлу)
-            # - dict {"base64": ..., "mime_type": ..., "name": ...}
-            if isinstance(item, dict) and item.get("base64"):
-                images.append(item)
-                print(f"[VISION] Хук-изображение (dict): {item.get('name', '?')}")
-            elif isinstance(item, str):
-                fp = Path(item)
-                if fp.exists():
-                    try:
-                        b64 = _b64.b64encode(fp.read_bytes()).decode("utf-8")
-                        mime = _mt.guess_type(str(fp))[0] or "image/png"
-                        images.append({
-                            "base64":    b64,
-                            "mime_type": mime,
-                            "name":      fp.name,
-                        })
-                        print(f"[VISION] Хук-изображение: {fp.name} ({len(b64)//1024}KB)")
-                    except Exception as ex:
-                        print(f"[VISION ERROR] hooks image {item}: {ex}")
-                else:
-                    print(f"[VISION] ⚠️ Хук-изображение не найдено: {item}")
-
-    # ── Источник 2: uploaded_files (загружены Шефом) ─────────────────
     if not state.get("uploaded_files") or not state.get("file_processor"):
         return images
     

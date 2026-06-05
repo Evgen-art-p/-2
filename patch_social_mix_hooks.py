@@ -1,3 +1,31 @@
+"""
+patch_social_mix_hooks.py
+Студия «Шесть Пальцев» · Спринт 39 (fix)
+
+Что делает:
+  Переписывает studio/modules/social_mix/hooks.py до v4.1.
+
+Изменения v4.1 vs v4.0 (после прогона по цепочке):
+  БАГ 1 ИСПРАВЛЕН: A06 — убрана двухэтапная схема через pipeline.
+    Pipeline не умеет перезапускать агента (нет action:"repeat").
+    Теперь как у Евы: хук сам генерирует + проверяет через vision_client.
+    Агент пишет промпт → хук гоняет fal.ai + ОТК → готово за один проход.
+
+  БАГ 2 ИСПРАВЛЕН: A11 Федя — vision_images теперь в on_BEFORE_agent.
+    on_after_agent срабатывает ПОСЛЕ агента — картинку он уже не увидит.
+    on_before_agent срабатывает ДО — pipeline передаст PNG вместе с контекстом.
+
+Запуск: python patch_social_mix_hooks.py
+  из корня проекта (C:\\Users\\Евгений\\Desktop\\студия 2)
+"""
+
+import shutil
+from pathlib import Path
+
+HOOKS_PATH  = Path("studio/modules/social_mix/hooks.py")
+BACKUP_PATH = HOOKS_PATH.with_suffix(".py.bak_v4")
+
+NEW_CONTENT = '''\
 # studio/modules/social_mix/hooks.py
 # Студия «Шесть Пальцев» · 2026
 # v4.1 — правильная схема A06 (как Ева в video_long: генерация+ОТК внутри хука).
@@ -392,13 +420,13 @@ def _record_task_score(state: dict, score: float, slot_id: str, project_id: str)
 
 def _parse_json(text: str) -> dict | None:
     match = re.search(
-        r"SYSTEM_JSON_START[^\n]*\n(.*?)\n[^\n]*SYSTEM_JSON_END",
+        r"SYSTEM_JSON_START[^\\n]*\\n(.*?)\\n[^\\n]*SYSTEM_JSON_END",
         text, re.DOTALL
     )
     if match:
         raw = match.group(1)
     else:
-        fence = re.search(r"```json\s*\n(.*?)\n```", text, re.DOTALL)
+        fence = re.search(r"```json\\s*\\n(.*?)\\n```", text, re.DOTALL)
         if fence:
             raw = fence.group(1)
         else:
@@ -411,3 +439,36 @@ def _parse_json(text: str) -> dict | None:
     except Exception as e:
         print(f"[SOCIAL_MIX] JSON parse error: {e}")
         return None
+'''
+
+# ═══════════════════════════════════════════════════════════
+# ПРИМЕНЯЕМ
+# ═══════════════════════════════════════════════════════════
+
+def main():
+    if not HOOKS_PATH.exists():
+        print(f"Файл не найден: {HOOKS_PATH}")
+        return
+
+    shutil.copy2(HOOKS_PATH, BACKUP_PATH)
+    print(f"Бэкап: {BACKUP_PATH}")
+
+    HOOKS_PATH.write_text(NEW_CONTENT, encoding="utf-8")
+
+    import subprocess
+    r = subprocess.run(
+        ["python", "-m", "py_compile", str(HOOKS_PATH)],
+        capture_output=True, text=True
+    )
+    if r.returncode == 0:
+        print("Синтаксис OK")
+        print("hooks.py v4.1 применён")
+    else:
+        print(f"Синтаксис ошибка:\n{r.stderr}")
+        print("Откатываю...")
+        shutil.copy2(BACKUP_PATH, HOOKS_PATH)
+        print("Откат выполнен")
+
+
+if __name__ == "__main__":
+    main()

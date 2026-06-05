@@ -36,5 +36,5 @@
     "runtime",
     "interaction"
   ],
-  "async_scoring": false
+  "async_scoring": true
 }
