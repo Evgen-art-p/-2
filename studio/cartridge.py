@@ -433,6 +433,8 @@ class CartridgeRunner:
                         critique = run_victor_critique(
                             chain_data=previous_output,
                             dept=self.slot_id,
+                            knowledge=_hard_stop.get("knowledge", []),
+                            web_search=_hard_stop.get("web_search", False),
                         )
                         self.state["victor_critique"] = critique
                         self.state["victor_ready"] = True

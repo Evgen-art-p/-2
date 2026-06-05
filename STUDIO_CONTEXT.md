@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 43.0 | **Дата:** 2026-06-05 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 44.0 | **Дата:** 2026-06-05 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
@@ -92,7 +92,7 @@ studio/modules/{цех}/
 | turbo | 5 | ✅ v2.0 | ✅ v4.2 | ✅ A01–A05 | ✅ v2.0 |
 | social_mix | 12 | ✅ v2.0 | ✅ **v4.0 Спринт 39** | ✅ **Спринт 39** | ✅ v1.4 |
 | video_long | 12 | ✅ v2.0 | ✅ v4.7 | ✅ Спринт 26 | ✅ v1.3 |
-| video_shorts | 12 | ✅ v2.0 | ✅ v2.0 | ✅ | ✅ |
+| **video_shorts** | **12** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** |
 | web_story | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
 | clipmakers | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
 | advertising | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
@@ -198,8 +198,11 @@ studio/strategy_registry.json
 | Трейси (A11) video_long | PNG обложки | vision | `thumbnail_assessment` |
 | Визор (A03) turbo | PNG кадры | vision (self-review) | `self_assessment` |
 | Мими (A02) turbo | аудио трек | `chat_with_audio()` | `audio_assessment` |
-| **Эван (A06) social_mix** | **PNG кадр** | **vision** | **`self_assessment` Спринт 39** |
-| **Федя (A11) social_mix** | **PNG кадр** | **vision** | **`ai_defects` Спринт 39** |
+| Эван (A06) social_mix | PNG кадр | vision | `self_assessment` Спринт 39 |
+| Федя (A11) social_mix | PNG кадр | vision | `ai_defects` Спринт 39 |
+| **Вера (A07) video_shorts** | **PNG кадр 9:16** | **vision** | **`self_assessment` Спринт 40** |
+| **Стэн (A08) video_shorts** | **mp4 клип** | **vision (grid)** | **`clip_assessment` Спринт 40** |
+| **Джулия (A03) video_shorts** | **аудио трек** | **`chat_with_audio()`** | **`audio_assessment` Спринт 40** |
 | Монтажёр | lipsync mp4 | `accept_material()` | Пригоден для монтажа? |
 
 **Принцип везде один: никто не оценивает чужую работу. PASS/REJECT — не оценка, а решение о пригодности.**
@@ -218,9 +221,10 @@ studio/strategy_registry.json
 ЭТАП 4 — Смотрит ВЕСЬ финал (grid каждые 2 сек) → arthur_notes = свидетельство
 ```
 
-**Мастерская (Спринт 39):**
-- Очередь слева — видео-проекты И посты social_mix
-- Центр — видеоплеер для video/turbo, превью поста для social_mix
+**Мастерская (Спринт 39–40):**
+- Очередь слева — video_long / turbo / social_mix / **video_shorts** проекты
+- Центр — видеоплеер для video/turbo, превью поста для social_mix,
+  **кадры Веры 9:16 + обложки A/B + аудио статус для video_shorts**
 - Кнопка 📤 ОПУБЛИКОВАТЬ — только для social_mix пока (видео публикация в беклоге)
 
 **Маски:** `video_long.md` ✅ · `turbo.md` ✅
@@ -229,12 +233,13 @@ studio/strategy_registry.json
 
 ---
 
-## 11–15. РЕЗИДЕНТЫ (без изменений vs v42.0)
+## 11–15. РЕЗИДЕНТЫ (без изменений vs v43.0)
 
 Лока, Джем, Сет, Оле, Виктор, Монтажёр, Финч, Кей, Юст — все активны.
 
+---
 
-## 16. СТАНДАРТ ПРОМТОВ АГЕНТОВ (Спринт 26 + Спринт 39)
+## 16. СТАНДАРТ ПРОМТОВ АГЕНТОВ (Спринт 26 + Спринт 39–40)
 
 ```
 # IDENTITY / # INPUT / # KNOWLEDGE BASE / # TASK / # OUTPUT / # RULES
@@ -243,14 +248,13 @@ studio/strategy_registry.json
 **Правила для всех цехов:**
 - `00_Constructor.txt` — первым в KNOWLEDGE BASE
 - `99_Self_Correction.txt` — последним в RULES
-- Режимы работы (POST/PLAN, BIBLE/EPISODE) — явно в TASK и OUTPUT
+- Режимы работы (PILOT/EPISODE для shorts, POST/PLAN для social) — явно в TASK и OUTPUT
 
 **Статус цехов по промтам:**
 - `video_long` — ✅ все 12
-- `video_shorts` — ✅ все 12
+- **`video_shorts`** — ✅ **все 12 (Спринт 40) · разложить вручную по A01–A12**
 - `turbo` — ✅ все 5 (Спринт 33)
-- `social_mix` — ✅ **все 12 (Спринт 39)** ← промты разложить вручную
-- `social_mix` manifest.json — нужно `async_scoring: true`
+- `social_mix` — ✅ все 12 (Спринт 39) · разложить вручную
 - Остальные 7 цехов — ⏳
 
 ---
@@ -258,62 +262,116 @@ studio/strategy_registry.json
 ## 17. КЛЮЧЕВЫЕ ФАЙЛЫ
 
 ```
-studio/assembly/__init__.py           ✅ Спринт 39 (social_mix в Мастерской)
-studio/modules/social_mix/hooks.py    ✅ v4.0 Спринт 39 (A06 self-review + A12 петля)
-studio/modules/social_mix/manifest.json  ⚠️ нужно async_scoring: true
+studio/assembly/__init__.py                      ✅ Спринт 40 (video_shorts в Мастерской)
+studio/modules/video_shorts/hooks.py             ✅ v3.0 Спринт 40
+studio/modules/video_shorts/manifest.json        ✅ v3.0 Спринт 40
+studio/modules/video_shorts/CHAIN_CONTRACT.md    ✅ v3.0 Спринт 40
 
-studio/modules/social_mix/A01–A12/forge/prompt.md  ⚠️ разложить вручную (Спринт 39)
+studio/modules/social_mix/hooks.py               ✅ v4.0 Спринт 39
+studio/modules/social_mix/manifest.json          ⚠️ нужно async_scoring: true
+
+studio/modules/video_shorts/A01–A12/prompt.md    ⚠️ разложить вручную (Спринт 40)
+studio/modules/social_mix/A01–A12/forge/prompt.md ⚠️ разложить вручную (Спринт 39)
 ```
-
-(остальные файлы без изменений vs v42.0)
 
 ---
 
 ## 18. БЕКЛОГ
 
-> **Порядок приоритетов (обновлён 2026-06-05 · Спринт 39):**
-> 1 → **Первый ран TURBO** — петля замкнута, запускаем
-> 2 → Первый ран SOCIAL_MIX — промты разложены, проверяем цепочку
-> 3 → Исправить конфликт ID: 007_KEI → 009_KEI (Страница Жизни)
-> 4 → manifest social_mix: `async_scoring: true`
-> 5 → Промты social_mix — проверить с учётом обновы Seedream в fal.ai
-> 6 → Кнопка публикации видео в Мастерской (video_long + turbo)
-> 7 → Промты social_mix (промты разложить вручную)
-> 8 → Создать аватары KEI.png и JUST.png
+> **Порядок приоритетов (обновлён 2026-06-05 · Спринт 40):**
+> 1 → **Удалить старый video_shorts через Страницу Жизни (12 агентов), пересоздать чисто**
+> 2 → **Разложить промты video_shorts v3.0 по A01–A12 (файл video_shorts_prompts_v3.md)**
+> 3 → **Применить три патча по порядку:**
+>   - `python patch_video_shorts_contract.py`
+>   - `python patch_video_shorts_generation.py`
+>   - `python patch_assembly_video_shorts.py`
+> 4 → **Первый ран VIDEO_SHORTS** — смотрим что падает
+> 5 → Первый ран TURBO — петля замкнута
+> 6 → Первый ран SOCIAL_MIX — промты разложены
+> 7 → manifest social_mix: `async_scoring: true`
+> 8 → Кнопка публикации видео в Мастерской (video_long + turbo)
+> 9 → Промты social_mix — проверить с учётом Seedream
+
+### ✅ VIDEO_SHORTS — СПРИНТ 40 ЗАВЕРШЁН (код готов)
+
+**hooks.py v3.0:**
+- [x] A03 Джулия — ElevenLabs (музыка + SFX) + CosyVoice (VO) + `audio_assessment`
+- [x] A07 Вера — fal.ai Nano Banana 2 (9:16) параллельно + `self_assessment` (vision)
+- [x] A08 Стэн — Wan2.2 I2V (SiliconFlow) + `clip_assessment` (vision grid)
+- [x] A12 Тамб Том — billing_ledger + strategy_registry + save_feedback() + work_end
+
+**CHAIN_CONTRACT.md v3.0:**
+- [x] `harry_episode.micro_script[].dialogue` — реплики для VO
+- [x] `julia_sound`: +music, +sfx_list, +vo_lines, +audio_assessment
+- [x] `vera_visual.frames[]`: +negative_prompt, +self_assessment
+- [x] `stan_video.video_clips[]`: +video_path, +clip_assessment
+- [x] Таблица "что добавляет hooks.py" — источник правды
+- [x] Правила 9–12 добавлены
+
+**manifest.json v3.0:**
+- [x] version: "3.0"
+- [x] секция generation (image/video/audio конфиг)
+
+**Промты A01–A12 v3.0:**
+- [x] Все 12 агентов переписаны (файл video_shorts_prompts_v3.md)
+- [x] Двухэтапные промты: Вера (Этап 1 → промпты, Этап 2 → self_assessment)
+- [x] Двухэтапные промты: Стэн (Этап 1 → motion_prompt, Этап 2 → clip_assessment)
+- [x] Джулия знает о трёх генераторах (music/sfx/vo)
+- [x] Тамб Том знает все операции hooks.py после его вывода
+
+**Мастерская:**
+- [x] `_find_projects()` — video_shorts в очереди
+- [x] `_render_shorts_workbench()` — кадры Веры + обложки + аудио + SEO
+
+**Расстановка агентов video_shorts v3.0:**
+```
+A01 Трикси Тренд — Viral Analyst
+A02 Гарри Хук    — Screenwriter
+A03 Джулия       — Sound Designer → ElevenLabs + CosyVoice
+A04 Тэг Тони     — SEO & Platform [ХАРД-СТОП → Виктор → Шеф]
+A05 Рик Ринглайт — Lighting Specialist
+A06 Пенни Проп   — Props & Set Designer
+A07 Вера Вертикаль — Visual Artist → fal.ai 9:16
+A08 Стрим Стэн   — Video Prompt Engineer → Wan2.2 I2V
+A09 Лайтнинг Ларри — Editor
+A10 Луиджи Луп   — Retention Specialist
+A11 Сабби Сью    — Caption Specialist
+A12 Тамб Том     — QA Finalizer [qa_agent]
+```
+
+**⚠️ Что ещё нужно сделать руками:**
+- [ ] Удалить старый video_shorts через Страницу Жизни (12 агентов поштучно)
+- [ ] Пересоздать 12 агентов в новой расстановке
+- [ ] Разложить промты из video_shorts_prompts_v3.md по папкам A01–A12
+- [ ] Запустить три патча
 
 ### ✅ SOCIAL_MIX — ЗАВЕРШЁН (Спринт 39)
 
 **hooks.py v4.0:**
 - [x] A06 Эван — два этапа: генерация → vision self_assessment → APPROVED/REJECTED
-- [x] A11 Федя — vision инспекция готовой картинки (не промпта)
+- [x] A11 Федя — vision инспекция готовой картинки
 - [x] A12 Клавдия — замыкание петли: chain integrity + billing_ledger + Strategy Registry
 - [x] A12 — собирает `deliverables.json` для Мастерской
 
-**Промты A01–A12 переписаны под контракт:**
+**Промты A01–A12 переписаны под контракт (Спринт 39):**
 - [x] Все структуры `my_output` выровнены по CHAIN_CONTRACT.md
-- [x] Режимы POST/PLAN чётко разделены в каждом агенте (A01–A04)
-- [x] A05–A12 — только режим POST (в PLAN не участвуют)
-- [x] `00_Constructor.txt` первым в KB, `99_Self_Correction.txt` последним в RULES
-- [x] Критические баги исправлены: `full_caption`→`caption`, `viral_score` плоско, `gleb_control`→`gleb_review`
+- [x] Режимы POST/PLAN чётко разделены
+- [x] Критические баги исправлены
 
-**Мастерская:**
-- [x] `_find_projects()` — social_mix проекты в очереди слева
-- [x] `_render_workbench()` — превью поста в центре (картинка + текст + 📤)
+### 🔴 ПЕРВЫЙ РАН
 
-### 🔴 Следующий шаг — первый ран TURBO
+- [ ] **VIDEO_SHORTS** — после пересоздания агентов и раскладки промтов
+- [ ] **TURBO** — петля замкнута, готов
+- [ ] **SOCIAL_MIX** — промты разложены, готов
 
-- [ ] Запустить пайплайн — петля замкнута, смотрим что падает
-- [ ] Первый ран SOCIAL_MIX после раскладки промтов
-- [ ] Исправить конфликт 007_FINCH / 007_KEI
-
-### 🟡 ВИДЕО ПУБЛИКАЦИЯ В МАСТЕРСКОЙ
+### 🟡 МАСТЕРСКАЯ
 
 - [ ] Кнопка 📤 для video_long и turbo (YouTube API / VK Video)
 
 ### 🟢 ВСЁ ОСТАЛЬНОЕ
 
-- [ ] Промты social_mix — проверить с учётом Seedream
 - [ ] manifest social_mix: `async_scoring: true`
+- [ ] Промты social_mix — проверить с учётом Seedream
 - [ ] Манифесты 7 цехов до v2.0
 - [ ] Деплой Hetzner
 
@@ -325,11 +383,15 @@ studio/modules/social_mix/A01–A12/forge/prompt.md  ⚠️ разложить �
 
 101. **social_mix промты выровнены под контракт — но проверь с учётом обновы fal.ai (Seedream). Промпт Эвана (A06) написан под структуру LAYERED CAKE от Banana — если Seedream принимает другой формат, Эвана надо поправить отдельно.**
 
-102. **Конфликт 007_FINCH / 007_KEI — два резидента с одним ID. residents_manager.py может путать их при обходе папок. Исправить через Страницу Жизни: переименовать папку 007_KEI → 009_KEI и обновить dna.json.id.**
+102. **Конфликт 007_FINCH / 007_KEI — закрыт Шефом в начале Спринта 40.**
 
-103. **Мастерская теперь универсальна — видео и посты в одной очереди. Следующий шаг: кнопка публикации для видео (YouTube/VK). Это отдельный спринт — не мешать с текущим.**
+103. **Мастерская теперь универсальна — video_long / turbo / social_mix / video_shorts в одной очереди. Следующий шаг: кнопка публикации для видео (YouTube/VK).**
 
-104. **async_scoring в manifest social_mix стоит false — это значит pipeline может пытаться вызвать ministry синхронно. Поправить на true чтобы ministry шёл только через Metrics Daemon.**
+104. **async_scoring в manifest social_mix стоит false — поправить на true.**
+
+105. **video_shorts — цех пересоздаётся с нуля. Старые агенты удалены через Страницу Жизни. Новая расстановка: Рик=A05, Пенни=A06, Вера=A07. Три патча готовы — применить после раскладки промтов.**
+
+106. **video_shorts hooks.py v3.0 — реальная генерация медиа. A03 Джулия слышит трек сама. A07 Вера смотрит на PNG сама. A08 Стэн смотрит на клип сам. Это полная симметрия с video_long.**
 
 ---
 
@@ -371,12 +433,13 @@ studio/modules/social_mix/A01–A12/forge/prompt.md  ⚠️ разложить �
 | 2026-06-01 | 31 | ОЛЕ — ХРАНИТЕЛЬ ПАМЯТИ ГОРОДА |
 | 2026-06-01 | 32-концепция | ЖИЗНЕННЫЙ ЦИКЛ СМЫСЛА. Финч/Оле/Артефакт. |
 | 2026-06-02 | 33 | TURBO v4.0 ПОЛНЫЙ КОНВЕЙЕР. |
-| 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. Artifacts & Bugs. |
-| 2026-06-03 | 35 | REF_LEVEL В КАТАЛОГЕ АССЕТОВ. 🔒🧭✨ |
+| 2026-06-03 | 34 | ФИНЧ — ХРАНИТЕЛЬ ПОТЕНЦИАЛА. garden_tools.py. |
+| 2026-06-03 | 35 | REF_LEVEL В КАТАЛОГЕ АССЕТОВ. |
 | 2026-06-03 | 36 | КРОВОТОК ГОРОДА. city_pulse.py v2.0 + city_traces.py. |
-| 2026-06-04 | 37 | ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1: work_start/end. |
-| 2026-06-04 | 38 | СОВЕТ РЕЗИДЕНТОВ. Лока + Джем + Кей + Юст. Dashboard → Совет. ЗАМЫКАНИЕ ПЕТЛИ. |
-| **2026-06-05** | **39** | **SOCIAL_MIX ПОЛНЫЙ ЦИКЛ. hooks.py v4.0 (A06 vision self-review + A11 vision + A12 петля). Все 12 промтов под контракт. Мастерская: social_mix в очереди + превью поста + 📤. Карта разрывов A01–A12 составлена и закрыта.** |
+| 2026-06-04 | 37 | ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1. |
+| 2026-06-04 | 38 | СОВЕТ РЕЗИДЕНТОВ. Лока + Джем + Кей + Юст. ЗАМЫКАНИЕ ПЕТЛИ. |
+| 2026-06-05 | 39 | SOCIAL_MIX ПОЛНЫЙ ЦИКЛ. hooks.py v4.0. 12 промтов. Мастерская. |
+| **2026-06-05** | **40** | **VIDEO_SHORTS ПОЛНЫЙ ЦИКЛ. hooks.py v3.0: реальная генерация (fal.ai + Wan2.2 + ElevenLabs + CosyVoice). Self-review: Вера (PNG) + Стэн (клип) + Джулия (аудио). CHAIN_CONTRACT v3.0. manifest v3.0. Промты v3.0 (12 агентов). Мастерская: video_shorts в очереди. Цех пересоздаётся с нуля — чистая расстановка.** |
 
 ---
 
@@ -391,19 +454,16 @@ studio/modules/social_mix/A01–A12/forge/prompt.md  ⚠️ разложить �
 | 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
 | 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
 | 10 | Маски Сета для остальных цехов не написаны | 🟡 |
-| ~~13~~ | ~~007_FINCH — dna.json не заполнен~~ | ✅ Спринт 39 (заполнен) |
-| ~~17~~ | ~~007_KEI — dna.json не заполнен~~ | ✅ Спринт 39 (заполнен) |
-| ~~18~~ | ~~008_JUST — dna.json не заполнен~~ | ✅ Спринт 39 (заполнен) |
-| **19** | **007_KEI и 007_FINCH — конфликт ID** | **🔴 исправить через Страницу Жизни** |
 | **20** | **social_mix manifest: async_scoring: false** | **🟡 поменять на true** |
 | **21** | **social_mix промты — проверить под Seedream** | **🟡 после первого рана** |
+| **22** | **video_shorts — агенты не пересозданы, промты не разложены** | **🔴 руками** |
 
 ---
 
-## 22–23. АРХИТЕКТУРА ПУЛЬСА И СОВЕТ РЕЗИДЕНТОВ (без изменений vs v42.0)
+## 22–23. АРХИТЕКТУРА ПУЛЬСА И СОВЕТ РЕЗИДЕНТОВ (без изменений vs v43.0)
 
 ---
 
-*Обновлено: Спринт 39 — 2026-06-05 · v43.0*
-*Social_mix замкнут. 12 промтов под контракт. Мастерская видит посты.*
-*Следующая сессия: первый ран TURBO → первый ран SOCIAL_MIX → конфликт ID Кея.*
+*Обновлено: Спринт 40 — 2026-06-05 · v44.0*
+*video_shorts полный цикл: код готов. Пересоздание агентов + раскладка промтов — следующий шаг.*
+*Три патча готовы к применению. Мастерская видит video_shorts.*

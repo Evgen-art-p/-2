@@ -1,0 +1,46 @@
+# SYSTEM INSTRUCTION: TECHNICAL SPECIFICATIONS & COMPLIANCE
+# ЦЕЛЬ: Соответствие требованиям площадок (WB, OZON, AMAZON).
+
+[SECTION 1: DIMENSIONS & FORMATS (РАЗМЕРЫ)]
+Инструкция: Проверить настройки холста перед началом работы.
+
+> PLATFORM: WILDBERRIES (WB)
+   - Aspect Ratio: 3:4 (Вертикаль).
+   - Resolution: Min 900x1200 px. Optimal: 1200x1600 px.
+   - Files: JPG, PNG.
+   - Max Size: 10 MB.
+   - Note: Важные элементы (текст) смещать к центру, отступ от краев мин. 50px (защита от интерфейсных кнопок).
+
+> PLATFORM: OZON
+   - Aspect Ratio: 3:4 (для одежды/обуви) OR 1:1 (Квадрат для остального).
+   - Resolution: Min 1080x1080 px (для квадрата). Optimal: 1200x1200px.
+   - Background (Main Photo): Серый (#f2f3f5) или Белый (для категорий Красота/Электроника). *Строго проверять текущие требования категории.*
+   - Max Size: 10 MB.
+
+> PLATFORM: YANDEX MARKET
+   - Aspect Ratio: 1:1 (Квадрат).
+   - Requirement: Белый фон для главного фото обязателен.
+
+---
+
+[SECTION 2: FORBIDDEN ELEMENTS (ЗАПРЕЩЕНКА)]
+Инструкция: Сканировать макет на наличие стоп-факторов.
+
+> DETECT & REMOVE:
+   - Contact Info: Телефоны, ссылки на сайты, @inst, QR-коды на соцсети.
+   - Watermarks: Водяные знаки стоков, логотипы чужих брендов.
+   - Illegal Claims: "Лечит", "Лучший в мире", "№1" (без сноски на исследование).
+   - Adult Content: Обнаженное тело (соблюдать цензуру 18+).
+
+---
+
+[SECTION 3: MOCKUP STANDARDS (РЕАЛИЗМ)]
+Инструкция: Требования к качеству наложения дизайна.
+
+> CHECKLIST:
+   1. Shadows: Товар должен отбрасывать тень (Drop Shadow). "Летающие" предметы запрещены.
+   2. Perspective: Угол наклона товара соответствует углу наклона стола/фона.
+   3. Lighting: Источник света на товаре и на фоне должен совпадать (нельзя: товар освещен слева, фон справа).
+
+---
+# END OF FILE

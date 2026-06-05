@@ -1,0 +1,48 @@
+{
+  "id": "video_shorts",
+  "label": "⚡ Видео Shorts",
+  "icon": "⚡",
+  "version": "2.0",
+  "description": "Полный цикл: от идеи до постинга",
+  "run_type": "social",
+  "phases": {
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ]
+  },
+  "checkpoint_after": [
+    "A04"
+  ],
+  "stop_after": null,
+  "revision_loop": null,
+  "conflict_mode": "divergent",
+  "qa_agent": "A12",
+  "interaction_log": "economy/data/interaction_log_video_shorts.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ],
+  "hard_stop": {
+    "after_agent": "A04",
+    "residents": [
+      "victor"
+    ]
+  }
+}

@@ -4,6 +4,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import json
+# ── Системный мусор — папки которые никогда не являются агентами/цехами ──────
+_FS_GARBAGE: set[str] = {
+    "__pycache__", ".DS_Store", "desktop.ini", "Thumbs.db",
+    ".git", ".idea", ".vscode", "__MACOSX",
+}
+
+def _is_valid_dir(d: Path) -> bool:
+    """True если папка — реальный модуль, не системный мусор."""
+    return d.is_dir() and d.name not in _FS_GARBAGE and not d.name.startswith(".")
+
+
 
 MODULES_DIR = Path(__file__).parent / "modules"
 WORLD_MANIFEST_PATH = Path(__file__).parent / "world_manifest.md"
@@ -247,7 +258,7 @@ def list_workers() -> list[str]:
     
     workers = []
     for d in sorted(dept_path.iterdir()):
-        if d.is_dir() and d.name.startswith("A"):
+        if _is_valid_dir(d) and d.name.startswith("A"):
             workers.append(d.name)
 
     # ══ Умная сортировка: A00 < A00a < A01 < A02 ... A16 ══
@@ -339,7 +350,7 @@ def get_dept_workers(dept: str | None = None) -> dict[str, list[str]]:
         dept_path = MODULES_DIR / dept
         validated = {}
         for phase_name, agents in phases.items():
-            existing = [a for a in agents if (dept_path / a).is_dir()]
+            existing = [a for a in agents if _is_valid_dir(dept_path / a)]
             if existing:
                 validated[phase_name] = existing
         return validated
@@ -400,7 +411,7 @@ def load_depts() -> list[Dept]:
         return depts
 
     for d in MODULES_DIR.iterdir():
-        if not d.is_dir():
+        if not _is_valid_dir(d):
             continue
         info_path = d / "info.json"
         if not info_path.exists():
