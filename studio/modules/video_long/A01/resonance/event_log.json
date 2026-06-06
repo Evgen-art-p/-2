@@ -1,21 +1,21 @@
 [
   {
-    "ts": "2026-06-06T19:10:12.293205",
+    "ts": "2026-06-06T22:22:33.066373",
     "type": "relationship",
-    "content": "warmth к A02: 0.68 → 0.70. Передача работы в пайплайне bible",
-    "significance": 0.025,
+    "content": "warmth к A04: 0.50 → 0.52. Передача работы в пайплайне bible",
+    "significance": 0.017499999999999998,
     "related_agents": [
-      "A02"
+      "A04"
     ],
     "tags": []
   },
   {
-    "ts": "2026-06-06T19:10:12.301205",
+    "ts": "2026-06-06T22:22:33.079377",
     "type": "relationship",
-    "content": "trust к A02: 0.60 → 0.62. Передача работы в пайплайне bible",
-    "significance": 0.015,
+    "content": "trust к A04: 0.50 → 0.51. Передача работы в пайплайне bible",
+    "significance": 0.010499999999999999,
     "related_agents": [
-      "A02"
+      "A04"
     ],
     "tags": []
   }

@@ -342,55 +342,21 @@ class CartridgeRunner:
                 anchor_ctx = ""
                 if with_chat_context and worker_id == (from_worker or ""):
                     # Читаем ИЗОЛИРОВАННУЮ историю этого агента
+                    # а не глобальную кашу state[chat_history]
                     _isolated = self.state.get(f"chat_history_{worker_id}", [])
                     if not _isolated:
+                        # Fallback: глобальная история если изолированной нет
                         _isolated = self.state.get("chat_history", [])
-                    
-                    # Разделяем на: что агент уже написал vs правки Шефа
-                    _agent_replies = [
-                        m for m in _isolated
-                        if m.get("role") == "assistant"
-                        and m.get("worker") == worker_id
-                    ]
-                    _shef_edits = [
-                        m for m in _isolated
-                        if m.get("role") == "user"
-                    ]
-                    
-                    print(f"[ANCHOR] {worker_id}: "
-                          f"{len(_agent_replies)} ответов агента, "
-                          f"{len(_shef_edits)} правок Шефа "
-                          f"в chat_history_{worker_id}")
-                    
-                    parts = []
-                    
-                    # Часть 1: последний ответ агента из чата
-                    if _agent_replies:
-                        _last_reply = _agent_replies[-1].get("content", "")[:3000]
-                        parts.append(
-                            f"=== ТВОЙ ПОСЛЕДНИЙ ОТВЕТ ИЗ ЧАТА ===\n"
-                            f"{_last_reply}\n"
-                            f"=== КОНЕЦ ТВОЕГО ОТВЕТА ===\n"
-                        )
-                    
-                    # Часть 2: правки Шефа
-                    if _shef_edits:
-                        _edits_text = "\n".join([
-                            f"Шеф: {m.get('content','')[:1000]}"
-                            for m in _shef_edits[-5:]
-                        ])
-                        parts.append(
-                            f"=== ПРАВКИ ШЕФА ===\n"
-                            f"{_edits_text}\n"
-                            f"=== КОНЕЦ ПРАВОК ===\n"
-                        )
-                    
-                    if parts:
+                    chat_text = "\n".join([
+                        f"{m.get('role','')}: {m.get('content','')[:2000]}"
+                        for m in _isolated[-20:]
+                    ])
+                    if chat_text:
                         anchor_ctx = (
-                            "\n".join(parts) +
-                            f"\nЗАДАЧА: Возьми свой ответ выше и доработай его "
-                            f"с учётом правок Шефа. "
-                            f"НЕ пиши заново — улучши то что уже есть.\n"
+                            f"=== ПРАВКИ ШЕФА ДЛЯ {worker_id} ===\n"
+                            f"{chat_text}\n"
+                            f"ВАЖНО: учти ВСЕ правки и комментарии Шефа выше.\n"
+                            f"Не игнорируй ни одну деталь из этого контекста.\n"
                         )
 
                 context = build_agent_context(

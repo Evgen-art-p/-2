@@ -1,28 +1,28 @@
 [
   {
-    "ts": "2026-06-06T19:11:35.410742",
+    "ts": "2026-06-06T22:31:49.189650",
     "type": "relationship",
-    "content": "warmth к A02: 0.60 → 0.62. Передача работы в пайплайне bible",
+    "content": "warmth к A04: 0.94 → 0.95. Передача работы в пайплайне bible",
     "significance": 0.017499999999999998,
     "related_agents": [
-      "A02"
+      "A04"
     ],
     "tags": []
   },
   {
-    "ts": "2026-06-06T19:11:35.418744",
+    "ts": "2026-06-06T22:31:49.205649",
     "type": "relationship",
-    "content": "trust к A02: 0.56 → 0.57. Передача работы в пайплайне bible",
+    "content": "trust к A04: 0.76 → 0.77. Передача работы в пайплайне bible",
     "significance": 0.010499999999999999,
     "related_agents": [
-      "A02"
+      "A04"
     ],
     "tags": []
   },
   {
-    "ts": "2026-06-06T19:11:47.380740",
+    "ts": "2026-06-06T22:32:21.939586",
     "type": "relationship",
-    "content": "warmth к A04: 0.78 → 0.80. Передача работы в пайплайне bible",
+    "content": "warmth к A04: 0.95 → 0.98. Передача работы в пайплайне bible",
     "significance": 0.025,
     "related_agents": [
       "A04"
@@ -30,9 +30,9 @@
     "tags": []
   },
   {
-    "ts": "2026-06-06T19:11:47.391745",
+    "ts": "2026-06-06T22:32:21.950585",
     "type": "relationship",
-    "content": "trust к A04: 0.67 → 0.68. Передача работы в пайплайне bible",
+    "content": "trust к A04: 0.77 → 0.79. Передача работы в пайплайне bible",
     "significance": 0.015,
     "related_agents": [
       "A04"

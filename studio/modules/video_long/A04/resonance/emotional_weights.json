@@ -1,10 +1,10 @@
 {
   "A03": {
-    "warmth": 0.745,
-    "trust": 0.645,
+    "warmth": 0.906,
+    "trust": 0.741,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-06T19:11:47.393741",
+    "last_interaction": "2026-06-06T22:32:21.952584",
     "memory": "Передача работы в пайплайне bible"
   },
   "A05": {
@@ -14,5 +14,21 @@
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T15:41:21.240743",
     "memory": "Передача работы в пайплайне episode"
+  },
+  "A01": {
+    "warmth": 0.525,
+    "trust": 0.515,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T22:22:33.068377",
+    "memory": "Передача работы в пайплайне bible"
+  },
+  "A02": {
+    "warmth": 0.525,
+    "trust": 0.515,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T22:24:04.668127",
+    "memory": "Передача работы в пайплайне bible"
   }
 }
