@@ -340,11 +340,21 @@ def build_agent_context(
     # релевантные текущей задаче. Агент получает живую мудрость города.
     try:
         from studio.residents_manager import get_ole_memory_for_agent as _ole_mem
-        _ole_query = state.get("master_brief", "")[:200] or worker_id
-        _ole_ctx = _ole_mem(query=_ole_query, max_chars=1200)
-        if _ole_ctx:
-            context += _ole_ctx + "\n\n"
-            print(f"[ОЛЕ→РЮКЗАК] 🧠 {worker_id} получил память города")
+        _raw_brief = state.get("master_brief", "")
+        # ПАТЧ conflict_fix: не ищем если бриф — сырой JSON/System блок
+        # (содержит SYSTEM_JSON_START или начинается с '{') — Оле всё равно ничего не найдёт
+        _brief_is_json = (
+            "SYSTEM_JSON_START" in _raw_brief[:300]
+            or _raw_brief.strip().startswith("{")
+        )
+        if not _brief_is_json:
+            _ole_query = _raw_brief[:200] or worker_id
+            _ole_ctx = _ole_mem(query=_ole_query, max_chars=1200)
+            if _ole_ctx:
+                context += _ole_ctx + "\n\n"
+                print(f"[ОЛЕ→РЮКЗАК] 🧠 {worker_id} получил память города")
+        else:
+            print(f"[ОЛЕ] {worker_id}: бриф — JSON-блок, поиск пропущен")
     except Exception as _ole_err:
         print(f"[ОЛЕ] ⚠ {worker_id}: {_ole_err}")
     # ══ END Оле ══

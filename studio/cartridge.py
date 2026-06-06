@@ -359,21 +359,57 @@ class CartridgeRunner:
                 context = self._call_hook("on_before_agent", self.state, worker_id, context) or context
 
                 # ═══ Conflict System: divergent/adversarial режим ═══
+                # ПАТЧ conflict_fix: конфликт запускается ОДИН РАЗ — только для
+                # первого агента в фазе. Остальные агенты фазы пропускаются
+                # (их результаты уже внутри conflict_result['all_proposals']).
                 conflict_result = None
                 if _CONFLICT_ENABLED and hasattr(self.manifest, 'conflict_mode'):
                     conflict_mode = getattr(self.manifest, 'conflict_mode', 'none')
                     if conflict_mode != 'none':
-                        conflict_result = await _conflict.run_conflict_phase(
-                            state=self.state,
-                            phase_config={
-                                "id": phase,
-                                "conflict_mode": conflict_mode,
-                                "agents": self.manifest.phases.get(phase, [worker_id]),
-                            },
-                            build_context_fn=build_agent_context,
-                            call_agent_fn=call_agent,
-                            slot_id=self.slot_id,
-                        )
+                        # Проверяем: этот агент — первый в своей фазе?
+                        _phase_agents = self.manifest.phases.get(phase, [worker_id])
+                        _is_phase_leader = (len(_phase_agents) > 0 and worker_id == _phase_agents[0])
+                        if _is_phase_leader:
+                            # Передаём client_slug корректно (ключ в state — current_client)
+                            _conflict_state = dict(self.state)
+                            _conflict_state["client_slug"] = self.state.get("current_client", "_sandbox")
+                            conflict_result = await _conflict.run_conflict_phase(
+                                state=_conflict_state,
+                                phase_config={
+                                    "id": phase,
+                                    "conflict_mode": conflict_mode,
+                                    "agents": _phase_agents,
+                                },
+                                build_context_fn=build_agent_context,
+                                call_agent_fn=call_agent,
+                                slot_id=self.slot_id,
+                            )
+                            # Сохраняем результаты всех агентов конфликта в state
+                            if conflict_result and conflict_result.get("all_proposals"):
+                                for _caid, _cdata in conflict_result["all_proposals"].items():
+                                    if _caid != worker_id:  # победитель обрабатывается ниже
+                                        self.state["results"][_caid] = {
+                                            "text": _cdata.get("human_text", ""),
+                                            "meta": _cdata.get("meta", {}),
+                                            "raw":  _cdata.get("raw_result", ""),
+                                        }
+                                # Пропускаем всех остальных агентов этой фазы — они уже обработаны
+                                _skip_to = None
+                                for _next_phase, _next_agents in self.manifest.phases.items():
+                                    if _next_phase != phase:
+                                        if _next_agents:
+                                            _skip_to = _next_agents[0]
+                                        break
+                                if _skip_to:
+                                    for _si, _sa in enumerate(all_agents):
+                                        if _sa == _skip_to:
+                                            i = _si - 1  # -1 т.к. i += 1 в конце цикла
+                                            break
+                        else:
+                            # Не первый агент фазы — результат уже записан конфликтом выше
+                            print(f"[CONFLICT] {worker_id} обработан как часть конфликта — пропуск")
+                            i += 1
+                            continue
 
                 # Вызываем агента (или берём победителя конфликта)
                 if conflict_result:

@@ -30,9 +30,9 @@
     "streak": 0,
     "stars": 0,
     "_note": "автоинициализация при рождении — меняется в процессе жизни",
-    "favorite_location": "Маяк Пробуждения",
-    "visit_streak": 1,
-    "habit_strength": 0.175
+    "favorite_location": "Грондхейм",
+    "visit_streak": 6,
+    "habit_strength": 0.15
   },
   "balance": {
     "GND": 100.0,

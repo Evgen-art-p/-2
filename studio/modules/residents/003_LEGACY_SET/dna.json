@@ -31,8 +31,8 @@
     "stars": 0,
     "_note": "автоинициализация при рождении — меняется в процессе жизни",
     "favorite_location": "Грондхейм",
-    "visit_streak": 1,
-    "habit_strength": 0.0
+    "visit_streak": 2,
+    "habit_strength": 0.05
   },
   "balance": {
     "GND": 100.0,

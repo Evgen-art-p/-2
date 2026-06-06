@@ -1,5 +1,14 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-06-06T11:48:43.670267",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: human_text",
+      "tags": [],
+      "emotional_weight": 0.3
+    }
+  ],
   "summary": "",
   "last_location": "",
   "location_tags": []

@@ -1,1 +1,10 @@
-{}
+{
+  "A01": {
+    "warmth": 0.55,
+    "trust": 0.53,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T11:48:24.950267",
+    "memory": "Передача работы в пайплайне content_plan"
+  }
+}

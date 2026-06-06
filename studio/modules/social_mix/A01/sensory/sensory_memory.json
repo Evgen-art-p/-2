@@ -1,5 +1,38 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-06-06T06:12:11.861376",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: human_text",
+      "tags": [],
+      "emotional_weight": 0.291
+    },
+    {
+      "ts": "2026-06-06T11:40:37.918941",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: human_text",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T11:48:24.940266",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: human_text",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T11:49:03.636295",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: human_text",
+      "tags": [],
+      "emotional_weight": 0.3
+    }
+  ],
   "summary": "",
   "last_location": "",
   "location_tags": []

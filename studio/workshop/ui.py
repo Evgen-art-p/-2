@@ -295,10 +295,9 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     
     is_turbo = (dept == "turbo")
 
-     # ══ DYNAMIC WORKERS: перестраиваем под текущий цех ══
-    global WORKERS, ALL_WORKERS
-    WORKERS, ALL_WORKERS = _build_workers_for_dept(dept)
-    print(f"[WORKSHOP] Цех={dept}: {sum(len(v) for v in WORKERS.values())} агентов, фазы: {list(WORKERS.keys())}")
+    # ══ DYNAMIC WORKERS: локальные переменные — не трогаем глобальные ══
+    _dept_workers, _all_workers = _build_workers_for_dept(dept)
+    print(f"[WORKSHOP] Цех={dept}: {sum(len(v) for v in _dept_workers.values())} агентов, фазы: {list(_dept_workers.keys())}")
     _page_client = ui.context.client
 
     state = {
@@ -1418,7 +1417,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         state["paused_at"] = None
 
         # Пересобираем previous_output из актуальных results
-        all_agents_flat = [w for workers in WORKERS.values() for w in workers]
+        all_agents_flat = [w for workers in _dept_workers.values() for w in workers]
         rebuilt_output = ""
 
         for wid in all_agents_flat:
@@ -2411,7 +2410,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                     'display:flex; align-items:center; gap:6px; flex-wrap:wrap; '
                     'justify-content:center; flex:1;'
                 ):
-                    _avatar_list = ALL_TURBO if is_turbo else ALL_WORKERS
+                    _avatar_list = ALL_TURBO if is_turbo else _all_workers
                     for worker_id in _avatar_list:
                         avatar = ui.element('div').classes(f'avatar {"active" if worker_id == "SET" else ""}')
                         avatar.on('click', lambda e, w=worker_id: switch_worker(w))

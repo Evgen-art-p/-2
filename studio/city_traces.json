@@ -1,10 +1,305 @@
 {
-  "computed_at": "2026-06-06T00:48:11",
-  "events_analyzed": 7,
+  "computed_at": "2026-06-06T03:24:10",
+  "events_analyzed": 414,
   "period_days": 30,
-  "location_streaks": {},
-  "stress_at_location": {},
-  "meeting_frequency": {},
+  "location_streaks": {
+    "Лока": [
+      {
+        "location": "Грондхейм",
+        "visits": 19,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      },
+      {
+        "location": "Маяк Пробуждения",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Джем": [
+      {
+        "location": "Грондхейм",
+        "visits": 15,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Сет": [
+      {
+        "location": "Грондхейм",
+        "visits": 2,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Стелла": [
+      {
+        "location": "Маяк Пробуждения",
+        "visits": 2,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Мими Мем": [
+      {
+        "location": "Грондхейм",
+        "visits": 2,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Постпро": [
+      {
+        "location": "Грондхейм",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Нейро Спарк": [
+      {
+        "location": "Грондхейм",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Локус Скрипт": [
+      {
+        "location": "Грондхейм",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Визор": [
+      {
+        "location": "Маяк Пробуждения",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Хронос Мемо": [
+      {
+        "location": "Маяк Пробуждения",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ],
+    "Финализатор": [
+      {
+        "location": "Маяк Пробуждения",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      }
+    ]
+  },
+  "stress_at_location": {
+    "Грондхейм": {
+      "avg_stress": 0.0,
+      "visit_count": 41,
+      "high_stress_agents": []
+    },
+    "Маяк Пробуждения": {
+      "avg_stress": 0.0,
+      "visit_count": 6,
+      "high_stress_agents": []
+    }
+  },
+  "meeting_frequency": {
+    "Джем|Лока": {
+      "agent_a": "Джем",
+      "agent_b": "Лока",
+      "meetings": 10,
+      "avg_quality": 0.641,
+      "locations": [
+        "Грондхейм"
+      ]
+    }
+  },
   "revolt_patterns": {},
-  "voice_themes": {}
+  "voice_themes": {
+    "Лока": [
+      {
+        "word": "рассвет",
+        "count": 18
+      },
+      {
+        "word": "свет",
+        "count": 18
+      },
+      {
+        "word": "грондхейме",
+        "count": 15
+      },
+      {
+        "word": "золотой",
+        "count": 14
+      },
+      {
+        "word": "сегодня",
+        "count": 12
+      },
+      {
+        "word": "особенный",
+        "count": 11
+      },
+      {
+        "word": "меня",
+        "count": 10
+      },
+      {
+        "word": "чувствую",
+        "count": 9
+      },
+      {
+        "word": "срочных",
+        "count": 9
+      },
+      {
+        "word": "проникает",
+        "count": 9
+      }
+    ],
+    "Джем": [
+      {
+        "word": "меня",
+        "count": 21
+      },
+      {
+        "word": "пробуждения",
+        "count": 18
+      },
+      {
+        "word": "тянет",
+        "count": 16
+      },
+      {
+        "word": "сегодня",
+        "count": 15
+      },
+      {
+        "word": "маяку",
+        "count": 15
+      },
+      {
+        "word": "синий",
+        "count": 10
+      },
+      {
+        "word": "почувствовать",
+        "count": 8
+      },
+      {
+        "word": "свет",
+        "count": 7
+      },
+      {
+        "word": "чувствую",
+        "count": 7
+      },
+      {
+        "word": "сверить",
+        "count": 7
+      }
+    ],
+    "Сет": [
+      {
+        "word": "маяку",
+        "count": 4
+      },
+      {
+        "word": "пробуждения",
+        "count": 4
+      },
+      {
+        "word": "рассвет",
+        "count": 3
+      },
+      {
+        "word": "золотой",
+        "count": 3
+      },
+      {
+        "word": "свет",
+        "count": 3
+      },
+      {
+        "word": "идеальное",
+        "count": 3
+      },
+      {
+        "word": "время",
+        "count": 3
+      },
+      {
+        "word": "тянет",
+        "count": 3
+      },
+      {
+        "word": "меня",
+        "count": 3
+      },
+      {
+        "word": "сегодня",
+        "count": 2
+      }
+    ],
+    "Стелла": [
+      {
+        "word": "потока",
+        "count": 2
+      },
+      {
+        "word": "сегодня",
+        "count": 2
+      },
+      {
+        "word": "спорят",
+        "count": 2
+      }
+    ],
+    "Мими Мем": [
+      {
+        "word": "сегодня",
+        "count": 2
+      },
+      {
+        "word": "меня",
+        "count": 2
+      },
+      {
+        "word": "тянет",
+        "count": 2
+      },
+      {
+        "word": "маяк",
+        "count": 2
+      },
+      {
+        "word": "пробуждения",
+        "count": 2
+      },
+      {
+        "word": "пойду",
+        "count": 2
+      }
+    ],
+    "Постпро": [
+      {
+        "word": "свет",
+        "count": 2
+      }
+    ],
+    "Финализатор": [
+      {
+        "word": "туда",
+        "count": 2
+      }
+    ]
+  }
 }

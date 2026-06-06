@@ -32,7 +32,7 @@
     "_note": "автоинициализация при рождении — меняется в процессе жизни",
     "favorite_location": "Маяк Пробуждения",
     "visit_streak": 1,
-    "habit_strength": 0.0
+    "habit_strength": 0.025
   },
   "balance": {
     "GND": 100.0,

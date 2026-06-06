@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from nicegui import ui
+from nicegui.client import Client as _NiceGUIClient
 from studio.cartridge import PipelineCallbacks
 
 
@@ -29,10 +30,27 @@ class NiceGUICallbacks(PipelineCallbacks):
         self._update_status = update_status_fn
         self._update_runs = update_runs_display_fn
 
+    def _client_alive(self) -> bool:
+        """Проверяет что NiceGUI клиент ещё существует.
+        
+        Когда конфликтный ран делает asyncio.gather с 4 параллельными LLM-вызовами,
+        NiceGUI WebSocket может разорваться (нет heartbeat ~30 сек).
+        После разрыва Client удаляется из Client.instances.
+        Все попытки ui.notify() / with self._client: бросают предупреждения.
+        
+        Пайплайн должен ПРОДОЛЖАТЬСЯ без UI — результаты пишутся в файлы.
+        """
+        try:
+            return self._client.id in _NiceGUIClient.instances
+        except Exception:
+            return False
+
     # ── Pipeline lifecycle ────────────────────────────────
 
     async def on_pipeline_start(self, slot_id: str, run_type: str):
         self.state["pipeline_running"] = True
+        if not self._client_alive():
+            return
         try:
             with self._client:
                 self._update_status()
@@ -43,6 +61,9 @@ class NiceGUICallbacks(PipelineCallbacks):
 
     async def on_pipeline_done(self, slot_id: str, results: dict):
         self.state["pipeline_running"] = False
+        if not self._client_alive():
+            print(f"[CALLBACKS] Пайплайн завершён (slot={slot_id}), UI клиент недоступен — результаты в файлах")
+            return
         try:
             with self._client:
                 self._update_status()
@@ -53,6 +74,9 @@ class NiceGUICallbacks(PipelineCallbacks):
 
     async def on_pipeline_error(self, slot_id: str, error: str):
         self.state["pipeline_running"] = False
+        print(f"[CALLBACKS] ❌ Ошибка пайплайна (slot={slot_id}): {error}")
+        if not self._client_alive():
+            return
         try:
             with self._client:
                 self._update_status()
@@ -63,6 +87,9 @@ class NiceGUICallbacks(PipelineCallbacks):
     # ── Agent lifecycle ───────────────────────────────────
 
     async def on_agent_start(self, slot_id: str, worker_id: str, label: str, phase: str):
+        print(f"[CALLBACKS] 🤖 {label} ({worker_id}) [{phase}] стартует...")
+        if not self._client_alive():
+            return
         try:
             with self._client:
                 if worker_id in self.avatars_ref['elements']:
@@ -77,6 +104,9 @@ class NiceGUICallbacks(PipelineCallbacks):
         self, slot_id: str, worker_id: str, label: str,
         human_text: str, meta: dict, ghost_ids: list[str]
     ):
+        print(f"[CALLBACKS] ✅ {label} ({worker_id}) готов")
+        if not self._client_alive():
+            return
         try:
             with self._client:
                 if worker_id in self.avatars_ref['elements']:
@@ -122,6 +152,8 @@ class NiceGUICallbacks(PipelineCallbacks):
     # ── Viewer ────────────────────────────────────────────
 
     async def on_viewer_update(self, slot_id: str, worker_id: str, content: str):
+        if not self._client_alive():
+            return
         try:
             with self._client:
                 self._update_viewer(content)

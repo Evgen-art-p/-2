@@ -1,8 +1,43 @@
 # studio/llm.py
 import json
+import time
 import requests
 from studio.config import OPENROUTER_API_KEY, OPENROUTER_MODEL, PROXY_URL, HTTP_TIMEOUT, TAVILY_KEY
 from studio import billing_ledger as _ledger  # ← ДОБАВЛЕНО
+
+
+# ══ RETRY HELPER ══════════════════════════════════════════════════
+# Ошибка 10054 (Connection Reset) = OpenRouter/прокси сбросил сокет.
+# Это временная сетевая проблема — ретраим с паузой.
+# НЕ ретраим: 400 Bad Request, 401 Unauthorized, 429 Rate Limit.
+
+_RETRY_DELAYS = [0, 2, 5]  # секунды перед попыткой 1, 2, 3
+
+def _post_with_retry(url: str, headers: dict, json_payload: dict,
+                     proxies: dict = None, timeout: int = None) -> requests.Response:
+    """requests.post с тремя попытками при сетевых ошибках (10054, ConnectionReset)."""
+    last_err = None
+    for attempt, delay in enumerate(_RETRY_DELAYS, start=1):
+        if delay > 0:
+            print(f"[RETRY] Сеть упала — ждём {delay}с (попытка {attempt}/{len(_RETRY_DELAYS)})...")
+            time.sleep(delay)
+        try:
+            r = requests.post(url, headers=headers, json=json_payload,
+                              proxies=proxies, timeout=timeout)
+            return r  # успех — возвращаем ответ как есть
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.ChunkedEncodingError) as e:
+            last_err = e
+            print(f"[RETRY] Попытка {attempt} упала: {type(e).__name__}")
+            # Не ретраим если это явно не сетевая проблема
+            if "ProxyError" in type(e).__name__:
+                raise  # прокси не настроен — ретрай бессмысленен
+        except requests.exceptions.Timeout:
+            raise  # таймаут — ретраить не имеет смысла
+    raise requests.exceptions.ConnectionError(
+        f"OpenRouter недоступен после {len(_RETRY_DELAYS)} попыток: {last_err}"
+    )
+# ═════════════════════════════════════════════════════════════════
 
 
 def stress_to_temperature(stress: float = 0.0, light: float = 0.8) -> float:
@@ -148,10 +183,10 @@ def chat_with_tools(
             payload["tool_choice"] = "auto"
 
         try:
-            r = requests.post(
+            r = _post_with_retry(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
-                json=payload,
+                json_payload=payload,
                 proxies=proxies,
                 timeout=HTTP_TIMEOUT,
             )
@@ -237,10 +272,10 @@ def chat_with_tools(
         payload_final["temperature"] = temperature
 
     try:
-        r = requests.post(
+        r = _post_with_retry(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
-            json=payload_final,
+            json_payload=payload_final,
             proxies=proxies,
             timeout=HTTP_TIMEOUT,
         )
@@ -303,13 +338,13 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
         payload["temperature"] = temperature
 
     try:
-        r = requests.post(
+        r = _post_with_retry(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
             },
-            json=payload,
+            json_payload=payload,
             proxies=proxies,
             timeout=HTTP_TIMEOUT,
         )
@@ -443,13 +478,13 @@ def chat_with_images(system: str, user_text: str, images: list = None,
         payload["temperature"] = temperature
 
     try:
-        r = requests.post(
+        r = _post_with_retry(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
             },
-            json=payload,
+            json_payload=payload,
             proxies=proxies,
             timeout=HTTP_TIMEOUT,
         )
