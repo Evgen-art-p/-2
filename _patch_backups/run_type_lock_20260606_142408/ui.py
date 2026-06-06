@@ -1330,23 +1330,18 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             state["master_brief"] = brief
 
             # ═══ SET AUTO-MODE: контент-план или производство ═══
-            # ПАТЧ run_type_lock: не меняем режим если пользователь
-            # выбрал его вручную через кнопки ПЛАН/ПОСТ
-            if not state.get("run_type_locked", False):
-                dept = state.get("active_dept", "social_mix")
-                default_type = DEPT_TO_RUNTYPE.get(dept, "social")
-                new_run_type = detect_run_type_from_brief(
-                    brief=brief,
-                    dept=dept,
-                    default_run_type=default_type,
-                )
-                if state["run_type"] != new_run_type:
-                    state["run_type"] = new_run_type
-                    mode_label = "КОНТЕНТ-ПЛАН (A01-A04)" if new_run_type == "content_plan" else new_run_type
-                    print(f"[SET] Режим → {new_run_type}")
-                    ui.notify(f"📝 SET: режим {mode_label}", type="info", timeout=5000)
-            else:
-                print(f"[SET] Режим зафиксирован пользователем: {state['run_type']}")
+            dept = state.get("active_dept", "social_mix")
+            default_type = DEPT_TO_RUNTYPE.get(dept, "social")
+            new_run_type = detect_run_type_from_brief(
+                brief=brief,
+                dept=dept,
+                default_run_type=default_type,
+            )
+            if state["run_type"] != new_run_type:
+                state["run_type"] = new_run_type
+                mode_label = "КОНТЕНТ-ПЛАН (A01-A04)" if new_run_type == "content_plan" else new_run_type
+                print(f"[SET] Режим → {new_run_type}")
+                ui.notify(f"📝 SET: режим {mode_label}", type="info", timeout=5000)
             # ═════════════════════════════════════════════════════
 
             update_viewer(f"# MASTER BRIEF\n\n{brief}")

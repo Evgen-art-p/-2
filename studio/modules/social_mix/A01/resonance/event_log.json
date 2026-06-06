@@ -20,9 +20,9 @@
     "tags": []
   },
   {
-    "ts": "2026-06-06T14:02:15.867645",
+    "ts": "2026-06-06T14:26:13.923317",
     "type": "relationship",
-    "content": "warmth к A02: 0.57 → 0.60. Передача работы в пайплайне content_plan",
+    "content": "warmth к A02: 0.62 → 0.65. Передача работы в пайплайне content_plan",
     "significance": 0.025,
     "related_agents": [
       "A02"
@@ -30,9 +30,9 @@
     "tags": []
   },
   {
-    "ts": "2026-06-06T14:02:15.876644",
+    "ts": "2026-06-06T14:26:13.932316",
     "type": "relationship",
-    "content": "trust к A02: 0.55 → 0.56. Передача работы в пайплайне content_plan",
+    "content": "trust к A02: 0.57 → 0.59. Передача работы в пайплайне content_plan",
     "significance": 0.015,
     "related_agents": [
       "A02"

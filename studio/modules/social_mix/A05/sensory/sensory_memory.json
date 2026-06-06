@@ -7,6 +7,14 @@
       "content": "Выполнил задачу: human_text",
       "tags": [],
       "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T14:20:44.950678",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: Шеф, приступаю к разметке. Композиция — это закон.",
+      "tags": [],
+      "emotional_weight": 0.3
     }
   ],
   "summary": "",

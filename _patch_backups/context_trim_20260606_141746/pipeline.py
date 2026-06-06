@@ -823,9 +823,7 @@ async def process_agent_result(
     if meta.get("next_input"):
         previous_output += f"\n\n--- {label} ({worker_id}) ---\n{meta['next_input']}"
     else:
-        # ПАТЧ context_trim: 400 символов вместо 800
-        # К A12 цепочка = 12 агентов × 400 = 4800 симв вместо 9600
-        previous_output += f"\n\n--- {label} ({worker_id}) ---\n{human_text[:400]}{chain_json}"
+        previous_output += f"\n\n--- {label} ({worker_id}) ---\n{human_text[:800]}{chain_json}"
 
     return human_text, previous_output, ghost_ids
 

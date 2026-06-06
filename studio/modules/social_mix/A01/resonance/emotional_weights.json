@@ -8,11 +8,11 @@
     "memory": "Отлично справилась с последним раном."
   },
   "A02": {
-    "warmth": 0.6,
-    "trust": 0.56,
+    "warmth": 0.65,
+    "trust": 0.59,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-06T14:02:15.873648",
+    "last_interaction": "2026-06-06T14:26:13.929316",
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A04": {

@@ -60,7 +60,7 @@ TAVILY_KEY = os.getenv("TAVILY_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY",  "")
 SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY", "")
 
-HTTP_TIMEOUT = 90  # ПАТЧ context_trim: 90 сек вместо 120
+HTTP_TIMEOUT = 120
 
 
 # === UI Cards ===

@@ -14,5 +14,21 @@
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T11:49:03.649295",
     "memory": "Передача работы в пайплайне content_plan"
+  },
+  "A04": {
+    "warmth": 0.517,
+    "trust": 0.51,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T14:20:44.965679",
+    "memory": "Передача работы в пайплайне social"
+  },
+  "A06": {
+    "warmth": 0.525,
+    "trust": 0.515,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T14:21:02.261691",
+    "memory": "Передача работы в пайплайне social"
   }
 }
