@@ -1,1 +1,2 @@
 {"ts": "2026-06-06T02:09:51.219102", "from_agent": "A01", "to_agent": "A02", "slot_id": "video_long", "interaction_type": "collaboration", "quality": 0.5, "note": "Передача работы в пайплайне episode", "compatibility_snapshot": null, "outcome_signal": null}
+{"ts": "2026-06-06T02:41:13.920171", "from_agent": "A01", "to_agent": "A02", "slot_id": "video_long", "interaction_type": "collaboration", "quality": 0.5, "note": "Передача работы в пайплайне episode", "compatibility_snapshot": null, "outcome_signal": null}

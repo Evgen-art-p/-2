@@ -84,4 +84,4 @@ from studio.slot_manager import SlotManager
 SlotManager().print_summary()
 
 if __name__ in {"__main__", "__mp_main__"}:
-    ui.run()
+    ui.run(reload=False)

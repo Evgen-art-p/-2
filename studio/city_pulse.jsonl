@@ -355,3 +355,15 @@
 {"ts":"2026-06-06T02:27:04","id":"evt_a2af4624","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
 {"ts":"2026-06-06T02:27:04","id":"evt_29ace725","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
 {"ts":"2026-06-06T02:27:04","id":"evt_7897d212","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_6fc4bb8b","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_c665d6b8","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_dcae47ac","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_f29fb744","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_90c92805","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_e575bca9","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_cbcccee3","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_7f01eb49","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_e443a35b","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_d6bd1795","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_1686be53","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:40:16","id":"evt_7778a2f2","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
