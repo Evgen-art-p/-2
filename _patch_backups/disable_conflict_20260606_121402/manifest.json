@@ -43,7 +43,7 @@
       "A03"
     ]
   ],
-  "conflict_mode": "none",
+  "conflict_mode": "divergent",
   "qa_agent": "A05",
   "interaction_log": "economy/data/interaction_log_web_story.jsonl",
   "memory_layers": [

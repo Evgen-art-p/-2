@@ -2802,17 +2802,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
 
                 async def _check_auto_run():
                     global _auto_run_requested
-                    # ПАТЧ timer: guard — не запускаем если pipeline уже работает
-                    if not _auto_run_requested:
-                        return
-                    if state.get("pipeline_running"):
-                        return
-                    _auto_run_requested = False
-                    try:
+                    if _auto_run_requested and not state["pipeline_running"]:
+                        _auto_run_requested = False
                         with _page_client:
-                            await run_cartridge_pipeline()
-                    except Exception:
-                        pass  # клиент мог умереть
+                            await run_cartridge_pipeline()  # <- добавить отступ (4 пробела)
 
                 ui.timer(1.0, _check_auto_run)
 

@@ -360,30 +360,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
     import studio.modules_registry as _mr; _mr.CURRENT_DEPT = dept
     
     ui.add_head_html(f'<style>{IDENTITY_BUREAU_CSS}</style>')
-    # ПАТЧ: JS keep-alive — посылает пустое сообщение каждые 20 сек
-    # чтобы WebSocket не закрывался пока агент думает (LLM 30-90 сек)
-    ui.add_head_html("""<script>
-    (function() {
-        var _kaTimer = null;
-        function _startKeepalive() {
-            if (_kaTimer) return;
-            _kaTimer = setInterval(function() {
-                try {
-                    // NiceGUI использует глобальный socket объект
-                    if (window.socket && window.socket.connected) {
-                        window.socket.emit('keepalive', {});
-                    }
-                } catch(e) {}
-            }, 20000);
-        }
-        // Запускаем после загрузки страницы
-        if (document.readyState === 'complete') {
-            _startKeepalive();
-        } else {
-            window.addEventListener('load', _startKeepalive);
-        }
-    })();
-    </script>""")
 
     # ── CSS Виктора ──
     ui.add_head_html("""<style>
@@ -2802,17 +2778,10 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
 
                 async def _check_auto_run():
                     global _auto_run_requested
-                    # ПАТЧ timer: guard — не запускаем если pipeline уже работает
-                    if not _auto_run_requested:
-                        return
-                    if state.get("pipeline_running"):
-                        return
-                    _auto_run_requested = False
-                    try:
+                    if _auto_run_requested and not state["pipeline_running"]:
+                        _auto_run_requested = False
                         with _page_client:
-                            await run_cartridge_pipeline()
-                    except Exception:
-                        pass  # клиент мог умереть
+                            await run_cartridge_pipeline()  # <- добавить отступ (4 пробела)
 
                 ui.timer(1.0, _check_auto_run)
 

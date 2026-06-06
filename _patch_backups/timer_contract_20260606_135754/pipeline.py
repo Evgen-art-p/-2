@@ -18,13 +18,14 @@ from studio.workshop.memory import (
 from studio.workshop.assets import _load_asset_catalog
 
 # ══ Contract Validator — Таможня Контракта ══
-# ПАТЧ timer_contract: временно отключён — ключи контракта не совпадают
-# с реальным output агентов, вызывает ретраи (+30 сек каждый), гробит WS.
-# Включить обратно после синхронизации CHAIN_CONTRACT.md с промптами агентов.
-_CONTRACT_ENABLED = False
-def _contract_validate(agent_id, my_output, dept=""): return []
-def _contract_retry_prompt(errors, agent_id): return ""
-print("[CONTRACT] Таможня Контракта — ПАУЗА (ключи не синхронизированы)")
+try:
+    from studio.workshop.contract_validator import validate as _contract_validate, build_retry_prompt as _contract_retry_prompt
+    _CONTRACT_ENABLED = True
+    print("[CONTRACT] Таможня Контракта подключена")
+except ImportError:
+    _CONTRACT_ENABLED = False
+    def _contract_validate(agent_id, my_output): return []
+    def _contract_retry_prompt(errors, agent_id): return ""
 # ══ END Contract ══
 
 

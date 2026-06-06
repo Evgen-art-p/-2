@@ -84,9 +84,14 @@ from studio.slot_manager import SlotManager
 SlotManager().print_summary()
 
 if __name__ in {"__main__", "__mp_main__"}:
-    # reconnect_timeout=300: браузер ждёт 5 минут пока агент думает
-    # (дефолт NiceGUI ~30 сек — меньше чем один LLM-запрос)
+    # ПАТЧ nicegui_timeout:
+    # reconnect_timeout=300 — браузер ждёт переподключения 5 минут
+    #   (LLM-запросы могут идти 30-90 сек, дефолт NiceGUI ~30 сек)
+    # ping_interval=15, ping_timeout=60 — сервер пингует браузер каждые 15 сек
+    #   чтобы WebSocket не считался мёртвым при длинных запросах
     ui.run(
         reload=False,
         reconnect_timeout=300,
+        ping_interval=15,
+        ping_timeout=60,
     )

@@ -28,7 +28,7 @@
   "checkpoint_after": [],
   "stop_after": null,
   "revision_loop": null,
-  "conflict_mode": "divergent",
+  "conflict_mode": "none",
   "qa_agent": "A12",
   "interaction_log": "economy/data/interaction_log_video_long.jsonl",
   "memory_layers": [

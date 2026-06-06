@@ -30,7 +30,7 @@
   "revision_loop": null,
   "turbo_workers": [],
   "turbo_parallel": [],
-  "conflict_mode": "divergent",
+  "conflict_mode": "none",
   "qa_agent": "A12",
   "interaction_log": "economy/data/interaction_log_logo_design.jsonl",
   "memory_layers": [

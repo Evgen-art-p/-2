@@ -84,9 +84,4 @@ from studio.slot_manager import SlotManager
 SlotManager().print_summary()
 
 if __name__ in {"__main__", "__mp_main__"}:
-    # reconnect_timeout=300: браузер ждёт 5 минут пока агент думает
-    # (дефолт NiceGUI ~30 сек — меньше чем один LLM-запрос)
-    ui.run(
-        reload=False,
-        reconnect_timeout=300,
-    )
+    ui.run(reload=False)

@@ -27,7 +27,7 @@
   },
   "checkpoint_after": [],
   "stop_after": null,
-  "conflict_mode": "divergent",
+  "conflict_mode": "none",
   "qa_agent": "A12",
   "interaction_log": "economy/data/interaction_log_social_mix.jsonl",
   "memory_layers": [
