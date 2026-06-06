@@ -1,0 +1,12 @@
+{
+  "released": {
+    "social_mix::PRE-PROD::A03": 2,
+    "social_mix::PRE-PROD::A04": 2
+  },
+  "wins": {
+    "social_mix::PRE-PROD::A03": 2,
+    "social_mix::PRE-PROD::A04": 2
+  },
+  "total_conflicts": 4,
+  "last_updated": 1780711245.665494
+}
