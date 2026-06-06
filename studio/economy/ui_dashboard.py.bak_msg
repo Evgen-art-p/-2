@@ -908,6 +908,7 @@ def dashboard_page():
                         "min-height:80px;"
                     ).on("click", lambda _, r=_res: (
                         select_council_resident(r),
+                        render_council_grid(),
                     )):
                         ui.html(
                                 "<div style='font-size:1.6rem;margin-bottom:5px;"
@@ -976,11 +977,9 @@ def dashboard_page():
         if not resident:
             return
 
-        _add_council_message("user", text, "Шеф")
         inp.set_value("")
+        _add_council_message("user", text, "Шеф")
         render_council_chat()
-        import asyncio
-        await asyncio.sleep(0.05)
         await _council_talk_with_text(resident, text)
 
     async def _council_talk_with_text(resident: dict, user_text: str):

@@ -908,6 +908,7 @@ def dashboard_page():
                         "min-height:80px;"
                     ).on("click", lambda _, r=_res: (
                         select_council_resident(r),
+                        render_council_grid(),
                     )):
                         ui.html(
                                 "<div style='font-size:1.6rem;margin-bottom:5px;"
