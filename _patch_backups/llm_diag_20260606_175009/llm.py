@@ -337,9 +337,6 @@ def chat(system: str, user: str, knowledge: str = "", history: list = None, temp
     if temperature is not None:
         payload["temperature"] = temperature
 
-    # ДИАГНОСТИКА: показываем что запрос уходит и размер контекста
-    _ctx_size = sum(len(str(m.get('content', ''))) for m in messages)
-    print(f"[LLM] → {agent_id} | контекст: {_ctx_size} симв | модель: {OPENROUTER_MODEL[:30]}")
     try:
         r = _post_with_retry(
             "https://openrouter.ai/api/v1/chat/completions",
