@@ -117,8 +117,6 @@ def _validate_asset_ids(meta, worker_id: str) -> list[str]:
     # selected_assets (Стелла)
     selected = my_output.get("selected_assets", {})
     for cat in ["characters", "locations", "props"]:
-        if not isinstance(selected, dict):
-            selected = {}
         for item in selected.get(cat, []):
             _check_ids([item.get("id")], f"selected_assets.{cat}")
 

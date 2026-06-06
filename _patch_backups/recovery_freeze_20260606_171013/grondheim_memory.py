@@ -1194,8 +1194,7 @@ def sync_to_dna(
 
     # ══ Recovery Mechanics (Спринт 16) ══
     # 3 победы подряд — стресс сбрасывается физиологически
-    # ПАТЧ recovery_freeze: не сбрасываем если агент сейчас в цеху
-    if streak >= 3 and not _is_agent_working(agent_id):
+    if streak >= 3:
         old_stress = dynamic["Stress"]
         dynamic["Stress"] = 0.0
         dynamic["Internal_Light"] = min(1.0, round(dynamic["Internal_Light"] + 0.05, 3))
@@ -1204,8 +1203,6 @@ def sync_to_dna(
             f"Stress сброшен ({old_stress:.2f} → 0.0), "
             f"Light={dynamic['Internal_Light']:.2f}"
         )
-    elif streak >= 3:
-        print(f"[RECOVERY] 🔒 {agent_id}: streak={streak} но в цеху — Recovery заморожен")
     # ══ END Recovery ══
 
     dna["dynamic"] = dynamic

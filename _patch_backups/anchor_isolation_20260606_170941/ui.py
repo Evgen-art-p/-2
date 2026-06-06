@@ -1290,12 +1290,6 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                 "content": _clean_response(response), 
                 "worker": worker_id
             })
-            # Изолированная история для ANCHOR — ответ агента
-            state.setdefault(f"chat_history_{worker_id}", []).append({
-                "role": "assistant",
-                "content": _clean_response(response),
-                "worker": worker_id
-            })
             
             update_chat_display()
                         

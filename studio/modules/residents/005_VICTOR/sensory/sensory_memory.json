@@ -17,6 +17,30 @@
       "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'APPROVED_WITH_CONCERNS', 'strong_points': ['Хук с глазом и трещиной — визуальный якорь, который мгновенно формирует эмоциональную петлю и обещает зрителю трансформацию.",
       "tags": [],
       "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T16:40:02.577102",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'NEEDS_REWORK', 'strong_points': ['Мир Грондхейма и визуальный код Адама — безупречны. Тактильный дзен, голографический брутализм, янтарный свет склеек. Это уже почти ве",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T16:44:29.042098",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'APPROVED_WITH_CONCERNS', 'strong_points': ['Сезонный логлайн — чистая поэзия: немой монтажёр, сшивающий реальность, становится шестым пальцем студии. Это обещание, от к",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T16:52:22.664162",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'NEEDS_REWORK', 'strong_points': ['Мотив «трещина → шрам → свет» — визуальный нерв, который обещает трансформацию не только героя, но самой ткани реальности.', 'Эпизод 2",
+      "tags": [],
+      "emotional_weight": 0.3
     }
   ],
   "last_location": "",

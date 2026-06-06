@@ -341,23 +341,12 @@ class CartridgeRunner:
                 # Собираем контекст
                 anchor_ctx = ""
                 if with_chat_context and worker_id == (from_worker or ""):
-                    # Читаем ИЗОЛИРОВАННУЮ историю этого агента
-                    # а не глобальную кашу state[chat_history]
-                    _isolated = self.state.get(f"chat_history_{worker_id}", [])
-                    if not _isolated:
-                        # Fallback: глобальная история если изолированной нет
-                        _isolated = self.state.get("chat_history", [])
                     chat_text = "\n".join([
-                        f"{m.get('role','')}: {m.get('content','')[:2000]}"
-                        for m in _isolated[-20:]
+                        f"{m.get('role','')}: {m.get('content','')[:200]}"
+                        for m in self.state.get("chat_history", [])[-10:]
                     ])
                     if chat_text:
-                        anchor_ctx = (
-                            f"=== ПРАВКИ ШЕФА ДЛЯ {worker_id} ===\n"
-                            f"{chat_text}\n"
-                            f"ВАЖНО: учти ВСЕ правки и комментарии Шефа выше.\n"
-                            f"Не игнорируй ни одну деталь из этого контекста.\n"
-                        )
+                        anchor_ctx = f"=== КОНТЕКСТ ЧАТА ===\n{chat_text}\n"
 
                 context = build_agent_context(
                     self.state, worker_id, client_slug,
