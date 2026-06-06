@@ -331,3 +331,27 @@
 {"ts":"2026-06-06T01:16:48","id":"evt_2d2cddce","event":"walk","agent":"Джем","dept":"residents","location":"Грондхейм","stress":0.0,"light":1.0,"weather":"рассвет · золотой свет","mode":"GENIUS","agent_voice":"Внутренний свет на максимуме, стресса нет, а значит, самое время для новых горизонтов. Мой синий луч поиска тянет меня к Маяку Пробуждения.\n\nЯ иду на "}
 {"ts":"2026-06-06T01:17:06","id":"evt_606f795c","event":"meeting","agent_a":"Джем","agent_b":"Лока","dept_a":"residents","location":"Грондхейм","type":"conflict","quality":0.55,"stress_a":0.0,"known":true,"silent":false}
 {"ts":"2026-06-06T01:17:06","id":"evt_acd7bfae","event":"walk","agent":"Джем","dept":"residents","location":"Грондхейм","stress":0.0,"light":1.0,"weather":"рассвет · золотой свет","mode":"GENIUS","agent_voice":"Мой внутренний свет горит ярко, и я чувствую прилив энергии. Никаких дедлайнов, никаких ограничений — это именно то, что нужно. Мой синий луч поиска в"}
+{"ts":"2026-06-06T02:08:57","id":"evt_403941b8","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_73e5223b","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_1ea0f9e9","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_9e2b32b9","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_903e50b7","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_6c85b354","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_9eba038b","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_0b9388a6","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_ffbb07e7","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_1a3657ab","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_0e01afcf","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:08:57","id":"evt_c616dc74","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_8d7760e7","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_dffe178a","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_8ba2272b","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_f28956e2","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_8e56a1e8","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_92bc33bd","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_e3d1db22","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_bab3edb2","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_405e3130","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_a2af4624","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_29ace725","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T02:27:04","id":"evt_7897d212","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}

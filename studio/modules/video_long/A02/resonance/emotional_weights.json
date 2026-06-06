@@ -1,1 +1,10 @@
-{}
+{
+  "A01": {
+    "warmth": 0.517,
+    "trust": 0.51,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T05:09:51.217103",
+    "memory": "Передача работы в пайплайне episode"
+  }
+}

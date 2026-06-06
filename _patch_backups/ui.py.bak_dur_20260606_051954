@@ -2489,7 +2489,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                                 value=15,
                                 min=5,
                                 max=300,
-                                on_change=lambda e: state['settings'].update({'duration': int(e.value or 30)})
+                                on_change=lambda e: state['settings'].update({'duration': int(e.value)})
                             ).style('width: 100%')
                         
                         with ui.element('div').classes('setting-row'):

@@ -79,41 +79,32 @@ class NiceGUICallbacks(PipelineCallbacks):
     # ── Agent lifecycle ───────────────────────────────────
 
     async def on_agent_start(self, slot_id: str, worker_id: str, label: str, phase: str):
-        try:
-            with self._client:
-                if worker_id in self.avatars_ref['elements']:
-                    self.avatars_ref['elements'][worker_id].classes(remove='done')
-                    self.avatars_ref['elements'][worker_id].classes(add='working')
-                tag = f" [{phase}]" if phase else ""
-                ui.notify(f"🤖 {label}{tag}...", type="info")
-        except Exception:
-            pass
+        with self._client:
+            if worker_id in self.avatars_ref['elements']:
+                self.avatars_ref['elements'][worker_id].classes(remove='done')
+                self.avatars_ref['elements'][worker_id].classes(add='working')
+            tag = f" [{phase}]" if phase else ""
+            ui.notify(f"🤖 {label}{tag}...", type="info")
 
     async def on_agent_done(
         self, slot_id: str, worker_id: str, label: str,
         human_text: str, meta: dict, ghost_ids: list[str]
     ):
-        try:
-            with self._client:
-                if worker_id in self.avatars_ref['elements']:
-                    self.avatars_ref['elements'][worker_id].classes(remove='working')
-                    self.avatars_ref['elements'][worker_id].classes(add='done')
-                ui.notify(f"✅ {label}!", type="positive")
+        with self._client:
+            if worker_id in self.avatars_ref['elements']:
+                self.avatars_ref['elements'][worker_id].classes(remove='working')
+                self.avatars_ref['elements'][worker_id].classes(add='done')
+            ui.notify(f"✅ {label}!", type="positive")
 
-                if ghost_ids:
-                    warn = f"⚠️ {worker_id}: галлюцинации asset_id ({len(ghost_ids)}): " + ", ".join(ghost_ids[:5])
-                    ui.notify(warn, type="warning", timeout=8000)
-        except Exception:
-            pass  # Клиент закрылся — не страшно
+            if ghost_ids:
+                warn = f"⚠️ {worker_id}: галлюцинации asset_id ({len(ghost_ids)}): " + ", ".join(ghost_ids[:5])
+                ui.notify(warn, type="warning", timeout=8000)
 
     async def on_agent_error(self, slot_id: str, worker_id: str, error: str):
-        try:
-            with self._client:
-                if worker_id in self.avatars_ref['elements']:
-                    self.avatars_ref['elements'][worker_id].classes(remove='working')
-                ui.notify(f"❌ {worker_id}: {error}", type="negative")
-        except Exception:
-            pass
+        with self._client:
+            if worker_id in self.avatars_ref['elements']:
+                self.avatars_ref['elements'][worker_id].classes(remove='working')
+            ui.notify(f"❌ {worker_id}: {error}", type="negative")
 
     async def on_agent_retry(self, slot_id: str, worker_id: str, reason: str):
         with self._client:
@@ -138,11 +129,8 @@ class NiceGUICallbacks(PipelineCallbacks):
     # ── Viewer ────────────────────────────────────────────
 
     async def on_viewer_update(self, slot_id: str, worker_id: str, content: str):
-        try:
-            with self._client:
-                self._update_viewer(content)
-        except Exception:
-            pass  # Клиент закрылся — не страшно
+        with self._client:
+            self._update_viewer(content)
 
     # ── Status / notifications ────────────────────────────
 

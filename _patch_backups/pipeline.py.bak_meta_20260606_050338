@@ -558,11 +558,6 @@ async def process_agent_result(
     info = get_worker_info(worker_id, state.get("active_dept", ""))
     label = info.get("label", worker_id) if info else worker_id
 
-    # Защита: meta должна быть dict. Если агент не вернул JSON —
-    # parse_agent_response даёт {}, но конфликтный ран может дать строку.
-    if not isinstance(meta, dict):
-        meta = {}
-
     # Валидация asset_ids
     ghost_ids = _validate_asset_ids(meta, worker_id)
     if ghost_ids:
