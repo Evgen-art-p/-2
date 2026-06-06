@@ -466,22 +466,6 @@ def build_agent_context(
     if files_ctx:
         context += files_ctx + "\n\n"
 
-    # ПАТЧ chain_prop: накопленный chain_data от предыдущих агентов
-    # Это критично для video_long: A04 должна видеть adam_bible,
-    # zack_season_structure, leo_season_breakdown из chain_data A01-A03
-    _chain_acc = state.get("_chain_accumulator", {})
-    if _chain_acc:
-        try:
-            import json as _cjson
-            _chain_str = _cjson.dumps(_chain_acc, ensure_ascii=False, indent=2)
-            context += (
-                f"=== CHAIN DATA (от предыдущих агентов) ===\n"
-                f"```json\n{_chain_str}\n```\n\n"
-            )
-            print(f"[CHAIN] {worker_id}: получил chain_data {list(_chain_acc.keys())}")
-        except Exception as _ce:
-            print(f"[CHAIN] {worker_id}: ошибка инжекта chain_data: {_ce}")
-
     # Предыдущие результаты
     if previous_output:
         context += f"=== РЕЗУЛЬТАТЫ ПРЕДЫДУЩИХ ЭТАПОВ ===\n{previous_output}\n"
