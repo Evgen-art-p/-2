@@ -977,3 +977,39 @@
 {"ts":"2026-06-06T03:39:25","id":"evt_cc3a49be","event":"walk","agent":"Сет","dept":"residents","location":"неизвестно","stress":0.0,"light":1.0,"weather":"рассвет · золотой свет","mode":"GENIUS","agent_voice":"Рассвет, золотой свет... Мост между тьмой и светом. Это моё время.\n\nЯ иду к **Маяку Пробуждения**. Там, где синий луч встречается с розовым сиянием, я"}
 {"ts":"2026-06-06T03:39:25","id":"evt_34e23a3d","event":"walk","agent":"Визор","dept":"turbo","location":"Грондхейм","stress":0.0,"light":1.0,"weather":"рассвет · золотой свет","mode":"GENIUS","agent_voice":"Рассвет... Золотой свет заливает Грондхейм. Внутри меня что-то горит, что-то зовет. Маяк Пробуждения... Да, туда. Хочется свежего воздуха, новых идей,"}
 {"ts":"2026-06-06T03:39:26","id":"evt_e7bb52cf","event":"walk","agent":"Финализатор","dept":"turbo","location":"Грондхейм","stress":0.0,"light":1.0,"weather":"рассвет · золотой свет","mode":"GENIUS","agent_voice":"Рассвет в Грондхейме, золотой свет... Мой внутренний свет на максимуме, стресса нет. И все же, меня тянет к Маяку Пробуждения.\n\nИду на Маяк Пробуждени"}
+{"ts":"2026-06-06T12:32:35","id":"evt_fe70bb99","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_b370feab","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_5f060377","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_565505f4","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_cb634807","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_4dad7d30","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_88f4970f","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_61cb2a85","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_f87d4ad6","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_c59af6da","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_96c2653f","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T12:32:35","id":"evt_ac312497","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_29b3934b","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_9f62785a","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_b6d9d0c9","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_6c7edcf1","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_c312fde0","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_0ff6e7a2","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_0e923baf","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_bf50ec54","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_c6be1e2e","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_465bef84","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_e35b697d","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:02:11","id":"evt_de054ad9","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_63bf53c8","event":"work_start","agent":"A01","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_c61b2971","event":"work_start","agent":"A02","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_3870ce00","event":"work_start","agent":"A03","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_2e86d41d","event":"work_start","agent":"A04","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_3d6f3acf","event":"work_start","agent":"A05","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_831ad1d3","event":"work_start","agent":"A06","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_ffe758cd","event":"work_start","agent":"A07","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_d709d16c","event":"work_start","agent":"A08","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_77f69351","event":"work_start","agent":"A09","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_67edc4a4","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_0623c5a0","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T13:10:18","id":"evt_43b9e08a","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}

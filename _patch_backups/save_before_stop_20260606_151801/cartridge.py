@@ -459,10 +459,6 @@ class CartridgeRunner:
                     f"# {label} ({worker_id})\n\n{human_text}"
                 )
 
-                # ПАТЧ save_before_stop: теперь можно остановиться
-                if _stop_after_save:
-                    break
-
                 # ── Виктор на ХАРД-СТОПе (независимо от checkpoint_after) ──
                 # PATCH audit-sprint19 [1]: вынесен из-под checkpoint_after.
                 # hard_stop — отдельный механизм, checkpoint_after — отдельный.
@@ -488,21 +484,6 @@ class CartridgeRunner:
                         print(f"[VICTOR] ✅ Вердикт: {critique.get('verdict', '?')}")
                     except Exception as _ve:
                         print(f"[VICTOR] ❌ Ошибка: {_ve}")
-
-                    # ПАТЧ hardstop: Виктор = ПАУЗА, не просто информация.
-                    # Пайплайн останавливается — Шеф читает критику.
-                    # Нажать CONTINUE чтобы идти дальше (A05+).
-                    self.state["paused_at"] = worker_id
-                    self.state["paused_output"] = previous_output
-                    await self.callbacks.on_status(
-                        self.slot_id,
-                        f"⚡ Виктор дал оценку. Читай критику — нажми CONTINUE чтобы продолжить.",
-                        "warning",
-                    )
-                    await self.callbacks.on_pipeline_done(
-                        self.slot_id, self.state.get("results", {})
-                    )
-                    return  # ← СТОП. Возобновление через CONTINUE
                 # ── END Виктор ──
 
                 # Checkpoint?

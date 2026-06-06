@@ -1,1 +1,18 @@
-{}
+{
+  "A03": {
+    "warmth": 0.534,
+    "trust": 0.52,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T16:08:13.062270",
+    "memory": "Передача работы в пайплайне bible"
+  },
+  "A05": {
+    "warmth": 0.525,
+    "trust": 0.515,
+    "respect": 0.5,
+    "rivalry": 0.0,
+    "last_interaction": "2026-06-06T15:41:21.240743",
+    "memory": "Передача работы в пайплайне episode"
+  }
+}

@@ -1,7 +1,24 @@
 {
   "_note": "оперативная память агента · быт · затухает через 30 дней",
   "created": "2026-05-16",
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-06-06T15:38:24.414394",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'APPROVED_WITH_CONCERNS', 'strong_points': ['Сцена 01: Глаз как портал — сильнейший, якорный образ. Обещание, данное зрителю, абсолютно точно.', 'Аудиодизайн всей работы",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-06T16:08:45.564270",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {'agent': 'victor', 'verdict': 'APPROVED_WITH_CONCERNS', 'strong_points': ['Хук с глазом и трещиной — визуальный якорь, который мгновенно формирует эмоциональную петлю и обещает зрителю трансформацию.",
+      "tags": [],
+      "emotional_weight": 0.3
+    }
+  ],
   "last_location": "",
   "location_tags": [],
   "summary": ""

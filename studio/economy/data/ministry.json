@@ -70,5 +70,17 @@
     "score_sum": 7.0,
     "economy_rating": 2.0,
     "mode": "normal"
+  },
+  "005_VICTOR::005_VICTOR_video_long": {
+    "agent_id": "005_VICTOR",
+    "slot_id": "005_VICTOR_video_long",
+    "runs_total": 2,
+    "runs_success": 0,
+    "runs_fail": 0,
+    "cost_success": 0.0,
+    "cost_fail": 0.0,
+    "score_sum": 10.0,
+    "economy_rating": 0.5,
+    "mode": "normal"
   }
 }

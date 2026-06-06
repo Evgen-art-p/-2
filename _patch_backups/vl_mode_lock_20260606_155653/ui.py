@@ -2628,14 +2628,12 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
 
                                 def _set_bible():
                                     state['run_type'] = 'bible'
-                                    state['run_type_locked'] = True  # ПАТЧ: не перебивать SET'ом
                                     _vl_refs['bible'].style('background:rgba(139,92,246,0.3); color:#a78bfa;')
                                     _vl_refs['episode'].style('background:transparent; color:rgba(255,255,255,0.35);')
                                     ui.notify('📖 Библия — создание вселенной (A01–A04)', type='info', timeout=2000)
 
                                 def _set_episode():
                                     state['run_type'] = 'episode'
-                                    state['run_type_locked'] = True  # ПАТЧ: не перебивать SET'ом
                                     _vl_refs['episode'].style('background:rgba(52,211,153,0.3); color:#34d399;')
                                     _vl_refs['bible'].style('background:transparent; color:rgba(255,255,255,0.35);')
                                     ui.notify('🎬 Эпизод — экранизация по Библии', type='info', timeout=2000)
@@ -2811,19 +2809,17 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
 
                 async def _check_auto_run():
                     global _auto_run_requested
-                    # ПАТЧ: не стартуем если pipeline на паузе (Виктор, checkpoint)
+                    # ПАТЧ timer: guard — не запускаем если pipeline уже работает
                     if not _auto_run_requested:
                         return
                     if state.get("pipeline_running"):
-                        return
-                    if state.get("paused_at"):
                         return
                     _auto_run_requested = False
                     try:
                         with _page_client:
                             await run_cartridge_pipeline()
                     except Exception:
-                        pass
+                        pass  # клиент мог умереть
 
                 ui.timer(1.0, _check_auto_run)
 

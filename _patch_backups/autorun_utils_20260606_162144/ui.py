@@ -2811,19 +2811,17 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
 
                 async def _check_auto_run():
                     global _auto_run_requested
-                    # ПАТЧ: не стартуем если pipeline на паузе (Виктор, checkpoint)
+                    # ПАТЧ timer: guard — не запускаем если pipeline уже работает
                     if not _auto_run_requested:
                         return
                     if state.get("pipeline_running"):
-                        return
-                    if state.get("paused_at"):
                         return
                     _auto_run_requested = False
                     try:
                         with _page_client:
                             await run_cartridge_pipeline()
                     except Exception:
-                        pass
+                        pass  # клиент мог умереть
 
                 ui.timer(1.0, _check_auto_run)
 

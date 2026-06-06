@@ -1,18 +1,18 @@
 {
   "A01": {
-    "warmth": 0.603,
-    "trust": 0.56,
+    "warmth": 0.654,
+    "trust": 0.591,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-06T14:26:13.934315",
+    "last_interaction": "2026-06-06T15:24:11.874334",
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A03": {
-    "warmth": 0.55,
-    "trust": 0.53,
+    "warmth": 0.625,
+    "trust": 0.575,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-06T14:20:20.533647",
-    "memory": "Передача работы в пайплайне social"
+    "last_interaction": "2026-06-06T15:24:59.343576",
+    "memory": "Передача работы в пайплайне content_plan"
   }
 }

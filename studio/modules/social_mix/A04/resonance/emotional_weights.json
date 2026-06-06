@@ -8,12 +8,12 @@
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A03": {
-    "warmth": 0.517,
-    "trust": 0.51,
+    "warmth": 0.534,
+    "trust": 0.52,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-06T14:20:33.714678",
-    "memory": "Передача работы в пайплайне social"
+    "last_interaction": "2026-06-06T15:25:51.726591",
+    "memory": "Передача работы в пайплайне content_plan"
   },
   "A05": {
     "warmth": 0.525,

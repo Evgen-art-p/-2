@@ -1,0 +1,262 @@
+# studio/workshop_utils.py — Утилиты: очистка ответов, парсинг, валидация
+# Вынесено из ui_workshop.py (строки 1137-1416)
+
+import re
+import json
+from pathlib import Path
+
+
+def _clean_response(text):
+    """Убирает JSON, системные блоки и мусор из ответа агента"""
+    if not text:
+        return text
+    
+    # Убираем SYSTEM_JSON блоки
+    text = re.sub(r"[^\n]*SYSTEM_JSON_START[^\n]*\n.*?[^\n]*SYSTEM_JSON_END[^\n]*", "", text, flags=re.DOTALL)
+    
+    # Убираем ```json {...} ```
+    text = re.sub(r"```json\s*\n\{.*?\}\s*```", "", text, flags=re.DOTALL)
+    
+    # Убираем JSON объекты с типичными ключами агентов
+    text = re.sub(r'\n?\{[\s\S]*?"(?:agent|next_input|status|confidence|insight)"[\s\S]*?\}\s*$', '', text)
+    
+    # Убираем JSON объекты в середине текста
+    text = re.sub(r'\{\s*"(?:agent|worker|module|next_input|status|confidence|insight)"\s*:.*?\}', '', text, flags=re.DOTALL)
+    
+    # Убираем строки INSIGHT: ... (они уже сохранены в memory)
+    text = re.sub(r'\n*INSIGHT:\s*.+', '', text)
+    
+    # Убираем === ИНСТРУКЦИЯ === блоки если агент их скопировал
+    text = re.sub(r'=== ИНСТРУКЦИЯ ===.*?(?=\n[^=]|$)', '', text, flags=re.DOTALL)
+    
+    # Убираем разделитель в конце
+    text = re.sub(r"\n---\s*$", "", text)
+    
+    # Убираем пустые строки подряд (больше 2)
+    text = re.sub(r'\n{4,}', '\n\n\n', text)
+    
+    return text.strip()
+
+
+def _clean_for_export(text):
+    """Глубокая очистка для Word/PDF — убирает ВСЁ лишнее"""
+    if not text:
+        return text
+    
+    # Базовая очистка
+    text = _clean_response(text)
+    
+    # Убираем любые оставшиеся JSON блоки
+    text = re.sub(r'```[a-z]*\s*\n.*?```', '', text, flags=re.DOTALL)
+    
+    # Убираем строки которые выглядят как JSON
+    clean_lines = []
+    skip_json = False
+    for line in text.split("\n"):
+        stripped = line.strip()
+        
+        # Начало JSON блока
+        if stripped.startswith('{') and ('"' in stripped):
+            skip_json = True
+            continue
+        
+        # Конец JSON блока
+        if skip_json:
+            if stripped.endswith('}') or stripped == '}':
+                skip_json = False
+                continue
+            if stripped.startswith('"') and ':' in stripped:
+                continue  # строка внутри JSON
+        
+        # Убираем системные маркеры
+        if any(marker in stripped for marker in [
+            'SYSTEM_JSON', 'next_input', '"agent":', '"status":',
+            '"confidence":', '"module":', '"worker":', '=== ИНСТРУКЦИЯ',
+            '=== КОНТЕКСТ ПРОШЛЫХ', '=== КОНЕЦ КОНТЕКСТА',
+            '=== КЛИЕНТ:', '=== ТВОИ ПРОШЛЫЕ', '=== ВЫВОДЫ КОЛЛЕГ',
+            '=== НАСТРОЙКИ ПРОЕКТА', '=== РЕЖИМ:'
+        ]):
+            continue
+        
+        skip_json = False
+        clean_lines.append(line)
+    
+    text = "\n".join(clean_lines)
+    
+    # Финальная чистка пустых строк
+    text = re.sub(r'\n{4,}', '\n\n\n', text)
+    
+    return text.strip()
+
+
+def _validate_asset_ids(meta, worker_id: str) -> list[str]:
+    """
+    Проверяет все ref_ids в ответе агента по загруженному каталогу.
+    Возвращает список несуществующих ID (галлюцинации).
+    """
+    # Защита: meta может прийти строкой если JSON не распарсился
+    if not isinstance(meta, dict):
+        return []
+
+    try:
+        from studio.fal_client import get_asset_path
+    except ImportError:
+        return []
+
+    ghost_ids = []
+
+    def _check_ids(ref_ids, location):
+        for rid in (ref_ids or []):
+            if not get_asset_path(rid):
+                ghost_ids.append(f"{rid} [{location}]")
+                print(f"  ⚠️ [VALIDATION] {worker_id}: несуществующий asset_id → {rid} в {location}")
+
+    my_output = meta.get("my_output", {})
+    deliverables = meta.get("deliverables", {})
+
+    # selected_assets (Стелла)
+    selected = my_output.get("selected_assets", {})
+    for cat in ["characters", "locations", "props"]:
+        for item in selected.get(cat, []):
+            _check_ids([item.get("id")], f"selected_assets.{cat}")
+
+    # key_frames (Визор / Финализатор — другие цеха)
+    for src in [my_output, deliverables]:
+        for frame in src.get("key_frames", []):
+            if isinstance(frame, dict):
+                _check_ids(frame.get("ref_ids", []), f"key_frames[{frame.get('segment','')}]")
+
+    # PATCH audit-sprint19 [8]: video_long — eva_visuals.frames + felix_vfx.video_clips
+    eva = my_output.get("eva_visuals", {})
+    if isinstance(eva, dict):
+        for frame in eva.get("frames", []):
+            if isinstance(frame, dict):
+                _check_ids(frame.get("ref_ids", []),
+                           f"eva_visuals.frames[{frame.get('frame_id', '')}]")
+
+    felix = my_output.get("felix_vfx", {})
+    if isinstance(felix, dict):
+        for clip in felix.get("video_clips", []):
+            if isinstance(clip, dict):
+                _check_ids(clip.get("ref_ids", []),
+                           f"felix_vfx.video_clips[{clip.get('frame_id', '')}]")
+
+    # veo3_prompts (другие цеха)
+    for src in [my_output, deliverables]:
+        for clip in src.get("veo3_prompts", []):
+            if isinstance(clip, dict):
+                _check_ids(clip.get("ref_ids", []), f"veo3_prompts[{clip.get('segment','')}]")
+
+    # thumbnail
+    for src in [my_output, deliverables]:
+        thumb = src.get("thumbnail", {})
+        if isinstance(thumb, dict):
+            for var in ["variant_a", "variant_b"]:
+                v = thumb.get(var, {})
+                if isinstance(v, dict):
+                    _check_ids(v.get("ref_ids", []), f"thumbnail.{var}")
+
+    return ghost_ids
+
+
+def parse_agent_response(raw: str) -> tuple[str, dict]:
+    """Отделяет JSON от человеческого текста.
+    Поддерживает:
+      1. Маркеры студии: 👇 SYSTEM_JSON_START 👇 ... 👆 SYSTEM_JSON_END 👆
+      2. Markdown блок: ```json ... ```
+    """
+    if not raw:
+        return raw, {}
+
+    # 1. Маркеры студии (приоритет)
+    m = re.search(
+        r'👇\s*SYSTEM_JSON_START\s*👇\s*(\{.*?\})\s*👆\s*SYSTEM_JSON_END',
+        raw, re.DOTALL
+    )
+    if m:
+        try:
+            meta = json.loads(m.group(1))
+            human_text = raw[:m.start()].strip()
+            return human_text, meta
+        except Exception as ex:
+            print(f"[PARSE] SYSTEM_JSON parse error: {ex}")
+
+    # 2. Fallback: ```json ... ```
+    m2 = re.search(r'```json\s*(\{.*?\})\s*```', raw, re.DOTALL)
+    if m2:
+        try:
+            meta = json.loads(m2.group(1))
+            human_text = raw[:m2.start()].strip()
+            return human_text, meta
+        except Exception as ex:
+            print(f"[PARSE] JSON block parse error: {ex}")
+
+    return raw, {}
+
+
+def _collect_images_for_vision(state) -> list:
+    """Собирает base64 изображений для vision API.
+
+    Два источника:
+      1. state["vision_images"] — пути от hooks.py (A06 self-review, A11 Федя и др.)
+      2. state["uploaded_files"] — файлы загруженные Шефом вручную через UI
+    """
+    import base64 as _b64
+    import mimetypes as _mt
+
+    images = []
+
+    # ── Источник 1: hooks.py → state["vision_images"] ────────────────
+    # Хук кладёт список путей к PNG после генерации картинки.
+    # Pipeline видит их и передаёт агенту через chat_with_images.
+    hook_images = state.get("vision_images", [])
+    if hook_images:
+        for item in hook_images:
+            # Поддерживаем два формата:
+            # - строка (путь к файлу)
+            # - dict {"base64": ..., "mime_type": ..., "name": ...}
+            if isinstance(item, dict) and item.get("base64"):
+                images.append(item)
+                print(f"[VISION] Хук-изображение (dict): {item.get('name', '?')}")
+            elif isinstance(item, str):
+                fp = Path(item)
+                if fp.exists():
+                    try:
+                        b64 = _b64.b64encode(fp.read_bytes()).decode("utf-8")
+                        mime = _mt.guess_type(str(fp))[0] or "image/png"
+                        images.append({
+                            "base64":    b64,
+                            "mime_type": mime,
+                            "name":      fp.name,
+                        })
+                        print(f"[VISION] Хук-изображение: {fp.name} ({len(b64)//1024}KB)")
+                    except Exception as ex:
+                        print(f"[VISION ERROR] hooks image {item}: {ex}")
+                else:
+                    print(f"[VISION] ⚠️ Хук-изображение не найдено: {item}")
+
+    # ── Источник 2: uploaded_files (загружены Шефом) ─────────────────
+    if not state.get("uploaded_files") or not state.get("file_processor"):
+        return images
+    
+    for f in state["uploaded_files"]:
+        ext = Path(f["name"]).suffix.lower()
+        if ext in {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}:
+            fp = Path(f["path"])
+            if fp.exists():
+                try:
+                    import base64 as _b64
+                    import mimetypes as _mt
+                    with open(fp, 'rb') as fh:
+                        b64 = _b64.b64encode(fh.read()).decode('utf-8')
+                    mime = _mt.guess_type(str(fp))[0] or 'image/png'
+                    images.append({
+                        "base64": b64,
+                        "mime_type": mime,
+                        "name": f["name"]
+                    })
+                    print(f"[VISION] Подготовлено изображение: {f['name']} ({len(b64)//1024}KB base64)")
+                except Exception as ex:
+                    print(f"[VISION ERROR] {f['name']}: {ex}")
+    
+    return images
