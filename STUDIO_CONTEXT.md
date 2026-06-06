@@ -1,8 +1,8 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 44.0 | **Дата:** 2026-06-05 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 45.0 | **Дата:** 2026-06-06 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
-> Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only)
+> Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only; пишет в репо промты через MCP GitHub)
 > ⚠️ 12 апреля — студия была потеряна (удалена репа + файлы). Восстановлена за ночь.
 
 ---
@@ -45,7 +45,7 @@
 ## 3. ТЕХНИЧЕСКИЙ СТЕК
 
 - **Python + NiceGUI** — UI
-- **OpenRouter API** — LLM (Gemini 2.5 Flash основной, Claude Sonnet премиум)
+- **OpenRouter API** — LLM (DeepSeek V4 Pro основной, Claude Sonnet премиум)
 - **fal.ai** — генерация изображений · `ACTIVE_MODEL = "nano_banana_2"` (fal-ai/nano-banana-2)
 - **Wan2.2 I2V (SiliconFlow)** — генерация видео из PNG кадров
 - **ElevenLabs** — музыка + SFX · **CosyVoice** — VO
@@ -90,7 +90,7 @@ studio/modules/{цех}/
 | Слот | Агентов | Manifest | hooks.py | Промты | Контракт |
 |------|---------|----------|----------|--------|----------|
 | turbo | 5 | ✅ v2.0 | ✅ v4.2 | ✅ A01–A05 | ✅ v2.0 |
-| social_mix | 12 | ✅ v2.0 | ✅ **v4.0 Спринт 39** | ✅ **Спринт 39** | ✅ v1.4 |
+| social_mix | 12 | ✅ v2.0 | ✅ v4.0 Спринт 39 | ✅ Спринт 39 | ✅ v1.4 |
 | video_long | 12 | ✅ v2.0 | ✅ v4.7 | ✅ Спринт 26 | ✅ v1.3 |
 | **video_shorts** | **12** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** |
 | web_story | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
@@ -195,191 +195,182 @@ studio/strategy_registry.json
 | Ева (A06) video_long | PNG кадр | vision | `self_assessment` |
 | Феликс (A08) video_long | mp4 клип | vision (grid) | `clip_assessment` |
 | Сэм (A10) video_long | аудио трек | `chat_with_audio()` | `audio_assessment` |
-| Трейси (A11) video_long | PNG обложки | vision | `thumbnail_assessment` |
-| Визор (A03) turbo | PNG кадры | vision (self-review) | `self_assessment` |
-| Мими (A02) turbo | аудио трек | `chat_with_audio()` | `audio_assessment` |
-| Эван (A06) social_mix | PNG кадр | vision | `self_assessment` Спринт 39 |
-| Федя (A11) social_mix | PNG кадр | vision | `ai_defects` Спринт 39 |
-| **Вера (A07) video_shorts** | **PNG кадр 9:16** | **vision** | **`self_assessment` Спринт 40** |
-| **Стэн (A08) video_shorts** | **mp4 клип** | **vision (grid)** | **`clip_assessment` Спринт 40** |
-| **Джулия (A03) video_shorts** | **аудио трек** | **`chat_with_audio()`** | **`audio_assessment` Спринт 40** |
-| Монтажёр | lipsync mp4 | `accept_material()` | Пригоден для монтажа? |
-
-**Принцип везде один: никто не оценивает чужую работу. PASS/REJECT — не оценка, а решение о пригодности.**
 
 ---
 
-## 10. МОНТАЖЁР — НАСТОЯЩИЙ АГЕНТ (Спринт 30в · финал)
+## 10. ANCHOR — МЕХАНИКА ПРАВОК ШЕФА (Спринт 41)
 
-**Статус:** ✅ Полноценный LLM-агент.
+**ANCHOR** — способ передать правки конкретному агенту без перезапуска всего пайплайна.
 
-**Четыре этапа работы Артура:**
 ```
-ЭТАП 1 — Читает пакет → lipsync_shots + chosen_model
-ЭТАП 2 — accept_material(): sync.so → PASS/REJECT (только технический брак)
-ЭТАП 3 — ffmpeg по стандарту (Боб принял → Артур НЕ режиссирует)
-ЭТАП 4 — Смотрит ВЕСЬ финал (grid каждые 2 сек) → arthur_notes = свидетельство
+Флоу:
+  1. Нажать аватар агента (напр. A03) — он становится active_worker
+  2. Написать правки в чат
+  3. Нажать ANCHOR
+
+Что происходит:
+  • send_message() пишет в state["chat_history_A03"] (изолированная история)
+  • ANCHOR запускает пайплайн с from_worker="A03", with_chat_context=True
+  • cartridge.py читает chat_history_A03 — ответы агента + правки Шефа
+  • Агент видит: свой последний ответ из чата + правки → дорабатывает
+  • Цепочка продолжается дальше (A04, A05...)
 ```
 
-**Мастерская (Спринт 39–40):**
-- Очередь слева — video_long / turbo / social_mix / **video_shorts** проекты
-- Центр — видеоплеер для video/turbo, превью поста для social_mix,
-  **кадры Веры 9:16 + обложки A/B + аудио статус для video_shorts**
-- Кнопка 📤 ОПУБЛИКОВАТЬ — только для social_mix пока (видео публикация в беклоге)
+**Ключевые патчи (применены локально):**
+- `patch_anchor_isolation.py` — изолированная история по worker_id, 2000 симв
+- `patch_anchor_context.py` — ANCHOR передаёт ответ агента + правки Шефа раздельно
 
-**Маски:** `video_long.md` ✅ · `turbo.md` ✅
-
-**Приоритеты аудио:** VO: 0 dB · SFX: -6 dB · Музыка: -12 dB (под VO) / -6 dB (без VO)
+**⚠️ chat_history_{worker_id} живёт в RAM.** При перезапуске main.py — сбрасывается.
+Правки нужно писать в той же сессии что и ран. После перезапуска — начинать заново.
 
 ---
 
-## 11–15. РЕЗИДЕНТЫ (без изменений vs v43.0)
+## 11. VIDEO_LONG — BIBLE/EPISODE ФЛОУ (Спринт 41)
 
-Лока, Джем, Сет, Оле, Виктор, Монтажёр, Финч, Кей, Юст — все активны.
+### Режимы:
 
----
+| Режим | Что делает | Агенты |
+|-------|-----------|--------|
+| BIBLE | Создание вселенной: мир + план сезона | A01–A04 → ХАРД-СТОП → Виктор |
+| EPISODE | Экранизация серии по готовой Библии | A01–A12 |
 
-## 16. СТАНДАРТ ПРОМТОВ АГЕНТОВ (Спринт 26 + Спринт 39–40)
+### Критически важно для BIBLE:
+
+**Лео (A03) в BIBLE режиме возвращает `script.scenes = []` — это НОРМА.**
+Лео пишет `episode_plan[]` (план серий), а не сцены. Сцены — только в EPISODE.
+
+**Катя (A04) в BIBLE проверяет `episode_plan[]`, а не `scenes[]`.**
+Промпт A04 исправлен в репо (Спринт 41).
+
+### chain_data — шаблон `{{my_output}}`:
+
+Агенты пишут в chain_data:
+```json
+"leo_season_breakdown": "{{my_output}}"
+```
+Это шаблон — pipeline должен заменить на реальный my_output.
+**Патч `patch_myoutput_resolve.py` — написан, но осторожно.** 
+При неправильном применении вызывает китайские токены у DeepSeek (инжект JSON в контекст).
+⚠️ Применять только после тестирования на dry-run.
+
+### ХАРД-СТОП после A04:
 
 ```
-# IDENTITY / # INPUT / # KNOWLEDGE BASE / # TASK / # OUTPUT / # RULES
-```
-
-**Правила для всех цехов:**
-- `00_Constructor.txt` — первым в KNOWLEDGE BASE
-- `99_Self_Correction.txt` — последним в RULES
-- Режимы работы (PILOT/EPISODE для shorts, POST/PLAN для social) — явно в TASK и OUTPUT
-
-**Статус цехов по промтам:**
-- `video_long` — ✅ все 12
-- **`video_shorts`** — ✅ **все 12 (Спринт 40) · разложить вручную по A01–A12**
-- `turbo` — ✅ все 5 (Спринт 33)
-- `social_mix` — ✅ все 12 (Спринт 39) · разложить вручную
-- Остальные 7 цехов — ⏳
-
----
-
-## 17. КЛЮЧЕВЫЕ ФАЙЛЫ
-
-```
-studio/assembly/__init__.py                      ✅ Спринт 40 (video_shorts в Мастерской)
-studio/modules/video_shorts/hooks.py             ✅ v3.0 Спринт 40
-studio/modules/video_shorts/manifest.json        ✅ v3.0 Спринт 40
-studio/modules/video_shorts/CHAIN_CONTRACT.md    ✅ v3.0 Спринт 40
-
-studio/modules/social_mix/hooks.py               ✅ v4.0 Спринт 39
-studio/modules/social_mix/manifest.json          ⚠️ нужно async_scoring: true
-
-studio/modules/video_shorts/A01–A12/prompt.md    ⚠️ разложить вручную (Спринт 40)
-studio/modules/social_mix/A01–A12/forge/prompt.md ⚠️ разложить вручную (Спринт 39)
+A04 (Катя) → APPROVED → ХАРД-СТОП → Виктор даёт критику
+→ Шеф читает → нажимает CONTINUE → A05–A12
 ```
 
 ---
 
-## 18. БЕКЛОГ
+## 12. ТАМОЖНЯ КОНТРАКТОВ — ОТКЛЮЧЕНА
 
-> **Порядок приоритетов (обновлён 2026-06-05 · Спринт 40):**
-> 1 → **Удалить старый video_shorts через Страницу Жизни (12 агентов), пересоздать чисто**
-> 2 → **Разложить промты video_shorts v3.0 по A01–A12 (файл video_shorts_prompts_v3.md)**
-> 3 → **Применить три патча по порядку:**
->   - `python patch_video_shorts_contract.py`
->   - `python patch_video_shorts_generation.py`
->   - `python patch_assembly_video_shorts.py`
-> 4 → **Первый ран VIDEO_SHORTS** — смотрим что падает
-> 5 → Первый ран TURBO — петля замкнута
-> 6 → Первый ран SOCIAL_MIX — промты разложены
-> 7 → manifest social_mix: `async_scoring: true`
-> 8 → Кнопка публикации видео в Мастерской (video_long + turbo)
-> 9 → Промты social_mix — проверить с учётом Seedream
+**CONTRACT_ENABLED = False** (в `studio/workshop/ui.py` или `pipeline.py`)
 
-### ✅ VIDEO_SHORTS — СПРИНТ 40 ЗАВЕРШЁН (код готов)
+Таможня (проверка синхронизации ключей chain_data между агентами) отключена глобально.
+Причина: вызывала ложные ПАУЗЫ при старте из-за рассинхрона ключей.
 
-**hooks.py v3.0:**
-- [x] A03 Джулия — ElevenLabs (музыка + SFX) + CosyVoice (VO) + `audio_assessment`
-- [x] A07 Вера — fal.ai Nano Banana 2 (9:16) параллельно + `self_assessment` (vision)
-- [x] A08 Стэн — Wan2.2 I2V (SiliconFlow) + `clip_assessment` (vision grid)
-- [x] A12 Тамб Том — billing_ledger + strategy_registry + save_feedback() + work_end
-
-**CHAIN_CONTRACT.md v3.0:**
-- [x] `harry_episode.micro_script[].dialogue` — реплики для VO
-- [x] `julia_sound`: +music, +sfx_list, +vo_lines, +audio_assessment
-- [x] `vera_visual.frames[]`: +negative_prompt, +self_assessment
-- [x] `stan_video.video_clips[]`: +video_path, +clip_assessment
-- [x] Таблица "что добавляет hooks.py" — источник правды
-- [x] Правила 9–12 добавлены
-
-**manifest.json v3.0:**
-- [x] version: "3.0"
-- [x] секция generation (image/video/audio конфиг)
-
-**Промты A01–A12 v3.0:**
-- [x] Все 12 агентов переписаны (файл video_shorts_prompts_v3.md)
-- [x] Двухэтапные промты: Вера (Этап 1 → промпты, Этап 2 → self_assessment)
-- [x] Двухэтапные промты: Стэн (Этап 1 → motion_prompt, Этап 2 → clip_assessment)
-- [x] Джулия знает о трёх генераторах (music/sfx/vo)
-- [x] Тамб Том знает все операции hooks.py после его вывода
-
-**Мастерская:**
-- [x] `_find_projects()` — video_shorts в очереди
-- [x] `_render_shorts_workbench()` — кадры Веры + обложки + аудио + SEO
-
-**Расстановка агентов video_shorts v3.0:**
-```
-A01 Трикси Тренд — Viral Analyst
-A02 Гарри Хук    — Screenwriter
-A03 Джулия       — Sound Designer → ElevenLabs + CosyVoice
-A04 Тэг Тони     — SEO & Platform [ХАРД-СТОП → Виктор → Шеф]
-A05 Рик Ринглайт — Lighting Specialist
-A06 Пенни Проп   — Props & Set Designer
-A07 Вера Вертикаль — Visual Artist → fal.ai 9:16
-A08 Стрим Стэн   — Video Prompt Engineer → Wan2.2 I2V
-A09 Лайтнинг Ларри — Editor
-A10 Луиджи Луп   — Retention Specialist
-A11 Сабби Сью    — Caption Specialist
-A12 Тамб Том     — QA Finalizer [qa_agent]
-```
-
-**⚠️ Что ещё нужно сделать руками:**
-- [ ] Удалить старый video_shorts через Страницу Жизни (12 агентов поштучно)
-- [ ] Пересоздать 12 агентов в новой расстановке
-- [ ] Разложить промты из video_shorts_prompts_v3.md по папкам A01–A12
-- [ ] Запустить три патча
-
-### ✅ SOCIAL_MIX — ЗАВЕРШЁН (Спринт 39)
-
-**hooks.py v4.0:**
-- [x] A06 Эван — два этапа: генерация → vision self_assessment → APPROVED/REJECTED
-- [x] A11 Федя — vision инспекция готовой картинки
-- [x] A12 Клавдия — замыкание петли: chain integrity + billing_ledger + Strategy Registry
-- [x] A12 — собирает `deliverables.json` для Мастерской
-
-**Промты A01–A12 переписаны под контракт (Спринт 39):**
-- [x] Все структуры `my_output` выровнены по CHAIN_CONTRACT.md
-- [x] Режимы POST/PLAN чётко разделены
-- [x] Критические баги исправлены
-
-### 🔴 ПЕРВЫЙ РАН
-
-- [ ] **VIDEO_SHORTS** — после пересоздания агентов и раскладки промтов
-- [ ] **TURBO** — петля замкнута, готов
-- [ ] **SOCIAL_MIX** — промты разложены, готов
-
-### 🟡 МАСТЕРСКАЯ
-
-- [ ] Кнопка 📤 для video_long и turbo (YouTube API / VK Video)
-
-### 🟢 ВСЁ ОСТАЛЬНОЕ
-
-- [ ] manifest social_mix: `async_scoring: true`
-- [ ] Промты social_mix — проверить с учётом Seedream
-- [ ] Манифесты 7 цехов до v2.0
-- [ ] Деплой Hetzner
+**Когда включать обратно:** после стабилизации всех цехов и выравнивания CHAIN_CONTRACT.
 
 ---
 
-## 19. РЕКОМЕНДАЦИИ БРАТА
+## 13. RECOVERY — ЗАМОРОЗКА ВО ВРЕМЯ РАБОТЫ (Спринт 41)
 
-1–100. (предыдущие — без изменений)
+**Патч `patch_recovery_freeze.py` применён** в `studio/grondheim_memory.py`.
+
+```
+Логика:
+  • Агент гуляет (нет work_start в city_pulse) → walk_rest снижает стресс нормально
+  • Агент в цеху (work_start в city_pulse) → walk_rest и Recovery заморожены
+  • Стресс от критики Виктора остаётся в DNA до конца рана
+```
+
+Хелпер `_is_agent_working(agent_id)` читает `city_pulse.jsonl` напрямую.
+
+---
+
+## 14. ПАТЧИ — СТАТУС (актуально на 2026-06-06)
+
+### ✅ Применены локально (не все в репо):
+
+| Патч | Файл | Статус |
+|------|------|--------|
+| `patch_conflict_fix.py` | cartridge.py, pipeline.py | ✅ локально |
+| `patch_llm_retry.py` | llm.py | ✅ локально |
+| `patch_nicegui_client.py` | nicegui_callbacks.py | ✅ локально |
+| `patch_disable_conflict.py` | все manifests | ✅ локально |
+| `patch_nicegui_timeout2.py` | main.py, ui.py | ✅ локально |
+| `patch_timer_and_contract.py` | ui.py, pipeline.py | ✅ локально |
+| `patch_run_type_lock.py` | ui.py | ✅ локально |
+| `patch_vl_mode_lock.py` | ui.py | ✅ локально |
+| `patch_context_trim.py` | pipeline.py, config.py | ✅ локально |
+| `patch_save_before_stop.py` | cartridge.py | ✅ локально |
+| `patch_hardstop_and_utils.py` | cartridge.py, utils.py | ✅ локально |
+| `patch_autorun_and_utils.py` | ui.py | ✅ локально |
+| `patch_anchor_isolation.py` | ui.py, cartridge.py | ✅ локально |
+| `patch_anchor_context.py` | cartridge.py | ✅ локально |
+| `patch_recovery_freeze.py` | grondheim_memory.py | ✅ локально |
+
+### ⚠️ Написан но применять осторожно:
+
+| Патч | Причина |
+|------|---------|
+| `patch_myoutput_resolve.py` | При инжекте JSON в контекст вызывает китайские токены у DeepSeek |
+
+### ⚠️ Репо отстаёт от локальных файлов:
+
+Большинство патчей применены только локально. Репо нужно синхронизировать через git commit после стабилизации.
+
+---
+
+## 15. ПРОМПТ A04 (Катя Кат) — ИСПРАВЛЕН В РЕПО
+
+Файл: `studio/modules/video_long/A04/forge/prompt.md`
+
+**Что изменено (Спринт 41):**
+- Шаг 3 разделён на BIBLE и EPISODE режимы
+- В BIBLE: проверяет `episode_plan[]`, НЕ `scenes[]`
+- Явное правило: `scenes[] пустой в BIBLE — это НОРМА, не REJECTED`
+- RULES обновлены соответственно
+
+---
+
+## 16. БЕКЛОГ
+
+> **Порядок приоритетов (обновлён 2026-06-06 · Спринт 41):**
+> 1 → **Закоммитить все локальные патчи в репо** (репо сильно отстаёт)
+> 2 → **Протестировать CONTINUE после Виктора** (A05–A12 video_long)
+> 3 → **Связь ANCHOR с памятью** — chat_history_{worker_id} сбрасывается при рестарте. Нужно персистентное хранение правок Шефа (следующая сессия)
+> 4 → **Удалить старый video_shorts через Страницу Жизни**, пересоздать чисто
+> 5 → **Разложить промты video_shorts v3.0** по A01–A12
+> 6 → **Применить три патча video_shorts** по порядку
+> 7 → Первый ран VIDEO_SHORTS
+> 8 → Первый ран TURBO
+> 9 → Первый ран SOCIAL_MIX
+> 10 → manifest social_mix: `async_scoring: true`
+
+---
+
+## 17. ОТКРЫТЫЕ БАГИ
+
+| # | Проблема | Приоритет |
+|---|----------|-----------|
+| 1 | global_feedback.json отсутствует | ⏳ ждёт рана |
+| 2 | conflict_stats.json отсутствует | ⏳ ждёт рана |
+| 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
+| 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
+| 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
+| 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
+| 10 | Маски Сета для остальных цехов не написаны | 🟡 |
+| 20 | social_mix manifest: async_scoring: false | 🟡 поменять на true |
+| 21 | social_mix промты — проверить под Seedream | 🟡 после первого рана |
+| 22 | video_shorts — агенты не пересозданы, промты не разложены | 🔴 руками |
+| **23** | **Репо отстаёт от локальных файлов** — большинство патчей не закоммичены | **🔴** |
+| **24** | **chat_history_{worker_id} сбрасывается при рестарте** — правки Шефа теряются | **🟡 следующая сессия** |
+| **25** | **patch_myoutput_resolve.py** — написан но не применён (риск китайских токенов) | **🟡 осторожно** |
+
+---
+
+## 18. РЕКОМЕНДАЦИИ БРАТА
 
 101. **social_mix промты выровнены под контракт — но проверь с учётом обновы fal.ai (Seedream). Промпт Эвана (A06) написан под структуру LAYERED CAKE от Banana — если Seedream принимает другой формат, Эвана надо поправить отдельно.**
 
@@ -389,13 +380,19 @@ A12 Тамб Том     — QA Finalizer [qa_agent]
 
 104. **async_scoring в manifest social_mix стоит false — поправить на true.**
 
-105. **video_shorts — цех пересоздаётся с нуля. Старые агенты удалены через Страницу Жизни. Новая расстановка: Рик=A05, Пенни=A06, Вера=A07. Три патча готовы — применить после раскладки промтов.**
+105. **video_shorts — цех пересоздаётся с нуля. Три патча готовы — применить после раскладки промтов.**
 
 106. **video_shorts hooks.py v3.0 — реальная генерация медиа. A03 Джулия слышит трек сама. A07 Вера смотрит на PNG сама. A08 Стэн смотрит на клип сам. Это полная симметрия с video_long.**
 
+107. **Таможня контрактов отключена (CONTRACT_ENABLED=False). Когда будешь включать обратно — сначала выровняй все CHAIN_CONTRACT.md по реальным промтам агентов.**
+
+108. **ANCHOR работает только в рамках одной сессии. chat_history_{worker_id} в RAM. Если перезапустил main.py — правки пропали. Решение: персистентное хранение в файл (следующая сессия).**
+
+109. **video_long BIBLE флоу замкнут: A01→A02→A03→A04 (Катя APPROVED) → Виктор → CONTINUE → A05+. Катя больше не REJECTED за пустой scenes[] в BIBLE режиме.**
+
 ---
 
-## 20. ИСТОРИЯ СПРИНТОВ
+## 19. ИСТОРИЯ СПРИНТОВ
 
 | Дата | Спринт | Ключевое |
 |------|--------|----------|
@@ -439,31 +436,11 @@ A12 Тамб Том     — QA Finalizer [qa_agent]
 | 2026-06-04 | 37 | ЧЕСТНЫЙ РАБОЧИЙ СТАТУС. city_pulse v2.1. |
 | 2026-06-04 | 38 | СОВЕТ РЕЗИДЕНТОВ. Лока + Джем + Кей + Юст. ЗАМЫКАНИЕ ПЕТЛИ. |
 | 2026-06-05 | 39 | SOCIAL_MIX ПОЛНЫЙ ЦИКЛ. hooks.py v4.0. 12 промтов. Мастерская. |
-| **2026-06-05** | **40** | **VIDEO_SHORTS ПОЛНЫЙ ЦИКЛ. hooks.py v3.0: реальная генерация (fal.ai + Wan2.2 + ElevenLabs + CosyVoice). Self-review: Вера (PNG) + Стэн (клип) + Джулия (аудио). CHAIN_CONTRACT v3.0. manifest v3.0. Промты v3.0 (12 агентов). Мастерская: video_shorts в очереди. Цех пересоздаётся с нуля — чистая расстановка.** |
+| 2026-06-05 | 40 | VIDEO_SHORTS ПОЛНЫЙ ЦИКЛ. hooks.py v3.0: реальная генерация. CHAIN_CONTRACT v3.0. manifest v3.0. Промты v3.0 (12 агентов). |
+| **2026-06-06** | **41** | **VIDEO_LONG BIBLE ФЛОУ ЗАМКНУТ. Катя APPROVED. ANCHOR работает (изолированная история по агенту). Recovery заморожен во время работы. Таможня контрактов отключена (CONTRACT_ENABLED=False). Промпт A04 исправлен в репо: BIBLE≠EPISODE критерии.** |
 
 ---
 
-## 21. ОТКРЫТЫЕ БАГИ
-
-| # | Проблема | Приоритет |
-|---|----------|-----------|
-| 1 | global_feedback.json отсутствует | ⏳ ждёт рана |
-| 2 | conflict_stats.json отсутствует | ⏳ ждёт рана |
-| 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
-| 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
-| 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
-| 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
-| 10 | Маски Сета для остальных цехов не написаны | 🟡 |
-| **20** | **social_mix manifest: async_scoring: false** | **🟡 поменять на true** |
-| **21** | **social_mix промты — проверить под Seedream** | **🟡 после первого рана** |
-| **22** | **video_shorts — агенты не пересозданы, промты не разложены** | **🔴 руками** |
-
----
-
-## 22–23. АРХИТЕКТУРА ПУЛЬСА И СОВЕТ РЕЗИДЕНТОВ (без изменений vs v43.0)
-
----
-
-*Обновлено: Спринт 40 — 2026-06-05 · v44.0*
-*video_shorts полный цикл: код готов. Пересоздание агентов + раскладка промтов — следующий шаг.*
-*Три патча готовы к применению. Мастерская видит video_shorts.*
+*Обновлено: Спринт 41 — 2026-06-06 · v45.0*
+*video_long BIBLE флоу: A01→A04 замкнут, Катя APPROVED. ANCHOR с изолированной историей работает.*
+*Следующий приоритет: закоммитить патчи + CONTINUE A05–A12 + персистентность chat_history_{worker_id}.*
