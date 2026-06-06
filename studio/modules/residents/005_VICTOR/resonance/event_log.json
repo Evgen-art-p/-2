@@ -97,5 +97,16 @@
       "critique",
       "video_long"
     ]
+  },
+  {
+    "ts": "2026-06-06T19:12:15.226744",
+    "type": "work",
+    "content": "[video_long] Шеф, если в сценарии ни одного кадра — что именно вы собираетесь монтировать?",
+    "significance": 0.5,
+    "related_agents": [],
+    "tags": [
+      "critique",
+      "video_long"
+    ]
   }
 ]
