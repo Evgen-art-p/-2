@@ -1060,31 +1060,11 @@ async def walk_one_agent(agent: dict, city_state: dict,
     })
     save_city_state(city_state)
 
-    # Проверяем встречу (не более 1 раза с одним партнёром за прогулку)
-    _met_pairs_walk = city_state.get("_met_pairs_walk", {})
-    _my_pairs = _met_pairs_walk.get(folder, set())
-    _others_in_loc = [
-        c["folder"] for c in here_now.get(chosen_location, [])
-        if c["folder"] != folder and c["folder"] not in _my_pairs
-    ]
-    _skip_meeting = len(_others_in_loc) == 0
-    if _skip_meeting:
-        meeting = None
-    else:
-        meeting = await _try_meeting(
-            folder, name, dna, chosen_location, here_now, workshop,
-            agent_profession=agent.get("Profession", ""),
-        )
-        if meeting and meeting.get("met"):
-            _partner_folder = next(
-                (c["folder"] for c in here_now.get(chosen_location, [])
-                 if c.get("name") == meeting["met"]),
-                None,
-            )
-            if _partner_folder:
-                _my_pairs.add(_partner_folder)
-                _met_pairs_walk[folder] = _my_pairs
-                city_state["_met_pairs_walk"] = _met_pairs_walk
+    # Проверяем встречу
+    meeting = await _try_meeting(
+        folder, name, dna, chosen_location, here_now, workshop,
+        agent_profession=agent.get("Profession", ""),
+    )
     if meeting:
         print(f"[CITY] 💬 {name} встретил {meeting['met']} в {meeting['location']}")
         # ── ПУЛЬС: meeting + голоса резидентов ──────────────────
@@ -1420,54 +1400,36 @@ async def run_city_walk(
     city_state["here_now"] = {}
     save_city_state(city_state)
 
-    # Запускаем прогулки — батчами, параллельно внутри батча
-    BATCH_SIZE = 12   # агентов одновременно (rate limit защита)
-    AGENT_TIMEOUT = 45  # сек на одного агента
-
+    # Запускаем прогулки — последовательно с паузой чтобы не спамить API
     results = []
-
-    async def _safe_walk(agent):
+    for i, agent in enumerate(all_agents):
         name = agent.get("Official_Name", agent.get("ID_Object", "?"))
-        try:
-            return await asyncio.wait_for(
-                walk_one_agent(agent, city_state, locations),
-                timeout=AGENT_TIMEOUT,
-            )
-        except asyncio.TimeoutError:
-            return {"agent": name, "status": "skip", "reason": f"таймаут {AGENT_TIMEOUT}s"}
-        except Exception as e:
-            return {"agent": name, "status": "error", "reason": str(e)}
+        await log(f"🚶 {name} выходит в город...")
 
-    for batch_start in range(0, len(all_agents), BATCH_SIZE):
-        batch = all_agents[batch_start:batch_start + BATCH_SIZE]
-        batch_num = batch_start // BATCH_SIZE + 1
-        total_batches = (len(all_agents) + BATCH_SIZE - 1) // BATCH_SIZE
-        await log(f"🏃 Батч {batch_num}/{total_batches}: {len(batch)} агентов параллельно...")
+        result = await walk_one_agent(agent, city_state, locations)
 
-        batch_results = await asyncio.gather(
-            *[_safe_walk(a) for a in batch],
-            return_exceptions=True,
-        )
+        # Retry при обрыве соединения (1 попытка)
+        if result.get("status") == "error" and "Connection" in result.get("reason", ""):
+            await log(f"  ⚡ Переподключение через 3 сек...")
+            await asyncio.sleep(3)
+            result = await walk_one_agent(agent, city_state, locations)
 
-        for agent, result in zip(batch, batch_results):
-            name = agent.get("Official_Name", agent.get("ID_Object", "?"))
-            if isinstance(result, Exception):
-                result = {"agent": name, "status": "error", "reason": str(result)}
-            results.append(result)
-            if result["status"] == "ok":
-                await log(f"  ✓ {name} → {result['location']}")
-            elif result["status"] == "skip":
-                await log(f"  ⏭ {name}: {result['reason']}")
-            else:
-                await log(f"  ❌ {name}: {result['reason']}")
+        results.append(result)
 
-        # Пауза между батчами
-        if batch_start + BATCH_SIZE < len(all_agents):
-            await asyncio.sleep(2)
+        if result["status"] == "ok":
+            await log(f"  → {name} пошёл в: {result['location']}")
+            await log(f"  💭 {result['response'][:120]}...")
+        elif result["status"] == "skip":
+            await log(f"  ⏭ {name}: {result['reason']}")
+        else:
+            await log(f"  ❌ {name}: ошибка — {result['reason']}")
 
-    # Сохраняем активных агентов, here_now НЕ очищаем —
-    # карта должна показывать последние позиции
+        # Пауза между агентами — защита от rate limit OpenRouter
+        await asyncio.sleep(2)
+
+    # Очищаем пространство и активных агентов после прогулки
     city_state["active_agents"] = []
+    city_state["here_now"] = {}
     save_city_state(city_state)
 
     await log(f"✅ Прогулка завершена. {len([r for r in results if r['status'] == 'ok'])} агентов побывали в городе.")
@@ -1539,13 +1501,12 @@ async def walk_quantum_chain(
     locations: list,
     mode: str = "evening",
     on_progress=None,
-    max_quanta: int = 3,
 ) -> list[dict]:
     """
     Квантовая прогулка агента — цепочка локаций пока есть внимание.
 
     mode="morning" → 1 квант, быстро, разогрев перед раном
-    mode="evening" → до max_quanta квантов (default=3), бюджет из Light+Stubbornness
+    mode="evening" → N квантов, бюджет из Light+Stubbornness
 
     Каждый квант:
       1. Считаем веса локаций (с учётом намерений утра)
@@ -1577,14 +1538,12 @@ async def walk_quantum_chain(
     attention = budget
 
     mode_label = "🌅 утро" if mode == "morning" else "🏠 вечер"
-    await log(f"{mode_label} | {name} | бюджет внимания: {budget:.1f} | max_quanta={max_quanta}")
+    await log(f"{mode_label} | {name} | бюджет внимания: {budget:.1f}")
 
     results = []
     quantum_n = 0
-    # Счётчик встреч по парам — один раз за прогулку
-    _met_pairs: set = set()
 
-    while attention > 0.12 and quantum_n < max_quanta:  # лимит квантов
+    while attention > 0.12:  # порог "домой" — меньше этого уже не хватит на квант
         quantum_n += 1
         await log(f"  Квант {quantum_n}: внимание {attention:.2f}")
 
@@ -1612,8 +1571,8 @@ async def walk_quantum_chain(
         attention = round(attention - cost, 3)
         await log(f"  → {chosen_loc} (cost={cost:.2f}, осталось={attention:.2f})")
 
-        # Пауза между квантами минимальная
-        await asyncio.sleep(0.3)
+        # Небольшая пауза между квантами
+        await asyncio.sleep(1)
 
     if attention <= 0.12 and results and results[-1].get("location", "") != "home":
         await log(f"  💤 {name}: внимание иссякло — идёт домой")
@@ -1661,7 +1620,7 @@ async def run_city_walk_morning(
         results.extend(chain)
         await asyncio.sleep(1)
 
-    # here_now НЕ очищаем — карта показывает последние позиции
+    city_state["here_now"] = {}
     save_city_state(city_state)
     return results
 
@@ -1670,7 +1629,6 @@ async def run_city_walk_evening(
     workshops: list[str] | None = None,
     on_progress=None,
     max_agents: int = 0,
-    max_quanta: int = 3,
 ) -> list[dict]:
     """
     Вечерняя прогулка — цепочка квантов, бюджет из Light после рана.
@@ -1696,22 +1654,17 @@ async def run_city_walk_evening(
     city_state["here_now"] = {}
     save_city_state(city_state)
 
-    # Сбрасываем счётчик пар встреч на новую прогулку
-    city_state["_met_pairs_walk"] = {}
-    save_city_state(city_state)
-
     results = []
     for agent in all_agents:
         chain = await walk_quantum_chain(
             agent, city_state, locations,
             mode="evening",
             on_progress=on_progress,
-            max_quanta=max_quanta,
         )
         results.extend(chain)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2)
 
-    # here_now НЕ очищаем — карта показывает последние позиции
+    city_state["here_now"] = {}
     save_city_state(city_state)
 
     # Добавляем событие в историю города

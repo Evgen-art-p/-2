@@ -73,10 +73,8 @@ def dashboard_page():
         state["economy_data"] = get_economy_data(state["period"])
         state["all_agents"]   = list_all_agents()
         render_agent_list()
-        # В режиме Совета не пересоздаём центр — это убивает council_chat_el
-        if state["center_view"] != "council":
-            render_center_grid()
-            render_charts()
+        render_center_grid()    # рендерит активную сетку (economy или observability)
+        render_charts()         # заливает данные в echart (только economy-рефы)
         render_detail()
 
     # ── OBSERVABILITY GRID 2×2 ──────────────────────────────────────

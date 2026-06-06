@@ -2505,9 +2505,6 @@ if(document.readyState === 'loading') {
         # Инициализация карты
         _refresh_map()
 
-        # Автообновление карты каждые 5 секунд — живые перемещения
-        ui.timer(5.0, _refresh_map)
-
         # JS bridge: клик по агенту на карте → select_agent
         ui.on("cab-agent-select", lambda e: select_agent(
             e.args.get("id", ""), e.args.get("dept", "")

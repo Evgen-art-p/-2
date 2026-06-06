@@ -1060,31 +1060,11 @@ async def walk_one_agent(agent: dict, city_state: dict,
     })
     save_city_state(city_state)
 
-    # Проверяем встречу (не более 1 раза с одним партнёром за прогулку)
-    _met_pairs_walk = city_state.get("_met_pairs_walk", {})
-    _my_pairs = _met_pairs_walk.get(folder, set())
-    _others_in_loc = [
-        c["folder"] for c in here_now.get(chosen_location, [])
-        if c["folder"] != folder and c["folder"] not in _my_pairs
-    ]
-    _skip_meeting = len(_others_in_loc) == 0
-    if _skip_meeting:
-        meeting = None
-    else:
-        meeting = await _try_meeting(
-            folder, name, dna, chosen_location, here_now, workshop,
-            agent_profession=agent.get("Profession", ""),
-        )
-        if meeting and meeting.get("met"):
-            _partner_folder = next(
-                (c["folder"] for c in here_now.get(chosen_location, [])
-                 if c.get("name") == meeting["met"]),
-                None,
-            )
-            if _partner_folder:
-                _my_pairs.add(_partner_folder)
-                _met_pairs_walk[folder] = _my_pairs
-                city_state["_met_pairs_walk"] = _met_pairs_walk
+    # Проверяем встречу
+    meeting = await _try_meeting(
+        folder, name, dna, chosen_location, here_now, workshop,
+        agent_profession=agent.get("Profession", ""),
+    )
     if meeting:
         print(f"[CITY] 💬 {name} встретил {meeting['met']} в {meeting['location']}")
         # ── ПУЛЬС: meeting + голоса резидентов ──────────────────
@@ -1539,13 +1519,12 @@ async def walk_quantum_chain(
     locations: list,
     mode: str = "evening",
     on_progress=None,
-    max_quanta: int = 3,
 ) -> list[dict]:
     """
     Квантовая прогулка агента — цепочка локаций пока есть внимание.
 
     mode="morning" → 1 квант, быстро, разогрев перед раном
-    mode="evening" → до max_quanta квантов (default=3), бюджет из Light+Stubbornness
+    mode="evening" → N квантов, бюджет из Light+Stubbornness
 
     Каждый квант:
       1. Считаем веса локаций (с учётом намерений утра)
@@ -1577,14 +1556,12 @@ async def walk_quantum_chain(
     attention = budget
 
     mode_label = "🌅 утро" if mode == "morning" else "🏠 вечер"
-    await log(f"{mode_label} | {name} | бюджет внимания: {budget:.1f} | max_quanta={max_quanta}")
+    await log(f"{mode_label} | {name} | бюджет внимания: {budget:.1f}")
 
     results = []
     quantum_n = 0
-    # Счётчик встреч по парам — один раз за прогулку
-    _met_pairs: set = set()
 
-    while attention > 0.12 and quantum_n < max_quanta:  # лимит квантов
+    while attention > 0.12:  # порог "домой" — меньше этого уже не хватит на квант
         quantum_n += 1
         await log(f"  Квант {quantum_n}: внимание {attention:.2f}")
 
@@ -1670,7 +1647,6 @@ async def run_city_walk_evening(
     workshops: list[str] | None = None,
     on_progress=None,
     max_agents: int = 0,
-    max_quanta: int = 3,
 ) -> list[dict]:
     """
     Вечерняя прогулка — цепочка квантов, бюджет из Light после рана.
@@ -1696,20 +1672,15 @@ async def run_city_walk_evening(
     city_state["here_now"] = {}
     save_city_state(city_state)
 
-    # Сбрасываем счётчик пар встреч на новую прогулку
-    city_state["_met_pairs_walk"] = {}
-    save_city_state(city_state)
-
     results = []
     for agent in all_agents:
         chain = await walk_quantum_chain(
             agent, city_state, locations,
             mode="evening",
             on_progress=on_progress,
-            max_quanta=max_quanta,
         )
         results.extend(chain)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(2)
 
     # here_now НЕ очищаем — карта показывает последние позиции
     save_city_state(city_state)

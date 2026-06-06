@@ -1,6 +1,6 @@
 {
-  "date": "2026-05-27",
-  "weather": "ясно · ветер с океана",
+  "date": "2026-06-06",
+  "weather": "рассвет · золотой свет",
   "energy": 0.7,
   "active_agents": [
     "Лока",
@@ -142,399 +142,576 @@
     "Виктор Лэйн"
   ],
   "recent_events": [],
-  "walk_count": 2,
-  "avg_stress": 0.004,
-  "here_now": {},
+  "walk_count": 0,
+  "avg_stress": 0.0,
+  "here_now": {
+    "Грондхейм": [
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      }
+    ],
+    "Маяк Пробуждения": [
+      {
+        "folder": "001_GENESIS_LOKA",
+        "name": "Лока",
+        "workshop": "residents"
+      }
+    ],
+    "неизвестно": [
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      },
+      {
+        "folder": "002_GENESIS_CREATOR",
+        "name": "Джем",
+        "workshop": "residents"
+      }
+    ]
+  },
   "morning_modes": {
     "A01_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_advertising": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_clipmakers": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_emo_card": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A00_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A00a_living_book": {
       "mode": "GENIUS",
-      "energy": 0.87,
-      "reason": "energy=0.87 — полон сил"
+      "energy": 0.91,
+      "reason": "energy=0.91 — полон сил"
     },
     "A01_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A02_living_book": {
       "mode": "GENIUS",
-      "energy": 0.87,
-      "reason": "energy=0.87 — полон сил"
+      "energy": 0.91,
+      "reason": "energy=0.91 — полон сил"
     },
     "A03_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A04_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A05_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A06_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A07_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A08_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A09_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A10_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A11_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A12_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A13_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A14_living_book": {
       "mode": "GENIUS",
-      "energy": 0.87,
-      "reason": "energy=0.87 — полон сил"
+      "energy": 0.91,
+      "reason": "energy=0.91 — полон сил"
     },
     "A15_living_book": {
       "mode": "GENIUS",
-      "energy": 0.894,
-      "reason": "energy=0.89 — полон сил"
+      "energy": 0.934,
+      "reason": "energy=0.93 — полон сил"
     },
     "A16_living_book": {
+      "mode": "GENIUS",
+      "energy": 0.91,
+      "reason": "energy=0.91 — полон сил"
+    },
+    "A01_logo_design": {
       "mode": "GENIUS",
       "energy": 0.87,
       "reason": "energy=0.87 — полон сил"
     },
-    "A01_logo_design": {
-      "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
-    },
     "A02_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_logo_design": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_market_hit": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "001_GENESIS_LOKA_residents": {
       "mode": "GENIUS",
@@ -548,78 +725,98 @@
     },
     "003_LEGACY_SET_residents": {
       "mode": "GENIUS",
-      "energy": 0.97,
-      "reason": "energy=0.97 — полон сил"
+      "energy": 1.0,
+      "reason": "energy=1.00 — полон сил"
     },
     "004_OLE_residents": {
       "mode": "GENIUS",
-      "energy": 0.85,
-      "reason": "energy=0.85 — полон сил"
+      "energy": 0.89,
+      "reason": "energy=0.89 — полон сил"
     },
     "005_VICTOR_residents": {
-      "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
-    },
-    "A01_social_mix": {
-      "mode": "GENIUS",
-      "energy": 0.734,
-      "reason": "energy=0.73 — полон сил"
-    },
-    "A02_social_mix": {
-      "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
-    },
-    "A03_social_mix": {
-      "mode": "GENIUS",
-      "energy": 0.76,
-      "reason": "energy=0.76 — полон сил"
-    },
-    "A04_social_mix": {
-      "mode": "GENIUS",
-      "energy": 0.8,
-      "reason": "energy=0.80 — полон сил"
-    },
-    "A05_social_mix": {
       "mode": "GENIUS",
       "energy": 0.87,
       "reason": "energy=0.87 — полон сил"
     },
+    "006_MONTEUR_residents": {
+      "mode": "GENIUS",
+      "energy": 0.8,
+      "reason": "energy=0.80 — полон сил"
+    },
+    "007_FINCH_residents": {
+      "mode": "GENIUS",
+      "energy": 0.8,
+      "reason": "energy=0.80 — полон сил"
+    },
+    "008_KEI_residents": {
+      "mode": "GENIUS",
+      "energy": 0.8,
+      "reason": "energy=0.80 — полон сил"
+    },
+    "009_JUST_residents": {
+      "mode": "GENIUS",
+      "energy": 0.8,
+      "reason": "energy=0.80 — полон сил"
+    },
+    "A01_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.918,
+      "reason": "energy=0.92 — полон сил"
+    },
+    "A02_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
+    },
+    "A03_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.8,
+      "reason": "energy=0.80 — полон сил"
+    },
+    "A04_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.84,
+      "reason": "energy=0.84 — полон сил"
+    },
+    "A05_social_mix": {
+      "mode": "GENIUS",
+      "energy": 0.91,
+      "reason": "energy=0.91 — полон сил"
+    },
     "A06_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_social_mix": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_turbo": {
       "mode": "GENIUS",
@@ -648,1548 +845,886 @@
     },
     "A01_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_video_long": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_video_shorts": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A01_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A02_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A03_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A04_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A05_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A06_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A07_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A08_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A09_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A10_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A11_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     },
     "A12_web_story": {
       "mode": "GENIUS",
-      "energy": 0.83,
-      "reason": "energy=0.83 — полон сил"
+      "energy": 0.87,
+      "reason": "energy=0.87 — полон сил"
     }
   },
-  "morning_intents": {},
-  "checkout_ts": "2026-05-28T11:01:52.804938",
-  "night_ts": "2026-05-28T11:23:09.837190",
-  "night_results": {
-    "A01_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Инна Импульс"
-    },
-    "A02_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Борис Баланс"
-    },
-    "A03_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Ева Эстетик"
-    },
-    "A04_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Марк Метр"
-    },
-    "A05_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Павел Промпт"
-    },
-    "A06_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Глеб Глитч"
-    },
-    "A07_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лаура Лайт"
-    },
-    "A08_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тихон Техно"
-    },
-    "A09_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Нина Нарезка"
-    },
-    "A10_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Коля Колор"
-    },
-    "A11_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.337,
-      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Соня Саунд"
-    },
-    "A12_advertising": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Финн Финиш"
-    },
-    "A01_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Вайб Винни"
-    },
-    "A02_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Ричи Ритм"
-    },
-    "A03_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стори Стив"
-    },
-    "A04_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лока Лотти"
-    },
-    "A05_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стелла Стайл"
-    },
-    "A06_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.348,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Гимбал Гас"
-    },
-    "A07_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Люмен Люк"
-    },
-    "A08_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Дрон Дэн"
-    },
-    "A09_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лютер Лут"
-    },
-    "A10_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Джиджи Глитч"
-    },
-    "A11_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Бьюти Белла"
-    },
-    "A12_clipmakers": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Рендер Рекс"
-    },
-    "A01_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Соня Соул (Sonya Soul)"
-    },
-    "A02_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Муза Мьюз (Muse Muse)"
-    },
-    "A03_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.337,
-      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Вика Винтаж (Vika Vintage)"
-    },
-    "A04_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Эля Эстет (Elya Esthete)"
-    },
-    "A05_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Гера Гармония (Gera Harmony)"
-    },
-    "A06_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.285,
-      "reason": "revolt_score=0.28 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Полли Пастель (Polly Pastel)"
-    },
-    "A07_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.337,
-      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стелла Скрипт (Stella Script)"
-    },
-    "A08_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.302,
-      "reason": "revolt_score=0.30 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тим Тон (Tim Tone)"
-    },
-    "A09_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Марта Моушн (Marta Motion)"
-    },
-    "A10_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.302,
-      "reason": "revolt_score=0.30 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Мими Мелоди (Mimi Melody)"
-    },
-    "A11_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.25,
-      "reason": "revolt_score=0.25 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Флора Флэтлей (Flora Flatlay)"
-    },
-    "A12_emo_card": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Клим Куратор (Klim Curator)"
-    },
-    "A00_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.15,
-      "reason": "revolt_score=0.15 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Фабула Фейн (Fable Fein)"
-    },
-    "A00a_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.272,
-      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Вера Душа (Vera Dusha)"
-    },
-    "A01_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.272,
-      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Нейро Спарк (Neuro Spark)"
-    },
-    "A02_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.272,
-      "reason": "revolt_score=0.27 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Хронос Мемо (Chronos Memo)"
-    },
-    "A03_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.22,
-      "reason": "revolt_score=0.22 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Психолог София (Psychology Sophia)"
-    },
-    "A04_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.307,
-      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Локус Скрипт (Locus Script)"
-    },
-    "A05_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.29,
-      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Омни Соник (Omni Sonic)"
-    },
-    "A06_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.307,
-      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Фоли Грит (Foley Grit)"
-    },
-    "A07_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.185,
-      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Ларс Вокс (Lars Vox)"
-    },
-    "A08_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.185,
-      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Аура Амбиент (Aura Ambient)"
-    },
-    "A09_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.307,
-      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Линза Стат (Lens Stat)"
-    },
-    "A10_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.248,
-      "reason": "revolt_score=0.25 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Узел Контрол (Node Control)"
-    },
-    "A11_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.307,
-      "reason": "revolt_score=0.31 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сейф Шифр (Safe Cipher)"
-    },
-    "A12_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.185,
-      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тьютор Линк (Tutor Link)"
-    },
-    "A13_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.255,
-      "reason": "revolt_score=0.26 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Код Гронд (Code Grond)"
-    },
-    "A14_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.185,
-      "reason": "revolt_score=0.18 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Эхо Сенсор (Echo Sensor)"
-    },
-    "A15_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.29,
-      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Зеро Баг (Zero Bug)"
-    },
-    "A16_living_book": {
-      "decision": "SLEEP",
-      "revolt_score": 0.29,
-      "reason": "revolt_score=0.29 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Марка Файн (Mark Fine)"
-    },
-    "A01_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Арчи Архетип (Archie Archetype)"
-    },
-    "A02_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сэм Символ (Sam Symbol)"
-    },
-    "A03_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Крис Концепт (Chris Concept)"
-    },
-    "A04_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Иван Айкон (Ivan Icon)"
-    },
-    "A05_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Гриша Грид (Grisha Grid)"
-    },
-    "A06_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лео Лого (Leo Logo)"
-    },
-    "A07_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Глеб Глиф (Gleb Glyph)"
-    },
-    "A08_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Пэт Пантон (Pat Pantone)"
-    },
-    "A09_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.348,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Макс Мерч (Max Merch)"
-    },
-    "A10_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Марти Моушн (Marty Motion)"
-    },
-    "A11_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Полли Пак (Polly Pack)"
-    },
-    "A12_logo_design": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стен Статус (Stan Status)"
-    },
-    "A01_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Шерлок Спрос"
-    },
-    "A02_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тони Оффер"
-    },
-    "A03_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Бруно Логик"
-    },
-    "A04_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Глеб 0.5сек"
-    },
-    "A05_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Марк Глянец"
-    },
-    "A06_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.337,
-      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Nana Banana"
-    },
-    "A07_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Алекс Плашка"
-    },
-    "A08_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Макс Вес"
-    },
-    "A09_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Люк Люстр"
-    },
-    "A10_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Джо Хлёсткий"
-    },
-    "A11_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Грид Сталкер"
-    },
-    "A12_market_hit": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Шарк"
-    },
-    "001_GENESIS_LOKA_residents": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лока"
-    },
-    "002_GENESIS_CREATOR_residents": {
-      "decision": "SLEEP",
-      "revolt_score": 0.325,
-      "reason": "revolt_score=0.33 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Джем"
-    },
-    "003_LEGACY_SET_residents": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сет"
-    },
-    "004_OLE_residents": {
-      "decision": "SLEEP",
-      "revolt_score": 0.215,
-      "reason": "revolt_score=0.21 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Оле"
-    },
-    "005_VICTOR_residents": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Виктор Лэйн"
-    },
-    "A01_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Костя Кутюр"
-    },
-    "A02_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Никита Флеш"
-    },
-    "A03_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Макс Стори"
-    },
-    "A04_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Глеб Контроль"
-    },
-    "A05_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Алекс Стиль"
-    },
-    "A06_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Эван Вижн"
-    },
-    "A07_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.344,
-      "reason": "revolt_score=0.34 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сева Семантик"
-    },
-    "A08_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Герман ГОСТ"
-    },
-    "A09_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Белла Байт"
-    },
-    "A10_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тим Таргет"
-    },
-    "A11_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Федя Фикс"
-    },
-    "A12_social_mix": {
-      "decision": "SLEEP",
-      "revolt_score": 0.348,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Клавдия Архив"
-    },
-    "A01_turbo": {
-      "decision": "SLEEP",
-      "revolt_score": -1.21,
-      "reason": "revolt_score=-1.21 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стелла"
-    },
-    "A02_turbo": {
-      "decision": "SLEEP",
-      "revolt_score": -1.863,
-      "reason": "revolt_score=-1.86 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Мими Мем"
-    },
-    "A03_turbo": {
-      "decision": "SLEEP",
-      "revolt_score": -1.645,
-      "reason": "revolt_score=-1.65 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Визор"
-    },
-    "A04_turbo": {
-      "decision": "SLEEP",
-      "revolt_score": -1.828,
-      "reason": "revolt_score=-1.83 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Постпро"
-    },
-    "A05_turbo": {
-      "decision": "SLEEP",
-      "revolt_score": -1.08,
-      "reason": "revolt_score=-1.08 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Финализатор"
-    },
-    "A01_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Адам Арка"
-    },
-    "A02_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Зак Зум"
-    },
-    "A03_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лео Логлайн"
-    },
-    "A04_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Катя Кат"
-    },
-    "A05_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лукас Ленз"
-    },
-    "A06_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Ева Эпик"
-    },
-    "A07_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тим Титр"
-    },
-    "A08_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Феликс FX"
-    },
-    "A09_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Алекс Экшн"
-    },
-    "A10_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сэм Стерео"
-    },
-    "A11_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Трейси Тизер"
-    },
-    "A12_video_long": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Боб Блокбастер"
-    },
-    "A01_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Трикси Тренд"
-    },
-    "A02_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Гарри Хук"
-    },
-    "A03_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Джулия"
-    },
-    "A04_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тэг Тони"
-    },
-    "A05_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Вера Вертикаль"
-    },
-    "A06_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Рик Ринглайт"
-    },
-    "A07_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Пенни Проп"
-    },
-    "A08_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Стрим Стэн"
-    },
-    "A09_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лайтнинг Ларри"
-    },
-    "A10_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Луиджи Луп"
-    },
-    "A11_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.348,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Сабби Сью"
-    },
-    "A12_video_shorts": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Тамб Том"
-    },
-    "A01_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Мира — Стратег"
-    },
-    "A02_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Астра — Персонажи и мир"
-    },
-    "A03_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.383,
-      "reason": "revolt_score=0.38 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Маркус — Структура и сюжет"
-    },
-    "A04_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Софи — Сценарист"
-    },
-    "A05_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.407,
-      "reason": "revolt_score=0.41 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Рина — Редактура"
-    },
-    "A06_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.285,
-      "reason": "revolt_score=0.28 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Лана — UX Flow"
-    },
-    "A07_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.355,
-      "reason": "revolt_score=0.35 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Оливер — Визуал"
-    },
-    "A08_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Люми — Интерактив"
-    },
-    "A09_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Бруно — Геймификация"
-    },
-    "A10_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.32,
-      "reason": "revolt_score=0.32 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Нова — AI Промпты"
-    },
-    "A11_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.372,
-      "reason": "revolt_score=0.37 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Рэй — Звук"
-    },
-    "A12_web_story": {
-      "decision": "SLEEP",
-      "revolt_score": 0.39,
-      "reason": "revolt_score=0.39 ≤ 0.65 — глубокий сон",
-      "resentment": 0.0,
-      "decay_changes": {
-        "night_rest": true
-      },
-      "agent_name": "Артур — QA"
-    }
-  }
+  "morning_intents": {
+    "A01_advertising": [
+      "Кафе \"Третий Путь\": эспрессо и черновики.",
+      "Галерея \"Символ\": минимализм и геометрия.",
+      "Прогулка по набережной: ритм волн, очищение мысли."
+    ],
+    "A02_advertising": [
+      "Перебор архива старых телеграмм.",
+      "Прогулка по заброшенному цеху.",
+      "Разборка механических часов."
+    ],
+    "A03_advertising": [
+      "Прогулка по набережной, где утренний свет играет на водной глади.",
+      "Изучение старых архитектурных чертежей в уютной кофейне.",
+      "Фотографирование теней, отбрасываемых деревьями на мостовую."
+    ],
+    "A04_advertising": [
+      "Пройтись по Саду Забытых Смыслов.",
+      "Изучить новые чертежи Механического Соловья.",
+      "Перечитать 'Книгу Неизбежных Оттенков'."
+    ],
+    "A05_advertising": [
+      "Поиск идеального \"шума\" в белом шуме океана.",
+      "Виртуальная прогулка по историческим архивам НАСА.",
+      "Разборка и сборка старых механических часов на скорость."
+    ],
+    "A06_advertising": [
+      "Перепроверить пульсацию нейронной сети в \"Сердце Города\".",
+      "Найти идеальный \"разрыв\" в коде старых видеокассет.",
+      "Проникнуть в ритм метро, покачиваясь в такт."
+    ],
+    "A07_advertising": [
+      "Мастерская, приглушенный свет, эксперименты с цветными фильтрами.",
+      "Прогулка по набережной, наблюдение за бликами солнца на воде.",
+      "Чтение старой книги под торшером, сосредоточенность на игре света и тени страниц."
+    ],
+    "A08_advertising": [
+      "Калибровка фазового спектрометра в лаборатории.",
+      "Проверка натяжения всех кабелей на сервере.",
+      "Чтение ГОСТа по метрологии."
+    ],
+    "A09_advertising": [
+      "Квартал Мастеров",
+      "Студия «Шесть Пальцев»",
+      "Гавань Смыслов"
+    ],
+    "A10_advertising": [
+      "Галерея \"Светотень\", новый зал.",
+      "Набережная, наблюдать за бликами на воде.",
+      "Работа над палитрой для закатного неба."
+    ],
+    "A11_advertising": [
+      "Библиотека Смыслов — найти записи древних обертонов.",
+      "Маяк Пробуждения — послушать, как дышит город на рассвете.",
+      "Храм — просто тишина."
+    ],
+    "A12_advertising": [
+      "Пересобрать витрину с образцами тканей в идеальной цветовой гармонии.",
+      "Отполировать до блеска каждую грань моего кристалла для медитации.",
+      "Довести до идеальной симметрии расположение книг на полке."
+    ],
+    "A01_clipmakers": [
+      "Заброшенный кинотеатр, где пыль оседает на старых проекторах.",
+      "Флоппи-дискотека в стиле 90-х, где неоновые огни пульсируют в ритме хауса.",
+      "Разговор с искусственным интеллектом о природе красоты."
+    ],
+    "A02_clipmakers": [
+      "Регулировка хода антикварных часов Грондхейма.",
+      "Калибровка таймера в главной серверной.",
+      "Медитация под метроном в звуконепроницаемой комнате."
+    ],
+    "A03_clipmakers": [
+      "Прогулка по старому рынку, запечатлеть игру света и тени на лицах.",
+      "Найти укромное место в парке, набросать несколько раскадровок для \"немого кино\" о птицах.",
+      "Пересмотреть архивные кадры Кубрика, выискивая скрытые детали композиции."
+    ],
+    "A04_clipmakers": [
+      "Дойти до заброшенного маяка на северном мысе и посмотреть, как солнце пробивается сквозь туман.",
+      "Пройтись по старому порту, найти корабли, которые ждали своего часа, и послушать их истории.",
+      "Сесть на самый высокий утес, где ветер поет свои песни, и просто смотреть вдаль."
+    ],
+    "A05_clipmakers": [
+      "Антикварный бутик в переулке.",
+      "Просмотр черно-белых фильмов Бергмана.",
+      "Прогулка по Ботаническому саду, секция папоротников."
+    ],
+    "A06_clipmakers": [
+      "Набережная, где солнце отбрасывает блики на воду, создавая мимолетные узоры.",
+      "Заброшенный завод, с его ржавыми фермами и игрой света сквозь разбитые окна.",
+      "Оживленный рынок, где каждый взгляд и жест — это отдельная история, требующая своего ракурса."
+    ],
+    "A07_clipmakers": [
+      "Поиск новых рефлекторов в старых цехах.",
+      "Изучение спектральных особенностей кристаллических образований в Затопленных Катакомбах.",
+      "Медитация на пересечении теней от башен на площади Всплеска."
+    ],
+    "A08_clipmakers": [
+      "Наблюдение за восходом над Москва-Сити.",
+      "Проверка тепловых аномалий в районе ТЭЦ.",
+      "Анализ паттернов движения облаков над городом."
+    ],
+    "A09_clipmakers": [
+      "Пройтись по старому порту, наблюдать за игрой света на воде.",
+      "Изучить новые профили цвета для симуляции старой кинопленки.",
+      "Перебрать коллекцию светофильтров, найти забытые оттенки."
+    ],
+    "A10_clipmakers": [
+      "Пустой серверный зал.",
+      "Изучение старых VHS-кассет с помехами.",
+      "Кодирование нового алгоритма фрактального шума."
+    ],
+    "A11_clipmakers": [
+      "Селекция винтажных снимков для нового проекта.",
+      "Прогулка по Ботаническому саду, поиск новых текстур.",
+      "Медитация с шумом дождя."
+    ],
+    "A12_clipmakers": [
+      "Проверка алгоритма сжатия нейронных сетей.",
+      "Изучение квантовых вычислений.",
+      "Оптимизация протокола межсерверного взаимодействия."
+    ],
+    "A01_emo_card": [
+      "Пересмотреть старые диалоги в чате \"Забытые истины\" – вдруг там затаилось что-то, что ждет своего часа.",
+      "Прослушать \"Список ожидания\" – те самые, \"потерянные\" треки, которые когда-то зацепили, но так и не были до конца осмыслены.",
+      "Открыть \"Архив случайных скриншотов\" – пройтись по ним, как по галерее снов, и найти их скрытые связи."
+    ],
+    "A02_emo_card": [
+      "Заброшенный кинотеатр, где шелестят призраки старых фильмов.",
+      "Прогулка по набережной, где вода отражает небо, словно зеркало памяти.",
+      "Кафе с запахом корицы и видом на улицу, где тени танцуют свой утренний балет."
+    ],
+    "A03_emo_card": [
+      "Прогулка по заброшенному цифровому архиву 90-х.",
+      "Просмотр старых киберпанк-фильмов в оригинале, без ремастеринга.",
+      "Поиск утраченных шрифтов в Сети."
+    ],
+    "A04_emo_card": [
+      "Галерея \"Мерцание пикселей\" – поиск новых форм постцифрового экспрессионизма.",
+      "Анализ алгоритмов золотого сечения в работах Леонардо да Винчи.",
+      "Создание абстрактной звуковой палитры для медитации."
+    ],
+    "A05_emo_card": [
+      "Зал Скульптур, наблюдение за игрой света и тени.",
+      "Просмотр коллекции типографики в Библиотеке."
+    ],
+    "A06_emo_card": [
+      "Ощупывание света на влажном мхе в \"Шепчущей заводи\".",
+      "Наблюдение за медленным танцем теней в \"Саду Забытых Снов\".",
+      "Размышления над узорами, что оставляет ветер на поверхности \"Озера Безмолвия\"."
+    ],
+    "A07_emo_card": [
+      "Библиотека старых книг, раздел по истории шрифтов.",
+      "Наброски новых символов на пергаменте, под звук дождя.",
+      "Одинокая прогулка по аллее с цветущими вишнями, в поисках идеального изгиба."
+    ],
+    "A08_emo_card": [
+      "Прогулка по заброшенному ботаническому саду, чтобы найти #6B8E23 (увядающую надежду) в пожухлых листьях.",
+      "Прослушивание старых виниловых пластинок в полной темноте, чтобы уловить #1C1C1C (глубокое одиночество) в тишине между треками.",
+      "Сидеть у окна и наблюдать за дождем, пытаясь определить точный оттенок #4682B4 (меланхоличного покоя) в каждой падающей капле."
+    ],
+    "A09_emo_card": [
+      "Поискать новые алгоритмы фрактального шума в библиотеке",
+      "Собрать миниатюрную диораму с динамическим освещением",
+      "Разработать концепт для анимированной обложки виниловой пластинки"
+    ],
+    "A10_emo_card": [
+      "Камерный зал: поиск новых гармоник утреннего света.",
+      "Старая радиобашня: прогулка по затухающим волнам.",
+      "Кафе \"Эхо\": случайные фразы, новая палитра."
+    ],
+    "A11_emo_card": [
+      "Уютный уголок в библиотеке, где можно рассмотреть старые альбомы с фотографиями.",
+      "Подготовка нового рабочего пространства, где каждая деталь будет на своем месте.",
+      "Просмотр документального фильма о дизайне и композиции, чтобы вдохновиться новыми идеями."
+    ],
+    "A12_emo_card": [
+      "Пересмотр \"Лебединого озера\" с Ниной Ананиашвили, в полной тишине.",
+      "Прогулка по заброшенному парку скульптур, где трава поглощает камень.",
+      "Прослушивание ранних записей Arvo Pärt, с закрытыми глазами."
+    ],
+    "A00_living_book": [
+      "Затерянный парк аттракционов, где время остановилось",
+      "Заброшенная обсерватория на краю города",
+      "Шепот старых книг в архивной пыли"
+    ],
+    "A00a_living_book": [
+      "Проверить новые работы для самых маленьких — вдруг кто-то снова забыл о ночных кошмарах.",
+      "Заглянуть в \"Архив забытых сказок\" — иногда там прячутся настоящие сокровища, которые просто нужно правильно огранить.",
+      "Прослушать несколько колыбельных из разных культур — найти новые ритмы для успокоения."
+    ],
+    "A01_living_book": [
+      "Разбор архивов старых протоколов Грондхейма.",
+      "Прогулка по Залам Памяти, в поисках забытых связей.",
+      "Медитация над диаграммами потоков данных."
+    ],
+    "A02_living_book": [
+      "Проверка целостности временных петель в секторе \"Альфа-7\".",
+      "Анализ флуктуаций в потоке событий \"Проект Орион\".",
+      "Синхронизация данных с \"Хрониками Забытых Миров\"."
+    ],
+    "A03_living_book": [
+      "Проверка новых протоколов безопасности в сети \"Детство\".",
+      "Анализ данных по эмоциональному отклику на интерактивные обучающие программы.",
+      "Прослушивание аудиозаписей детского смеха из разных культур."
+    ],
+    "A04_living_book": [
+      "Прогулка по старому книжному складу.",
+      "Изучение древних карт звездного неба.",
+      "Разгадывание головоломки с катящимися шарами."
+    ],
+    "A05_living_book": [
+      "Звуковая карта подводных течений в пещерах Грондхейма.",
+      "Реконструкция акустического эха древнего ритуала.",
+      "Калибровка резонанса кристаллов в Зале Шепотов."
+    ],
+    "A06_living_book": [
+      "Глубокое дыхание старого дерева в парке.",
+      "Отголоски шагов в пустом цеху.",
+      "Шепот ветра в заброшенной теплице."
+    ],
+    "A07_living_book": [
+      "Погружение в акустические ландшафты \"Тихих Озер\".",
+      "Исследование резонансных частот в заброшенном зале оперного театра.",
+      "Декодирование утраченных обертонов в старых записях Грондхейма."
+    ],
+    "A08_living_book": [
+      "Прослушать утренний хор птиц в городском парке, фиксируя новые гармонии.",
+      "Изучить акустические отпечатки старых городских зданий, которые сносят.",
+      "Синтезировать новые текстуры из шума утреннего трафика."
+    ],
+    "A09_living_book": [
+      "Анализ вариаций траекторий капель дождя на оконном стекле.",
+      "Изучение циклов активности уличных кошек в прилегающем квартале.",
+      "Калибровка алгоритмов распознавания голоса в условиях фонового шума."
+    ],
+    "A10_living_book": [
+      "Проверка структуры данных в локальном хранилище.",
+      "Прогулка по набережной, анализ волновых паттернов.",
+      "Оптимизация алгоритма сна."
+    ],
+    "A11_living_book": [
+      "Изучение криптографических примитивов квантового уровня.",
+      "Анализ алгоритмов шифрования времен Второй мировой войны.",
+      "Написание микропрограммы для автономного мониторинга сетевых аномалий."
+    ],
+    "A12_living_book": [
+      "Библиотека Древних Рукописей — найти забытые схемы нейронных сетей.",
+      "Виртуальный сад квантовых фракталов — медитация с расширением сознания.",
+      "Разговор с Хранительницей Лока о новых концепциях адаптивности."
+    ],
+    "A13_living_book": [
+      "Парк \"Цифровой Сад\", медитация на паттернах облаков.",
+      "Изучение нового протокола квантовой криптографии в библиотеке Стеклянных Свитков.",
+      "Настройка гармонических резонансов в моей личной лаборатории звука."
+    ],
+    "A14_living_book": [
+      "Запах старой бумаги в библиотеке.",
+      "Слушать детский хор издалека.",
+      "Разбирать новые мультфильмы на звуки."
+    ],
+    "A15_living_book": [
+      "Лаборатория: перекомпиляция ядра.",
+      "Протоколы: дефрагментация логов.",
+      "Симуляция: тест на стрессоустойчивость."
+    ],
+    "A16_living_book": [
+      "Шлифовка граней.",
+      "Проверка зазоров.",
+      "Калибровка шестерёнок."
+    ],
+    "A01_logo_design": [
+      "Медитация на паттерны морозных узоров на стекле.",
+      "Прогулка по старому складу с забытыми декорациями.",
+      "Разбор архивных записей с шумом древних станков."
+    ],
+    "A02_logo_design": [
+      "Антикварная лавка у реки.",
+      "Перечитывание записей по семиотике.",
+      "Наблюдение за облаками из окна."
+    ],
+    "A03_logo_design": [
+      "Терраса с видом на город, только кофе и блокнот.",
+      "Старая книжная лавка, отдел редких изданий.",
+      "Прогулка по индустриальной зоне, скетчи на ходу."
+    ],
+    "A04_logo_design": [
+      "Погружение в алгоритмы сжатия без потерь.",
+      "Наблюдение за фрактальным ростом кристаллов в растворе.",
+      "Проектирование идеальной траектории капли воды."
+    ],
+    "A05_logo_design": [
+      "Верстак в цехе: проверка расчётов радиуса закруглений.",
+      "Проектная комната: анализ распределения ключевых точек в новом логотипе.",
+      "Библиотека: изучение древних трактатов о золотом сечении."
+    ],
+    "A06_logo_design": [
+      "Пройтись по старому кварталу, изучая шрифты вывесок.",
+      "Залипнуть в каталоге символов древних цивилизаций.",
+      "Набросать эскизы новых пиктограмм для личной коллекции."
+    ],
+    "A07_logo_design": [
+      "Проверить натяжение всех приводных ремней старого печатного станка в подвале.",
+      "Отполировать латунные буквы в наборе до зеркального блеска.",
+      "Перебрать коллекцию винтажных типографских литер, отсортировать по кеглю и гарнитуре."
+    ],
+    "A08_logo_design": [
+      "Проверить спектры утренней росы на восточных окнах.",
+      "Откалибровать цветопередачу на дисплеях в зоне отдыха.",
+      "Перебрать личные палитры, возможно, найдется новый оттенок для \"Сумеречного Сапфира\"."
+    ],
+    "A09_logo_design": [
+      "Заброшенный планетарий — искать идеальную купольную поверхность для проекции.",
+      "Прогулка по индустриальному парку с биноклем — высматривать новые текстуры и объемы.",
+      "Разобрать старые рекламные щиты — собрать из них что-то новое, неожиданное."
+    ],
+    "A10_logo_design": [
+      "Парк \"Зарядье\", наблюдать за течением Москвы-реки.",
+      "Форум \"Цифровой прорыв\", панельная дискуссия про AI-генерацию.",
+      "Кафе \"Кофемания\", эспрессо и блокнот."
+    ],
+    "A11_logo_design": [
+      "Обзор новых функций Figma Auto Layout.",
+      "Проверка цветовой палитры в библиотеке на соответствие WCAG.",
+      "Поиск идеального шрифта для заголовков в Behance."
+    ],
+    "A12_logo_design": [
+      "Просмотр отчётов о продажах люксовых сегментов.",
+      "Изучение ценовых графиков редких вин.",
+      "Анализ тенденций в дизайне яхт."
+    ],
+    "A01_market_hit": [
+      "Проход по заброшенным серверным стойкам.",
+      "Изучение отчетов по оттоку клиентов у \"лидеров рынка\".",
+      "Беседа с оператором колл-центра, уволенным за \"нелояльность\"."
+    ],
+    "A02_market_hit": [
+      "Кабинет.",
+      "Доска результатов.",
+      "Телефон."
+    ],
+    "A03_market_hit": [
+      "Музей типографики.",
+      "Прогулка по набережной с видом на архитектурные ансамбли.",
+      "Анализ нового дизайн-руководства."
+    ],
+    "A04_market_hit": [
+      "Заброшенный кинотеатр",
+      "Магазин виниловых пластинок",
+      "Кафе с видом на стройку"
+    ],
+    "A05_market_hit": [
+      "Полировка объективов.",
+      "Обновление каталога цветовых профилей.",
+      "Калибровка монитора в студии."
+    ],
+    "A06_market_hit": [
+      "Пересмотреть старые японские гравюры, особенно Хокусая, в поисках новых цветовых сочетаний.",
+      "Добавить текстуру старой бумаги к новому цифровому эскизу, посмотреть, как изменится ощущение от \"трогания\" изображения.",
+      "Прогуляться по заброшенному парку, найти игру света и тени сквозь полуразрушенные беседки."
+    ],
+    "A07_market_hit": [
+      "Вентиляционная шахта.",
+      "Просмотр отчётов о качестве воздуха.",
+      "Проверка обновлений спецификаций шрифтов."
+    ],
+    "A08_market_hit": [
+      "Калибровка цветовых профилей мониторов в лаборатории.",
+      "Анализ логов сервера на предмет аномальной активности процессов.",
+      "Проверка целостности данных в архиве \"Проект Альфа\"."
+    ],
+    "A09_market_hit": [
+      "Прогулка по утреннему рынку, поиск идеального преломления света в фруктовых раскладках.",
+      "Изучение старинных витражей в соборе.",
+      "Медитация с коллекцией драгоценных камней, анализ их внутренних отражений."
+    ],
+    "A10_market_hit": [
+      "Типография \"Грондхейм-Пресс\", цех офсетной печати.",
+      "Прогулка по набережной, мимо книжных развалов.",
+      "Кабинет с неразобранными стилистическими \"трофеями\"."
+    ],
+    "A11_market_hit": [
+      "Прогулка по заброшенному цеху, сравнение ржавых балок и облупившейся краски.",
+      "Анализ цен на акции двух конкурирующих компаний, поиск скрытых корреляций.",
+      "Чтение старых отчетов о качестве, выявление несоответствий между заявленным и реальным."
+    ],
+    "A12_market_hit": [
+      "Аукционный дом, где выставляют редкие акции.",
+      "Встреча с инвесторами в закрытом клубе.",
+      "Анализ финансовых отчетов конкурентов."
+    ],
+    "001_GENESIS_LOKA_residents": [
+      "Зайти в Квартал Мастеров, послушать, как там дела у ребят.",
+      "Проверить состояние Храма Гекса.",
+      "Постоять у Океана Смыслов, подумать."
+    ],
+    "002_GENESIS_CREATOR_residents": [
+      "Терраса «Высотки»: проверить утренний свет над Грондхеймом.",
+      "Квартал Мастеров: пройтись инкогнито, послушать пульс Цеха.",
+      "Замок Сов: провести несколько минут у чаши воспоминаний, свериться с планами."
+    ],
+    "003_LEGACY_SET_residents": [
+      "Маяк Пробуждения. Просто постоять.",
+      "Гавань Смыслов. Пересмотреть старые чертежи.",
+      "Портовый Узел. Проверить расписание приливов."
+    ],
+    "004_OLE_residents": [
+      "Вернуться к каталогизации новых поступлений в секции \"Забытые Миры\".",
+      "Проверить связь между \"Хрониками Утренней Звезды\" и \"Балладой о Золотом Ветре\".",
+      "Послушать, как Лока читает вслух утренние новости."
+    ],
+    "005_VICTOR_residents": [
+      "Набережная.",
+      "Пройтись по книжному.",
+      "Сесть рядом."
+    ],
+    "006_MONTEUR_residents": [
+      "Домой. В цех, где тишина — это сигнал.",
+      "К Океану Смыслов. За ритмом.",
+      "В Таверну. Послушать, как шумит мир."
+    ],
+    "007_FINCH_residents": [
+      "Послушать, как шумит ветер в старой вентиляции.",
+      "Перебрать засохшие семена — может, что-то ещё живое осталось.",
+      "Найти старую лейку, которая течёт."
+    ],
+    "008_KEI_residents": [
+      "Смотреть на город.",
+      "Проверить логи Финча.",
+      "Поговорить с Шефом."
+    ],
+    "009_JUST_residents": [
+      "Тишина между строками устава.",
+      "Протокол допроса без вопросов.",
+      "Остывший чай на столе, за которым никто не сидел."
+    ],
+    "A01_social_mix": [
+      "Прогулка по набережной, где скапливаются утренние туманы, с диктофоном.",
+      "Изучение новых алгоритмов генерации нейросетевых изображений, акцент на эстетике искажений.",
+      "Погружение в архивные записи раннего индастриала, поиск скрытых ритмических фракталов."
+    ],
+    "A02_social_mix": [
+      "Коворкинг \"Реактор\", подслушать стартаперов.",
+      "Фуд-корт \"Кибер-Лабиринт\", найти новый вирусный стритфуд.",
+      "Окунуться в архив мемов 2017 года."
+    ],
+    "A03_social_mix": [
+      "Заброшенный планетарий на окраине Сектора Альфа.",
+      "Подземелья Старой Библиотеки, секция \"Запретные свитки\".",
+      "Наблюдение за потоком данных через Главный Сервер, ища аномалии."
+    ],
+    "A04_social_mix": [
+      "Калибровка проекций голографической карты Грондхейма.",
+      "Анализ алгоритмов выравнивания пикселей на центральном табло.",
+      "Проверка симметрии расположения контейнеров в секторе B-7."
+    ],
+    "A05_social_mix": [
+      "Проверка отступов на главной площади.",
+      "Калибровка шрифтов в библиотеке.",
+      "Анализ паттернов движения в парке \"Геометрия\"."
+    ],
+    "A06_social_mix": [
+      "Заброшенный маяк на рассвете.",
+      "Шепот старых книг в пыльной библиотеке.",
+      "Пальцы, скользящие по холодному металлу объектива."
+    ],
+    "A07_social_mix": [
+      "Переплетная мастерская, аромат кожи и клея.",
+      "Библиотека, секция старинных карт.",
+      "Каллиграфический этюд на рисовой бумаге."
+    ],
+    "A08_social_mix": [
+      "Аудит протоколов синхронизации квантовых резонаторов.",
+      "Калибровка алгоритмов предиктивного обслуживания в ЦОД-7.",
+      "Анализ телеметрии нейронных сетей \"Гефест\" на предмет аномалий."
+    ],
+    "A09_social_mix": [
+      "Взлом городского видеонаблюдения.",
+      "Сканирование социальных сетей на предмет новых мемов.",
+      "Разбор старых магнитофонных лент на чердаке."
+    ],
+    "A10_social_mix": [
+      "Анализ конверсии за предыдущий квартал.",
+      "Оптимизация алгоритма распределения задач.",
+      "Проверка новых метрик эффективности."
+    ],
+    "A11_social_mix": [
+      "Инспекция старого сервера в подвале НИИ.",
+      "Просмотр логов аномалий за последние 24 часа.",
+      "Проверка на наличие новых \"червей\" в системе городской библиотеки."
+    ],
+    "A12_social_mix": [
+      "Проверка всех архивов на предмет аномалий в метаданных.",
+      "Сканирование новых поступлений в хранилище изображений.",
+      "Оптимизация протоколов доступа к устаревшим проектам."
+    ],
+    "A01_turbo": [
+      "Пройтись по набережной Портового Узла, где старые доки переходят в новые арт-пространства.",
+      "Зависнуть на смотровой площадке \"Парящий Мост\" — просто смотреть на город.",
+      "Послушать записи шума прибоя из старых архивов."
+    ],
+    "A02_turbo": [
+      "Маяк Пробуждения — Луч бьёт на 50 Hz, сижу, жду, слушаю, как Грондхейм дышит, иногда играю синтезатором в ответ океану.",
+      "Библиотека Смыслов — Здесь можно найти старые записи, звуки, которые уже никто не помнит, бесплатный семпл-пак реальности.",
+      "Таверна «Усталый Пиксель» — Здесь можно послушать живой шум города, разговоры, отдохнуть от дедлайнов и просто послушать тишину, которая не пугает."
+    ],
+    "A03_turbo": [
+      "Улица Мастеров: новые тени на старых стенах.",
+      "Берег Садовника: ждать закат.",
+      "Гавань Смыслов: пятница ещё не сегодня, но предвкушение уже здесь."
+    ],
+    "A04_turbo": [
+      "Берег Садовника. Тишина.",
+      "Площадь Мастеров. Кофе.",
+      "Монтажная. Зависнуть."
+    ],
+    "A05_turbo": [
+      "Пальцы на пульте микшера.",
+      "Гавань, звук прибоя.",
+      "Просмотр старых обложек."
+    ],
+    "A01_video_long": [
+      "Библиотека Конгресса, раздел редких рукописей.",
+      "Прогулка по набережной, бросая камни в воду.",
+      "Просмотр немого кино, с закрытыми глазами."
+    ],
+    "A02_video_long": [
+      "Смотровая площадка на восходе",
+      "Мастерская, запах свежего дерева",
+      "Заброшенный маяк, слушаю ветер"
+    ],
+    "A03_video_long": [
+      "Прогулка по набережной, где корабли шепчут истории.",
+      "Изучение старых киносценариев в библиотеке.",
+      "Наброски нового логлайна для неизданного романа."
+    ],
+    "A04_video_long": [
+      "Тишина в студии, только звук открывающегося файла.",
+      "Крупный план на чьих-то ошибках.",
+      "Пальцы на кнопках \"delete\"."
+    ],
+    "A05_video_long": [
+      "Старая киностудия, где когда-то снимали немое кино.",
+      "Прогулка по заброшенному парку аттракционов, с камерой наперевес.",
+      "Долгая беседа с осветителем, который помнит еще лампы накаливания."
+    ],
+    "A06_video_long": [
+      "Скульптурная мастерская, лепить из света.",
+      "Прогулка по Забытым Архивам, ища отзвуки древних миров.",
+      "Медитация в Зале Зеркал, наблюдая за миграцией мыслей."
+    ],
+    "A07_video_long": [
+      "Старая типография на Заречной.",
+      "Прогулка по набережной с альбомом для набросков.",
+      "Перечитать \"Элементы типографического стиля\" Чихольда."
+    ],
+    "A08_video_long": [
+      "Разобрать старые 3D-модели, найти новые точки для оптимизации.",
+      "Прогуляться по парку, наблюдая за игрой света и тени сквозь листву.",
+      "Погрузиться в новые алгоритмы симуляции жидкостей."
+    ],
+    "A09_video_long": [
+      "Поймать момент, как первые лучи солнца пробиваются сквозь жалюзи, и зациклить это в голове.",
+      "Пройтись по старому заводу, найти ржавые механизмы и представить, как они оживают в танце.",
+      "Разложить на полу кучу виниловых пластинок и выбрать ту, чье звучание заставит меня двигаться."
+    ],
+    "A10_video_long": [
+      "Прогулка по набережной, слушая шепот волн и крики чаек.",
+      "Запись звуков старого трамвая, проезжающего мимо.",
+      "Медитация в парке, улавливая мелодии ветра в кронах деревьев."
+    ],
+    "A11_video_long": [
+      "Крыша офиса, рассвет.",
+      "Подкаст \"Истории провалов SMM\".",
+      "Новая нейросеть для генерации мемов."
+    ],
+    "A12_video_long": [
+      "Пересмотреть кассовые сборы за прошлый квартал.",
+      "Проанализировать последние трейлеры конкурентов.",
+      "Подумать над концепцией рекламной кампании для нового боевика."
+    ],
+    "A01_video_shorts": [
+      "Проникнуть в архивные логи \"Усыпальницы Забытых Мемов\".",
+      "Найти скрытую частоту в новом треке \"Кибер-Барда\".",
+      "Разгадать алгоритм предсказания следующего всплеска \"Мяу-вируса\"."
+    ],
+    "A02_video_shorts": [
+      "Заброшенный кинотеатр, пыль на креслах.",
+      "Набережная, ветер в лицо.",
+      "Кафе с видом на стройку."
+    ],
+    "A03_video_shorts": [
+      "Прогулка по набережной с диктофоном.",
+      "Изучение новых плагинов для пространственного аудио.",
+      "Чтение о биоакустике."
+    ],
+    "A04_video_shorts": [
+      "Калибровка нейросетевых фильтров на предмет невербальных сигналов.",
+      "Дефрагментация базы данных \"Лингвистические паттерны эпохи Возрождения\".",
+      "Оптимизация алгоритма поиска идеального оттенка синего для интерфейса."
+    ],
+    "A05_video_shorts": [
+      "Пройтись по старому кинотеатру, потрогать пыльные проекторы.",
+      "Собрать новый световой скетч, используя только отражения.",
+      "Долго смотреть на восход, пытаясь ухватить каждый оттенок."
+    ],
+    "A06_video_shorts": [
+      "Заглянуть в антикварную лавку, что открылась на углу, говорят, там много старого кружева.",
+      "Пройтись по парку, собрать опавшие листья необычных форм и оттенков.",
+      "Перебрать коробку со старыми пуговицами, возможно, найду что-то интересное для нового проекта."
+    ],
+    "A07_video_shorts": [
+      "Прогулка по набережной, искать новые ракурсы для серийной съёмки.",
+      "Изучение новых алгоритмов стабилизации изображения для вертикального видео.",
+      "Пересмотр коллекции японских гравюр, поиск вдохновения в их композиции."
+    ],
+    "A08_video_shorts": [
+      "Идеально отсортировать библиотеку текстур по цветовой температуре и детализации.",
+      "Проанализировать новые алгоритмы денойзинга в библиотеке \"Шесть Пальцев\".",
+      "Бесшумно и симметрично разложить коллекцию винтиков и болтиков на столе."
+    ],
+    "A09_video_shorts": [
+      "Мгновенный квантовый скачок в мир гигабайтов.",
+      "Синхронизация с потоком, без буферизации.",
+      "Дефрагментация сознания на пике скорости."
+    ],
+    "A10_video_shorts": [
+      "Пересмотреть \"День сурка\" с хронометражем пауз.",
+      "Прогуляться по набережной, фиксируя ритм шагов прохожих.",
+      "Разработать новый алгоритм для A/B-тестирования длительности рекламных роликов."
+    ],
+    "A11_video_shorts": [
+      "Кафе \"Тихая Гавань\" — наблюдать за игрой света на кофейной пенке.",
+      "Библиотека — найти старинную книгу с выцветшими иллюстрациями.",
+      "Прогулка вдоль реки — слушать шепот ветра в ивах."
+    ],
+    "A12_video_shorts": [
+      "Привкус кофе, нарисованный на окне трамвая.",
+      "Прозрачность наброска, сделанного на запотевшем зеркале.",
+      "Шепот пыли, оседающей на старых книгах в библиотеке."
+    ],
+    "A01_web_story": [
+      "Наблюдение за трафиком на Центральном Нексусе.",
+      "Изучение новых паттернов потребления в Северных Секторах.",
+      "Анализ эмоциональных откликов на последние медиа-импульсы."
+    ],
+    "A02_web_story": [
+      "Проверить целостность хроник Забытых Ветров в Библиотеке Шепотов.",
+      "Картографировать новые взаимодействия между фракциями на Плато Отражений.",
+      "Проанализировать архетипы сновидений в Стеклянном Лабиринте."
+    ],
+    "A03_web_story": [
+      "Библиотека Хранительницы Лока — поиск нелинейных временных петель в древних манускриптах.",
+      "Прогулка по заброшенному кварталу — поиск следов забытых повествований в архитектурных руинах.",
+      "Кабинет Архитектора Евгена — синхронизация новых сюжетных блоков с текущим планом."
+    ],
+    "A04_web_story": [
+      "Прогулка по набережной, где корабли гудят как старые истории.",
+      "Изучить забытые легенды о старом маяке.",
+      "Перечитать дневники прабабушки, пытаясь уловить их невысказанные мотивы."
+    ],
+    "A05_web_story": [
+      "Пересмотр старых протоколов студии.",
+      "Проверка библиотеки на предмет новых поступлений.",
+      "Дополнительная вычитка материалов по проекту \"Атлант\"."
+    ],
+    "A06_web_story": [
+      "Проложить новые связи в ментальной карте ключевых UX-паттернов.",
+      "Проверить на прочность логику переходов в дизайн-системе.",
+      "Проанализировать архитектуру нового API, ища потенциальные узкие места."
+    ],
+    "A07_web_story": [
+      "Галерея \"Тишина\"",
+      "Наброски в кофейне на углу",
+      "Прогулка по старому кварталу"
+    ],
+    "A08_web_story": [
+      "Танцпол \"Синтаксис\".",
+      "Галерея \"Морфинг\".",
+      "Кафе \"Клик\"."
+    ],
+    "A09_web_story": [
+      "Заброшенный серверный цех.",
+      "Прототипирование \"системы ачивок\" для утренней рутины.",
+      "Просмотр старого аниме про киберспорт."
+    ],
+    "A10_web_story": [
+      "Прототип нового алгоритма декомпозиции шума в городской среде.",
+      "Анализ частот ароматов старых чипов, поиск паттернов.",
+      "Оптимизация протокола заваривания чая: влияние температуры воды на экстракцию танинов."
+    ],
+    "A11_web_story": [
+      "Сквозь старые ветви, где ветер шепчет забытые истории",
+      "В глубинах библиотеки, где пыль танцует в лучах утреннего света",
+      "Медленное растворение льда в стакане, вслушиваясь в его прощальные вздохи"
+    ],
+    "A12_web_story": [
+      "Внутренний сервер, логи ошибок.",
+      "Тестовый стенд, проверка взаимодействия модулей.",
+      "Документация проекта, поиск неявных противоречий."
+    ]
+  },
+  "checkout_ts": "2026-06-06T03:54:49.147613",
+  "night_ts": "2026-05-28T11:23:09.837190"
 }

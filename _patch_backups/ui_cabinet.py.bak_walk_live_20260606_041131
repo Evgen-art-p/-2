@@ -544,53 +544,29 @@ def page_cabinet() -> None:
             traceback.print_exc()
 
     async def _do_city_walk():
-        """Запустить прогулку всех агентов — с живой картой."""
+        """Запустить прогулку всех агентов."""
         try:
-            from studio.city_walker import run_city_walk, update_city_weather, get_all_agents, get_all_locations
+            from studio.cabinet.tools import exec_city_walk
             ui.notify("🚶 Агенты выходят в город...", type="info")
-
-            city_state = update_city_weather()
-            all_agents = get_all_agents()
-            locations  = get_all_locations()
-
-            if not all_agents:
-                ui.notify("⚠ Нет агентов", type="warning")
-                return
-            if not locations:
-                ui.notify("⚠ Нет локаций в каталоге", type="warning")
-                return
-
-            city_state["here_now"] = {}
-            from studio.city_walker import save_city_state
-            save_city_state(city_state)
-
-            _walk_counter = {"n": 0}
-
-            async def _on_progress(msg: str):
-                print(f"[WALK] {msg}")
-                _walk_counter["n"] += 1
-                # Обновляем карту каждые 3 сообщения (≈ каждый агент)
-                if _walk_counter["n"] % 3 == 0:
-                    try:
-                        _refresh_map()
-                    except Exception:
-                        pass
-
-            results = await run_city_walk(
-                on_progress=_on_progress,
-            )
-
+            result = await exec_city_walk()
             try:
-                ok = len([r for r in results if r.get("status") == "ok"])
-                ui.notify(f"✅ Прогулка завершена · {ok}/{len(results)} агентов", type="positive")
+                ui.notify("✅ Прогулка завершена", type="positive")
                 _refresh_map()
                 reload_all_agents()
                 update_residents()
                 update_city_zone()
+                # Показываем результат в чате если есть активный агент
+                if state.get("selected_agent"):
+                    state["chat_history"].append({
+                        "role": "assistant",
+                        "content": result,
+                        "time": datetime.now().strftime("%H:%M")
+                    })
+                    update_chat()
             except Exception:
-                print("[CITY] ⚠ UI обновлён во время прогулки")
+                # Клиент мог быть удалён (страница обновлена)
+                print("[CITY] ⚠ UI обновлён во время прогулки — результат записан в память")
         except Exception as e:
-            import traceback; traceback.print_exc()
             try:
                 ui.notify(f"❌ {e}", type="negative")
             except Exception:
@@ -642,13 +618,7 @@ def page_cabinet() -> None:
             try:
                 from studio.city_walker import run_city_walk_morning as _morning_walk
                 ui.notify("🚶 Дорога на работу...", type="info")
-                _mw_cnt = {"n": 0}
-                async def _mw_prog(msg):
-                    _mw_cnt["n"] += 1
-                    if _mw_cnt["n"] % 3 == 0:
-                        try: _refresh_map()
-                        except Exception: pass
-                await _morning_walk(max_agents=0, on_progress=_mw_prog)
+                await _morning_walk(max_agents=0)
                 _refresh_map()
                 reload_all_agents()
                 update_residents()
@@ -670,13 +640,7 @@ def page_cabinet() -> None:
         try:
             from studio.city_walker import run_city_walk_evening as _evening_walk
             ui.notify("🌆 Агенты идут домой...", type="info")
-            _ew_cnt = {"n": 0}
-            async def _ew_prog(msg):
-                _ew_cnt["n"] += 1
-                if _ew_cnt["n"] % 3 == 0:
-                    try: _refresh_map()
-                    except Exception: pass
-            await _evening_walk(max_agents=0, on_progress=_ew_prog)
+            await _evening_walk(max_agents=0)
             _refresh_map()
             reload_all_agents()
             update_residents()
@@ -2504,9 +2468,6 @@ if(document.readyState === 'loading') {
 
         # Инициализация карты
         _refresh_map()
-
-        # Автообновление карты каждые 5 секунд — живые перемещения
-        ui.timer(5.0, _refresh_map)
 
         # JS bridge: клик по агенту на карте → select_agent
         ui.on("cab-agent-select", lambda e: select_agent(

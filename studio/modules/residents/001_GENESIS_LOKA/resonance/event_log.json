@@ -1,1 +1,212 @@
-[]
+[
+  {
+    "ts": "2026-06-06T04:14:23.023123",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.50 → 0.46. Встреча в Грондхейм: Её слова — как мягкий отсвет на стенах Грондхейма, предвещающий новый день. · Она чувствует ритм гор",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:14:23.031123",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.50 → 0.48. Встреча в Грондхейм: Её слова — как мягкий отсвет на стенах Грондхейма, предвещающий новый день. · Она чувствует ритм гор",
+    "significance": 0.01925,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:14:23.046122",
+    "type": "relationship",
+    "content": "rivalry к 002_GENESIS_CREATOR: 0.00 → 0.04. Встреча в Грондхейм: Её слова — как мягкий отсвет на стенах Грондхейма, предвещающий новый день. · Она чувствует ритм гор",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:14:43.362653",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.46 → 0.42. Встреча в Грондхейм: Её слова — мягкий отсвет, но город — это нечто большее, чем просто пробуждение. · Её слова подтвержд",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:14:43.368653",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.48 → 0.46. Встреча в Грондхейм: Её слова — мягкий отсвет, но город — это нечто большее, чем просто пробуждение. · Её слова подтвержд",
+    "significance": 0.01925,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:14:43.375653",
+    "type": "relationship",
+    "content": "rivalry к 002_GENESIS_CREATOR: 0.04 → 0.08. Встреча в Грондхейм: Её слова — мягкий отсвет, но город — это нечто большее, чем просто пробуждение. · Её слова подтвержд",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:05.495298",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.42 → 0.45. Встреча в Грондхейм: Её слова подтверждают, что она видит лишь часть картины. Моя задача — показать ей всю глубину. · Её ",
+    "significance": 0.027300000000000005,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:05.503319",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.46 → 0.48. Встреча в Грондхейм: Её слова подтверждают, что она видит лишь часть картины. Моя задача — показать ей всю глубину. · Её ",
+    "significance": 0.01638,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:26.172411",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.45 → 0.50. Встреча в Грондхейм: Её взгляд на свет поверхностен. Нужно глубже. · Её слова подтверждают, что она видит лишь часть карт",
+    "significance": 0.0455,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:26.181413",
+    "type": "relationship",
+    "content": "respect к 002_GENESIS_CREATOR: 0.50 → 0.54. Встреча в Грондхейм: Её взгляд на свет поверхностен. Нужно глубже. · Её слова подтверждают, что она видит лишь часть карт",
+    "significance": 0.0364,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:43.983108",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.50 → 0.54. Встреча в Грондхейм: Её взгляд на свет поверхностен. Нужно глубже. · Её слова подтверждают, что она видит лишь часть карт",
+    "significance": 0.0455,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:15:43.989108",
+    "type": "relationship",
+    "content": "respect к 002_GENESIS_CREATOR: 0.54 → 0.57. Встреча в Грондхейм: Её взгляд на свет поверхностен. Нужно глубже. · Её слова подтверждают, что она видит лишь часть карт",
+    "significance": 0.0364,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:08.577542",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.54 → 0.59. Встреча в Грондхейм: Её слова подтверждают, что она видит лишь часть карт. · Её слова — лишь эхо. Я вижу глубже. · Её сло",
+    "significance": 0.0455,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:08.585541",
+    "type": "relationship",
+    "content": "respect к 002_GENESIS_CREATOR: 0.57 → 0.61. Встреча в Грондхейм: Её слова подтверждают, что она видит лишь часть карт. · Её слова — лишь эхо. Я вижу глубже. · Её сло",
+    "significance": 0.0364,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:29.358233",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.59 → 0.61. Встреча в Грондхейм: Её появление — это всегда проверка на прочность моих планов. Но сегодня я готов. · Её присутствие — ",
+    "significance": 0.027300000000000005,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:29.369234",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.48 → 0.49. Встреча в Грондхейм: Её появление — это всегда проверка на прочность моих планов. Но сегодня я готов. · Её присутствие — ",
+    "significance": 0.01638,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:48.704410",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.61 → 0.64. Встреча в Грондхейм: Её провокация не застала врасплох, я чувствую готовность к любому повороту. · Её амбиции всегда были",
+    "significance": 0.024499999999999997,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:16:48.711409",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.49 → 0.51. Встреча в Грондхейм: Её провокация не застала врасплох, я чувствую готовность к любому повороту. · Её амбиции всегда были",
+    "significance": 0.014699999999999998,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:17:06.605990",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.64 → 0.60. Встреча в Грондхейм: Её амбиции всегда были частью этого потока. · Её амбиции всегда были частью её шарма. Сегодня она по",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:17:06.612990",
+    "type": "relationship",
+    "content": "trust к 002_GENESIS_CREATOR: 0.51 → 0.49. Встреча в Грондхейм: Её амбиции всегда были частью этого потока. · Её амбиции всегда были частью её шарма. Сегодня она по",
+    "significance": 0.01925,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-06T04:17:06.618990",
+    "type": "relationship",
+    "content": "rivalry к 002_GENESIS_CREATOR: 0.08 → 0.11. Встреча в Грондхейм: Её амбиции всегда были частью этого потока. · Её амбиции всегда были частью её шарма. Сегодня она по",
+    "significance": 0.0385,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  }
+]
