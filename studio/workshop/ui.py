@@ -2440,7 +2440,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
                 'display:flex; align-items:center; width:100%; gap:8px; padding:0 8px; position:relative;'
             ):
                 # ── Заглушка слева — симметрия с Виктором справа ──
-                _victor_depts = ["video_long", "video_shorts"]
+                _victor_depts = ["video_long", "video_shorts", "clipmakers"]
                 _has_victor = dept in _victor_depts
                 if _has_victor:
                     ui.element('div').style('width:38px; flex-shrink:0;')

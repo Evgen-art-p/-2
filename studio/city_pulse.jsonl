@@ -1133,3 +1133,11 @@
 {"ts":"2026-06-06T20:02:47","id":"evt_e0646b65","event":"work_start","agent":"A10","dept":"video_long","slot_id":"video_long","project_id":""}
 {"ts":"2026-06-06T20:02:47","id":"evt_464bf45a","event":"work_start","agent":"A11","dept":"video_long","slot_id":"video_long","project_id":""}
 {"ts":"2026-06-06T20:02:47","id":"evt_a6fab429","event":"work_start","agent":"A12","dept":"video_long","slot_id":"video_long","project_id":""}
+{"ts":"2026-06-06T23:20:16","id":"evt_35b4669d","event":"wake","agent":"Инна Импульс","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:20:27","id":"evt_dd05aa63","event":"wake","agent":"Борис Баланс","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:20:47","id":"evt_9f7e82b0","event":"wake","agent":"Ева Эстетик","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:21:02","id":"evt_b6248e35","event":"wake","agent":"Марк Метр","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:21:13","id":"evt_fd04770d","event":"wake","agent":"Павел Промпт","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:21:24","id":"evt_0f704e0c","event":"wake","agent":"Глеб Глитч","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:21:44","id":"evt_6cdd37e5","event":"wake","agent":"Лаура Лайт","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}
+{"ts":"2026-06-06T23:21:59","id":"evt_b4ed0841","event":"wake","agent":"Тихон Техно","dept":"advertising","stress":0.0,"light":0.88,"patience":1.0,"mode":"GENIUS","streak":0,"night_revolt":false}

@@ -1,0 +1,66 @@
+{
+  "id": "clipmakers",
+  "label": "🎵 Клипмейкеры",
+  "icon": "🎵",
+  "version": "2.0",
+  "description": "Полный цикл: от концепта клипа до финального монтажа",
+  "run_type": "clipmakers",
+  "phases": {
+    "PRE-PROD": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "PROD": [
+      "A05",
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "POST-PROD": [
+      "A09",
+      "A10",
+      "A11",
+      "A12"
+    ]
+  },
+  "checkpoint_after": [
+    "A03"
+  ],
+  "stop_after": null,
+  "revision_loop": null,
+  "turbo_workers": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05"
+  ],
+  "turbo_parallel": [
+    [
+      "A02",
+      "A03"
+    ]
+  ],
+  "conflict_mode": "none",
+  "qa_agent": "A12",
+  "interaction_log": "economy/data/interaction_log_clipmakers.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ],
+  "hard_stop": {
+    "after_agent": "A03",
+    "residents": [
+      "victor"
+    ],
+    "knowledge": [
+      "29_Music_Video_Grammar.txt",
+      "04_Audio_Aesthetics.txt"
+    ],
+    "web_search": true
+  }
+}

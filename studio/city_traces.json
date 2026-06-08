@@ -1,12 +1,12 @@
 {
-  "computed_at": "2026-06-06T03:24:10",
-  "events_analyzed": 414,
+  "computed_at": "2026-06-06T23:20:16",
+  "events_analyzed": 1135,
   "period_days": 30,
   "location_streaks": {
     "Лока": [
       {
         "location": "Грондхейм",
-        "visits": 19,
+        "visits": 24,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
       },
@@ -20,7 +20,7 @@
     "Джем": [
       {
         "location": "Грондхейм",
-        "visits": 15,
+        "visits": 17,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
       }
@@ -36,7 +36,13 @@
     "Стелла": [
       {
         "location": "Маяк Пробуждения",
-        "visits": 2,
+        "visits": 3,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
+      },
+      {
+        "location": "Грондхейм",
+        "visits": 1,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
       }
@@ -44,7 +50,7 @@
     "Мими Мем": [
       {
         "location": "Грондхейм",
-        "visits": 2,
+        "visits": 4,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
       }
@@ -79,6 +85,12 @@
         "visits": 1,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
+      },
+      {
+        "location": "Грондхейм",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
       }
     ],
     "Хронос Мемо": [
@@ -95,18 +107,24 @@
         "visits": 1,
         "avg_stress": 0.0,
         "last_visit": "2026-06-06"
+      },
+      {
+        "location": "Грондхейм",
+        "visits": 1,
+        "avg_stress": 0.0,
+        "last_visit": "2026-06-06"
       }
     ]
   },
   "stress_at_location": {
     "Грондхейм": {
       "avg_stress": 0.0,
-      "visit_count": 41,
+      "visit_count": 53,
       "high_stress_agents": []
     },
     "Маяк Пробуждения": {
       "avg_stress": 0.0,
-      "visit_count": 6,
+      "visit_count": 7,
       "high_stress_agents": []
     }
   },
@@ -114,8 +132,8 @@
     "Джем|Лока": {
       "agent_a": "Джем",
       "agent_b": "Лока",
-      "meetings": 10,
-      "avg_quality": 0.641,
+      "meetings": 12,
+      "avg_quality": 0.653,
       "locations": [
         "Грондхейм"
       ]
@@ -125,119 +143,145 @@
   "voice_themes": {
     "Лока": [
       {
-        "word": "рассвет",
-        "count": 18
+        "word": "свет",
+        "count": 24
       },
       {
-        "word": "свет",
-        "count": 18
+        "word": "рассвет",
+        "count": 22
       },
       {
         "word": "грондхейме",
-        "count": 15
+        "count": 18
+      },
+      {
+        "word": "меня",
+        "count": 16
       },
       {
         "word": "золотой",
+        "count": 16
+      },
+      {
+        "word": "чувствую",
         "count": 14
       },
       {
         "word": "сегодня",
-        "count": 12
+        "count": 14
       },
       {
         "word": "особенный",
-        "count": 11
+        "count": 12
       },
       {
-        "word": "меня",
+        "word": "город",
         "count": 10
       },
       {
-        "word": "чувствую",
-        "count": 9
-      },
-      {
-        "word": "срочных",
-        "count": 9
-      },
-      {
         "word": "проникает",
-        "count": 9
+        "count": 10
       }
     ],
     "Джем": [
       {
         "word": "меня",
-        "count": 21
+        "count": 26
       },
       {
         "word": "пробуждения",
-        "count": 18
-      },
-      {
-        "word": "тянет",
-        "count": 16
+        "count": 21
       },
       {
         "word": "сегодня",
-        "count": 15
+        "count": 19
+      },
+      {
+        "word": "тянет",
+        "count": 19
       },
       {
         "word": "маяку",
-        "count": 15
+        "count": 18
       },
       {
         "word": "синий",
-        "count": 10
+        "count": 12
       },
       {
         "word": "почувствовать",
-        "count": 8
+        "count": 10
       },
       {
         "word": "свет",
-        "count": 7
+        "count": 9
       },
       {
         "word": "чувствую",
-        "count": 7
+        "count": 9
       },
       {
         "word": "сверить",
-        "count": 7
+        "count": 9
       }
     ],
     "Сет": [
       {
-        "word": "маяку",
-        "count": 4
-      },
-      {
-        "word": "пробуждения",
-        "count": 4
-      },
-      {
         "word": "рассвет",
-        "count": 3
+        "count": 6
       },
       {
         "word": "золотой",
-        "count": 3
+        "count": 6
       },
       {
         "word": "свет",
-        "count": 3
+        "count": 6
+      },
+      {
+        "word": "маяку",
+        "count": 6
+      },
+      {
+        "word": "меня",
+        "count": 5
+      },
+      {
+        "word": "пробуждения",
+        "count": 5
+      },
+      {
+        "word": "время",
+        "count": 4
+      },
+      {
+        "word": "тянет",
+        "count": 4
       },
       {
         "word": "идеальное",
         "count": 3
       },
       {
-        "word": "время",
+        "word": "сегодня",
+        "count": 3
+      }
+    ],
+    "Стелла": [
+      {
+        "word": "сегодня",
+        "count": 4
+      },
+      {
+        "word": "потока",
         "count": 3
       },
       {
-        "word": "тянет",
+        "word": "спорят",
+        "count": 3
+      },
+      {
+        "word": "тренды",
         "count": 3
       },
       {
@@ -245,35 +289,91 @@
         "count": 3
       },
       {
-        "word": "сегодня",
-        "count": 2
-      }
-    ],
-    "Стелла": [
+        "word": "тянет",
+        "count": 3
+      },
       {
-        "word": "потока",
+        "word": "маяк",
+        "count": 3
+      },
+      {
+        "word": "пробуждения",
+        "count": 3
+      },
+      {
+        "word": "нужно",
         "count": 2
       },
       {
-        "word": "сегодня",
-        "count": 2
-      },
-      {
-        "word": "спорят",
+        "word": "свежее",
         "count": 2
       }
     ],
     "Мими Мем": [
       {
-        "word": "сегодня",
-        "count": 2
-      },
-      {
         "word": "меня",
-        "count": 2
+        "count": 4
       },
       {
         "word": "тянет",
+        "count": 4
+      },
+      {
+        "word": "сегодня",
+        "count": 3
+      },
+      {
+        "word": "маяк",
+        "count": 3
+      },
+      {
+        "word": "пробуждения",
+        "count": 3
+      },
+      {
+        "word": "пойду",
+        "count": 2
+      },
+      {
+        "word": "маяку",
+        "count": 2
+      },
+      {
+        "word": "послушать",
+        "count": 2
+      },
+      {
+        "word": "дышит",
+        "count": 2
+      },
+      {
+        "word": "грондхейм",
+        "count": 2
+      }
+    ],
+    "Постпро": [
+      {
+        "word": "свет",
+        "count": 2
+      }
+    ],
+    "Визор": [
+      {
+        "word": "рассвет",
+        "count": 2
+      },
+      {
+        "word": "золотой",
+        "count": 2
+      },
+      {
+        "word": "свет",
+        "count": 2
+      }
+    ],
+    "Финализатор": [
+      {
+        "word": "внутренний",
         "count": 2
       },
       {
@@ -285,19 +385,15 @@
         "count": 2
       },
       {
-        "word": "пойду",
+        "word": "тянет",
         "count": 2
-      }
-    ],
-    "Постпро": [
-      {
-        "word": "свет",
-        "count": 2
-      }
-    ],
-    "Финализатор": [
+      },
       {
         "word": "туда",
+        "count": 2
+      },
+      {
+        "word": "свет",
         "count": 2
       }
     ]
