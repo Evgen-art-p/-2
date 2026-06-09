@@ -380,46 +380,30 @@ _STOP_WORDS = {
 }
 
 
-# PATCH_VOICE_THEMES_RESIDENTS_APPLIED · Спринт 42
 def _compute_voice_themes(events: list[dict]) -> dict:
     """
-    Для каждого агента/резидента: топ-10 слов за период.
+    Для каждого агента: топ-10 слов из его agent_voice за период.
     Слова короче 4 букв и стоп-слова отфильтрованы.
 
-    Читает ДВА типа событий из city_pulse.jsonl:
-      • "walk"           → поле "agent_voice", ключ "agent"
-        (обычные агенты во время прогулки)
-      • "resident_voice" → поле "voice",       ключ "resident"
-        (голоса резидентов: Лока, Джем, Кей, Юст, Виктор, Оле, Финч...)
-
-    Структура результата:
+    Структура:
     {
-      "Визор":  [{"word": "ученики",  "count": 7}, ...],
-      "Лока":   [{"word": "студия",   "count": 5}, ...],
-      "Джем":   [{"word": "музыка",   "count": 4}, ...],
+      "Визор": [
+        {"word": "ученики", "count": 7},
+        {"word": "обучение", "count": 5},
+        ...
+      ]
     }
     """
-    # agent/resident → Counter слов
+    # agent → Counter слов
     agent_words: dict[str, Counter] = defaultdict(Counter)
 
     for e in events:
-        event_type = e.get("event", "")
+        if e.get("event") != "walk":
+            continue
+        agent = e.get("agent", "")
+        voice = e.get("agent_voice", "")
 
-        # ── Обычные агенты: walk → agent_voice ────────────────
-        if event_type == "walk":
-            agent = e.get("agent", "")
-            voice = e.get("agent_voice", "")
-            if not agent or not voice:
-                continue
-
-        # ── Резиденты: resident_voice → voice ─────────────────
-        elif event_type == "resident_voice":
-            agent = e.get("resident", "")
-            voice = e.get("voice", "")
-            if not agent or not voice:
-                continue
-
-        else:
+        if not agent or not voice:
             continue
 
         # Токенизируем: только буквы, нижний регистр
