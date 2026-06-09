@@ -27,6 +27,13 @@ ATLAS_PATH = Path("economy/data/atlas_trading.jsonl")
 #   2. Открытые позиции между прогонами (что закрывать по exit_bell)
 STATE_PATH = Path("studio/modules/trading/state/trading_state.json")
 
+# Журнал PnL сделок (НЕ billing_ledger — тот про LLM-расходы)
+PNL_PATH = Path("economy/data/trading_pnl.jsonl")
+
+# Magic numbers — константа КОДА (реальный MT5-мост возьмёт отсюда,
+# не из памяти LLM). Промт A09 дублирует таблицу для летописи.
+MAGIC_NUMBERS = {"BRUT": 100001, "AVANTURIST": 100002, "KONSERVATOR": 100003}
+
 _DEFAULT_STATE = {
     "version": 1,
     "updated": None,
@@ -147,6 +154,7 @@ def on_before_run(state: dict) -> dict:
     state.setdefault("chain_data", {})["market_data"] = market_data
     # history_dna уже загружен из trading_state.json выше
 
+    _settle_positions(state)          # закрытие позиций — стоп / exit_bell
     _print_market_summary(market_data)
     return state
 
@@ -188,6 +196,9 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
         # ── Сохраняем рабочую память цеха (ДО любого stop) ──
         _persist_trading_state(state)
 
+        # ── Каждый REJECTED — в Атлас (Архивариусу нужны отказы) ──
+        _log_rejections(state)
+
         all_rejected = all(
             v == "REJECTED" for v in [brut_v, avan_v, cons_v] if v is not None
         )
@@ -210,6 +221,154 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
 # ════════════════════════════════════════════════════════════
 # УТИЛИТЫ
 # ════════════════════════════════════════════════════════════
+
+def _log_rejections(state: dict):
+    """
+    Пишет в Атлас запись по КАЖДОМУ одиночному REJECTED —
+    с полной сигнатурой Совета (CHAIN_CONTRACT v1.3).
+    HARD_STOP (все трое) пишется отдельно в on_after_agent.
+    Без этих записей Архивариус слеп к причинам отказов.
+    """
+    results = state.get("results", {})
+    chain   = state.get("chain_data", {})
+    md      = chain.get("market_data", {})
+
+    traders = [
+        ("A06", "BRUT",        "brut_verdict", "brut_reason"),
+        ("A07", "AVANTURIST",  "avan_verdict", "avan_reason"),
+        ("A08", "KONSERVATOR", "cons_verdict", "cons_reason"),
+    ]
+
+    verdicts = {}
+    for aid, name, v_key, r_key in traders:
+        out = (results.get(aid, {}).get("meta", {}) or {}) \
+            .get("my_output", {}) or {}
+        verdicts[name] = (out.get(v_key), out.get(r_key))
+
+    # Если все трое REJECTED — HARD_STOP запишет их сам, не дублируем
+    if all(v == "REJECTED" for v, _ in verdicts.values()):
+        return
+
+    for name, (verdict, reason) in verdicts.items():
+        if verdict != "REJECTED":
+            continue
+        _write_atlas({
+            "event":         "TRADER_REJECTED",
+            "trader":        name,
+            "verdict":       "REJECTED",
+            "reason":        reason or "unknown",
+            "symbol":        md.get("symbol"),
+            "timeframe":     md.get("timeframe"),
+            "bar_time":      md.get("bar_time"),
+            "t1_status":     chain.get("t1_status"),
+            "morj_status":   chain.get("morj_status"),
+            "panic_phase":   chain.get("panic_phase"),
+            "entry_trigger": chain.get("entry_trigger"),
+            "pnl":           None,
+        })
+        print(f"[ATLAS] 📝 Отказ записан: {name} — {reason}")
+
+
+def _settle_positions(state: dict):
+    """
+    ЗАКРЫТИЕ позиций — физика, считает КОД (не LLM).
+    Вызывается на каждом новом баре ДО Совета: рынок закрывает
+    позиции независимо от решений агентов.
+
+    Правила (LONG, v1):
+      1. low <= stop      → закрыто по стопу, exit = stop
+      2. exit_bell == true → закрыта ВСЯ пирамида, exit = close
+         (выход всем объёмом — кусочничество ломает матожидание)
+
+    Допущение D1/H4 paper: внутри бара сначала проверяется стоп
+    (консервативно — худший сценарий первым).
+
+    PnL:
+      pnl_price = exit - entry            (ценовые единицы)
+      pnl_r     = pnl_price / (entry - stop)   (результат в R —
+                  главная метрика бэктеста)
+
+    Журнал: economy/data/trading_pnl.jsonl (append-only) + Атлас.
+    trading_state.json обновляется немедленно.
+    """
+    chain = state.get("chain_data", {})
+    md    = chain.get("market_data", {})
+    positions = chain.get("open_positions", []) or []
+    if not positions or not md:
+        return
+
+    low       = md.get("price", {}).get("low")
+    close     = md.get("price", {}).get("close")
+    bell      = bool(md.get("exit_bell"))
+    bar_time  = md.get("bar_time", "")
+    symbol    = md.get("symbol", "")
+    timeframe = md.get("timeframe", "")
+
+    still_open, closed = [], []
+    for pos in positions:
+        entry = pos.get("entry")
+        stop  = pos.get("stop")
+        if entry is None or stop is None:
+            still_open.append(pos)
+            continue
+
+        exit_price, reason = None, None
+        if low is not None and low <= stop:
+            exit_price, reason = stop, "STOP_LOSS"
+        elif bell and close is not None:
+            exit_price, reason = close, "EXIT_BELL"
+
+        if exit_price is None:
+            still_open.append(pos)
+            continue
+
+        risk      = entry - stop
+        pnl_price = round(exit_price - entry, 6)
+        pnl_r     = round(pnl_price / risk, 4) if risk > 0 else None
+
+        record = {
+            "ts":         datetime.now().isoformat(),
+            "closed_at":  bar_time,
+            "symbol":     symbol,
+            "timeframe":  timeframe,
+            "trader":     pos.get("trader"),
+            "magic":      pos.get("magic"),
+            "entry":      entry,
+            "stop":       stop,
+            "exit":       exit_price,
+            "lot":        pos.get("lot"),
+            "mode":       pos.get("mode", "PAPER"),
+            "opened_at":  pos.get("opened_at"),
+            "close_reason": reason,
+            "pnl_price":  pnl_price,
+            "pnl_r":      pnl_r,
+        }
+        closed.append(record)
+
+        PNL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(PNL_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+        _write_atlas({
+            "event":       "POSITION_CLOSED",
+            "trader":      pos.get("trader"),
+            "close_reason": reason,
+            "pnl":         pnl_price,
+            "pnl_r":       pnl_r,
+            "symbol":      symbol,
+            "timeframe":   timeframe,
+        })
+        print(f"[SETTLE] {'🔔' if reason == 'EXIT_BELL' else '🛑'} "
+              f"{pos.get('trader')} закрыт ({reason}): "
+              f"pnl={pnl_price} ({pnl_r}R)")
+
+    if closed:
+        chain["open_positions"] = still_open
+        tstate = load_trading_state()
+        tstate["positions"] = still_open
+        save_trading_state(tstate)
+        print(f"[SETTLE] 📒 Закрыто: {len(closed)}, осталось: {len(still_open)}")
+
 
 def _prepare_trade_setup(state: dict):
     """

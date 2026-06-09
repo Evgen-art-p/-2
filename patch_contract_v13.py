@@ -1,4 +1,38 @@
-# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.3
+"""
+patch_contract_v13.py
+=====================
+Спринт 43 · 2026-06-10
+
+НАХОДКА: в проекте лежал альтернативный CHAIN_CONTRACT со старой
+нумерацией (A01 Морж / A02 Искра), живым GATE 3 и history_dna у Моржа.
+Это расходится с замороженным MASTER и уже установленными промтами.
+
+РЕШЕНИЕ: полная перезапись канонической версией v1.3.
+Точечные правки неизвестного файла — костыль.
+
+КАНОН v1.3:
+  · A01 Искра (первая, Root Event Generator), A02 Морж — по MASTER
+  · morj_status: три статуса (AWAKE = зрелый), Консерватор требует AWAKE
+  · GATE 3 удалён — ЗАКОН ТРИБУНАЛА (все требуют CONFIRMED)
+  · history_dna: пишут Искра и A09
+  · Служебные ключи hooks: trade_setup, atlas_digest, prev_*, open_positions
+
+ЗАПУСК из корня проекта:
+  python patch_contract_v13.py
+"""
+
+import shutil
+from datetime import datetime
+from pathlib import Path
+
+CONTRACT = Path("studio/modules/trading/CHAIN_CONTRACT.md")
+
+ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
+bak = CONTRACT.with_suffix(f".md.bak_{ts}")
+shutil.copy2(CONTRACT, bak)
+print(f"[PATCH] 💾 Резервная копия: {bak}")
+
+CANON = '''# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.3
 ## studio/modules/trading/CHAIN_CONTRACT.md
 ## Студия «Шесть Пальцев» · 2026-06-10
 
@@ -144,3 +178,8 @@ Magic numbers: BRUT=100001, AVANTURIST=100002, KONSERVATOR=100003.
 *GATE 3 удалён (ЗАКОН ТРИБУНАЛА). history_dna у Искры и A09.*
 *Добавлены служебные ключи hooks: trade_setup, atlas_digest, prev_*, open_positions.*
 *Заморозить после первого полного прогона на истории.*
+'''
+
+CONTRACT.write_text(CANON, encoding="utf-8")
+print(f"[PATCH] ✅ Перезаписан канонической версией v1.3: {CONTRACT}")
+print("[PATCH] 🏁 Готово. Контракт = MASTER = промты. Один источник правды.")
