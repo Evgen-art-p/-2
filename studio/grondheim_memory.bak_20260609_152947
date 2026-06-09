@@ -554,51 +554,10 @@ def _compress_sensory(sensory: dict) -> dict:
     return sensory
 
 
-def _archive_sensory_entries(agent_dir: Path, entries: list[dict]):
-    """
-    СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43
-
-    Архивирует записи в {агент}/archive/memories_YYYY_MM.jsonl.
-    Не удаляет — кладёт глубже. Оле и Финч могут поднять через dig_archive().
-
-    Файл создаётся / дополняется по принципу append-only.
-    Имя файла — год+месяц первой записи (или текущий если нет ts).
-    """
-    import json as _json
-
-    archive_dir = agent_dir / "archive"
-    archive_dir.mkdir(parents=True, exist_ok=True)
-
-    # Группируем по YYYY_MM
-    by_month: dict[str, list] = {}
-    now_key = datetime.now().strftime("%Y_%m")
-    for entry in entries:
-        raw_ts = entry.get("ts") or entry.get("date", "")
-        try:
-            month_key = datetime.fromisoformat(raw_ts).strftime("%Y_%m")
-        except Exception:
-            month_key = now_key
-        by_month.setdefault(month_key, []).append(entry)
-
-    for month_key, month_entries in by_month.items():
-        archive_path = archive_dir / f"memories_{month_key}.jsonl"
-        with open(archive_path, "a", encoding="utf-8") as f:
-            for e in month_entries:
-                f.write(_json.dumps(e, ensure_ascii=False) + "\n")
-
-    total = sum(len(v) for v in by_month.values())
-    print(f"[АЛЬБОМ] 📚 {agent_dir.name}: {total} воспоминаний → archive/")
-
-
 def decay_sensory(agent_id: str, dept: str = ""):
     """
     Loka-Filter для оперативного слоя.
-
-    СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43:
-    Записи старше SENSORY_DECAY_DAYS с низким emotional_weight
-    НЕ УДАЛЯЮТСЯ — архивируются в {агент}/archive/memories_YYYY_MM.jsonl.
-    Из оперативной памяти уходят, но остаются доступны через dig_archive().
-
+    Удаляет записи старше SENSORY_DECAY_DAYS с низким emotional_weight.
     Вызывается периодически (cron / при запуске агента).
     """
     agent_dir = _find_agent_dir(agent_id, dept)
@@ -609,7 +568,7 @@ def decay_sensory(agent_id: str, dept: str = ""):
     cutoff = datetime.now() - timedelta(days=SENSORY_DECAY_DAYS)
 
     surviving = []
-    to_archive = []
+    decayed_texts = []
 
     for entry in sensory["entries"]:
         try:
@@ -621,19 +580,16 @@ def decay_sensory(agent_id: str, dept: str = ""):
             continue
 
         if entry_time < cutoff and entry.get("emotional_weight", 0) < 0.5:
-            # В альбом — не в мусор
-            to_archive.append(entry)
+            # Уходит — но сохраняем след в summary
+            text = entry.get("content") or entry.get("feeling", "")
+            decayed_texts.append(text[:60])
         else:
             surviving.append(entry)
 
-    if to_archive:
-        _archive_sensory_entries(agent_dir, to_archive)
+    if decayed_texts:
         old_summary = sensory.get("summary", "")
-        archive_note = (
-            f"[В архиве {len(to_archive)} воспоминаний за прошлые месяцы — "
-            f"Оле поднимет по запросу]"
-        )
-        sensory["summary"] = (old_summary + "\n" + archive_note)[-SUMMARY_MAX_CHARS:]
+        decay_note = f"[Затухло {len(decayed_texts)} записей]: " + "; ".join(decayed_texts[:5])
+        sensory["summary"] = (old_summary + "\n" + decay_note)[-SUMMARY_MAX_CHARS:]
 
     sensory["entries"] = surviving
     path = agent_dir / "sensory" / "sensory_memory.json"
@@ -1059,15 +1015,6 @@ def format_soul_for_agent(agent_id: str, dept: str = "") -> str:
     sensory = format_sensory_for_prompt(agent_id, dept)
     if sensory:
         parts.append(sensory)
-
-    # СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43 — строчка про Оле (HOME-режим)
-    # Агент знает что глубже есть хранитель, и знает как попросить.
-    # Не механика — живое знание о том что рядом есть память.
-    parts.append(
-        "\n🗂 Если что-то кажется знакомым, но не помнишь — напиши:\n"
-        "   MEMORY_REQUEST: <твой запрос>\n"
-        "   Оле поднимет это из глубины. Она хранит всё что было."
-    )
 
     if not parts:
         return ""

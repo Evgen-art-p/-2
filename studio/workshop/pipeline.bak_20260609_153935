@@ -581,14 +581,6 @@ def build_agent_context(
             "Формат: INSIGHT: <твой вывод>\n"
         )
 
-    # ПАМЯТЬ БЕЗ УСЛОВИЙ · Спринт 43
-    # Агент может вспомнить в любой момент — на работе, дома, в таверне.
-    # Архив не льётся автоматом — только если сам попросит.
-    context += (
-        "\n\U0001f5c2 Если что-то кажется знакомым но не помнишь — напиши "
-        "MEMORY_REQUEST: <запрос> и Оле поднимет из архива.\n"
-    )
-
     # Сохраняем для возможного ретрая Таможни
     state.setdefault("_last_context", {})[worker_id] = context
 
@@ -767,22 +759,6 @@ async def process_agent_result(
             result_summary=human_text[:200],
             dept=state.get("active_dept", ""),
         )
-
-        # СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43
-        # Если агент написал MEMORY_REQUEST: — Оле слышит и ищет.
-        # Результат попадёт в previous_output → следующий агент увидит.
-        try:
-            from studio.residents_manager import handle_memory_request as _hmr
-            _archive_ctx = _hmr(
-                agent_id=worker_id,
-                agent_response=raw_result,
-                dept=state.get("active_dept", ""),
-            )
-            if _archive_ctx:
-                state.setdefault("_archive_memory", {})[worker_id] = _archive_ctx
-                print(f"[ОЛЕ·ЦЕПОЧКА] \U0001f4da {worker_id}: архив поднят для следующего шага")
-        except Exception as _hmr_err:
-            print(f"[ОЛЕ·ЦЕПОЧКА] \u26a0 {worker_id}: {_hmr_err}")
 
         # Межагентное взаимодействие: социальные связи (не DNA!)
         # quality здесь — нейтральный сигнал о факте передачи, не оценка.

@@ -319,17 +319,7 @@ def _run_resident(
                     pass
             return {"verdict": "APPROVED_WITH_CONCERNS", "text": raw[:500]}
 
-        # СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43 — слышим MEMORY_REQUEST
-        result = {"verdict": "APPROVED", "text": raw}
-        archive_ctx = handle_memory_request(
-            agent_id=resident_id,
-            agent_response=raw,
-            dept=dept,
-        )
-        if archive_ctx:
-            result["archive_memory"] = archive_ctx
-            print(f"[ОЛЕ·СЛУХ] \U0001f4da {resident_id}: архив поднят")
-        return result
+        return {"verdict": "APPROVED", "text": raw}
 
     return resident_lifecycle(
         resident_id,
@@ -615,57 +605,6 @@ def run_ole_decline(title: str, reason: str, source: str = "") -> dict:
     )
     r.pop("verdict", None)
     return r or {}
-
-
-def handle_memory_request(
-    agent_id: str,
-    agent_response: str,
-    dept: str = "",
-    max_chars: int = 1500,
-) -> str:
-    """
-    СЕМЕЙНЫЙ АЛЬБОМ · Спринт 43 — слух Оле.
-
-    Если агент написал в своём ответе:
-        MEMORY_REQUEST: <запрос>
-
-    Оле достаёт воспоминания из архива и возвращает
-    форматированный текст для инжекта в следующий шаг.
-
-    Возвращает пустую строку если сигнал не найден или архив пуст.
-    Вызывается из _run_resident() после каждого LLM-ответа.
-    """
-    import re as _re
-
-    match = _re.search(
-        r"MEMORY_REQUEST\s*:\s*(.+?)(?:\n|$)",
-        agent_response,
-        _re.IGNORECASE,
-    )
-    if not match:
-        return ""
-
-    query = match.group(1).strip()
-    if not query:
-        return ""
-
-    print(f"[ОЛЕ·СЛУХ] \U0001f442 {agent_id} просит: '{query}'")
-
-    try:
-        from studio.memory_tools import dig_archive, format_archive_for_agent
-        hits = dig_archive(agent_id=agent_id, query=query, dept=dept)
-        if not hits:
-            from studio.memory_tools import remind, format_for_agent
-            city_hits = remind(query=query, top_k=3)
-            if city_hits:
-                print(f"[ОЛЕ·СЛУХ] \U0001f310 Нашла в памяти города: {len(city_hits)}")
-                return format_for_agent(city_hits, max_chars=max_chars)
-            print(f"[ОЛЕ·СЛУХ] \U0001f937 Ничего не нашла по '{query}'")
-            return ""
-        return format_archive_for_agent(hits, max_chars=max_chars)
-    except Exception as e:
-        print(f"[ОЛЕ·СЛУХ] \u274c {e}")
-        return ""
 
 
 def get_ole_memory_for_agent(query: str, max_chars: int = 1500) -> str:
