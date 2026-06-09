@@ -158,7 +158,6 @@ def on_before_agent(state: dict, agent_id: str) -> dict:
     """
     if agent_id == "A05":
         _prepare_atlas_digest(state)
-        _prepare_trade_setup(state)
 
     if agent_id == "A04":
         chain = state.get("chain_data", {})
@@ -210,35 +209,6 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
 # ════════════════════════════════════════════════════════════
 # УТИЛИТЫ
 # ════════════════════════════════════════════════════════════
-
-def _prepare_trade_setup(state: dict):
-    """
-    Готовит цены входа/стопа для трибунала. СЧИТАЕТ КОД — трейдеры копируют.
-    Стоп — системный (за лоу Волны 2), не личный. ЗАКОН ТРИБУНАЛА.
-
-    v1: только LONG (бычий разворот от Точки Ноль).
-    Зеркальная SHORT-логика — после бэктеста.
-
-    entry = цена фрактала вверх (Ганс) — Buy Stop ставится над ней
-    stop  = последний нижний фрактал (аппроксимация лоу Волны 2)
-    tp    = None — тейка нет, выход всей позицией по exit_bell
-    """
-    chain = state.get("chain_data", {})
-    md    = chain.get("market_data", {})
-    fr    = md.get("fractals", {})
-    up    = fr.get("last_up") or {}
-    down  = fr.get("last_down") or {}
-
-    chain["trade_setup"] = {
-        "direction":    "LONG",
-        "entry":        up.get("price"),
-        "stop":         down.get("price"),
-        "tp":           None,
-        "lot_fraction": 0.33,
-    }
-    print(f"[SETUP] 🎯 trade_setup: entry={up.get('price')}, "
-          f"stop={down.get('price')}, tp=None (exit_bell)")
-
 
 def _prepare_atlas_digest(state: dict):
     """

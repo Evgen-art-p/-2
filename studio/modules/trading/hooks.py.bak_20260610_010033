@@ -156,10 +156,6 @@ def on_before_agent(state: dict, agent_id: str) -> dict:
     Вызывается перед каждым агентом.
     Реализует GATE 1 — блокировку Ганса.
     """
-    if agent_id == "A05":
-        _prepare_atlas_digest(state)
-        _prepare_trade_setup(state)
-
     if agent_id == "A04":
         chain = state.get("chain_data", {})
         if not gate_hans(chain):
@@ -210,90 +206,6 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
 # ════════════════════════════════════════════════════════════
 # УТИЛИТЫ
 # ════════════════════════════════════════════════════════════
-
-def _prepare_trade_setup(state: dict):
-    """
-    Готовит цены входа/стопа для трибунала. СЧИТАЕТ КОД — трейдеры копируют.
-    Стоп — системный (за лоу Волны 2), не личный. ЗАКОН ТРИБУНАЛА.
-
-    v1: только LONG (бычий разворот от Точки Ноль).
-    Зеркальная SHORT-логика — после бэктеста.
-
-    entry = цена фрактала вверх (Ганс) — Buy Stop ставится над ней
-    stop  = последний нижний фрактал (аппроксимация лоу Волны 2)
-    tp    = None — тейка нет, выход всей позицией по exit_bell
-    """
-    chain = state.get("chain_data", {})
-    md    = chain.get("market_data", {})
-    fr    = md.get("fractals", {})
-    up    = fr.get("last_up") or {}
-    down  = fr.get("last_down") or {}
-
-    chain["trade_setup"] = {
-        "direction":    "LONG",
-        "entry":        up.get("price"),
-        "stop":         down.get("price"),
-        "tp":           None,
-        "lot_fraction": 0.33,
-    }
-    print(f"[SETUP] 🎯 trade_setup: entry={up.get('price')}, "
-          f"stop={down.get('price')}, tp=None (exit_bell)")
-
-
-def _prepare_atlas_digest(state: dict):
-    """
-    Готовит выжимку из Атласа Ошибок для A05 Архивариуса.
-    ЧИСЛА СЧИТАЕТ КОД — Архивариус-LLM только интерпретирует.
-
-    Сигнатура похожести: (t1_status, morj_status, panic_phase, entry_trigger).
-    success_rate — доля pnl > 0 среди ЗАКРЫТЫХ сделок выборки.
-    """
-    chain = state.get("chain_data", {})
-    signature = {
-        "t1_status":     chain.get("t1_status"),
-        "morj_status":   chain.get("morj_status"),
-        "panic_phase":   chain.get("panic_phase"),
-        "entry_trigger": chain.get("entry_trigger"),
-    }
-
-    matches = []
-    if ATLAS_PATH.exists():
-        with open(ATLAS_PATH, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rec = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                entry = rec.get("entry", rec)
-                if all(entry.get(k) == v for k, v in signature.items()
-                       if v is not None):
-                    matches.append(entry)
-
-    closed   = [m for m in matches if m.get("pnl") is not None]
-    wins     = [m for m in closed if (m.get("pnl") or 0) > 0]
-    success  = round(len(wins) / len(closed), 4) if closed else 0.0
-
-    # Самая частая причина среди отказов/убытков
-    reasons = {}
-    for m in matches:
-        r = m.get("reason")
-        if r and (m.get("verdict") == "REJECTED" or (m.get("pnl") or 0) < 0):
-            reasons[r] = reasons.get(r, 0) + 1
-    top_reason = max(reasons, key=reasons.get) if reasons else "none"
-
-    chain["atlas_digest"] = {
-        "sample_size":        len(matches),
-        "closed_trades":      len(closed),
-        "success_rate":       success,
-        "top_failure_reason": top_reason,
-        "recent_cases":       matches[-5:],
-    }
-    print(f"[ATLAS] 📖 Digest для A05: sample={len(matches)}, "
-          f"closed={len(closed)}, success={success}")
-
 
 def _persist_trading_state(state: dict):
     """

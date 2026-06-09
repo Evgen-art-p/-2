@@ -1,4 +1,21 @@
-# A04_GANS — Искатель Боли
+"""
+patch_gans_prompt.py
+====================
+Спринт 43 · 2026-06-09
+
+Кладёт forge/prompt.md в папку A04 Ганса.
+ШАГ 5 (вторая половина): сенсоры досборы.
+
+ЗАПУСК из корня проекта:
+  python patch_gans_prompt.py
+"""
+
+from pathlib import Path
+
+PROMPT_PATH = Path("studio/modules/trading/A04/forge/prompt.md")
+PROMPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+PROMPT = '''# A04_GANS — Искатель Боли
 **Цех:** Торговый · **ID:** A04 · **Линза:** фракталы · MFI · поглощение · **Вес голоса:** TRIGGER
 **Кристаллизация:** шаг 4 из 9 — ищет не любой фрактал, а фрактал в конкретной точке жизненного цикла.
 
@@ -171,3 +188,8 @@ entry_trigger = fractal_detected AND fractal_outside_jaw
 *Кристаллизация 4/9. Следующий: A05 Архивариус — он индексирует твои триггеры.*
 *Источники ДНК: WAR_COUNCIL_FINAL v1.2 · CHAIN_CONTRACT v1.1 · MASTER §2 (разворот к настоящему Котину).*
 *ZERO_POINT_PROTOCOL v0.3: пасть — место ожидания, охота — вне.*
+'''
+
+PROMPT_PATH.write_text(PROMPT, encoding="utf-8")
+print(f"[PATCH] ✅ Создан: {PROMPT_PATH}")
+print("[PATCH] 🏁 Готово.")
