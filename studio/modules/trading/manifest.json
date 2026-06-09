@@ -1,0 +1,53 @@
+{
+  "id": "trading",
+  "label": "⚔️ Торговый Цех",
+  "icon": "⚔️",
+  "version": "1.0",
+  "description": "Военный Совет: 4 сенсора → память → 3 трейдера параллельно → исполнение. Вердикт: входить или нет.",
+  "run_type": "trading",
+  "phases": {
+    "SENSORS": [
+      "A01",
+      "A02",
+      "A03",
+      "A04"
+    ],
+    "MEMORY": [
+      "A05"
+    ],
+    "TRIBUNAL": [
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "EXECUTION": [
+      "A09"
+    ]
+  },
+  "turbo_parallel": [
+    [
+      "A06",
+      "A07",
+      "A08"
+    ]
+  ],
+  "qa_agent": "A09",
+  "checkpoint_after": [],
+  "stop_after": null,
+  "conflict_mode": "none",
+  "hard_stop": {},
+  "interaction_log": "economy/data/interaction_log_trading.jsonl",
+  "memory_layers": [
+    "personal",
+    "project",
+    "runtime",
+    "interaction"
+  ],
+  "notes": [
+    "A04 Ганс: запускается только если t1_status=CONFIRMED и wave_1_validated=true (gate в hooks.py)",
+    "A06/A07/A08: параллельно через turbo_parallel, каждый своё решение и magic number",
+    "Хард-стоп: если все трое REJECTED → hooks.py возвращает action:stop из on_after_agent A09",
+    "Если хотя бы один APPROVED → его ордер идёт. Исполнитель читает state[results][A06/A07/A08]",
+    "Paper trading обязателен до первого реального ордера"
+  ]
+}

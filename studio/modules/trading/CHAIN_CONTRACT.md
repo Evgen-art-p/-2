@@ -1,0 +1,101 @@
+# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.0
+## studio/modules/trading/CHAIN_CONTRACT.md
+## Студия «Шесть Пальцев» · 2026-06-09
+
+> Это единственный источник правды для contract_validator.
+> Каждый агент пишет строго то что указано в "Пишет".
+> Каждый агент читает строго то что указано в "Читает".
+> Ключи в backtick-ах — парсер читает только их.
+
+---
+
+## СВОДНАЯ ТАБЛИЦА
+
+| Агент | Пишет | Читает |
+|-------|-------|--------|
+| A01 Морж | `morj_status`, `alligator_state`, `wave_1_validated`, `history_dna` | `market_data`, `history_dna` |
+| A02 Искра | `t1_status`, `divergence`, `zero_cross_up`, `zero_point_price`, `exit_bell` | `market_data`, `morj_status`, `history_dna` |
+| A03 Паникёр | `panic_phase`, `crowd_sentiment`, `action_for_traders` | `market_data`, `t1_status`, `morj_status` |
+| A04 Ганс | `fractal_detected`, `fractal_outside_jaw`, `absorption_ratio`, `entry_trigger` | `market_data`, `t1_status`, `wave_1_validated`, `morj_status` |
+| A05 Архивариус | `sample_size`, `success_rate`, `top_failure_reason`, `arkhiv_confidence` | `t1_status`, `morj_status`, `panic_phase`, `fractal_detected`, `entry_trigger` |
+| A06 Брут | `brut_verdict`, `brut_reason`, `brut_entry`, `brut_stop`, `brut_tp`, `brut_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate`, `arkhiv_confidence` |
+| A07 Авантюрист | `avan_verdict`, `avan_reason`, `avan_entry`, `avan_stop`, `avan_tp`, `avan_lot` | `t1_status`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate` |
+| A08 Консерватор | `cons_verdict`, `cons_reason`, `cons_entry`, `cons_stop`, `cons_tp`, `cons_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate`, `arkhiv_confidence` |
+| A09 Исполнитель | `execution_log`, `final_dna`, `history_dna`, `deliverables` | `brut_verdict`, `avan_verdict`, `cons_verdict`, `brut_entry`, `brut_stop`, `brut_lot`, `avan_entry`, `avan_stop`, `avan_lot`, `cons_entry`, `cons_stop`, `cons_lot` |
+
+---
+
+## GATE-ПРАВИЛА (реализуются в hooks.py)
+
+```
+GATE 1 — Ганс:
+  if t1_status != "CONFIRMED" or wave_1_validated != true:
+      A04 пропускается, entry_trigger = false (дефолт)
+
+GATE 2 — Хард-стоп:
+  if brut_verdict == "REJECTED"
+  and avan_verdict == "REJECTED"
+  and cons_verdict == "REJECTED":
+      on_after_agent A09 → {"action": "stop"}
+      запись в Атлас Ошибок (economy/data/atlas_trading.jsonl)
+
+GATE 3 — Авантюрист:
+  Единственный кто может дать APPROVED при t1_status = "DETECTED"
+  (до пересечения нуля). Это его архитектурное право.
+```
+
+---
+
+## СТРУКТУРЫ КЛЮЧЕЙ (краткие)
+
+### market_data (вход, пишет hooks.py)
+```json
+{
+  "symbol": "XAUUSD", "timeframe": "H4", "bar_time": "...",
+  "alligator": {"jaw": 0.0, "teeth": 0.0, "lips": 0.0, "sleeping": false},
+  "ao": {"value": 0.0, "prev_value": 0.0, "crossed_zero": false},
+  "ac": {"value": 0.0, "direction": "UP"},
+  "mfi": {"type": "SQUAT", "volume": 0, "spread": 0.0},
+  "price": {"high": 0.0, "low": 0.0, "close": 0.0},
+  "divergence_ao": false
+}
+```
+
+### t1_status (A02 Искра)
+`NOT_FOUND` | `DETECTED` | `CONFIRMED`
+CONFIRMED возможен только после DETECTED.
+
+### morj_status (A01 Морж)
+`SLEEPING` | `WAKING` | `AWAKE` | `MATURE`
+Консерватор требует `MATURE` (Аллигатор открыт ≥ 8 баров).
+
+### panic_phase (A03 Паникёр)
+`DISBELIEF` | `FOMO` | `LIQUIDATION` | `NEUTRAL`
+
+### entry_trigger (A04 Ганс)
+true только если fractal_detected=true И fractal_outside_jaw=true
+
+### brut_verdict / avan_verdict / cons_verdict
+`APPROVED` | `REJECTED`
+
+### execution_log (A09 Исполнитель)
+```json
+[{
+  "trader": "BRUT", "magic": 100001,
+  "verdict": "APPROVED", "entry": 0.0, "stop": 0.0, "tp": 0.0, "lot": 0.33,
+  "status": "PAPER", "pnl": null
+}]
+```
+status: `PAPER` | `LIVE` | `SKIPPED`
+
+---
+
+## АТЛАС ОШИБОК
+Файл: `economy/data/atlas_trading.jsonl` (append-only)
+Читает: A05 Архивариус.
+Пишет: A09 Исполнитель (при каждом REJECTED или закрытой сделке).
+
+---
+
+*CHAIN_CONTRACT v1.0 · Торговый Цех · 2026-06-09*
+*Заморозить после первого полного прогона на истории*

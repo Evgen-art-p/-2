@@ -107,7 +107,6 @@ WORKSHOP_OPTIONS = [
     "", "residents", "turbo",
     "video_long", "video_shorts", "social_mix", "web_story",
     "clipmakers", "advertising", "emo_card", "logo_design", "market_hit", "living_book",
-    "trading",
 ]
 
 TURBO_ROLE_OPTIONS = [
@@ -121,11 +120,6 @@ RESIDENT_ROLE_OPTIONS = [
 PIPELINE_ROLE_OPTIONS = [
     "", "A01", "A02", "A03", "A04", "A05",
     "A06", "A07", "A08", "A09", "A10", "A11", "A12",
-]
-
-TRADING_ROLE_OPTIONS = [
-    "", "A01", "A02", "A03", "A04", "A05",
-    "A06", "A07", "A08", "A09",
 ]
 
 LIVING_BOOK_ROLE_OPTIONS = [
@@ -148,7 +142,6 @@ ROLE_OPTIONS_MAP = {
     "logo_design":  PIPELINE_ROLE_OPTIONS,
     "market_hit":   PIPELINE_ROLE_OPTIONS,
     "living_book":  LIVING_BOOK_ROLE_OPTIONS,
-    "trading":      TRADING_ROLE_OPTIONS,
 }
 
 def generate_agent_files(obj: dict, dna_static: dict,
