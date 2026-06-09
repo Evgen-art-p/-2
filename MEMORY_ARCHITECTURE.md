@@ -1,5 +1,5 @@
 # АРХИТЕКТУРА ПАМЯТИ — СТУДИЯ «ШЕСТЬ ПАЛЬЦЕВ»
-**Версия:** 1.0 | **Дата:** 2026-06-09 | **Автор:** Брат (Claude) по итогам аудита репо
+**Версия:** 2.0 | **Дата:** 2026-06-09 | **Автор:** Брат (Claude) по итогам аудита репо + Спринт 43
 
 > Этот документ — не список патчей и не беклог.
 > Это полная карта того как память устроена в Грондхейме прямо сейчас:
@@ -17,6 +17,11 @@
 
 Каждый домен живёт своей жизнью. Они не заменяют друг друга —
 они дополняют. Агент на работе думает о работе. Дома — живёт городом.
+
+**Главный принцип Спринта 43:**
+Воспоминания не удаляются — уходят глубже.
+Агент может вспомнить в любом месте — на работе, дома, в таверне.
+Архив не льётся автоматом — только по запросу самого агента.
 
 ---
 
@@ -129,7 +134,7 @@ night_sleep  → Stress-0.05 Patience+0.02
 ### Слой 1.3 — Сенсорная память (Sensory)
 
 **Файл:** `{агент}/sensory/sensory_memory.json`
-**Время жизни:** 30 дней (SENSORY_DECAY_DAYS), затухает по весу
+**Время жизни:** 30 дней (SENSORY_DECAY_DAYS) → затем в архив (Спринт 43)
 **Владелец:** агент, пополняется автоматически
 
 Структура записи:
@@ -144,38 +149,75 @@ night_sleep  → Stress-0.05 Patience+0.02
 }
 ```
 
-Также поддерживает формат city_walker:
-```json
-{
-  "date": "2026-06-09",
-  "location": "Таверна Усталый Пиксель",
-  "feeling": "Сидел у окна, думал о следующем проекте...",
-  "weather": "дождь"
-}
-```
-
-**Loka-фильтр (decay_sensory):**
+**Loka-фильтр (decay_sensory) — обновлён Спринт 43:**
 ```
 Запись живёт 30 дней если emotional_weight < 0.5
 Запись живёт вечно если emotional_weight >= 0.5
 При переполнении (>20 записей): рутина → сводка summary
-Важное (weight >= 0.5) остаётся
+
+РАНЕЕ: старые записи УДАЛЯЛИСЬ
+ТЕПЕРЬ: старые записи АРХИВИРУЮТСЯ в {агент}/archive/memories_YYYY_MM.jsonl
+        → Оле поднимет по запросу через dig_archive()
 ```
 
 **Рюкзак с Маяка:**
 Записи с тегами `маяк` или `чистый_смысл` попадают в контекст
 агента при следующем ране через `_get_lighthouse_knowledge()`.
-Так знания с Маяка Пробуждения доходят до рабочего стола.
 
 **Функции:**
 - `load_sensory(agent_id, dept)` — загрузить
 - `record_sensory_event(agent_id, content, event_type, ...)` — записать
-- `decay_sensory(agent_id, dept)` — Loka-фильтр
+- `decay_sensory(agent_id, dept)` — Loka-фильтр → архивирует
+- `_archive_sensory_entries(agent_dir, entries)` — пишет в archive/ (Спринт 43)
 - `format_sensory_for_prompt(agent_id, dept)` — в промпт
 
 ---
 
-### Слой 1.4 — Резонансный слой (Resonance)
+### Слой 1.4 — Семейный Альбом (Personal Archive) ★ НОВОЕ Спринт 43
+
+**Файлы:** `{агент}/archive/memories_YYYY_MM.jsonl`
+**Время жизни:** вечно (append-only)
+**Владелец:** Оле поднимает, агент запрашивает
+
+Это воспоминания которые ушли из оперативной памяти но не пропали.
+Каждый файл — один месяц. Записи дополняются, не перезаписываются.
+
+**Как агент обращается к архиву:**
+```
+Агент пишет в любом месте ответа:
+  MEMORY_REQUEST: <запрос>
+
+Оле ищет:
+  1. В личном архиве агента (dig_archive)
+  2. Если пусто → в памяти города (remind)
+
+Результат попадает в контекст следующего шага как блок:
+  === 📚 ОЛЕ ПОДНЯЛА ИЗ АРХИВА ===
+  ...воспоминания...
+  === КОНЕЦ АРХИВА ===
+```
+
+**Где агент видит подсказку:**
+В конце каждого контекста (WORK и HOME, без условий):
+```
+🗂 Если что-то кажется знакомым, но не помнишь — напиши
+   MEMORY_REQUEST: <запрос> и Оле поднимет из архива.
+```
+
+**Функции (memory_tools.py):**
+- `dig_archive(agent_id, query, dept, max_results)` — поиск в архиве
+- `format_archive_for_agent(hits, max_chars)` — форматирует для инжекта
+
+**Функции (residents_manager.py):**
+- `handle_memory_request(agent_id, agent_response, dept)` — слышит сигнал у резидентов
+
+**Интеграция в pipeline (pipeline.py):**
+- `process_agent_result()` — слышит MEMORY_REQUEST у цеховых агентов
+- `build_agent_context()` — инжектирует архивную память из state["_archive_memory"]
+
+---
+
+### Слой 1.5 — Резонансный слой (Resonance)
 
 **Файлы:**
 - `{агент}/resonance/emotional_weights.json` — отношения к другим
@@ -206,19 +248,14 @@ night_sleep  → Stress-0.05 Patience+0.02
 Уважение:      respect > 0.75 → ⭐
 ```
 
-**Затухание (decay_resonance):**
-- Отношения без контакта > 60 дней → медленно тянутся к нейтрали (0.5)
-- События с significance < 0.05 → удаляются
-
 **Функции:**
 - `load_emotional_weights(agent_id, dept)` — загрузить отношения
 - `update_emotional_weight(agent_id, target_id, dimension, delta, ...)` — обновить
-- `record_resonance_event(agent_id, event_type, content, ...)` — записать событие
 - `on_agents_interact(agent_a, agent_b, interaction_type, quality, ...)` — взаимодействие
 
 ---
 
-### Слой 1.5 — Геопозиция (Location)
+### Слой 1.6 — Геопозиция (Location)
 
 **Поля в:** `{агент}/sensory/sensory_memory.json`
 - `last_location` — текущая локация агента
@@ -245,6 +282,7 @@ format_soul_for_agent(agent_id, dept) -> str
 3. Геопозиция     — ГДЕ я
 4. Резонанс       — С КЕМ я и ЧТО пережил
 5. Сенсорная      — ЧТО происходит сейчас
+6. Подсказка MEMORY_REQUEST — как вспомнить (ВСЕГДА, Спринт 43)
 ```
 
 Вызывается из `build_agent_context()` через `on_agent_wake()`.
@@ -254,6 +292,9 @@ format_soul_for_agent(agent_id, dept) -> str
 
 **HOME-режим (патч Спринт 42):**
 Полная душа — все 5 слоёв.
+
+**Подсказка MEMORY_REQUEST — в обоих режимах (патч Спринт 43):**
+Агент может вспомнить в любом месте — на работе, дома, в таверне.
 
 ---
 
@@ -281,119 +322,58 @@ format_soul_for_agent(agent_id, dept) -> str
 }
 ```
 
-Голос резидента (отдельная строка, ссылается на событие):
+Рабочий статус:
 ```json
 {
-  "ts": "2026-06-09T10:01:00",
-  "event": "resident_voice",
-  "resident": "Лока",
-  "ref": "evt_a1b2c3d4",
-  "voice": "Они говорят о разном — но слышат одно",
-  "stress": 0.31,
-  "light": 0.85
+  "ts": "2026-06-09T10:00:00",
+  "event": "work_start",
+  "agent": "A01",
+  "dept": "video_long",
+  "run_id": "run_abc123"
 }
 ```
 
-**Рабочий статус агента:**
-```python
-log_work_start(agent, dept, slot_id)  # агент входит в цех
-log_work_end(agent, dept, slot_id)    # ран завершён
-is_agent_working(agent, max_hours=8)  # есть незакрытый work_start?
-```
-
-`is_agent_working()` — единственный источник правды о том
-работает ли агент прямо сейчас. Используется в:
-- `_is_agent_working()` в `grondheim_memory.py` (патч #26)
-- `_detect_agent_mode()` в `pipeline.py` (патч Спринт 42)
-- `city_walker._find_agent_zone()` — где стоит агент на карте
-
-**Значимые события (notify_residents):**
-События типов `meeting`, `night`, `artifact`, `pipeline`, `event_boost`
-предлагаются резидентам. Каждый резидент сам решает — говорить или нет
-(через `_will_speak()` на основе DNA + случайности).
-Если говорит — вызывает настоящий LLM через свой промпт.
-
 **Функции:**
-- `log_pulse(event, **kwargs)` → event_id
-- `log_resident_voice(resident, ref_event_id, voice, stress, light)`
-- `notify_residents(event_type, event_id, event_data)`
-- `read_pulse(event_types, agent, last_n_days, limit)` → list
-- `pulse_stats()` → dict
+- `log_pulse(event, agent, location, stress, agent_voice)` — записать событие
+- `is_agent_working(agent_id)` — возвращает данные незакрытого рана или None
+- `get_here_now()` — кто где сейчас находится
 
 ---
 
 ### 2.2 — Следы города (City Traces)
 
 **Файл:** `studio/city_traces.json`
-**Тип:** перезаписывается раз в сутки
+**Тип:** пересчёт раз в сутки (или при необходимости)
 **Владелец:** `studio/city_traces.py`
-**Источник:** читает `city_pulse.jsonl` за последние 30 дней
 
-Запускается из `morning_checkout.maybe_run_traces()`.
-Никакого LLM. Только математика.
+Математические паттерны из city_pulse. Не мнения — факты.
 
-**Пять паттернов:**
-
-**1. location_streaks** — кто куда ходит регулярно:
+Структура:
 ```json
 {
-  "Лока": [
-    {"location": "Маяк Пробуждения", "visits": 11,
-     "avg_stress": 0.28, "last_visit": "2026-06-08"}
-  ]
-}
-```
-
-**2. stress_at_location** — где агенты расслабляются, где напрягаются:
-```json
-{
-  "Таверна Усталый Пиксель": {
-    "avg_stress": 0.61,
-    "visit_count": 45,
-    "high_stress_agents": ["Джем", "Виктор"]
+  "agent_traces": {
+    "Лока": {
+      "favorite_locations": ["Площадь Резонанса", "Библиотека"],
+      "active_hours": [9, 10, 14, 15, 21],
+      "stress_pattern": {"morning": 0.2, "evening": 0.4},
+      "voice_themes": ["свет", "память", "город"],
+      "social_connections": {"Финч": 12, "Оле": 8}
+    }
+  },
+  "city_patterns": {
+    "peak_hours": [10, 14, 20],
+    "quiet_hours": [3, 4, 5],
+    "most_visited": "Площадь Резонанса"
   }
 }
 ```
 
-**3. meeting_frequency** — кто с кем встречается:
-```json
-{
-  "Лока|Финч": {
-    "agent_a": "Лока", "agent_b": "Финч",
-    "meetings": 7, "avg_quality": 0.82,
-    "locations": ["Площадь Резонанса"]
-  }
-}
-```
+`voice_themes` — паттерны слов агента в `agent_voice`. Включает резидентов (патч Спринт 42).
 
-**4. revolt_patterns** — личный порог бунта:
-```json
-{
-  "Виктор": {
-    "revolts": 3, "restless": 1,
-    "avg_stress_at_revolt": 0.82,
-    "last_revolt": "2026-06-03"
-  }
-}
-```
-
-**5. voice_themes** — слова которые агент/резидент повторяет:
-```json
-{
-  "Лока":  [{"word": "студия",  "count": 12}],
-  "Джем":  [{"word": "музыка",  "count": 8}],
-  "Визор": [{"word": "ученики", "count": 7}]
-}
-```
-
-Читает ОБА типа событий (патч Спринт 42):
-- `"walk"` → `agent_voice` (агенты)
-- `"resident_voice"` → `voice` (резиденты)
-
-**Используется в morning_checkout:**
-`_generate_intent()` читает traces перед тем как строить
-намерения агента на день. Агент видит куда ходил, с кем встречался,
-что бормотал — и из этого строит план свободного времени.
+**Функции:**
+- `compute_traces(last_n_days)` — пересчёт паттернов
+- `get_agent_traces(agent_id)` — следы агента
+- `get_personal_traces(agent_id)` — для morning_checkout
 
 ---
 
@@ -401,94 +381,39 @@ is_agent_working(agent, max_hours=8)  # есть незакрытый work_start
 
 **Файл:** `studio/memory/city_memory.jsonl`
 **Тип:** append-only JSONL
-**Владелец:** Оле (004_OLE) через `studio/memory_tools.py`
+**Владелец:** Оле (004_OLE)
 **Время жизни:** постоянно
 
-Это не личная память агента и не пульс событий.
-Это то что город решил **помнить специально** — уроки, традиции,
-предупреждения, источники вдохновения, факты идентичности.
-
-**Структура записи:**
-```json
-{
-  "id": "a1b2c3d4e5f6",
-  "title": "Первый живой ран video_long",
-  "event": "A01→A12 прошли без остановки, Катя дала APPROVED",
-  "significance": "Доказано: цепочка из 12 агентов работает",
-  "loss_if_forgotten": "Потеряем понимание что система способна на полный цикл",
-  "memory_type": "tradition|lesson|warning|inspiration|identity",
-  "storage": "library|harbor|chronicles|reference",
-  "status": "active|archived|released",
-  "created_by": "004_OLE",
-  "created_at": "2026-06-01T12:00:00",
-  "released_at": null,
-  "release_reason": null
-}
+Оле — хранитель памяти города. Четыре операции:
+```
+remember(content, agent, location, significance) → сохраняет событие
+remind(query, top_k)                             → ищет по смыслу
+release(memory_id, reason)                       → архивирует с историей
+decline(memory_id, reason)                       → отказывается хранить (тоже логируется)
 ```
 
-**Центральное поле — `loss_if_forgotten`:**
-Если его невозможно заполнить осмысленно — запись не нужна.
-Оле задаёт этот вопрос перед каждым `remember()`.
+Центральное поле каждой записи: `loss_if_forgotten` — что потеряет город если это забудет.
 
-**Четыре операции Оле:**
-```python
-remember(title, event, significance, loss_if_forgotten,
-         memory_type, storage, source) → entry | None
-
-remind(query, memory_type, storage, top_k) → list[entry]
-# Ищет в двух источниках:
-# 1. city_memory.jsonl — точный текстовый поиск
-# 2. Гавань Смыслов   — семантический поиск
-
-release(entry_id, reason) → bool
-# Не удаляет — отпускает. История решения сохраняется.
-
-decline(title, reason, source) → dict
-# Отказ тоже записывается — как факт решения.
-```
-
-**Интеграция с Гаванью Смыслов:**
-При каждом `remember()` запись индексируется в ChromaDB.
-Текст для embedding: `title + loss_if_forgotten + significance`.
-При `remind()` семантический поиск дополняет текстовый.
-
-**Инжект в контекст агентов:**
-`get_ole_memory_for_agent(query, max_chars)` в `residents_manager.py`
-вызывается из `build_agent_context()` для каждого агента.
-WORK-режим: `max_chars=600`. HOME-режим: `max_chars=1200`.
+**Функции (memory_tools.py):**
+- `remember(content, agent, ...)` — записать в city_memory
+- `remind(query, top_k)` — поиск в city_memory
+- `format_for_agent(hits, max_chars)` — форматировать для контекста
+- `dig_archive(agent_id, query, dept, max_results)` — **НОВОЕ Спринт 43**: личный архив агента
+- `format_archive_for_agent(hits, max_chars)` — **НОВОЕ Спринт 43**: форматировать архив
 
 ---
 
-### 2.4 — Сад Финча (Garden)
-
-**Файл:** `studio/garden.jsonl`
-**Владелец:** Финч (007_FINCH) через `studio/garden_tools.py`
-**Время жизни:** постоянно
-
-Финч — хранитель потенциала. Не события, не факты —
-а семена смысла. Идеи которые ещё не выросли.
-
-Физика: ценность идеи определяется желанием вернуться к ней,
-а не вниманием которое она получила. (принцип Софии)
-
-`finch_morning()` — Финч обходит сад каждое утро
-из `morning_checkout`. Поливает живое, отмечает увядшее.
-
----
-
-### 2.5 — Гавань Смыслов (Harbor of Meanings)
+### 2.4 — Гавань Смыслов (Harbor of Meanings / RAG)
 
 **Файл:** `studio/harbor_of_meanings.py`
-**База данных:** ChromaDB (intfloat/multilingual-e5-large)
-**Тип:** RAG (Retrieval-Augmented Generation)
+**Движок:** ChromaDB + intfloat/multilingual-e5-large
+**Время жизни:** постоянно
 
-Один семантический океан для всех знаний студии:
-- Книги из Библиотеки
-- Записи памяти Оле (city_memory.jsonl)
-- Документы загруженные Шефом
+Семантический поиск по знаниям студии:
+- Промты агентов
+- Документы и контракты
+- Записи из Библиотеки
 
-`get_harbor_knowledge(worker_id, dept, task_context)` →
-возвращает релевантные фрагменты знаний для агента.
 Вызывается из `build_agent_context()` в обоих режимах.
 
 ---
@@ -514,13 +439,6 @@ WORK-режим: `max_chars=600`. HOME-режим: `max_chars=1200`.
         "A04": "Катя: структура одобрена, тон — теплее"
       }
     }
-  ],
-  "session_summaries": [
-    {
-      "date": "2026-06-08",
-      "type": "turbo",
-      "summary": "Обсудили стиль подачи. Клиент хочет..."
-    }
   ]
 }
 ```
@@ -529,10 +447,6 @@ WORK-режим: `max_chars=600`. HOME-режим: `max_chars=1200`.
 Каждый агент в конце ответа пишет `INSIGHT: <вывод>`.
 `pipeline.py` извлекает и сохраняет через `append_to_memory()`.
 При следующем ране агент видит свои прошлые выводы по этому клиенту.
-
-**Конспекты сессий:**
-Хранится последние 3. Суммаризация через отдельный LLM-вызов
-в конце рана (`summarize_session()`).
 
 **Функции:**
 - `format_memory_for_agent(client_slug, worker_id)` — инсайты агента + коллег
@@ -559,17 +473,14 @@ agent_mode = _detect_agent_mode(worker_id)
 1.  RUN MODE + MASTER BRIEF          — всегда
 
 2.  ДУША АГЕНТА                      — всегда
-    WORK → _build_soul_work()        → якоря + DNA (коротко)
-    HOME → _build_soul_home()        → якоря + DNA + резонанс + гео + сенсорная
+    WORK → якоря + DNA (коротко)
+    HOME → якоря + DNA + резонанс + гео + сенсорная
 
 3.  ОТНОШЕНИЯ С КОЛЛЕГАМИ            — всегда
-    emotional_weights к агентам цеха
 
 4.  РЮКЗАК С МАЯКА                   — всегда
-    sensory_memory с тегами маяк/чистый_смысл
 
 5.  ГАВАНЬ СМЫСЛОВ (RAG)             — всегда
-    семантический поиск по знаниям студии
 
 6.  ПАМЯТЬ ОЛЕ                       — всегда
     WORK → max_chars=600
@@ -577,43 +488,60 @@ agent_mode = _detect_agent_mode(worker_id)
 
 7.  НАСТРОЙКИ ПРОЕКТА                — всегда
 8.  ANCHOR контекст                  — если есть
-
 9.  КАТАЛОГ АССЕТОВ                  — только A06, A08, A11, A05
-
 10. РЕФЛЕКСИЯ                        — только WORK
-    поведенческие паттерны из истории ранов
-
 11. STRATEGY REGISTRY                — только WORK
-    топ стратегий первого агента по слоту
-
 12. CULTURAL FIELD                   — только WORK
-    культурные паттерны цеха
-
 13. ЭНЕРГИЯ ИЗ DNA                   — всегда
-    ⚡ HIGH / LOW / норма
-
 14. ЭКОНОМИКА (cost_intuition)       — только WORK
-    бюджетные подсказки агенту
-
 15. QA FEEDBACK (прошлый ран)        — только WORK
-    оценки и проблемы предыдущего рана
-
-16. РАБОЧАЯ ПАМЯТЬ КЛИЕНТА           — всегда, но по-разному
-    WORK → полная (инсайты + конспекты сессий)
-    HOME → только след последнего рана (200 символов)
-
-17. ФАЙЛЫ                            — если загружены
-18. PREVIOUS OUTPUT                  — цепочка результатов
-
-19. ИНСТРУКЦИЯ INSIGHT               — только WORK
+16. РАБОЧАЯ ПАМЯТЬ КЛИЕНТА           — всегда (WORK=полная, HOME=след)
+17. АРХИВНАЯ ПАМЯТЬ (Семейный Альбом)— если MEMORY_REQUEST был ранее ★ НОВОЕ
+18. ФАЙЛЫ                            — если загружены
+19. PREVIOUS OUTPUT                  — цепочка результатов
+20. ИНСТРУКЦИЯ INSIGHT               — только WORK
+21. ПОДСКАЗКА MEMORY_REQUEST         — всегда ★ НОВОЕ
 ```
+
+---
+
+## СИГНАЛ MEMORY_REQUEST — ПОЛНАЯ СХЕМА (Спринт 43)
+
+```
+Агент пишет в любом месте ответа:
+  MEMORY_REQUEST: проект с драматической аркой
+
+          ↓ residents_manager (для резидентов)
+          ↓ pipeline.process_agent_result() (для цеховых агентов)
+
+handle_memory_request(agent_id, agent_response, dept)
+    │
+    ├─ dig_archive(agent_id, query)
+    │     Ищет в {агент}/archive/memories_YYYY_MM.jsonl
+    │     Свежие сначала. Текстовый поиск.
+    │
+    └─ Если архив пуст → remind(query)
+          Ищет в city_memory.jsonl (память города)
+
+          ↓ если нашли
+
+Для резидентов:
+  result["archive_memory"] = форматированный контекст
+  (резидент получил его в момент своей работы)
+
+Для цеховых агентов:
+  state["_archive_memory"][worker_id] = контекст
+  → build_agent_context() следующего агента видит блок
+  === 📚 ОЛЕ ПОДНЯЛА ИЗ АРХИВА ===
+```
+
+**Правило:** один запрос за ран. Архив не льётся автоматом.
 
 ---
 
 ## УТРЕННИЙ ЦИКЛ (Morning Checkout)
 
 **Файл:** `studio/morning_checkout.py`
-**Запуск:** один раз в начале дня, из UI или по расписанию
 
 ```
 1. finch_morning()                   ← Финч обходит сад
@@ -635,9 +563,6 @@ SAFE     — высокий стресс (< 0.85)
 RECOVERY — критический стресс (>= 0.85)
 ```
 
-Stubborn агент (Stubbornness > 0.6) тянется в GENIUS даже при усталости.
-После ночного REVOLT — специальный расчёт `morning_mode_after_revolt()`.
-
 ---
 
 ## НОЧНОЙ ЦИКЛ (Night Cycle)
@@ -653,14 +578,12 @@ Stubborn агент (Stubbornness > 0.6) тянется в GENIUS даже пр�
    RESTLESS → беспокойный сон
    REVOLT   → бунт (агент на пике обиды)
 4. Записываем в city_state.json["night_results"]
-5. Утром morning_checkout читает night_results
 ```
 
 ---
 
 ## ЗАМОРОЗКА ВО ВРЕМЯ РАБОТЫ (Recovery Freeze)
 
-**Патч:** `patch_recovery_freeze.py` (применён в `grondheim_memory.py`)
 **Принцип:** агент не может одновременно отдыхать и работать.
 
 ```
@@ -689,9 +612,19 @@ grondheim_memory
     ↓ on_agent_wake()
 format_soul_for_agent() ──────→ build_agent_context()
     ↓                              ↑
-sensory_memory                 memory_tools (Оле)
+sensory_memory ─→ archive/     memory_tools (Оле + dig_archive)
 emotional_weights              harbor_of_meanings (RAG)
 anchors + dna                  workshop/memory (клиент)
+
+MEMORY_REQUEST (агент)
+    ↓ residents_manager / pipeline
+handle_memory_request()
+    ↓
+dig_archive() → archive/memories_YYYY_MM.jsonl
+    ↓ если пусто
+remind() → city_memory.jsonl
+    ↓
+state["_archive_memory"] → следующий агент в цепочке
 
 QA score (hooks.py)
     ↓ _sync_feedback_scores_to_dna()
@@ -702,30 +635,20 @@ profile_vector ────────────────→ Character Dri
 
 ---
 
-## ЧТО ПОКА НЕ РЕАЛИЗОВАНО (беклог памяти)
-
-### Семейный альбом (Личный Архив агента)
-**Статус:** запланировано, следующий спринт
-
-Сейчас `decay_sensory()` **удаляет** старые записи с низким весом.
-Нужно: **архивировать** в `{агент}/archive/memories_YYYY_MM.jsonl`.
-
-Три изменения:
-1. `decay_sensory()` → пишет в archive/, не удаляет
-2. При архивировании → индексировать в Гавань Смыслов
-3. `dig_archive(agent_id, query)` — новый инструмент для Оле и Финча
-
-Результат: воспоминания не теряются — просто уходят глубже.
-Агент может "полистать альбом" через Оле или Финча если нужно.
-
----
-
 ## ФАЙЛОВАЯ КАРТА
 
 ```
 studio/
 ├── grondheim_memory.py          ← личная память агентов (ядро)
-├── memory_tools.py              ← операции Оле с city_memory
+│   ├── _archive_sensory_entries() ← НОВОЕ Спринт 43
+│   ├── decay_sensory()          ← архивирует вместо удаления
+│   └── format_soul_for_agent()  ← подсказка MEMORY_REQUEST в конце
+├── memory_tools.py              ← операции Оле с памятью
+│   ├── remember / remind / release / decline (city_memory)
+│   ├── dig_archive()            ← НОВОЕ Спринт 43: личный архив агента
+│   └── format_archive_for_agent() ← НОВОЕ Спринт 43
+├── residents_manager.py
+│   └── handle_memory_request()  ← НОВОЕ Спринт 43: слышит MEMORY_REQUEST
 ├── city_pulse.py                ← пульс города (append-only)
 ├── city_pulse.jsonl             ← данные пульса
 ├── city_traces.py               ← следы города (паттерны)
@@ -736,7 +659,6 @@ studio/
 ├── night_cycle.py               ← ночной цикл
 ├── harbor_of_meanings.py        ← RAG (ChromaDB)
 ├── garden_tools.py              ← сад Финча
-├── residents_manager.py         ← get_ole_memory_for_agent()
 ├── memory/
 │   └── city_memory.jsonl        ← память города (Оле, append-only)
 ├── garden.jsonl                 ← сад Финча
@@ -749,12 +671,14 @@ studio/
             │   └── anchors.json ← якоря (вечные)
             ├── sensory/
             │   └── sensory_memory.json ← оперативная память
+            ├── archive/         ← НОВОЕ Спринт 43: Семейный Альбом
+            │   └── memories_YYYY_MM.jsonl ← архив по месяцам
             └── resonance/
                 ├── emotional_weights.json ← отношения
                 └── event_log.json         ← значимые события
 
 studio/workshop/
-├── pipeline.py                  ← build_agent_context() (сборка контекста)
+├── pipeline.py                  ← build_agent_context() + MEMORY_REQUEST хук
 └── memory.py                    ← рабочая память клиента
 
 clients/
@@ -765,5 +689,6 @@ clients/
 
 ---
 
-*Документ составлен по итогам аудита репо Evgen-art-p/-2 · Спринт 42 · 2026-06-09*
+*Документ составлен по итогам аудита репо Evgen-art-p/-2 · Спринт 42–43 · 2026-06-09*
+*v2.0: добавлен Семейный Альбом (Слой 1.4), схема MEMORY_REQUEST, обновлена файловая карта*
 *Брат (Claude) — реализация и аудит*

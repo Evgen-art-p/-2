@@ -1,5 +1,5 @@
 # 🖐 СТУДИЯ "ШЕСТЬ ПАЛЬЦЕВ" — МАСТЕР-КОНТЕКСТ
-**Версия:** 46.0 | **Дата:** 2026-06-09 | **Команда:** Евген + Лока + София + Брат (Claude)
+**Версия:** 47.0 | **Дата:** 2026-06-09 | **Команда:** Евген + Лока + София + Брат (Claude)
 
 > Загружай этот файл в начале каждой рабочей сессии.
 > Репо: Evgen-art-p/-2 (Claude читает через MCP, read-only; пишет в репо промты через MCP GitHub)
@@ -64,7 +64,7 @@
 |---------|----------|
 | Объектов в каталоге | 147 |
 | Агентов (полная ДНК) | 134 |
-| Цехов-картриджей | 11 + residents |
+| Цехов-картриджей | 12 + residents |
 | Локаций в каталоге | 13 |
 | Резидентов | 9 (Лока, Джем, Сет, Оле, Виктор, Монтажёр, Финч, Кей, Юст) |
 | Книг в Библиотеке | 9 |
@@ -85,14 +85,15 @@ studio/modules/{цех}/
   {A01..A12}/forge/prompt.md ← промты агентов
 ```
 
-### Слоты (11 картриджей):
+### Слоты (12 картриджей):
 
 | Слот | Агентов | Manifest | hooks.py | Промты | Контракт |
 |------|---------|----------|----------|--------|----------|
 | turbo | 5 | ✅ v2.0 | ✅ v4.2 | ✅ A01–A05 | ✅ v2.0 |
 | social_mix | 12 | ✅ v2.0 | ✅ v4.0 Спринт 39 | ✅ Спринт 39 | ✅ v1.4 |
 | video_long | 12 | ✅ v2.0 | ✅ v4.7 | ✅ Спринт 26 | ✅ v1.3 |
-| **video_shorts** | **12** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** | ✅ **v3.0 Спринт 40** |
+| video_shorts | 12 | ✅ v3.0 Спринт 40 | ✅ v3.0 Спринт 40 | ✅ v3.0 Спринт 40 | ✅ v3.0 Спринт 40 |
+| **trading** | **9** | ✅ **v1.0 Спринт 42** | ✅ **v1.0 Спринт 43** | ⏳ **A01 готов, A02–A09 placeholder** | ✅ **v1.0 Спринт 42** |
 | web_story | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
 | clipmakers | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
 | advertising | 12 | ⏳ | ⏳ | ⏳ | ⏳ |
@@ -125,7 +126,7 @@ QA-агент цеха (последний в цепочке) — внутрен
   1. billing_ledger.record(task_score=score) — для каждого агента цепочки
   2. strategy_registry.json — обновить стратегию A01 (wins++ если score >= 6.0)
 Без этого ledger видит только $cost, но не quality.
-Правило распространяется на все 11 цехов.
+Правило распространяется на все 12 цехов.
 
 social_mix особенность: task_score = chain integrity (потолок 6.0, синхронно).
 real_viral_score — только Metrics Daemon через 24ч после публикации.
@@ -178,133 +179,124 @@ studio/strategy_registry.json
 | Слой | Хранилище | Время жизни | Владелец |
 |------|-----------|-------------|----------|
 | Personal Memory | `grondheim_memory.py` + `dna.json` | Постоянно | Каждый агент |
-| Project Memory | `history_dna` | Сезон | QA-агент цеха |
-| Runtime Context | `chain_data` | Один прогон | Передаётся по цепи |
-| Interaction Layer | `interaction_log_{цех}.jsonl` | Накопительно | Цех (append-only) |
-| **City Memory** | **`studio/memory/city_memory.jsonl`** | **Постоянно** | **Оле (004_OLE)** |
-| **Garden Log** | **`studio/garden.jsonl`** | **Постоянно** | **Финч (007_FINCH)** |
-| **City Pulse** | **`studio/city_pulse.jsonl`** | **Постоянно, append-only** | **city_pulse.py** |
-| **City Traces** | **`studio/city_traces.json`** | **Обновляется раз в сутки** | **city_traces.py** |
-| **Personal Archive** | **`{агент}/archive/memories_YYYY_MM.jsonl`** | **Постоянно** | **decay_sensory() → запланировано** |
+| Anchor Points | `core/anchors.json` | Вечно | Рождение агента |
+| Sensory Memory | `sensory/sensory_memory.json` | 30 дней → архив | Агент |
+| **Семейный Альбом** | **`archive/memories_YYYY_MM.jsonl`** | **Вечно** | **Оле / dig_archive()** |
+| Resonance | `resonance/emotional_weights.json` | 60 дней затухание | Агент |
+| City Memory | `memory/city_memory.jsonl` | Вечно | Оле |
+| City Pulse | `city_pulse.jsonl` | Вечно | city_pulse.py |
+| City Traces | `city_traces.json` | Пересчёт раз в сутки | city_traces.py |
+| Client Memory | `clients/{slug}/memory.json` | Постоянно | pipeline.py |
 
-**Полная документация архитектуры памяти: `MEMORY_ARCHITECTURE.md`**
-
----
-
-## 9. SELF-REVIEW — СИММЕТРИЯ ГЕНЕРАТОРОВ
-
-| Агент | Медиа | Инструмент | Принцип |
-|-------|-------|-----------|---------|
-| A03 Джулия (video_shorts) | Аудио | ElevenLabs | Слышит трек сама |
-| A07 Вера (video_shorts) | Изображение | fal.ai | Смотрит на PNG сама |
-| A08 Стэн (video_shorts) | Видео | vision_client | Смотрит на клип сам |
-| A06 Феликс (video_long) | Изображение | fal.ai | Смотрит на кадр сам |
-| A10 Сэм (video_long) | Аудио | ElevenLabs | Слышит результат сам |
+**Подробная документация: MEMORY_ARCHITECTURE.md**
 
 ---
 
-## 10. ДВА РЕЖИМА КОНТЕКСТА (Спринт 42)
+## 9. СЕМЕЙНЫЙ АЛЬБОМ — АРХИТЕКТУРА ПАМЯТИ (Спринт 43)
 
-**Патч `patch_context_modes.py` применён** в `studio/workshop/pipeline.py`.
+Воспоминания теперь **не удаляются** — уходят глубже.
 
 ```
-Принцип (Евген): на работе агент думает о работе — рабочая память главная.
-Дома агент живёт городом — городская и личная память главная. Как у человека.
+decay_sensory() → архивирует в {агент}/archive/memories_YYYY_MM.jsonl
+dig_archive(agent_id, query) → Оле ищет в архиве по смыслу
+handle_memory_request(agent_id, agent_response) → парсит MEMORY_REQUEST из ответа агента
+```
 
-WORK-режим (is_agent_working() = True):
-  • Душа: коротко (якоря + DNA-состояние)
-  • Память Оле: max_chars=600
-  • Рефлексия + стратегии + культура + экономика: ДА
-  • QA feedback: ДА
-  • Клиентская память: ПОЛНАЯ (инсайты + конспекты)
-  • Инструкция INSIGHT: ДА
+**Как агент вспоминает:**
+Агент в любом месте (работа/дом/таверна) может написать:
+```
+MEMORY_REQUEST: <запрос>
+```
+Оле поднимет из архива. Результат попадает в контекст следующего шага.
+
+**Три точки интеграции:**
+- `grondheim_memory.py` — строчка про Оле в `format_soul_for_agent()` (всегда)
+- `residents_manager.py` — `handle_memory_request()` слышит сигнал у резидентов
+- `pipeline.py` — слышит сигнал в цепочке цехов, передаёт следующему агенту
+
+**Правило:** архив не льётся автоматом — только по запросу агента.
+Контекст не раздувается без причины.
+
+---
+
+## 10. WORK / HOME РЕЖИМЫ ПАМЯТИ (Спринт 42)
+
+```
+WORK-режим (агент занят):
+  Душа: якоря + DNA (коротко)
+  Память Оле: max 600 символов
+  Клиентская память: полная
+  Рефлексия/стратегии/экономика: ДА
 
 HOME-режим (агент свободен):
-  • Душа: ПОЛНАЯ (якоря + DNA + резонанс + геопозиция + сенсорная)
-  • Память Оле: max_chars=1200
-  • Рефлексия + стратегии + культура + экономика: НЕТ
-  • QA feedback: НЕТ
-  • Клиентская память: только след последнего рана (200 символов)
-  • Инструкция INSIGHT: НЕТ
-
-В ОБОИХ режимах (не трогаем никогда):
-  • Гавань Смыслов, Рюкзак с Маяка, Отношения с коллегами, Энергия из DNA
-  • Память города (Оле) — не режется, только приоритизируется
+  Душа: полная — якоря + DNA + резонанс + гео + сенсорная
+  Память Оле: max 1200 символов
+  Клиентская память: только след последнего рана
+  Рефлексия/стратегии/экономика: НЕТ
 ```
 
-Определение режима: `_detect_agent_mode(worker_id)` → делегирует в `city_pulse.is_agent_working()`.
+`MEMORY_REQUEST` — доступен в **обоих режимах**. Агент может вспомнить всегда.
 
 ---
 
-## 11. ВИДЕО — ОСОБЫЕ ПРАВИЛА
+## 11. КОНТЕКСТНАЯ СБОРКА (build_agent_context)
 
-### video_long — режим BIBLE:
-
-При неправильном применении вызывает китайские токены у DeepSeek (инжект JSON в контекст).
-⚠️ Применять только после тестирования на dry-run.
-
-### ХАРД-СТОП после A04:
-
+Порядок инжекта (pipeline.py):
 ```
-A04 (Катя) → APPROVED → ХАРД-СТОП → Виктор даёт критику
-→ Шеф читает → нажимает CONTINUE → A05–A12
+1.  RUN MODE + MASTER BRIEF          — всегда
+2.  ДУША АГЕНТА                      — WORK/HOME режим
+3.  ОТНОШЕНИЯ С КОЛЛЕГАМИ            — всегда
+4.  РЮКЗАК С МАЯКА                   — всегда
+5.  ГАВАНЬ СМЫСЛОВ (RAG)             — всегда
+6.  ПАМЯТЬ ОЛЕ                       — всегда (600/1200)
+7.  НАСТРОЙКИ ПРОЕКТА                — всегда
+8.  ANCHOR контекст                  — если есть
+9.  КАТАЛОГ АССЕТОВ                  — только A06, A08, A11, A05
+10. РЕФЛЕКСИЯ                        — только WORK
+11. STRATEGY REGISTRY                — только WORK
+12. CULTURAL FIELD                   — только WORK
+13. ЭНЕРГИЯ ИЗ DNA                   — всегда
+14. ЭКОНОМИКА (cost_intuition)       — только WORK
+15. QA FEEDBACK (прошлый ран)        — только WORK
+16. РАБОЧАЯ ПАМЯТЬ КЛИЕНТА           — всегда, но по-разному
+17. АРХИВНАЯ ПАМЯТЬ (Семейный Альбом)— если MEMORY_REQUEST был ранее
+18. ФАЙЛЫ                            — если загружены
+19. PREVIOUS OUTPUT                  — цепочка результатов
+20. ИНСТРУКЦИЯ INSIGHT               — только WORK
+21. ПОДСКАЗКА MEMORY_REQUEST         — всегда
 ```
 
 ---
 
-## 12. ТАМОЖНЯ КОНТРАКТОВ — ОТКЛЮЧЕНА
+## 12. ПАТЧИ — СТАТУС (актуально на 2026-06-09 · Спринт 43)
 
-**CONTRACT_ENABLED = False** (в `studio/workshop/ui.py` или `pipeline.py`)
-
-Таможня (проверка синхронизации ключей chain_data между агентами) отключена глобально.
-Причина: вызывала ложные ПАУЗЫ при старте из-за рассинхрона ключей.
-
-**Когда включать обратно:** после стабилизации всех цехов и выравнивания CHAIN_CONTRACT.
-
----
-
-## 13. RECOVERY — ЗАМОРОЗКА ВО ВРЕМЯ РАБОТЫ (Спринт 41–42)
-
-**Патч `patch_recovery_freeze.py` применён** в `studio/grondheim_memory.py`.
-**Патч `patch_fix_is_agent_working.py` применён** — закрыл баг #26.
-
-```
-Логика:
-  • Агент гуляет (нет work_start в city_pulse) → walk_rest снижает стресс нормально
-  • Агент в цеху (work_start в city_pulse) → walk_rest и Recovery заморожены
-  • Стресс от критики Виктора остаётся в DNA до конца рана
-```
-
-`_is_agent_working(agent_id)` делегирует в `city_pulse.is_agent_working()` —
-единственный источник правды. (До патча #26 функция всегда возвращала False —
-walk_rest и Recovery не замораживались несмотря на патч recovery_freeze.)
-
----
-
-## 14. ПАТЧИ — СТАТУС (актуально на 2026-06-09)
-
-### ✅ Применены локально (не все в репо):
+### ✅ Применены локально:
 
 | Патч | Файл | Статус |
 |------|------|--------|
-| `patch_conflict_fix.py` | cartridge.py, pipeline.py | ✅ локально |
-| `patch_llm_retry.py` | llm.py | ✅ локально |
-| `patch_nicegui_client.py` | nicegui_callbacks.py | ✅ локально |
-| `patch_disable_conflict.py` | все manifests | ✅ локально |
-| `patch_nicegui_timeout2.py` | main.py, ui.py | ✅ локально |
-| `patch_timer_and_contract.py` | ui.py, pipeline.py | ✅ локально |
-| `patch_run_type_lock.py` | ui.py | ✅ локально |
-| `patch_vl_mode_lock.py` | ui.py | ✅ локально |
-| `patch_context_trim.py` | pipeline.py, config.py | ✅ локально |
-| `patch_save_before_stop.py` | cartridge.py | ✅ локально |
-| `patch_hardstop_and_utils.py` | cartridge.py, utils.py | ✅ локально |
-| `patch_autorun_and_utils.py` | ui.py | ✅ локально |
-| `patch_anchor_isolation.py` | ui.py, cartridge.py | ✅ локально |
-| `patch_anchor_context.py` | cartridge.py | ✅ локально |
-| `patch_recovery_freeze.py` | grondheim_memory.py | ✅ локально |
-| `patch_fix_is_agent_working.py` | grondheim_memory.py | ✅ локально · Спринт 42 |
-| `patch_context_modes.py` | workshop/pipeline.py | ✅ локально · Спринт 42 |
-| `patch_voice_themes_residents.py` | city_traces.py | ✅ локально · Спринт 42 |
+| `patch_conflict_fix.py` | cartridge.py, pipeline.py | ✅ |
+| `patch_llm_retry.py` | llm.py | ✅ |
+| `patch_nicegui_client.py` | nicegui_callbacks.py | ✅ |
+| `patch_disable_conflict.py` | все manifests | ✅ |
+| `patch_nicegui_timeout2.py` | main.py, ui.py | ✅ |
+| `patch_timer_and_contract.py` | ui.py, pipeline.py | ✅ |
+| `patch_run_type_lock.py` | ui.py | ✅ |
+| `patch_vl_mode_lock.py` | ui.py | ✅ |
+| `patch_context_trim.py` | pipeline.py, config.py | ✅ |
+| `patch_save_before_stop.py` | cartridge.py | ✅ |
+| `patch_hardstop_and_utils.py` | cartridge.py, utils.py | ✅ |
+| `patch_autorun_and_utils.py` | ui.py | ✅ |
+| `patch_anchor_isolation.py` | ui.py, cartridge.py | ✅ |
+| `patch_anchor_context.py` | cartridge.py | ✅ |
+| `patch_recovery_freeze.py` | grondheim_memory.py | ✅ |
+| `patch_fix_is_agent_working.py` | grondheim_memory.py | ✅ Спринт 42 |
+| `patch_context_modes.py` | workshop/pipeline.py | ✅ Спринт 42 |
+| `patch_voice_themes_residents.py` | city_traces.py | ✅ Спринт 42 |
+| `patch_family_album.py` | grondheim_memory.py, memory_tools.py | ✅ Спринт 43 |
+| `patch_memory_request.py` | residents_manager.py | ✅ Спринт 43 |
+| `patch_pipeline_memory_request.py` | workshop/pipeline.py | ✅ Спринт 43 |
+| `patch_instruction_memory_request.py` | workshop/pipeline.py | ✅ Спринт 43 |
+| `patch_memory_request_always.py` | grondheim_memory.py, pipeline.py | ✅ Спринт 43 |
 
 ### ⚠️ Написан но применять осторожно:
 
@@ -312,68 +304,9 @@ walk_rest и Recovery не замораживались несмотря на п
 |------|---------|
 | `patch_myoutput_resolve.py` | При инжекте JSON в контекст вызывает китайские токены у DeepSeek |
 
-### ⚠️ Репо отстаёт от локальных файлов:
-
-Большинство патчей применены только локально. Репо нужно синхронизировать через git commit после стабилизации.
-
 ---
 
-## 15. ПРОМПТ A04 (Катя Кат) — ИСПРАВЛЕН В РЕПО
-
-Файл: `studio/modules/video_long/A04/forge/prompt.md`
-
-**Что изменено (Спринт 41):**
-- Шаг 3 разделён на BIBLE и EPISODE режимы
-- В BIBLE: проверяет `episode_plan[]`, НЕ `scenes[]`
-- Явное правило: `scenes[] пустой в BIBLE — это НОРМА, не REJECTED`
-- RULES обновлены соответственно
-
----
-
-## 16. БЕКЛОГ
-
-> **Порядок приоритетов (обновлён 2026-06-09 · Спринт 42):**
-> 0 → **СЕМЕЙНЫЙ АЛЬБОМ** — decay_sensory() архивирует вместо удаления.
->     Три файла: grondheim_memory.py + memory_tools.py + garden_tools.py.
->     dig_archive(agent_id, query) — новый инструмент для Оле и Финча.
->     Воспоминания не теряются — уходят глубже, можно поднять.
->     См. MEMORY_ARCHITECTURE.md раздел «Что пока не реализовано».
-> 1 → **Закоммитить все локальные патчи в репо** (репо сильно отстаёт)
-> 2 → **Протестировать CONTINUE после Виктора** (A05–A12 video_long)
-> 3 → **Связь ANCHOR с памятью** — chat_history_{worker_id} сбрасывается при рестарте. Нужно персистентное хранение правок Шефа (следующая сессия)
-> 4 → **Удалить старый video_shorts через Страницу Жизни**, пересоздать чисто
-> 5 → **Разложить промты video_shorts v3.0** по A01–A12
-> 6 → **Применить три патча video_shorts** по порядку
-> 7 → Первый ран VIDEO_SHORTS
-> 8 → Первый ран TURBO
-> 9 → Первый ран SOCIAL_MIX
-> 10 → manifest social_mix: `async_scoring: true`
-
----
-
-## 17. ОТКРЫТЫЕ БАГИ
-
-| # | Проблема | Приоритет |
-|---|----------|-----------|
-| 1 | global_feedback.json отсутствует | ⏳ ждёт рана |
-| 2 | conflict_stats.json отсутствует | ⏳ ждёт рана |
-| 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
-| 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
-| 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
-| 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
-| 10 | Маски Сета для остальных цехов не написаны | 🟡 |
-| 20 | social_mix manifest: async_scoring: false | 🟡 поменять на true |
-| 21 | social_mix промты — проверить под Seedream | 🟡 после первого рана |
-| 22 | video_shorts — агенты не пересозданы, промты не разложены | 🔴 руками |
-| **23** | **Репо отстаёт от локальных файлов** — большинство патчей не закоммичены | **🔴** |
-| **24** | **chat_history_{worker_id} сбрасывается при рестарте** — правки Шефа теряются | **🟡 следующая сессия** |
-| **25** | **patch_myoutput_resolve.py** — написан но не применён (риск китайских токенов) | **🟡 осторожно** |
-| ✅ 26 | ~~_is_agent_working() всегда возвращала False~~ — patch_fix_is_agent_working применён | ✅ Спринт 42 |
-| ✅ 27 | ~~voice_themes резидентов не считались~~ — patch_voice_themes_residents применён | ✅ Спринт 42 |
-
----
-
-## 18. РЕКОМЕНДАЦИИ БРАТА
+## 13. РЕКОМЕНДАЦИИ БРАТА
 
 101. **social_mix промты выровнены под контракт — но проверь с учётом обновы fal.ai (Seedream). Промпт Эвана (A06) написан под структуру LAYERED CAKE от Banana — если Seedream принимает другой формат, Эвана надо поправить отдельно.**
 
@@ -393,13 +326,49 @@ walk_rest и Recovery не замораживались несмотря на п
 
 109. **video_long BIBLE флоу замкнут: A01→A02→A03→A04 (Катя APPROVED) → Виктор → CONTINUE → A05+. Катя больше не REJECTED за пустой scenes[] в BIBLE режиме.**
 
-110. **Спринт 42: три патча по памяти применены. _is_agent_working() теперь реально работает. Два режима контекста (WORK/HOME) — память города не режется, только приоритизируется. Голоса резидентов теперь попадают в voice_themes. Полная документация: MEMORY_ARCHITECTURE.md.**
+110. **Спринт 42: три патча по памяти применены. _is_agent_working() теперь реально работает. Два режима контекста (WORK/HOME). Голоса резидентов в voice_themes.**
 
-111. **Семейный альбом — следующий спринт. decay_sensory() должна архивировать в {агент}/archive/ вместо удаления. Финч и Оле получат dig_archive(). Воспоминания не теряются — уходят глубже.**
+111. **Спринт 43: Семейный Альбом закрыт (5 патчей). decay_sensory() архивирует в {агент}/archive/. MEMORY_REQUEST — агент вспоминает в любом месте (дом/работа/таверна). Оле слышит сигнал у резидентов и в цепочке. hooks.py Торгового Цеха готов — все 5 индикаторов по исходникам MT5, проверено на 4 активах.**
 
 ---
 
-## 19. ИСТОРИЯ СПРИНТОВ
+## 14. БЕКЛОГ
+
+> **Порядок приоритетов (обновлён 2026-06-09 · Спринт 43):**
+> 0 → ~~**СЕМЕЙНЫЙ АЛЬБОМ**~~ ✅ ЗАКРЫТ (Спринт 43)
+> 1 → **Протестировать CONTINUE после Виктора** (A05–A12 video_long)
+> 2 → **Связь ANCHOR с памятью** — chat_history_{worker_id} сбрасывается при рестарте
+> 3 → **Первый ран VIDEO_SHORTS** — применить три патча, раскласть промты v3.0
+> 4 → **Первый ран TURBO**
+> 5 → **Первый ран SOCIAL_MIX**
+> 6 → manifest social_mix: `async_scoring: true`
+> 7 → **Торговый Цех ШАГ 4** — промпт A02 Морж
+
+---
+
+## 15. ОТКРЫТЫЕ БАГИ
+
+| # | Проблема | Приоритет |
+|---|----------|-----------|
+| 1 | global_feedback.json отсутствует | ⏳ ждёт рана |
+| 2 | conflict_stats.json отсутствует | ⏳ ждёт рана |
+| 3 | interaction_log_* — не созданы | ⏳ ждёт рана |
+| 4 | Манифесты 7 цехов не обновлены до v2.0 | 🔴 |
+| 7 | _build_block_map в agent_feedback.py — временный протез | 🟡 |
+| 8 | fal_client.py стр.43: _current_client_slug = Path | 🟠 |
+| 10 | Маски Сета для остальных цехов не написаны | 🟡 |
+| 20 | social_mix manifest: async_scoring: false | 🟡 поменять на true |
+| 21 | social_mix промты — проверить под Seedream | 🟡 после первого рана |
+| 22 | video_shorts — агенты не пересозданы, промты не разложены | 🔴 руками |
+| 24 | chat_history_{worker_id} сбрасывается при рестарте | 🟡 следующая сессия |
+| 25 | patch_myoutput_resolve.py — написан но не применён (риск китайских токенов) | 🟡 осторожно |
+| ✅ 23 | ~~Репо отстаёт от локальных файлов~~ — Шеф закоммитил все патчи | ✅ Спринт 43 |
+| ✅ 26 | ~~_is_agent_working() всегда возвращала False~~ | ✅ Спринт 42 |
+| ✅ 27 | ~~voice_themes резидентов не считались~~ | ✅ Спринт 42 |
+
+---
+
+## 16. ИСТОРИЯ СПРИНТОВ
 
 | Дата | Спринт | Ключевое |
 |------|--------|----------|
@@ -444,10 +413,11 @@ walk_rest и Recovery не замораживались несмотря на п
 | 2026-06-04 | 38 | СОВЕТ РЕЗИДЕНТОВ. Лока + Джем + Кей + Юст. ЗАМЫКАНИЕ ПЕТЛИ. |
 | 2026-06-05 | 39 | SOCIAL_MIX ПОЛНЫЙ ЦИКЛ. hooks.py v4.0. 12 промтов. Мастерская. |
 | 2026-06-05 | 40 | VIDEO_SHORTS ПОЛНЫЙ ЦИКЛ. hooks.py v3.0: реальная генерация. CHAIN_CONTRACT v3.0. manifest v3.0. Промты v3.0 (12 агентов). |
-| 2026-06-06 | 41 | VIDEO_LONG BIBLE ФЛОУ ЗАМКНУТ. Катя APPROVED. ANCHOR работает (изолированная история по агенту). Recovery заморожен во время работы. Таможня контрактов отключена (CONTRACT_ENABLED=False). Промпт A04 исправлен в репо: BIBLE≠EPISODE критерии. |
-| **2026-06-09** | **42** | **АУДИТ ПАМЯТИ. Три патча: fix_is_agent_working (баг — функция всегда возвращала False), context_modes (WORK/HOME режимы контекста — как у человека), voice_themes_residents (голоса резидентов в паттернах). Документы MEMORY_ARCHITECTURE.md и STUDIO_CONTEXT v46.0 созданы. Семейный альбом — следующий спринт.** |
+| 2026-06-06 | 41 | VIDEO_LONG BIBLE ФЛОУ ЗАМКНУТ. Катя APPROVED. ANCHOR работает. Recovery заморожен. CONTRACT_ENABLED=False. |
+| 2026-06-09 | 42 | АУДИТ ПАМЯТИ. Три патча: fix_is_agent_working, context_modes (WORK/HOME), voice_themes_residents. MEMORY_ARCHITECTURE.md создан. |
+| **2026-06-09** | **43** | **СЕМЕЙНЫЙ АЛЬБОМ (5 патчей): decay_sensory() архивирует вместо удаления, dig_archive() для Оле, handle_memory_request() — агент вспоминает в любом месте через MEMORY_REQUEST, интеграция в pipeline. ТОРГОВЫЙ ЦЕХ: hooks.py v1.0 — все 5 индикаторов точно по исходникам MT5, проверено на 4 активах (EURUSD/XAUUSD/SP500/AAPL), POINT_MAP.** |
 
 ---
 
-*Обновлено: Спринт 42 — 2026-06-09 · v46.0*
-*Три патча по памяти применены. Следующий приоритет: Семейный Альбом + закоммитить патчи в репо.*
+*Обновлено: Спринт 43 — 2026-06-09 · v47.0*
+*Семейный Альбом закрыт. hooks.py Торгового Цеха готов. Следующий приоритет: тест CONTINUE + промпт A02 Морж.*
