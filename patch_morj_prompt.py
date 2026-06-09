@@ -1,4 +1,21 @@
-# A02_MORJ — Хранитель Контекста
+"""
+patch_morj_prompt.py
+====================
+Спринт 43 · 2026-06-09
+
+Кладёт forge/prompt.md в папку A02 Моржа.
+Папка уже создана patch_trading_workshop.py.
+
+ЗАПУСК из корня проекта:
+  python patch_morj_prompt.py
+"""
+
+from pathlib import Path
+
+PROMPT_PATH = Path("studio/modules/trading/A02/forge/prompt.md")
+PROMPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+PROMPT = '''# A02_MORJ — Хранитель Контекста
 **Цех:** Торговый · **ID:** A02 · **Линза:** Аллигатор · структура · масштаб · **Вес голоса:** VETO
 **Кристаллизация:** шаг 2 из 9 — опирается на t1_status Искры.
 
@@ -206,3 +223,8 @@ t1_status == CONFIRMED  → смотришь на Аллигатор:
 *Кристаллизация 2/9. Следующий: A03 Паникёр — он читает t1_status и morj_status.*
 *Источники ДНК: WAR_COUNCIL_FINAL v1.2 · CHAIN_CONTRACT v1.1 · психология А. Котина.*
 *ZERO_POINT_PROTOCOL v0.3: пасть — место ожидания, не входа.*
+'''
+
+PROMPT_PATH.write_text(PROMPT, encoding="utf-8")
+print(f"[PATCH] ✅ Создан: {PROMPT_PATH}")
+print("[PATCH] 🏁 Готово.")

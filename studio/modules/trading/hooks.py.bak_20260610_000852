@@ -21,45 +21,6 @@ from .williams_core import build_market_data, read_mt5_csv
 # ── Путь к Атласу Ошибок ──────────────────────────────────
 ATLAS_PATH = Path("economy/data/atlas_trading.jsonl")
 
-# ── Рабочая память цеха (Спринт 43) ──────────────────────
-# Закрывает две дыры:
-#   1. Состояние Искры между прогонами (t1_status — машина состояний)
-#   2. Открытые позиции между прогонами (что закрывать по exit_bell)
-STATE_PATH = Path("studio/modules/trading/state/trading_state.json")
-
-_DEFAULT_STATE = {
-    "version": 1,
-    "updated": None,
-    "iskra": {
-        "t1_status":        "NOT_FOUND",
-        "zero_point_price": None,
-        "history_dna":      "",
-    },
-    "positions": [],
-}
-
-
-def load_trading_state() -> dict:
-    """Читает рабочую память цеха. Если файла нет — дефолт."""
-    if not STATE_PATH.exists():
-        return json.loads(json.dumps(_DEFAULT_STATE))
-    try:
-        return json.loads(STATE_PATH.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as e:
-        print(f"[STATE] ⚠️  Повреждён trading_state.json ({e}) — дефолт")
-        return json.loads(json.dumps(_DEFAULT_STATE))
-
-
-def save_trading_state(tstate: dict):
-    """Сохраняет рабочую память цеха."""
-    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    tstate["updated"] = datetime.now().isoformat()
-    STATE_PATH.write_text(
-        json.dumps(tstate, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[STATE] 💾 trading_state сохранён: "
-          f"t1={tstate['iskra']['t1_status']}, "
-          f"позиций={len(tstate['positions'])}")
-
 
 # ════════════════════════════════════════════════════════════
 # GATE — логика цеха (знает про агентов, не знает про Вильямса)
@@ -109,19 +70,6 @@ def on_before_run(state: dict) -> dict:
     print(f"\n[TRADING] ⚔️  Военный Совет запускается")
     print(f"[TRADING]    Символ: {symbol} | ТФ: {timeframe}")
 
-    # ── Рабочая память цеха: загружаем ПЕРЕД любым режимом ──
-    tstate = load_trading_state()
-    cd = state.setdefault("chain_data", {})
-    cd["history_dna"]          = tstate["iskra"].get("history_dna", "")
-    cd["prev_t1_status"]       = tstate["iskra"].get("t1_status", "NOT_FOUND")
-    cd["prev_zero_point_price"] = tstate["iskra"].get("zero_point_price")
-    cd["open_positions"]       = tstate.get("positions", [])
-    if cd["open_positions"]:
-        print(f"[STATE] 📂 Открытых позиций: {len(cd['open_positions'])}")
-    if cd["prev_t1_status"] != "NOT_FOUND":
-        print(f"[STATE] 📂 Искра помнит: t1={cd['prev_t1_status']}, "
-              f"Точка Ноль={cd['prev_zero_point_price']}")
-
     if csv_path:
         bars = read_mt5_csv(csv_path)
         if bars_limit > 0:
@@ -145,7 +93,8 @@ def on_before_run(state: dict) -> dict:
         return state
 
     state.setdefault("chain_data", {})["market_data"] = market_data
-    # history_dna уже загружен из trading_state.json выше
+    state.setdefault("chain_data", {})["history_dna"] = \
+        state["chain_data"].get("history_dna", {})
 
     _print_market_summary(market_data)
     return state
@@ -181,9 +130,6 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
         avan_v  = _extract_verdict(results.get("A07", {}), "avan_verdict")
         cons_v  = _extract_verdict(results.get("A08", {}), "cons_verdict")
 
-        # ── Сохраняем рабочую память цеха (ДО любого stop) ──
-        _persist_trading_state(state)
-
         all_rejected = all(
             v == "REJECTED" for v in [brut_v, avan_v, cons_v] if v is not None
         )
@@ -206,66 +152,6 @@ def on_after_agent(state: dict, agent_id: str, result: dict) -> dict:
 # ════════════════════════════════════════════════════════════
 # УТИЛИТЫ
 # ════════════════════════════════════════════════════════════
-
-def _persist_trading_state(state: dict):
-    """
-    Собирает из результатов прогона то что должно пережить прогон:
-      — состояние Искры (t1_status, zero_point_price, history_dna)
-      — открытые позиции (из execution_log A09)
-    И сохраняет в trading_state.json.
-
-    Логика закрытия позиций (по exit_bell / стопу) — ШАГ 8,
-    промт Исполнителя. Здесь только хранение.
-    """
-    results = state.get("results", {})
-    chain   = state.get("chain_data", {})
-    tstate  = load_trading_state()
-
-    # ── Состояние Искры ──
-    iskra_out = (results.get("A01", {}).get("meta", {}) or {}) \
-        .get("my_output", {}) or {}
-    if iskra_out:
-        tstate["iskra"]["t1_status"] = \
-            iskra_out.get("t1_status", tstate["iskra"]["t1_status"])
-        tstate["iskra"]["zero_point_price"] = \
-            iskra_out.get("zero_point_price",
-                          tstate["iskra"]["zero_point_price"])
-        if iskra_out.get("history_dna"):
-            tstate["iskra"]["history_dna"] = iskra_out["history_dna"]
-    elif chain.get("t1_status"):
-        # fallback: Искра писала прямо в chain_data
-        tstate["iskra"]["t1_status"] = chain["t1_status"]
-        if chain.get("zero_point_price") is not None:
-            tstate["iskra"]["zero_point_price"] = chain["zero_point_price"]
-        if chain.get("history_dna"):
-            tstate["iskra"]["history_dna"] = chain["history_dna"]
-
-    # ── Открытые позиции: новые APPROVED из execution_log ──
-    a09_out = (results.get("A09", {}).get("meta", {}) or {}) \
-        .get("my_output", {}) or {}
-    exec_log = a09_out.get("execution_log", []) or []
-    bar_time = chain.get("market_data", {}).get("bar_time", "")
-
-    for order in exec_log:
-        if order.get("verdict") != "APPROVED":
-            continue
-        if order.get("status") not in ("PAPER", "LIVE"):
-            continue
-        tstate["positions"].append({
-            "trader":    order.get("trader"),
-            "magic":     order.get("magic"),
-            "entry":     order.get("entry"),
-            "stop":      order.get("stop"),
-            "tp":        order.get("tp"),
-            "lot":       order.get("lot"),
-            "status":    "OPEN",
-            "mode":      order.get("status"),       # PAPER | LIVE
-            "opened_at": bar_time,
-            "pnl":       None,
-        })
-
-    save_trading_state(tstate)
-
 
 def _extract_verdict(agent_result: dict, key: str) -> Optional[str]:
     """Извлекает вердикт из результата агента."""
