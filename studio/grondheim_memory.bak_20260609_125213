@@ -1031,17 +1031,19 @@ def format_soul_for_agent(agent_id: str, dept: str = "") -> str:
 def _is_agent_working(agent_id: str) -> bool:
     """Проверяет находится ли агент в рабочем статусе по city_pulse.
     Если да — walk_rest и RECOVERY не должны сбрасывать стресс.
-
-    PATCH_FIX_IS_AGENT_WORKING_APPLIED · Спринт 42
-    Делегируем в city_pulse.is_agent_working() — единственный источник правды.
-    Старая реализация искала entry.get("status") in ("work_start", "working"),
-    но в city_pulse.py поле называется event="work_start", а "status" отсутствует
-    → функция всегда возвращала False → walk_rest и Recovery не замораживались.
     """
     try:
-        from studio.city_pulse import is_agent_working as _cp_working
-        result = _cp_working(agent_id, max_hours=8.0)
-        return result is not None
+        pulse_path = Path("studio/city_pulse.jsonl")
+        if not pulse_path.exists():
+            return False
+        lines = pulse_path.read_text(encoding="utf-8").splitlines()[-500:]
+        for line in reversed(lines):
+            try:
+                entry = json.loads(line)
+                if entry.get("agent") == agent_id:
+                    return entry.get("status") in ("work_start", "working")
+            except Exception:
+                continue
     except Exception:
         pass
     return False
