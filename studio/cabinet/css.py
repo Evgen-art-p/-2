@@ -419,15 +419,18 @@ CABINET_CSS = """
 /* Сектора */
 .cab-map-sector {
   position: absolute; border-radius: 8px;
-  border: 2px solid rgba(0,242,255,0.55);
+  border: 2px solid rgba(0,180,200,0.85);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem; font-weight: 600;
+  font-size: 0.75rem; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase;
   padding: 8px 14px;
   pointer-events: none;
   background: transparent;
-  color: rgba(0,242,255,0.95);
-  text-shadow: 0 0 8px rgba(0,242,255,0.6);
+  color: rgba(220,255,255,0.98);
+  text-shadow:
+    0 0 6px rgba(0,200,220,0.9),
+    0 0 14px rgba(0,180,200,0.6),
+    0 1px 3px rgba(0,0,0,0.95);
 }
 
 /* Агент на карте — точка 10px */

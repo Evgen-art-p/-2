@@ -443,10 +443,10 @@ def page_cabinet() -> None:
             locations = _load_map_locations()
             locations_by_name = {loc["name"]: loc for loc in locations}
 
-            # Нейтральный цвет для всех зон (пока без индивидуальных цветов)
-            zone_color = "rgba(180,200,220,0.25)"
-            zone_bg = "rgba(180,200,220,0.04)"
-            zone_text = "rgba(180,200,220,0.6)"
+            # Цвета зон: яркая обводка + читаемый текст на тёмном фоне
+            zone_color = "rgba(0,180,200,0.85)"
+            zone_bg = "rgba(0,20,30,0.55)"
+            zone_text = "rgba(220,255,255,0.98)"
 
             html = ""
 
