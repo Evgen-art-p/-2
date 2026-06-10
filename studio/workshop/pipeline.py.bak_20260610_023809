@@ -80,7 +80,7 @@ except ImportError:
         @staticmethod
         def get_prompt_hint(agent_id, slot_id): return ""
         @staticmethod
-        def record_outcome(agent_id, slot_id, score, cost_usd, source="chain"): pass
+        def record_outcome(agent_id, slot_id, score, cost_usd): pass
 # ══ END Economy ══
 
 # ══ NEW: Гавань Смыслов — RAG внутренних знаний ══
@@ -922,14 +922,10 @@ async def process_agent_result(
                     print(f"[CITY] ⚠ Автотриггер прогулки: {_walk_err}")
         # ══ END АВТОТРИГГЕР ══
 
-        # ══ Ministry: единственный писатель CHAIN-валюты · Спринт 44 ══
-        # Закон двух валют: pipeline после QA пишет per-agent chain-исходы
-        # (оценки из feedback.json, потолок 6.0, source="chain").
-        # REAL-валюту (>6.0) пишет только Metrics Daemon (source="real").
-        # Хуки цехов Ministry больше не трогают — дубли убраны.
-        # Стоимость = дельта расходов ОТ СТАРТА РАНА, не пожизненная сумма.
+        # ══ Ministry: фиксируем исходы post-fact (Этапы 6-7) ══
         if _ECONOMY_ENABLED:
-            _agents_fb = {}
+            _results_data = state.get("results", {})
+            _agents_fb    = {}
             try:
                 from pathlib import Path as _Path
                 import json as _json
@@ -939,26 +935,21 @@ async def process_agent_result(
             except Exception:
                 pass
             _ec_slot = state.get("_slot_id", "")
-            _run_ts  = state.get("_run_started_ts", "")
             for _wid, _wdata in _agents_fb.items():
                 _wscore = float(_wdata.get("score", 5.0))
                 try:
-                    from studio import billing_ledger as _bl44
-                    _wcost = _bl44.agent_spent_since(
-                        _wid, slot_id=_ec_slot, since_iso=_run_ts)
+                    from studio.economy import ledger as _ledger
+                    _wcost = _ledger.agent_spent(_wid, slot_id=_ec_slot)
                 except Exception:
                     _wcost = 0.0
                 try:
-                    _ministry.record_outcome(
-                        agent_id=_wid,
-                        slot_id=_ec_slot,
-                        score=_wscore,
-                        cost_usd=_wcost,
-                        source="chain",
-                    )
-                except TypeError:
-                    # совместимость со старым ministry без source
-                    _ministry.record_outcome(_wid, _ec_slot, _wscore, _wcost)
+                    if not state.get("async_scoring", False):  # patch_ministry_qa
+                        _ministry.record_outcome(
+                            agent_id=_wid,
+                            slot_id=_ec_slot,
+                            score=_wscore,
+                            cost_usd=_wcost,
+                        )
                 except Exception as _me:
                     print(f"[MINISTRY] record_outcome ошибка: {_me}")
         # ══ END Ministry ══
@@ -1002,10 +993,9 @@ def _sync_feedback_scores_to_dna(client_slug: str, dept: str = ""):
     Вызывается сразу после save_feedback() — один раз в конце рана.
     Это единственный источник правды для quality_score.
 
-    Chain-шкала (Спринт 44, потолок 6.0):
-      score >= 6.0 → good_work 0.7 (чистое ремесло)
-      4.0–5.9      → good_work 0.35 (выжил)
-      < 4.0        → bad_work (развал цепочки)
+    score 0–4   → bad_work  (intensity = 1 - score/10)
+    score 5–7   → нейтрально, лёгкий good_work
+    score 8–10  → good_work (intensity = score/10)
     """
     if not _GRONDHEIM_ENABLED:
         return
@@ -1033,20 +1023,15 @@ def _sync_feedback_scores_to_dna(client_slug: str, dept: str = ""):
         score = data.get("score", 5.0)       # 0.0–10.0
         normalized = score / 10.0             # 0.0–1.0
 
-        # Спринт 44 · chain-шкала (потолок 6.0):
-        #   >= 6.0 — чистое ремесло, полноценная награда
-        #   4.0–5.9 — выжил, лёгкий позитив
-        #   < 4.0 — развал цепочки
-        # Real-оценки зрителя (>6.0) в DNA понесёт Демон отдельным каналом.
-        if score >= 6.0:
+        if score >= 8.0:
             event = "good_work"
-            intensity = 0.7                   # чистая шестёрка — заслуженно
-        elif score < 4.0:
+            intensity = normalized
+        elif score < 5.0:
             event = "bad_work"
-            intensity = round(min(1.0, 1.0 - normalized), 2)
+            intensity = 1.0 - normalized      # чем хуже — тем сильнее
         else:
             event = "good_work"
-            intensity = 0.35                  # выжил — лёгкий след
+            intensity = 0.4                   # нейтральная работа
 
         try:
             sync_to_dna(agent_id, event, intensity=intensity, dept=dept)

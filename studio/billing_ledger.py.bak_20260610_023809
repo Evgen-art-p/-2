@@ -33,9 +33,6 @@ MODEL_PRICES: dict[str, dict[str, float]] = {
     # GPT
     "openai/gpt-4o-mini":               {"input": 0.15,  "output": 0.60},
     "openai/gpt-4o":                    {"input": 2.50,  "output": 10.00},
-    # DeepSeek (основная модель студии) · Спринт 44
-    # ⚠ ОЦЕНКА — проверь актуальный тариф на openrouter.ai/models
-    "deepseek/deepseek-v4-pro":         {"input": 0.40,  "output": 1.60},
     # Fallback (неизвестная модель)
     "_default":                         {"input": 0.50,  "output": 2.00},
 }
@@ -44,35 +41,19 @@ MODEL_PRICES: dict[str, dict[str, float]] = {
 # Используется когда prompt_tokens=0 и completion_tokens=0
 MODEL_FLAT_PRICES: dict[str, float] = {
     "fal/Nano Banana Pro":   0.04,
-    "fal/Nano Banana 2":     0.04,   # Спринт 44: активная модель писала $0!
     "fal/Seedream 4.5":      0.04,
-    # ⚠ ОЦЕНКИ — сверь с реальными тарифами провайдеров:
-    "elevenlabs":            0.10,   # музыка/SFX, средний вызов
-    "ffmpeg":                0.0,    # локальная сборка — бесплатно
-}
-
-# Префиксные flat-цены (модель в леджере с динамическим суффиксом)
-# Спринт 44: siliconflow/{MODEL_I2V} писал $0 — видео было невидимо для физики
-MODEL_FLAT_PREFIXES: dict[str, float] = {
-    "siliconflow/":          0.20,   # ⚠ ОЦЕНКА Wan2.2 I2V 720p — сверь тариф
+    # Suno, ElevenLabs, SiliconFlow — добавишь позже
+    # "suno/...":            0.05,
+    # "elevenlabs/...":      0.03,
+    # "siliconflow/...":     0.02,
 }
 
 
 def _calc_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """Считает стоимость в USD: точный flat → префиксный flat → per-token.
-
-    Спринт 44: нулевые токены у неизвестной модели = служебная запись
-    (finalize и т.п.) → $0. Медиа-модели ОБЯЗАНЫ иметь flat-цену,
-    иначе физика мира их не видит.
-    """
-    # Flat-price модели (FAL, ElevenLabs и т.д.)
+    """Считает стоимость в USD по токенам или фиксированной цене."""
+    # Flat-price модели (FAL, Suno, ElevenLabs и т.д.)
     if model in MODEL_FLAT_PRICES:
         return MODEL_FLAT_PRICES[model]
-    for _prefix, _price in MODEL_FLAT_PREFIXES.items():
-        if model.startswith(_prefix):
-            return _price
-    if prompt_tokens == 0 and completion_tokens == 0:
-        return 0.0  # служебная запись (finalize) — без стоимости
     # Per-token модели
     prices = MODEL_PRICES.get(model, MODEL_PRICES["_default"])
     cost = (
@@ -173,35 +154,6 @@ def agent_spent(agent_id: str, slot_id: str = None) -> float:
     if slot_id:
         filtered = [e for e in filtered if e["slot_id"] == slot_id]
     return round(sum(e["cost_usd"] for e in filtered), 6)
-
-
-def agent_spent_since(agent_id: str, slot_id: str = None,
-                      since_iso: str = "") -> float:
-    """Расходы агента С МОМЕНТА since_iso — стоимость РАНА, не жизни.
-
-    Спринт 44: Ministry получал пожизненную сумму как cost_usd рана,
-    из-за чего расходы росли квадратично. Метку старта ставит
-    cartridge.py в state["_run_started_ts"].
-    Пустой/битый since_iso → fallback на пожизненную сумму.
-    """
-    if not since_iso:
-        return agent_spent(agent_id, slot_id)
-    try:
-        since = datetime.fromisoformat(since_iso)
-    except (ValueError, TypeError):
-        return agent_spent(agent_id, slot_id)
-    total = 0.0
-    for e in read_ledger():
-        if e.get("agent_id") != agent_id:
-            continue
-        if slot_id and e.get("slot_id") != slot_id:
-            continue
-        try:
-            if datetime.fromisoformat(e["ts"]) >= since:
-                total += e.get("cost_usd", 0.0)
-        except Exception:
-            continue
-    return round(total, 6)
 
 
 def slot_spent(slot_id: str) -> float:

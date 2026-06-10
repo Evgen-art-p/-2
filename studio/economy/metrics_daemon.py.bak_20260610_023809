@@ -29,14 +29,7 @@ import argparse
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-# Спринт 44: путь от BASE_DIR — демон запускается и не из корня
-try:
-    import sys as _sys44
-    _sys44.path.insert(0, str(Path(__file__).parents[2]))
-    from studio.config import BASE_DIR as _BASE_DIR
-    CLIENTS_DIR = _BASE_DIR / "clients"
-except Exception:
-    CLIENTS_DIR = Path("clients")
+CLIENTS_DIR      = Path("clients")
 DEFAULT_INTERVAL = 3600
 MATURITY_HOURS   = 24
 
@@ -139,9 +132,8 @@ def _process_client(client_id: str, pending_file: Path) -> int:
 
         print(f"[DAEMON] {client_id}/{entry['project_id']}: реальный={real_score} | прогноз Тима={tim_score}")
 
-        # Министерство (Спринт 44: REAL-валюта, честные ключи)
-        _report_to_ministry(client_id, platform, real_score,
-                            entry["project_id"], entry=entry)
+        # Министерство
+        _report_to_ministry(client_id, platform, real_score, entry["project_id"])
 
         # [v2] Сигнал Демона — резерв
         run_id   = entry.get("conflict_run_id", "")
@@ -400,10 +392,6 @@ def _fetch_metrics(entry: dict, cfg: dict) -> dict:
 
 
 def _fetch_telegram(post_id: str, channel_id: str, token: str) -> dict:
-    # ⚠ Спринт 44: Bot API НЕ отдаёт просмотры/реакции сообщений —
-    # метода getMessages в нём нет, вызов ниже всегда вернёт {}.
-    # Для TG-метрик нужен MTProto (telethon) или TGStat. См. README.
-    print("[DAEMON] ⚠ Telegram Bot API не отдаёт метрики постов — нужен telethon/TGStat")
     if not token or not channel_id:
         return {}
     try:
@@ -499,30 +487,13 @@ def _calc_score(metrics: dict, platform: str, weights: dict) -> float:
 # ═══════════════════════════════════════════════════════════════
 
 def _report_to_ministry(client_id: str, platform: str,
-                         real_score: float, project_id: str,
-                         entry: dict | None = None) -> None:
-    """REAL-валюта · Спринт 44: Демон — единственный источник score > 6.0.
-
-    Пишет real-исход каждому агенту цеха под честными ключами
-    Axx::slot_id. Старый хардкод ("A06", "{platform}_fal") и
-    ("pipeline", "social_mix") плодил фантомные ключи в ministry.json.
-    """
+                         real_score: float, project_id: str) -> None:
     try:
         sys.path.insert(0, str(Path(__file__).parents[2]))
         from studio.economy import ministry
-        slot_id = (entry or {}).get("slot_id") or "social_mix"
-        agents  = (entry or {}).get("agents") or [
-            "A01", "A02", "A03", "A04", "A05",
-            "A06", "A07", "A08", "A09", "A10", "A11", "A12",
-        ]
-        for aid in agents:
-            try:
-                ministry.record_outcome(aid, slot_id, real_score,
-                                        cost_usd=0.0, source="real")
-            except TypeError:
-                ministry.record_outcome(aid, slot_id, real_score, cost_usd=0.0)
-        print(f"[DAEMON] Ministry(real): {project_id} → score={real_score} "
-              f"({len(agents)} агентов, slot={slot_id})")
+        ministry.record_outcome("A06",      f"{platform}_fal", real_score, cost_usd=0.0)
+        ministry.record_outcome("pipeline", "social_mix",      real_score, cost_usd=0.0)
+        print(f"[DAEMON] Ministry обновлён: {project_id} → score={real_score}")
     except Exception as e:
         print(f"[DAEMON] ministry.record_outcome: {e}")
 

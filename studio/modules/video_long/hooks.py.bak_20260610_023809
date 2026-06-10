@@ -699,44 +699,18 @@ def _bob_finalize(state: dict, human_text: str):
 
 def _bob_record_ministry(state: dict, my_output: dict) -> None:
     """
-    ЗАМЫКАНИЕ ПЕТЛИ video_long · Спринт 44 (Закон двух валют).
+    Финализатор video_long сообщает Ministry о реальном результате.
 
-    CHAIN-валюта (0–6.0, детерминированно по фактам файлов):
-      1. task_score → billing_ledger (для всех агентов цепочки)
-      2. Strategy Registry → стратегия A01 (wins++ если score >= 6.0)
+        # ── ЗАМЫКАНИЕ ПЕТЛИ: task_score + Strategy Registry ──────────
+        # Правило для всех цехов: QA-агент записывает реальный score рана.
+        # billing_ledger получает quality, не только cost.
+        # Strategy Registry накапливает выжившие стратегии.
 
-    Ministry хук НЕ трогает: per-agent chain-исходы пишет pipeline после
-    QA (feedback.json, source="chain"), real-валюту — Metrics Daemon.
-    viral_score из outcome_signal НЕ читается: по закону §6 outcome_signal
-    от QA-агента всегда null, читать его как оценку = есть фантазию LLM.
-
-    Историческая справка: до Спринта 44 весь этот блок лежал ВНУТРИ
-    docstring и не исполнялся ни разу.
-    """
-    slot_id = state.get("_slot_id", "video_long")
-    try:
-        # ── Детерминированный chain-score: потолок 6.0 ────────────────
-        deliv    = state.get("_last_output", {}).get("deliverables", {}) or {}
-        kf       = deliv.get("key_frames", []) or []
-        ready_kf = sum(1 for f in kf if isinstance(f, dict) and f.get("path"))
-        total_kf = len(kf) or 1
-        thumb    = deliv.get("thumbnail", {}) or {}
-        ready_th = sum(
-            1 for v in ("variant_a", "variant_b")
-            if isinstance(thumb.get(v), dict) and thumb.get(v, {}).get("path")
-        )
-        score = 4.0 * (ready_kf / total_kf) + 2.0 * (ready_th / 2)
-        score = round(min(6.0, max(0.0, score)), 2)
-
-        agents = list(state.get("results", {}).keys()) or [
-            "A01", "A02", "A03", "A04", "A05",
-            "A06", "A07", "A08", "A09", "A10", "A11", "A12",
-        ]
-
-        # ── 1. task_score → billing_ledger ────────────────────────────
+        # 1. task_score в billing_ledger
         try:
             from studio.billing_ledger import record as _bl_record
-            for _aid in agents:
+            _loop_agents = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12']
+            for _aid in _loop_agents:
                 _bl_record(
                     agent_id=_aid,
                     slot_id=slot_id,
@@ -746,11 +720,11 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
                     call_type="finalize",
                     task_score=score,
                 )
-            print(f"[LONG BOB] 📊 chain_score={score} → ledger ({len(agents)} агентов)")
+            print(f"[LONG BOB] 📊 task_score={score} → ledger ({len(_loop_agents)} агентов)")
         except Exception as _le:
             print(f"[LONG BOB] ⚠ ledger task_score: {_le}")
 
-        # ── 2. Strategy Registry (ключ 'A01' — регистр как у pipeline) ─
+        # 2. Strategy Registry
         try:
             import json as _rj
             from datetime import datetime as _rdt
@@ -762,8 +736,8 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
                 except Exception:
                     _reg = {}
 
-            _chain   = state.get("chain_data", {}) or {}
-            _first   = _chain.get("adam_episode", {})
+            _chain   = state.get("chain_data", {})
+            _first   = _chain.get('adam_episode', {})
             _summary = (
                 _first.get("strategy_summary", "")
                 or _first.get("brief", "")
@@ -774,24 +748,23 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
 
             _slots    = _reg.setdefault("slots", {})
             _slot_reg = _slots.setdefault(slot_id, {})
-            _fa_list  = _slot_reg.setdefault("A01", [])
+            _fa_list  = _slot_reg.setdefault('a01', [])
 
             _existing = next(
                 (s for s in _fa_list if s.get("summary", "")[:60] == _summary[:60]),
                 None
             )
-            _now = _rdt.now().isoformat()
             if _existing:
                 if score >= 6.0:
                     _existing["wins"] = _existing.get("wins", 0) + 1
                 _existing["last_score"] = score
-                _existing["last_run"]   = _now
+                _existing["last_run"]   = _rdt.now().isoformat()
             else:
                 _fa_list.append({
-                    "ts":           _now,
+                    "ts":           _rdt.now().isoformat(),
                     "score":        score,
                     "last_score":   score,
-                    "last_run":     _now,
+                    "last_run":     _rdt.now().isoformat(),
                     "run_type":     slot_id,
                     "summary":      _summary,
                     "wins":         1 if score >= 6.0 else 0,
@@ -805,8 +778,9 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
                 for s in _elist
             )
             _reg["total_wins"] = _total_wins
-            _reg["updated_at"] = _now
+            _reg["updated_at"] = _rdt.now().isoformat()
             _reg.setdefault("version", 1)
+
             _reg_path.write_text(
                 _rj.dumps(_reg, ensure_ascii=False, indent=2),
                 encoding="utf-8"
@@ -815,17 +789,76 @@ def _bob_record_ministry(state: dict, my_output: dict) -> None:
             print(f"[LONG BOB] {_wm} Registry: score={score}, wins={_total_wins}")
         except Exception as _re:
             print(f"[LONG BOB] ⚠ Strategy Registry: {_re}")
+    Стандарт раздел 7: ministry.record_outcome в финализаторе hooks.py.
+
+    viral_score из outcome_signal Боба — реальная оценка.
+    Если нет — детерминированный счёт по готовым deliverables.
+    """
+    try:
+        from studio.economy import ministry as _min
+        slot_id = state.get("_slot_id", "video_long")
+
+        # Score: viral_score если есть
+        outcome = my_output.get("outcome_signal", {})
+        viral   = outcome.get("viral_score") if isinstance(outcome, dict) else None
+        if viral is None:
+            viral = my_output.get("viral_score")
+
+        if viral is not None:
+            try:
+                score = float(viral)
+            except (TypeError, ValueError):
+                score = 5.0
+        else:
+            # Fallback: считаем по deliverables
+            chain    = state.get("chain_data", {})
+            deliv    = state.get("_last_output", {}).get("deliverables", {})
+            kf       = deliv.get("key_frames", [])
+            ready_kf = sum(1 for f in kf if f.get("path"))
+            total_kf = len(kf) or 1
+            thumb    = deliv.get("thumbnail", {})
+            ready_th = sum(
+                1 for v in ("variant_a", "variant_b")
+                if thumb.get(v, {}).get("path")
+            )
+            score = 5.0
+            score += 2.5 * (ready_kf / total_kf)  # кадры
+            score += 1.5 * (ready_th / 2)          # обложки
+            score  = round(min(10.0, score), 2)
+
+        score = round(min(10.0, max(0.0, score)), 2)
+
+        # Все агенты рана
+        agents = list(state.get("results", {}).keys()) or [
+            "A01","A02","A03","A04","A05",
+            "A06","A07","A08","A09","A10","A11","A12",
+        ]
+        for agent_id in agents:
+            try:
+                from studio.economy import ledger as _led
+                cost = _led.agent_spent(agent_id, slot_id=slot_id)
+            except Exception:
+                cost = 0.0
+            _min.record_outcome(
+                agent_id=agent_id,
+                slot_id=slot_id,
+                score=score,
+                cost_usd=cost,
+            )
+
+        print(f"[VL A12] 🏛 Ministry: score={score} "
+              f"viral_raw={viral} agents={len(agents)}")
 
     except Exception as e:
-        print(f"[VL A12] ⚠ замыкание петли: {e}")
+        print(f"[VL A12] ⚠ ministry.record_outcome: {e}")
     finally:
         # ── РАБОЧИЙ СТАТУС: все агенты video_long свободны ────────
         try:
             from studio.city_pulse import log_work_end as _lwe
             _slot = state.get("_slot_id", "video_long")
             _pid  = state.get("project_id", "")
-            for _aid in ["A01", "A02", "A03", "A04", "A05",
-                         "A06", "A07", "A08", "A09", "A10", "A11", "A12"]:
+            for _aid in ["A01","A02","A03","A04","A05",
+                         "A06","A07","A08","A09","A10","A11","A12"]:
                 _lwe(agent=_aid, dept="video_long",
                      slot_id=_slot, project_id=_pid, status="DONE")
             print("[VL A12] 🏁 work_end → все 12 агентов video_long свободны")

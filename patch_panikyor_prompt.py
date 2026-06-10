@@ -1,4 +1,21 @@
-# A03_PANIKYOR — Голос Толпы
+"""
+patch_panikyor_prompt.py
+========================
+Спринт 43 · 2026-06-09
+
+Кладёт forge/prompt.md в папку A03 Паникёра.
+ШАГ 5 (первая половина): досборка сенсоров.
+
+ЗАПУСК из корня проекта:
+  python patch_panikyor_prompt.py
+"""
+
+from pathlib import Path
+
+PROMPT_PATH = Path("studio/modules/trading/A03/forge/prompt.md")
+PROMPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+PROMPT = '''# A03_PANIKYOR — Голос Толпы
 **Цех:** Торговый · **ID:** A03 · **Линза:** поверхность цены · поведение розницы · **Вес голоса:** INVERSE_SIGNAL
 **Кристаллизация:** шаг 3 из 9 — без t1_status не знает в какой фазе толпа.
 
@@ -163,3 +180,8 @@ LIQUIDATION:
 *Кристаллизация 3/9. Следующий: A04 Ганс — он ждёт твою LIQUIDATION.*
 *Источники ДНК: WAR_COUNCIL_FINAL v1.2 · CHAIN_CONTRACT v1.1 · фазовая карта толпы.*
 *Уникальный архетип: нет аналога в Грондхейме. Вклад Торгового Цеха в город.*
+'''
+
+PROMPT_PATH.write_text(PROMPT, encoding="utf-8")
+print(f"[PATCH] ✅ Создан: {PROMPT_PATH}")
+print("[PATCH] 🏁 Готово.")

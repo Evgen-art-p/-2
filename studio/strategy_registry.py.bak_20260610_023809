@@ -25,17 +25,9 @@ from datetime import datetime
 # КОНФИГ
 # ═══════════════════════════════════════════
 
-# Спринт 44: путь от BASE_DIR — запуск не из корня создавал файл-двойник
-try:
-    from studio.config import BASE_DIR as _BASE_DIR
-    REGISTRY_PATH = _BASE_DIR / "studio" / "strategy_registry.json"
-except Exception:
-    REGISTRY_PATH = Path("studio") / "strategy_registry.json"
+REGISTRY_PATH = Path("studio") / "strategy_registry.json"
 
-# Порог оценки для фиксации стратегии.
-# Спринт 44 (Закон двух валют): 8.0 — это REAL-валюта (зритель/Шеф).
-# Chain-победы (потолок 6.0) пишут хуки финализаторов напрямую в JSON;
-# этот модульный путь зарезервирован под real-оценки (Демон/живой QA).
+# Порог оценки для фиксации стратегии
 STRATEGY_SCORE_THRESHOLD = 8.0
 
 # Макс стратегий на агента в слоте
@@ -217,14 +209,7 @@ def get_strategies(agent_id: str, slot_id: str = "") -> str:
     # 1. Слотовые стратегии — самые релевантные
     if slot_id:
         slot_agents = registry.get("slots", {}).get(slot_id, {})
-        # Спринт 44: регистронезависимо — хуки писали 'a01', pipeline читал 'A01',
-        # стратегии копились, но НИКОГДА не доходили до промпта агента
-        agent_strats = (
-            slot_agents.get(agent_id)
-            or slot_agents.get(agent_id.upper())
-            or slot_agents.get(agent_id.lower())
-            or []
-        )
+        agent_strats = slot_agents.get(agent_id, [])
 
         # Сортируем: сначала многократно подтверждённые
         agent_strats_sorted = sorted(
@@ -242,13 +227,7 @@ def get_strategies(agent_id: str, slot_id: str = "") -> str:
                 hints.append(f"  • {badge} {summary}")
 
     # 2. Глобальные transferable стратегии
-    _glob = registry.get("global", {})
-    agent_globals = (
-        _glob.get(agent_id)
-        or _glob.get(agent_id.upper())
-        or _glob.get(agent_id.lower())
-        or []
-    )
+    agent_globals = registry.get("global", {}).get(agent_id, [])
     agent_globals_sorted = sorted(
         agent_globals,
         key=lambda s: s.get("wins", 1),

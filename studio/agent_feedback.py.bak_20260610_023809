@@ -237,7 +237,7 @@ def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = ""
         universal_score = _extract_score(my_output)
         feedback = {
             "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "overall_status": overall or ("READY" if universal_score >= 6.0 else "OK"),
+            "overall_status": overall or ("READY" if universal_score >= 8 else "OK"),
             "agents": {
                 aid: {"score": universal_score, "problems": [], "blocks_checked": ["universal"]}
                 for aid in agent_ids
@@ -267,10 +267,8 @@ def save_feedback(client_slug: str, arthur_result: str | dict, slot_id: str = ""
         fail = block_data.get("fail", 0)
         details = block_data.get("details", [])
         
-        # Оценка блока: 10 * (pass / checks), РЕЖЕТСЯ потолком 6.0
-        # Спринт 44: раньше blocks-путь обходил потолок и давал до 10 —
-        # «фальшивые девятки» от детерминированного парсинга QA
-        score = _apply_score_ceiling(round(10 * passed / checks, 1)) if checks > 0 else 5.0
+        # Оценка блока: 10 * (pass / checks) если checks > 0
+        score = round(10 * passed / checks, 1) if checks > 0 else 5.0
         
         # Проблемы из details
         problems = []
@@ -364,12 +362,9 @@ def _update_global(run_feedback: dict, slot_id: str = ""):
         ga["avg_score"] = round(ga["total_score"] / ga["runs"], 1)
         ga["last_problems"] = run_data.get("problems", [])[:3]
         
-        # Streak logic · Спринт 44: chain-шкала (потолок 6.0)
-        # Победа = чистое ремесло (>= 6.0), провал = развал (< 4.0).
-        # Раньше победа требовала >= 8 — недостижимо при честном потолке,
-        # серии и звёзды были мертвы.
+        # Streak logic
         score = run_data.get("score", 5.0)
-        if score >= 6.0:
+        if score >= 8:
             # Победа
             if ga["streak"] >= 0:
                 ga["streak"] += 1
@@ -379,8 +374,8 @@ def _update_global(run_feedback: dict, slot_id: str = ""):
             if ga["streak"] >= 3 and ga["streak"] % 3 == 0:
                 ga["stars"] = ga.get("stars", 0) + 1
                 print(f"  ⭐ {agent_id}: ЗВЕЗДА! (streak {ga['streak']}, всего {ga['stars']} звёзд)")
-        elif score < 4.0:
-            # Провал (chain-шкала: развал цепочки)
+        elif score < 5:
+            # Провал
             if ga["streak"] <= 0:
                 ga["streak"] -= 1
             else:

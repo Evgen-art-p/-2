@@ -875,6 +875,7 @@ def _a05_record_ministry(state: dict) -> None:
     Score считается детерминированно по фактам: кадры + клипы + обложки + аудио.
     """
     try:
+        from studio.economy import ministry as _min
         slot_id = state.get("_slot_id", "turbo")
 
         chain  = state.get("chain_data", {})
@@ -895,28 +896,21 @@ def _a05_record_ministry(state: dict) -> None:
             if thumb.get(v, {}).get("path")
         )
 
-        # Аудио (новое) · Спринт 44: A02 пишет music.audio_path (вложенно),
-        # старый код читал плоский music_path и музыка всегда была "❌"
+        # Аудио (новое)
         mimi = chain.get("mimi_sound", {})
-        _mus = mimi.get("music", {})
-        if isinstance(_mus, str):
-            _mus = {"audio_path": _mus}
-        has_music = bool(_mus.get("audio_path") or mimi.get("music_path"))
+        has_music = bool(mimi.get("music_path"))
 
         qs_list = [f.get("quality_score", 5) for f in frames if f.get("path")]
         avg_qs  = sum(qs_list) / len(qs_list) if qs_list else 5.0
 
-        # Формула CHAIN-валюты · Спринт 44: шкала 0–6.0 (потолок ремесла).
-        # 6.0 = всё на месте и чисто. Выше — только зритель/Шеф (real).
-        # Старая формула давала до 9.5 — скрипт чеканил фальшивые девятки.
-        score = 6.0 * (
-            0.35 * (ready_frames / total_frames)
-            + 0.25 * (ready_clips / total_frames)
-            + 0.20 * (ready_thumbs / 2)
-            + 0.10 * (1.0 if has_music else 0.0)
-            + 0.10 * (avg_qs / 10.0)
-        )
-        score = round(min(6.0, max(0.0, score)), 2)
+        # Формула: +2.0 кадры, +1.5 клипы, +1.0 обложки, +0.5 музыка, +0.5 качество
+        score = 4.0
+        score += 2.0 * (ready_frames / total_frames)
+        score += 1.5 * (ready_clips  / total_frames)
+        score += 1.0 * (ready_thumbs / 2)
+        score += 0.5 * (1.0 if has_music else 0.0)
+        score += 0.5 * (avg_qs / 10.0)
+        score  = round(min(10.0, score), 2)
 
         # ── ЗАМЫКАНИЕ ПЕТЛИ: task_score + Strategy Registry ──────────
         # Правило для всех цехов: QA-агент записывает реальный score рана.
@@ -965,7 +959,7 @@ def _a05_record_ministry(state: dict) -> None:
 
             _slots    = _reg.setdefault("slots", {})
             _slot_reg = _slots.setdefault(slot_id, {})
-            _fa_list  = _slot_reg.setdefault('A01', [])  # Спринт 44: регистр как у pipeline
+            _fa_list  = _slot_reg.setdefault('a01', [])
 
             _existing = next(
                 (s for s in _fa_list if s.get("summary", "")[:60] == _summary[:60]),
@@ -1008,11 +1002,21 @@ def _a05_record_ministry(state: dict) -> None:
             print(f"[TURBO A05] ⚠ Strategy Registry: {_re}")
 
 
-        # Спринт 44 · Закон двух валют: Ministry хук НЕ трогает.
-        # Chain-исходы per-agent пишет pipeline после QA (feedback.json),
-        # real-исходы — Metrics Daemon. Дубли и пожизненный cost убраны.
+        agents = ["A01", "A02", "A03", "A04", "A05"]
+        for agent_id in agents:
+            try:
+                from studio.economy import ledger as _led
+                cost = _led.agent_spent(agent_id, slot_id=slot_id)
+            except Exception:
+                cost = 0.0
+            _min.record_outcome(
+                agent_id=agent_id,
+                slot_id=slot_id,
+                score=score,
+                cost_usd=cost,
+            )
 
-        print(f"[TURBO A05] ✅ chain_score={score} "
+        print(f"[TURBO A05] 🏛 Ministry: score={score} "
               f"frames={ready_frames}/{total_frames} "
               f"clips={ready_clips} "
               f"thumbs={ready_thumbs}/2 "
@@ -1026,7 +1030,7 @@ def _a05_record_ministry(state: dict) -> None:
             print(f"[TURBO A05] ⚠ CulturalFieldTracker: {_ce}")
 
     except Exception as e:
-        print(f"[TURBO A05] ⚠ замыкание петли: {e}")
+        print(f"[TURBO A05] ⚠ ministry.record_outcome: {e}")
     finally:
         # ── РАБОЧИЙ СТАТУС: агенты освобождены после рана ────────
         try:
@@ -1445,10 +1449,7 @@ def _a05_generate_thumbnails_and_deliverables(state: dict, human_text: str):
         1 for v in ("variant_a", "variant_b")
         if deliverables["thumbnail"].get(v, {}).get("path")
     )
-    _ms44 = mimi_sound.get("music", {})
-    if isinstance(_ms44, str):
-        _ms44 = {"audio_path": _ms44}
-    has_audio = bool(_ms44.get("audio_path") or mimi_sound.get("music_path"))
+    has_audio = bool(mimi_sound.get("music_path"))
 
     deliverables["status"] = (
         "ready_to_publish"

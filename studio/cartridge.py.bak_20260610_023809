@@ -298,10 +298,6 @@ class CartridgeRunner:
             else (_all_agents[-1] if _all_agents else _manifest_qa)
         )
         self.state["_slot_id"] = self.slot_id  # ← slot_id для feedback/reflection
-        # ПАТЧ economy_sprint44: метка старта рана — стоимость рана
-        # считается как дельта расходов от этой метки (не пожизненно)
-        from datetime import datetime as _dt44, timezone as _tz44
-        self.state["_run_started_ts"] = _dt44.now(_tz44.utc).isoformat()
         self.state["active_dept"] = self.manifest.id  # ← dept-aware патч
         client_slug = self.state.get("current_client", "_sandbox")
         run_date = self.state.get("run_date", "")

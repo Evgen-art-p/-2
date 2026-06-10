@@ -342,7 +342,7 @@ def _record_task_score(state: dict, score: float, slot_id: str, project_id: str)
 
         slots     = reg.setdefault("slots", {})
         slot_reg  = slots.setdefault(slot_id, {})
-        fa_list   = slot_reg.setdefault("A01", [])  # Спринт 44: регистр как у pipeline
+        fa_list   = slot_reg.setdefault("a01", [])
 
         existing = next(
             (s for s in fa_list if s.get("summary", "")[:60] == summary[:60]),

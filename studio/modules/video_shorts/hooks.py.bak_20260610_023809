@@ -813,64 +813,36 @@ def _update_tom_dna(client_relationship: dict | None, project_id: str) -> None:
 
 
 def _tom_record_ministry(state: dict, outcome_signal: dict, my_output: dict) -> None:
-    """
-    CHAIN-валюта · Спринт 44: ledger task_score + Strategy Registry.
-
-    Детерминированный chain-score (потолок 6.0) по фактам файлов:
-    кадры Веры + клипы (video_path в chain_data) + музыка Джулии.
-
-    viral_score из outcome_signal НЕ читается: по закону §6 он всегда
-    null от QA — real-валюту приносит Metrics Daemon после публикации.
-    Ministry хук не трогает (per-agent chain пишет pipeline после QA).
-    """
-    slot_id = state.get("_slot_id", "video_shorts")
+    """Ministry + billing_ledger + strategy_registry — Спринт 38 стандарт."""
     try:
-        chain = state.get("chain_data", {}) or {}
+        from studio.economy import ministry as _min
+        slot_id = state.get("_slot_id", "video_shorts")
 
-        # кадры Веры (A07)
-        vera    = chain.get("vera_visual", {}) or {}
-        frames  = vera.get("frames", []) if isinstance(vera, dict) else []
-        ready_f = sum(1 for f in frames if isinstance(f, dict) and f.get("path"))
-        total_f = len(frames) or 1
-
-        # клипы — ищем по факту поля video_path в любом блоке chain_data
-        ready_c, total_c = 0, 0
-        for _v in chain.values():
-            _items = []
-            if isinstance(_v, dict):
-                for _lv in _v.values():
-                    if isinstance(_lv, list):
-                        _items.extend(_lv)
-            elif isinstance(_v, list):
-                _items = _v
-            for _it in _items:
-                if isinstance(_it, dict) and "video_path" in _it:
-                    total_c += 1
-                    if _it.get("video_path"):
-                        ready_c += 1
-        total_c = total_c or 1
-
-        # музыка Джулии (A03)
-        _js  = chain.get("julia_sound_code", chain.get("julia_sound", {})) or {}
-        _mus = _js.get("music", {}) if isinstance(_js, dict) else {}
-        has_music = bool(_mus.get("audio_path")) if isinstance(_mus, dict) else False
-
-        score = 6.0 * (
-            0.40 * (ready_f / total_f)
-            + 0.35 * (ready_c / total_c)
-            + 0.25 * (1.0 if has_music else 0.0)
-        )
-        score = round(min(6.0, max(0.0, score)), 2)
+        # Score
+        viral = (outcome_signal.get("viral_score") if isinstance(outcome_signal, dict)
+                 else None)
+        if viral is None:
+            viral = my_output.get("learnings_pack", {}).get("viral_score")
+        try:
+            score = float(viral) if viral is not None else 5.0
+        except (TypeError, ValueError):
+            score = 5.0
+        score = round(min(10.0, max(0.0, score)), 2)
 
         agents = list(state.get("results", {}).keys()) or [
-            "A01", "A02", "A03", "A04", "A05",
-            "A06", "A07", "A08", "A09", "A10", "A11", "A12",
+            "A01","A02","A03","A04","A05",
+            "A06","A07","A08","A09","A10","A11","A12",
         ]
 
-        # ── 1. task_score → billing_ledger ────────────────────────────
+        # billing_ledger — task_score для каждого агента
         try:
             from studio.billing_ledger import record as _bl_record
             for aid in agents:
+                try:
+                    from studio.economy import ledger as _led
+                    cost = _led.agent_spent(aid, slot_id=slot_id)
+                except Exception:
+                    cost = 0.0
                 _bl_record(
                     agent_id=aid,
                     slot_id=slot_id,
@@ -880,13 +852,26 @@ def _tom_record_ministry(state: dict, outcome_signal: dict, my_output: dict) -> 
                     call_type="finalize",
                     task_score=score,
                 )
-            print(f"[VS A12 Том] 📊 chain_score={score} → ledger "
-                  f"(frames={ready_f}/{total_f} clips={ready_c}/{total_c} "
-                  f"music={'✅' if has_music else '—'}, {len(agents)} агентов)")
+            print(f"[VS A12 Том] 📊 billing_ledger: task_score={score} ({len(agents)} агентов)")
         except Exception as e:
             print(f"[VS A12 Том] ⚠️  billing_ledger: {e}")
 
-        # ── 2. Strategy Registry (ключ 'A01') ─────────────────────────
+        # Ministry
+        for agent_id in agents:
+            try:
+                from studio.economy import ledger as _led
+                cost = _led.agent_spent(agent_id, slot_id=slot_id)
+            except Exception:
+                cost = 0.0
+            _min.record_outcome(
+                agent_id=agent_id,
+                slot_id=slot_id,
+                score=score,
+                cost_usd=cost,
+            )
+        print(f"[VS A12 Том] 🏛 Ministry: score={score} agents={len(agents)}")
+
+        # strategy_registry — обновляем стратегию A01
         try:
             import json as _rj
             reg_path = Path("studio/strategy_registry.json")
@@ -897,6 +882,7 @@ def _tom_record_ministry(state: dict, outcome_signal: dict, my_output: dict) -> 
                 except Exception:
                     reg = {}
 
+            chain   = state.get("chain_data", {})
             first   = chain.get("trixie_trend", chain.get("trixie_episode", {}))
             summary = (
                 first.get("series_concept", {}).get("viral_angle", "")
@@ -906,7 +892,7 @@ def _tom_record_ministry(state: dict, outcome_signal: dict, my_output: dict) -> 
 
             slots    = reg.setdefault("slots", {})
             slot_reg = slots.setdefault(slot_id, {})
-            fa_list  = slot_reg.setdefault("A01", [])
+            fa_list  = slot_reg.setdefault("a01", [])
 
             existing = next(
                 (s for s in fa_list if s.get("summary", "")[:60] == summary[:60]),
@@ -949,7 +935,7 @@ def _tom_record_ministry(state: dict, outcome_signal: dict, my_output: dict) -> 
             print(f"[VS A12 Том] ⚠️  strategy_registry: {e}")
 
     except Exception as e:
-        print(f"[VS A12 Том] ⚠️  замыкание петли: {e}")
+        print(f"[VS A12 Том] ⚠️  ministry: {e}")
 
 
 def _tom_save_feedback(state: dict, my_output: dict) -> None:
