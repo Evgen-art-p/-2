@@ -444,9 +444,9 @@ def page_cabinet() -> None:
             locations_by_name = {loc["name"]: loc for loc in locations}
 
             # Цвета зон: яркая обводка + читаемый текст на тёмном фоне
-            zone_color = "rgba(0,180,200,0.85)"
-            zone_bg = "rgba(0,20,30,0.55)"
-            zone_text = "rgba(220,255,255,0.98)"
+            zone_color = "rgba(0,140,160,0.9)"
+            zone_bg = "transparent"
+            zone_text = "rgba(160,220,230,0.95)"
 
             html = ""
 
