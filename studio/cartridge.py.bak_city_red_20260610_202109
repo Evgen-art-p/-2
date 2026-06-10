@@ -312,11 +312,6 @@ class CartridgeRunner:
         self.state["_slot_id"] = self.slot_id
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
 
-        # ── ЧЕСТНЫЙ РАБОЧИЙ СТАТУС: смена началась · ПАТЧ city_red №3 ──
-        # При CONTINUE (from_worker) стартуют только оставшиеся агенты.
-        _work_agents = all_agents[start_index:]
-        self._log_work_status("start", _work_agents)
-
         i = start_index
         while i < len(all_agents):
             worker_id = all_agents[i]
@@ -556,9 +551,6 @@ class CartridgeRunner:
                     await self.callbacks.on_pipeline_done(
                         self.slot_id, self.state.get("results", {})
                     )
-                    # ПАТЧ city_red №3: пауза Виктора закрывает смену —
-                    # CONTINUE откроет новый work_start для оставшихся
-                    self._log_work_status("end", _work_agents, status="PAUSED")
                     return  # ← СТОП. Возобновление через CONTINUE
                 # ── END Виктор ──
 
@@ -578,8 +570,6 @@ class CartridgeRunner:
                             f"Checkpoint после {label}. Пайплайн на паузе.",
                             "warning",
                         )
-                        # ПАТЧ city_red №3: checkpoint-пауза закрывает смену
-                        self._log_work_status("end", _work_agents, status="PAUSED")
                         return
 
             except Exception as e:
@@ -592,9 +582,6 @@ class CartridgeRunner:
             i += 1
 
         # Пайплайн завершён
-        # ── ЧЕСТНЫЙ РАБОЧИЙ СТАТУС: смена закончилась · ПАТЧ city_red №3 ──
-        # Покрывает и нормальный финал, и break (stop_after / action=stop).
-        self._log_work_status("end", _work_agents, status="DONE")
         await self.callbacks.on_pipeline_done(self.slot_id, self.state.get("results", {}))
 
         # Суммаризация сессии
@@ -640,9 +627,6 @@ class CartridgeRunner:
         previous_output = ""
 
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
-
-        # ── ЧЕСТНЫЙ РАБОЧИЙ СТАТУС: турбо-смена началась · ПАТЧ city_red №3 ──
-        self._log_work_status("start", list(turbo_agents))
 
         i = 0
         while i < len(turbo_agents):
@@ -725,8 +709,6 @@ class CartridgeRunner:
 
             i += 1
 
-        # ПАТЧ city_red №3: турбо-смена закончилась
-        self._log_work_status("end", list(turbo_agents), status="DONE")
         await self.callbacks.on_pipeline_done(self.slot_id, self.state.get("results", {}))
 
     def _handle_revision(
@@ -795,35 +777,6 @@ class CartridgeRunner:
     # ═══════════════════════════════════════════════════════
     # HOOKS — загрузка и вызов кастомной логики картриджа
     # ═══════════════════════════════════════════════════════
-
-    def _log_work_status(self, event: str, agents: list, status: str = ""):
-        """
-        ПАТЧ city_red №3 · Честный рабочий статус на уровне шасси.
-
-        Один писатель для ВСЕХ картриджей: work_start при старте смены,
-        work_end на ЛЮБОМ выходе (DONE / PAUSED / stop / break).
-        Закрывает дыру: BIBLE-флоу и хард-стопы оставляли work_start
-        незакрытым на 8 часов — walk_rest заморожен, на карте все «в Студии».
-        Дубли из hooks.py цехов безвредны: тот же slot_id/project_id,
-        is_agent_working дедуплицирует по нему.
-        """
-        try:
-            from studio.city_pulse import log_work_start, log_work_end
-            pid = self.state.get("project_id", "")
-            for aid in agents:
-                if event == "start":
-                    log_work_start(agent=aid, dept=self.manifest.id,
-                                   slot_id=self.slot_id, project_id=pid)
-                else:
-                    log_work_end(agent=aid, dept=self.manifest.id,
-                                 slot_id=self.slot_id, project_id=pid,
-                                 status=status or "DONE")
-            _tag = "🏭" if event == "start" else "🏁"
-            print(f"[CARTRIDGE] {_tag} work_{event} → "
-                  f"{len(agents)} агентов {self.manifest.id}"
-                  + (f" · {status}" if status else ""))
-        except Exception as _we:
-            print(f"[CARTRIDGE] ⚠ work_{event}: {_we}")
 
     def _load_hooks(self):
         """Загружает hooks.py из папки модуля.

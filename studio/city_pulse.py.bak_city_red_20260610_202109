@@ -392,7 +392,7 @@ def log_work_end(agent: str, dept: str, slot_id: str,
     )
 
 
-def is_agent_working(agent: str, max_hours: float = 8.0, dept: str = "") -> dict | None:
+def is_agent_working(agent: str, max_hours: float = 8.0) -> dict | None:
     """
     Проверяет: есть ли у агента незакрытый work_start за последние max_hours часов.
 
@@ -425,10 +425,6 @@ def is_agent_working(agent: str, max_hours: float = 8.0, dept: str = "") -> dict
                 if rec.get("ts", "") < cutoff:
                     continue
                 if rec.get("agent") != agent:
-                    continue
-                # ПАТЧ city_red №3: папки A01..A12 одинаковы во всех цехах —
-                # без фильтра ран video_long «замораживал» A05 всего города
-                if dept and rec.get("dept", "") != dept:
                     continue
 
                 event = rec.get("event", "")

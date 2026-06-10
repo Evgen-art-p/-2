@@ -109,22 +109,16 @@ def _res_ministry(resident_id: str, dept: str, verdict: str) -> None:
 
 
 def _res_walk(resident_id: str) -> None:
-    """Вечерняя прогулка — fire-and-forget.
-
-    ПАТЧ city_red №5: раньше передавался несуществующий параметр
-    specific_agents → TypeError глотался голым except → резиденты
-    после работы НЕ гуляли никогда, и это было невидимо.
-    """
+    """Вечерняя прогулка — fire-and-forget."""
     try:
         import asyncio
         from studio.city_walker import run_city_walk_evening as _w
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            asyncio.ensure_future(_w(agent_ids=[resident_id]))
-        else:
-            print(f"[LIFECYCLE] 🚶 {resident_id}: нет event loop — прогулка пропущена")
-    except Exception as _we:
-        print(f"[LIFECYCLE] ⚠ прогулка {resident_id}: {_we}")
+            asyncio.ensure_future(_w(workshops=["residents"], max_agents=1,
+                                      specific_agents=[resident_id]))
+    except Exception:
+        pass
 
 
 def resident_lifecycle(

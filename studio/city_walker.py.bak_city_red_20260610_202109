@@ -28,9 +28,6 @@ CATALOG_FILE   = REGISTRY_DIR / "catalog.json"
 CITY_STATE     = Path("studio/city_state.json")
 WORLD_MANIFEST = Path("studio/world_manifest.md")
 
-# ПАТЧ city_red №2: имя города в каталоге — фон мира, не пункт назначения.
-CITY_OBJECT_NAME = "Грондхейм"
-
 # Кеш манифеста
 _MANIFEST_CACHE: str | None = None
 
@@ -393,40 +390,6 @@ def _classify_location(loc_name: str) -> str:
         if keyword in name_lower:
             return loc_type
     return "other"
-
-
-def _detect_chosen_location(response: str, locations: list[dict]) -> tuple:
-    """
-    ПАТЧ city_red №2 · Определение локации из ответа агента.
-
-    Раньше: первый substring-матч по порядку каталога. Первая запись
-    каталога — «Грондхейм», и это слово агент произносит почти в каждом
-    ответе («гуляю по Грондхейму») → город глотал реальный выбор,
-    вся физика весов (Маяк, Таверна, привычки, намерения) затиралась
-    на этапе детекции. Пульс это подтверждал: встречи «в Грондхейм».
-
-    Теперь:
-      1. Собираем ВСЕ локации, чьи имена встречаются в ответе.
-      2. Имя города побеждает только если ни одна настоящая локация
-         не названа («брожу по Грондхейму» — легитимный ответ).
-      3. Среди настоящих — самое раннее упоминание в ответе;
-         при равной позиции выигрывает более длинное имя.
-    """
-    resp_low = (response or "").lower()
-    matches = []
-    for loc in locations:
-        loc_name = loc.get("Official_Name", "")
-        if not loc_name:
-            continue
-        pos = resp_low.find(loc_name.lower())
-        if pos >= 0:
-            matches.append((pos, -len(loc_name), loc_name))
-    if not matches:
-        return "неизвестно", "other"
-    real = [m for m in matches
-            if m[2].strip().lower() != CITY_OBJECT_NAME.lower()]
-    pick = min(real) if real else min(matches)
-    return pick[2], _classify_location(pick[2])
 
 
 def _days_since_last_visit(memory: dict, location_type: str, locations: list[dict]) -> float:
@@ -1007,9 +970,7 @@ async def walk_one_agent(agent: dict, city_state: dict,
     # Прогулка пропускается: нельзя гулять и работать одновременно.
     try:
         from studio.city_pulse import is_agent_working as _is_working
-        # ПАТЧ city_red №3: пульс пишет worker_id + dept, не Official_Name —
-        # проверка по имени не совпадала никогда
-        _work = _is_working(folder, dept=workshop)
+        _work = _is_working(name)
         if _work:
             print(f"[CITY] 🏭 {name} сейчас в цеху ({_work.get('slot_id','')})"
                   f" — прогулка пропущена")
@@ -1066,9 +1027,15 @@ async def walk_one_agent(agent: dict, city_state: dict,
     except Exception as e:
         return {"agent": name, "status": "error", "reason": str(e)}
 
-    # Определяем локацию из ответа · ПАТЧ city_red №2:
-    # город не глотает выбор (см. _detect_chosen_location)
-    chosen_location, chosen_type = _detect_chosen_location(response, locations)
+    # Определяем локацию из ответа
+    chosen_location = "неизвестно"
+    chosen_type = "other"
+    for loc in locations:
+        loc_name = loc.get("Official_Name", "")
+        if loc_name and loc_name.lower() in response.lower():
+            chosen_location = loc_name
+            chosen_type = _classify_location(loc_name)
+            break
 
     # ══ ПРОСТРАНСТВО · Спринт 21 ══
     here_now = city_state.setdefault("here_now", {})
@@ -1094,10 +1061,8 @@ async def walk_one_agent(agent: dict, city_state: dict,
     save_city_state(city_state)
 
     # Проверяем встречу (не более 1 раза с одним партнёром за прогулку)
-    # ПАТЧ city_red №1: list вместо set — set валил json.dumps(city_state),
-    # и первая же встреча убивала прогулку (TypeError при save_city_state)
     _met_pairs_walk = city_state.get("_met_pairs_walk", {})
-    _my_pairs = list(_met_pairs_walk.get(folder, []))
+    _my_pairs = _met_pairs_walk.get(folder, set())
     _others_in_loc = [
         c["folder"] for c in here_now.get(chosen_location, [])
         if c["folder"] != folder and c["folder"] not in _my_pairs
@@ -1116,8 +1081,8 @@ async def walk_one_agent(agent: dict, city_state: dict,
                  if c.get("name") == meeting["met"]),
                 None,
             )
-            if _partner_folder and _partner_folder not in _my_pairs:
-                _my_pairs.append(_partner_folder)
+            if _partner_folder:
+                _my_pairs.add(_partner_folder)
                 _met_pairs_walk[folder] = _my_pairs
                 city_state["_met_pairs_walk"] = _met_pairs_walk
     if meeting:
@@ -1453,7 +1418,6 @@ async def run_city_walk(
 
     # Инициализируем пространство города
     city_state["here_now"] = {}
-    city_state["_met_pairs_walk"] = {}  # ПАТЧ city_red №1: свежие пары на прогулку
     save_city_state(city_state)
 
     # Запускаем прогулки — батчами, параллельно внутри батча
@@ -1505,9 +1469,6 @@ async def run_city_walk(
     # карта должна показывать последние позиции
     city_state["active_agents"] = []
     save_city_state(city_state)
-
-    # ПАТЧ city_red №6: событие дня применилось — ttl--
-    _clear_event_boost()
 
     await log(f"✅ Прогулка завершена. {len([r for r in results if r['status'] == 'ok'])} агентов побывали в городе.")
     return results
@@ -1688,7 +1649,6 @@ async def run_city_walk_morning(
         return []
 
     city_state["here_now"] = {}
-    city_state["_met_pairs_walk"] = {}  # ПАТЧ city_red №1: свежие пары на прогулку
     save_city_state(city_state)
 
     results = []
@@ -1711,27 +1671,17 @@ async def run_city_walk_evening(
     on_progress=None,
     max_agents: int = 0,
     max_quanta: int = 3,
-    agent_ids: list[str] | None = None,
 ) -> list[dict]:
     """
     Вечерняя прогулка — цепочка квантов, бюджет из Light после рана.
     Вызывается автоматически после QA, или кнопкой вручную.
 
     workshops: цех который только что отработал. Резиденты всегда участвуют.
-    agent_ids: ПАТЧ city_red №5 — точечный выбор: гуляют только эти агенты
-               (ID_Object или имя папки; используется resident_lifecycle).
     """
     city_state = update_city_weather()
     all_agents = get_all_agents()
 
-    if agent_ids:
-        _wanted = set(str(x) for x in agent_ids)
-        all_agents = [
-            a for a in all_agents
-            if a.get("ID_Object", "") in _wanted
-            or (a.get("_folder", "") or _resolve_folder(a)) in _wanted
-        ]
-    elif workshops:
+    if workshops:
         allowed = set(workshops)
         allowed.add("residents")
         all_agents = [a for a in all_agents if a.get("Workshop_ID", "") in allowed]
@@ -1838,9 +1788,6 @@ async def run_city_walk_evening(
         print(f"[CITY] ⚠ Вечерний отчёт не сохранён: {_rep_err}")
     # ── END отчёт ──
 
-    # ПАТЧ city_red №6: событие дня применилось — ttl--
-    _clear_event_boost()
-
     return results
 
 # ═══════════════════════════════════════════════════════
@@ -1904,28 +1851,4 @@ def add_city_event(event: str):
     events = state.setdefault("recent_events", [])
     events.append(f"[{datetime.now().strftime('%H:%M')}] {event}")
     state["recent_events"] = events[-5:]
-    save_city_state(state)
-
-
-def _clear_event_boost():
-    """
-    ПАТЧ city_red №6 · TTL глобального события.
-
-    «Пустить слух» пишет global_event_boost с ttl=1, но функции
-    декремента не существовало — буст жил вечно (+0.40 ко всем
-    прогулкам, «вечная пятница»). Теперь: каждая вечерняя/полная
-    прогулка, применившая буст, снимает 1 ttl. ttl<=0 — событие
-    сгорает. Семантика: событие живёт один вечер города.
-    """
-    state = load_city_state()
-    boost = state.get("global_event_boost") or {}
-    if not boost:
-        return
-    ttl = int(boost.get("ttl", 0)) - 1
-    if ttl <= 0:
-        state.pop("global_event_boost", None)
-        print(f"[EVENT BOOST] 📢 Событие сгорело: {boost.get('reason', '')[:60]}")
-    else:
-        boost["ttl"] = ttl
-        state["global_event_boost"] = boost
     save_city_state(state)

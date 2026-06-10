@@ -195,6 +195,68 @@ def _find_qa_agent_from_sensory(agent_dir: Path) -> Optional[str]:
 # ЭТАП 6: НОЧНАЯ АВТОНОМИЯ
 # ════════════════════════════════════════════════════════════════
 
+def _compute_night_decision(dna: dict) -> dict:
+    """
+    Детерминированное решение агента: бунт или сон.
+
+    revolt_score = (autonomy*0.35 + resentment*0.30 + stress*0.20 + ambition*0.15)
+                   - streak*0.10
+
+    Возвращает:
+    {
+        "decision": "REVOLT" | "RESTLESS" | "SLEEP",
+        "revolt_score": float,
+        "reason": str
+    }
+    """
+    static  = dna.get("static",  {})
+    dynamic = dna.get("dynamic", {})
+
+    autonomy  = float(static.get("Autonomy_Level", 0.5))
+    stress    = float(dynamic.get("Stress",         0.0))
+    streak    = int(dynamic.get("streak", 0))
+
+    # Ambition — не все агенты имеют, дефолт 0.5
+    ambition = float(static.get("Ambition", dynamic.get("Ambition", 0.5)))
+
+    # Максимальный resentment из emotional_weights — обида давит
+    # Читаем напрямую из файла чтобы не зависеть от grondheim_memory
+    resentment = 0.0
+
+    return_dict = {}
+    # Будет вызван ниже после загрузки ew
+    return_dict["autonomy"]  = autonomy
+    return_dict["stress"]    = stress
+    return_dict["streak"]    = streak
+    return_dict["ambition"]  = ambition
+    return_dict["resentment"] = resentment  # обновится ниже
+
+    revolt_score = (
+        autonomy   * 0.35 +
+        resentment * 0.30 +
+        stress     * 0.20 +
+        ambition   * 0.15
+    ) - (max(0, streak) * 0.10)  # только серия ПОБЕД снимает давление
+
+    revolt_score = round(revolt_score, 3)
+
+    if revolt_score > REVOLT_THRESHOLD:
+        decision = "REVOLT"
+        reason   = f"revolt_score={revolt_score:.2f} (autonomy={autonomy:.2f}, resentment={resentment:.2f})"
+    elif stress > RESTLESS_STRESS:
+        decision = "RESTLESS"
+        reason   = f"stress={stress:.2f} — не спит, тревожный сон"
+    else:
+        decision = "SLEEP"
+        reason   = f"revolt_score={revolt_score:.2f} — сон"
+
+    return {
+        "decision":    decision,
+        "revolt_score": revolt_score,
+        "reason":       reason,
+    }
+
+
 def _compute_night_decision_with_ew(dna: dict, agent_dir: Path) -> dict:
     """
     Полная версия: читает emotional_weights для resentment.

@@ -1081,7 +1081,7 @@ def format_soul_for_agent(agent_id: str, dept: str = "") -> str:
 # из dna.json → город начинает «дышать» автоматически
 # ═══════════════════════════════════════════════════════════
 
-def _is_agent_working(agent_id: str, dept: str = "") -> bool:
+def _is_agent_working(agent_id: str) -> bool:
     """Проверяет находится ли агент в рабочем статусе по city_pulse.
     Если да — walk_rest и RECOVERY не должны сбрасывать стресс.
 
@@ -1093,7 +1093,7 @@ def _is_agent_working(agent_id: str, dept: str = "") -> bool:
     """
     try:
         from studio.city_pulse import is_agent_working as _cp_working
-        result = _cp_working(agent_id, max_hours=8.0, dept=dept)
+        result = _cp_working(agent_id, max_hours=8.0)
         return result is not None
     except Exception:
         pass
@@ -1227,7 +1227,7 @@ def sync_to_dna(
         # Прогулка по городу · Спринт 21 · хард-лимит Локи
         # ПАТЧ recovery_freeze: если агент в цеху — прогулка не снижает стресс
         # Стресс от критики Виктора должен оставаться до конца рана
-        if _is_agent_working(agent_id, dept):
+        if _is_agent_working(agent_id):
             print(f"[RECOVERY] 🔒 {agent_id}: в цеху — walk_rest заморожен")
         else:
             stress   = max(0, stress   - 0.02)
@@ -1246,7 +1246,7 @@ def sync_to_dna(
     # ══ Recovery Mechanics (Спринт 16) ══
     # 3 победы подряд — стресс сбрасывается физиологически
     # ПАТЧ recovery_freeze: не сбрасываем если агент сейчас в цеху
-    if streak >= 3 and not _is_agent_working(agent_id, dept):
+    if streak >= 3 and not _is_agent_working(agent_id):
         old_stress = dynamic["Stress"]
         dynamic["Stress"] = 0.0
         dynamic["Internal_Light"] = min(1.0, round(dynamic["Internal_Light"] + 0.05, 3))

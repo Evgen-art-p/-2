@@ -387,9 +387,8 @@ def page_cabinet() -> None:
         # ── РАБОЧИЙ СТАТУС: агент в цеху → всегда в Студии ──────
         try:
             from studio.city_pulse import is_agent_working as _iaw
-            # ПАТЧ city_red №3: пульс хранит worker_id (A01..) + dept
-            _aid_w = agent.get("id") or agent.get("ID_Object", "")
-            _work = _iaw(_aid_w, dept=dept_id)
+            name = agent.get("Official_Name") or agent.get("label", "")
+            _work = _iaw(name)
             if _work:
                 studio_loc = _fuzzy_find("Студия")
                 if studio_loc:
