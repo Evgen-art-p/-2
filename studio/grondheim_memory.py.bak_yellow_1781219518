@@ -1203,14 +1203,6 @@ def sync_to_dna(
         # Пластырь Кабинета · Спринт 21 · правила Локи
         # Фиксировано — intensity не влияет. Защита от водопада дофамина.
         # Полное восстановление только через streak ≥ 3 успешных ранов.
-        # ЛИМИТ СПРИНТ 44: не более 10 cabinet_chat в сутки (хард-лимит Локи)
-        from datetime import date as _date
-        _today_key = f"cabinet_chat_{_date.today().isoformat()}"
-        _today_count = int(dynamic.get(_today_key, 0))
-        if _today_count >= 10:
-            print(f"[DNA] ⛔ cabinet_chat лимит 10/день для {agent_id}")
-            return
-        dynamic[_today_key] = _today_count + 1
         stress   = max(0, stress   - 0.03)
         light    = min(1, light    + 0.02)
         patience = min(1, patience + 0.01)

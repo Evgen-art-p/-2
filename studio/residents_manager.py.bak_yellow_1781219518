@@ -205,23 +205,6 @@ def resident_lifecycle(
     on_agent_done(resident_id, result_summary=summary, dept="residents")
     print(f"[LIFECYCLE] ✅ {resident_id}: done, вердикт={verdict or '—'}")
 
-    # 7а. КНИГА БЛАГОДАРНОСТЕЙ (баг №8)
-    # Если хук передал qa_agent_id в result — благодарим, только если
-    # характер позволяет (check_and_write_gratitude сама проверяет Empathy/Respect)
-    if verdict in ("APPROVED", "PASS", "ACCEPTED", "DONE") and isinstance(result, dict):
-        _qa_benefactor = result.get("qa_agent_id", "")
-        if _qa_benefactor and _qa_benefactor != resident_id:
-            try:
-                from studio.complaint_book import check_and_write_gratitude
-                check_and_write_gratitude(
-                    agent_id=resident_id,
-                    benefactor_id=_qa_benefactor,
-                    reason=f"помог пройти {dept or 'задание'}",
-                    dept=dept,
-                )
-            except Exception as _ge:
-                print(f"[LIFECYCLE] ⚠  gratitude: {_ge}")
-
     # 8. ДНК
     if verdict in ("APPROVED", "APPROVED_WITH_CONCERNS", "PASS", "ACCEPTED", "DONE"):
         sync_to_dna(resident_id, event_on_approve, intensity=event_intensity, dept="residents")
