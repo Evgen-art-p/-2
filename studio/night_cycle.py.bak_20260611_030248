@@ -165,34 +165,6 @@ def _run_decay_for_agent(agent_dir: Path, dept: str) -> dict:
                 "new_value": new_resentment
             }
 
-    # ── Затухание всех обид: ×0.97 за ночь ─────────────────────
-    # Баг №7: обида только росла, никогда не падала.
-    # Теперь каждую ночь все resentment плавно гаснут.
-    # ~70 ночей без новых обид → полный ноль.
-    ew_path = agent_dir / "resonance" / "emotional_weights.json"
-    if ew_path.exists():
-        try:
-            ew = json.loads(ew_path.read_text(encoding="utf-8"))
-            changed = False
-            for key, rel in ew.items():
-                if isinstance(rel, dict) and "resentment" in rel:
-                    old_r = float(rel["resentment"])
-                    if old_r > 0.001:
-                        rel["resentment"] = round(old_r * 0.97, 4)
-                        changed = True
-                    elif old_r > 0:
-                        rel["resentment"] = 0.0
-                        changed = True
-            if changed:
-                ew_path.write_text(
-                    json.dumps(ew, ensure_ascii=False, indent=2),
-                    encoding="utf-8"
-                )
-                changes["resentment_decayed"] = True
-        except Exception as _re:
-            pass
-    # ── END затухание обид ──
-
     return changes
 
 

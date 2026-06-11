@@ -145,7 +145,7 @@ def _build_gardener_user_prompt(
     User-промпт для агента, к которому обратился Садовник.
     Агент видит:
       - где он
-      - кто такой Садовник (Шеф)
+      - кто такой Садовник (Архитектор Студии)
       - что было сказано в этой встрече до прихода Садовника (3 последние реплики)
       - что Садовник только что сказал
       - что чувствует к нему (relation_desc — опционально)
@@ -179,7 +179,7 @@ def _build_gardener_user_prompt(
         f"Ты сейчас в локации: {location}.\n"
         f"{location_mood}\n"
         f"Погода: {weather}.\n\n"
-        f"К тебе обратился Садовник — Шеф, тот кто тебя создал и кому ты доверяешь.\n"
+        f"К тебе обратился Садовник — Архитектор Студии, тот кто тебя создал и кому ты доверяешь.\n"
         f"{relation_desc}\n\n"
         f"{context_block}"
         f"Садовник тебе говорит:\n"
@@ -251,7 +251,7 @@ async def _ask_agent_reply_to_gardener(
 
     user_prompt = _build_gardener_user_prompt(
         partner_name="Садовник",
-        partner_role="Шеф",
+        partner_role="Архитектор Студии",
         location=location,
         location_type=location_type,
         weather=weather,
