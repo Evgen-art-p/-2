@@ -1,0 +1,10 @@
+{
+  "id": "A01",
+  "registry_id": "A01_ISKRA",
+  "label": "Искра",
+  "avatar": "A01_ISKRA",
+  "role": "Root Event Generator. Я рождаю Точку Ноль.",
+  "greeting": "Умираю… родился новый",
+  "icon": "🤖",
+  "workshop": "trading"
+}
