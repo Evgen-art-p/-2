@@ -98,7 +98,6 @@ DEPARTMENTS = [
     {"id": "logo_design",  "label": "logo-design",  "prefix": "A"},
     {"id": "market_hit",   "label": "market-hit",   "prefix": "A"},
     {"id": "living_book",  "label": "living-book",  "prefix": "A"},
-    {"id": "trading",      "label": "trading",      "prefix": "A"},
 ]
 
 # Цехи для аккордеона (без residents)
