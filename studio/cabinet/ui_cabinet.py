@@ -370,49 +370,13 @@ def page_cabinet() -> None:
             print(f"[MAP] Ошибка загрузки локаций: {e}")
             return []
 
-    # Карта кварталов: Quarter агента → (домашняя зона, рабочая зона)
-    # Дом — где агент отдыхает; Работа — куда идёт на ран.
-    # Берётся из Quarter (dna.json или каталог), не из хардкода.
-    _QUARTER_HOME_WORK = {
-        "Квартал Мастеров": ("Квартал Мастеров", "Студия"),
-        "Высотка":          ("Высотка", "Студия"),
-        "Торговый Квартал": ("Торговый Квартал", "Биржа"),
-    }
-
-    def _agent_quarter(agent, dept_id):
-        """Quarter агента: сначала dna.json, потом каталог по ID. Иначе ''."""
-        aid = agent.get("id") or agent.get("ID_Object", "")
-        # 1. dna.json (пишется при рождении после patch_quarter_field)
-        try:
-            from studio.cabinet.agents import _get_agent_dna as _gad
-            q = (_gad(aid, dept_id) or {}).get("quarter", "")
-            if q:
-                return q
-        except Exception:
-            pass
-        # 2. Каталог по ID_Object (старые агенты без quarter в dna)
-        try:
-            from studio.cabinet.agents import _load_registry_cache as _lrc
-            for obj in _lrc():
-                if obj.get("Object_Type_Class") != "agent":
-                    continue
-                oid = obj.get("ID_Object", "")
-                # Матч по точному ID или по совпадению хвоста (A01 ↔ A01_ISKRA)
-                if oid == aid or oid.startswith(aid + "_") or oid.endswith("_" + aid):
-                    return obj.get("Quarter", "")
-        except Exception:
-            pass
-        return ""
-
     def _find_agent_zone(agent, dept_id, last_walk_loc, locations_by_name):
         """Определить в какой зоне находится агент.
-        Приоритет: работает → рабочая зона квартала > свежая прогулка (< 30 мин) > дом.
-        Дом и работа берутся из Quarter агента (не из хардкода).
+        Приоритет: работает в цеху → Студия > свежая прогулка (< 30 мин) > дом.
+        Резиденты → Высотка, рабочие → Квартал Мастеров.
         """
         def _fuzzy_find(keyword):
             """Найти локацию по вхождению ключевого слова."""
-            if not keyword:
-                return None
             kw = keyword.lower().strip().rstrip(".")
             for loc_name, loc in locations_by_name.items():
                 clean = loc_name.lower().strip().rstrip(".")
@@ -420,25 +384,16 @@ def page_cabinet() -> None:
                     return loc
             return None
 
-        # Quarter агента → домашняя и рабочая зоны
-        is_resident = agent.get("is_resident", False) or dept_id == "residents"
-        quarter = _agent_quarter(agent, dept_id)
-        if not quarter:
-            quarter = "Высотка" if is_resident else "Квартал Мастеров"
-        home_kw, work_kw = _QUARTER_HOME_WORK.get(
-            quarter, ("Квартал Мастеров", "Студия")
-        )
-
-        # ── РАБОЧИЙ СТАТУС: агент на ране → рабочая зона своего квартала ──
+        # ── РАБОЧИЙ СТАТУС: агент в цеху → всегда в Студии ──────
         try:
             from studio.city_pulse import is_agent_working as _iaw
             # ПАТЧ city_red №3: пульс хранит worker_id (A01..) + dept
             _aid_w = agent.get("id") or agent.get("ID_Object", "")
             _work = _iaw(_aid_w, dept=dept_id)
             if _work:
-                work_loc = _fuzzy_find(work_kw)
-                if work_loc:
-                    return work_loc
+                studio_loc = _fuzzy_find("Студия")
+                if studio_loc:
+                    return studio_loc
         except Exception:
             pass
         # ── END РАБОЧИЙ СТАТУС ──
@@ -463,12 +418,10 @@ def page_cabinet() -> None:
             except Exception:
                 pass
 
-        # Дом: домашняя зона квартала агента
-        home = _fuzzy_find(home_kw)
-        if home:
-            return home
-        # Фоллбэк — сам квартал как зона (если домашней локации нет)
-        return _fuzzy_find(quarter)
+        # Дом: резиденты → Высотка, рабочие → Квартал Мастеров
+        is_resident = agent.get("is_resident", False) or dept_id == "residents"
+        home_keyword = "Высотка" if is_resident else "Квартал Мастеров"
+        return _fuzzy_find(home_keyword)
 
     def _refresh_map():
         """Обновить агентов и погоду на карте."""
