@@ -218,7 +218,6 @@ def generate_agent_files(obj: dict, dna_static: dict,
         "id": agent_id,
         "name": obj.get("Official_Name", ""),
         "workshop": workshop,
-        "quarter": obj.get("Quarter", ""),
         "role": agent_role,
         "rarity": obj.get("Rarity", ""),
         "created": obj.get("Creation_Date", ""),
@@ -400,7 +399,6 @@ def generate_agent_files(obj: dict, dna_static: dict,
             "greeting": core_phrase or f"{obj.get('Official_Name', folder_name)} на связи.",
             "icon": "🤖",
             "workshop": workshop,
-            "quarter": obj.get("Quarter", ""),
         }
         info_path.write_text(json.dumps(info, ensure_ascii=False, indent=2), encoding="utf-8")
         created.append(str(info_path))
@@ -1171,8 +1169,6 @@ def page_registry():
                   loc_lighting_widget = {"w": None}
                   loc_atmosphere_widget = {"w": None}
                   loc_neighbors_widget = {"w": None}
-                  loc_quarter_widget = {"w": None}   # Quarter локации
-                  agent_quarter_widget = {"w": None} # Quarter агента
                   loc_map_x_widget = {"w": None}
                   loc_map_y_widget = {"w": None}
                   loc_map_w_widget = {"w": None}
@@ -1284,16 +1280,10 @@ def page_registry():
                         # Цех и роль
                         with ui.grid(columns=2).classes("w-full gap-3 mb-3"):
                             with ui.column().classes("w-full gap-0"):
-                                _WORKSHOP_QUARTER = {"residents": "Высотка", "turbo": "Квартал Мастеров", "social_mix": "Квартал Мастеров", "video_long": "Квартал Мастеров", "video_shorts": "Квартал Мастеров", "web_story": "Квартал Мастеров", "clipmakers": "Квартал Мастеров", "advertising": "Квартал Мастеров", "emo_card": "Квартал Мастеров", "logo_design": "Квартал Мастеров", "market_hit": "Квартал Мастеров", "living_book": "Квартал Мастеров", "trading": "Торговый Квартал"}
                                 def on_workshop_change(e):
                                     ws = e.value or ""
                                     opts = ROLE_OPTIONS_MAP.get(ws, [""])
                                     new_options = {v: v if v else "— не задана —" for v in opts}
-                                    # Автозаполнение квартала по цеху
-                                    if agent_quarter_widget["w"] and ws:
-                                        auto_q = _WORKSHOP_QUARTER.get(ws, "Квартал Мастеров")
-                                        agent_quarter_widget["w"].value = auto_q
-                                        agent_quarter_widget["w"].update()
                                     if role_widget["w"]:
                                         role_widget["w"].options = new_options
                                         role_widget["w"].value = ""
@@ -1342,18 +1332,6 @@ def page_registry():
                                     label="Триггеры памяти (через запятую)",
                                     placeholder="Тренд, Алгоритм, Хук, Вирусность..."
                                 ).classes("w-full")
-
-                        # Квартал агента (автозаполняется по цеху)
-                        quarter_opts_agent = {"": "— выбрать квартал —"}
-                        quarter_opts_agent.update({
-                            "Высотка": "Высотка",
-                            "Квартал Мастеров": "Квартал Мастеров",
-                            "Торговый Квартал": "Торговый Квартал",
-                        })
-                        agent_quarter_widget["w"] = ui.select(
-                            label="Квартал города",
-                            options=quarter_opts_agent,
-                        ).classes("w-full mb-3")
 
                         # Статические веса
                         ui.html('<div style="font-size:0.72rem;color:var(--r-text-dim);text-transform:uppercase;letter-spacing:0.1em;margin:4px 0 10px">Статическая ДНК · задаётся один раз</div>')
@@ -1533,18 +1511,6 @@ def page_registry():
                             placeholder="Библиотека, Берег, Гавань..."
                         ).classes("w-full mb-3")
 
-                        # Квартал локации
-                        quarter_opts_loc = {"": "— выбрать квартал —"}
-                        quarter_opts_loc.update({
-                            "Высотка": "Высотка",
-                            "Квартал Мастеров": "Квартал Мастеров",
-                            "Торговый Квартал": "Торговый Квартал",
-                        })
-                        loc_quarter_widget["w"] = ui.select(
-                            label="Квартал города",
-                            options=quarter_opts_loc,
-                        ).classes("w-full mb-3")
-
                         # Координаты на карте
                         ui.html('''
                             <div style="font-size:0.72rem;color:var(--r-text-dim);
@@ -1636,7 +1602,6 @@ def page_registry():
 
                     # Агент
                     if t == "agent":
-                        if agent_quarter_widget["w"]: obj["Quarter"] = agent_quarter_widget["w"].value or ""
                         if workshop_widget["w"]: obj["Workshop_ID"] = workshop_widget["w"].value or ""
                         if role_widget["w"]: obj["Turbo_Role"] = role_widget["w"].value or ""
                         if core_phrase_widget["w"]: obj["Core_Phrase"] = core_phrase_widget["w"].value or ""
@@ -1655,7 +1620,6 @@ def page_registry():
 
                     # Локация
                     elif t == "location":
-                        if loc_quarter_widget["w"]: obj["Quarter"] = loc_quarter_widget["w"].value or ""
                         if loc_capacity_widget["w"]: obj["Capacity"] = int(loc_capacity_widget["w"].value or 10)
                         if loc_scale_widget["w"]: obj["Scale"] = loc_scale_widget["w"].value or ""
                         if loc_lighting_widget["w"]: obj["Lighting"] = loc_lighting_widget["w"].value or ""
@@ -1699,7 +1663,6 @@ def page_registry():
 
                     # Агент
                     if t == "agent":
-                        if agent_quarter_widget["w"]: agent_quarter_widget["w"].value = obj.get("Quarter", "")
                         if workshop_widget["w"]: workshop_widget["w"].value = obj.get("Workshop_ID", "")
                         if role_widget["w"]: role_widget["w"].value = obj.get("Turbo_Role", "")
                         if core_phrase_widget["w"]: core_phrase_widget["w"].value = obj.get("Core_Phrase", "")
@@ -1716,7 +1679,6 @@ def page_registry():
                                 dna_static_widgets[p_id].value = dna.get(p_id, default)
                     # Локация
                     elif t == "location":
-                        if loc_quarter_widget["w"]: loc_quarter_widget["w"].value = obj.get("Quarter", "")
                         if loc_capacity_widget["w"]: loc_capacity_widget["w"].value = obj.get("Capacity", 10)
                         if loc_scale_widget["w"]: loc_scale_widget["w"].value = obj.get("Scale", "")
                         if loc_lighting_widget["w"]: loc_lighting_widget["w"].value = obj.get("Lighting", "")
@@ -1763,8 +1725,6 @@ def page_registry():
                         if w["w"]: w["w"].value = 0
                     # Сбрасываем локацию
                     if loc_capacity_widget["w"]: loc_capacity_widget["w"].value = 10
-                    if loc_quarter_widget["w"]: loc_quarter_widget["w"].value = ""
-                    if agent_quarter_widget["w"]: agent_quarter_widget["w"].value = ""
                     for w in [loc_scale_widget, loc_lighting_widget,
                               loc_atmosphere_widget, loc_neighbors_widget]:
                         if w["w"]: w["w"].value = ""

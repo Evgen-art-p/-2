@@ -76,8 +76,7 @@
     "_Creator_Seal_Hash": "91b43b3a9d810cc3d78c924571750526cd6dd782a1c010a80cccf7a0d822966f",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Высотка"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Mythic",
@@ -128,8 +127,7 @@
     "_Creator_Seal_Hash": "9a8604a590ccc6f552c5504cb6c9def031fe0f227e6395a01280c86fae125c12",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Высотка"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Mythic",
@@ -166,8 +164,7 @@
     "Map_W": 400,
     "Map_H": 300,
     "_timestamp": "2026-05-02T04:44:19.466370",
-    "_Creator_Seal_Hash": "375059883e0904beaa9f28a17dc51c1779ba13381e8e6cd4e728f3ed701c08fd",
-    "Quarter": ""
+    "_Creator_Seal_Hash": "375059883e0904beaa9f28a17dc51c1779ba13381e8e6cd4e728f3ed701c08fd"
   },
   {
     "Rarity": "Epic",
@@ -215,8 +212,7 @@
     "_Creator_Seal_Hash": "82d24d8bdf846e85d9e6566f2c2a50acd8b8433c751b3caab3a1cdb10b24b72a",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Высотка"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -267,8 +263,7 @@
     "_Creator_Seal_Hash": "037e55e02c13673bb8ba46509827ab2d75af10274173d9afb2b8d15943735439",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -327,8 +322,7 @@
     "_Creator_Seal_Hash": "fbcb6c10468f7044c5dd8023034f9fed4f63565b15c9c45bd1ad0ad9d7e55b07",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -380,8 +374,7 @@
     "_Creator_Seal_Hash": "6efe3bcb713d7fac7c21025eea0ee0e9bc3d4f9dae57604c85e608f6610fb2f0",
     "Owner_ID": "P_0000000001",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -436,8 +429,7 @@
     "_Creator_Seal_Hash": "ade626901930900ee4152ef8037ddd93feef3fdec8bd36828ebe4b36ea492a6b",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -489,8 +481,7 @@
     "_Creator_Seal_Hash": "9657ce9458c4244fc5b89f9dde801b2bc66066011e62bdb70cbcbca68d7e4060",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Mythic",
@@ -542,8 +533,7 @@
     "Map_W": 575,
     "Map_H": 290,
     "_timestamp": "2026-05-02T04:54:38.362814",
-    "_Creator_Seal_Hash": "a3381dbeb94c6ace248d5320b00cee4b8656f17fdd0e4bb6f6a693943672f1c8",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "a3381dbeb94c6ace248d5320b00cee4b8656f17fdd0e4bb6f6a693943672f1c8"
   },
   {
     "Rarity": "Mythic",
@@ -589,8 +579,7 @@
     "Map_W": 410,
     "Map_H": 236,
     "_timestamp": "2026-05-02T19:15:29.015373",
-    "_Creator_Seal_Hash": "b13c9a0b846281989a4d33f7262cfbe6b6b14d60f1bc08cde6a7cbd82d66ac80",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "b13c9a0b846281989a4d33f7262cfbe6b6b14d60f1bc08cde6a7cbd82d66ac80"
   },
   {
     "Rarity": "Mythic",
@@ -632,8 +621,7 @@
     "Map_W": 365,
     "Map_H": 120,
     "_timestamp": "2026-05-02T19:16:08.044626",
-    "_Creator_Seal_Hash": "1f2cbd14320b9f4a520d7a11a5e0dc95756d83878b8fa407c664cae51834b4cb",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "1f2cbd14320b9f4a520d7a11a5e0dc95756d83878b8fa407c664cae51834b4cb"
   },
   {
     "Rarity": "Mythic",
@@ -674,8 +662,7 @@
     "Map_W": 816,
     "Map_H": 214,
     "_timestamp": "2026-05-02T19:18:26.450764",
-    "_Creator_Seal_Hash": "cff4c0622dbca7decaa99566c4ab0a04c12c8863bb555b6e3ad5b78fda67dd1a",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "cff4c0622dbca7decaa99566c4ab0a04c12c8863bb555b6e3ad5b78fda67dd1a"
   },
   {
     "Rarity": "Mythic",
@@ -716,8 +703,7 @@
     "Map_W": 100,
     "Map_H": 257,
     "_timestamp": "2026-05-02T19:23:34.356450",
-    "_Creator_Seal_Hash": "1449e09903a611238106333673adb3f402f66280c2b2f165b6f6ee899e3a7195",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "1449e09903a611238106333673adb3f402f66280c2b2f165b6f6ee899e3a7195"
   },
   {
     "Rarity": "Mythic",
@@ -758,8 +744,7 @@
     "Map_W": 92,
     "Map_H": 193,
     "_timestamp": "2026-05-02T19:25:31.298277",
-    "_Creator_Seal_Hash": "795e6316764d621bf2d9ff8810ab87a8812f3255056fc8f4db8de19aa677928c",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "795e6316764d621bf2d9ff8810ab87a8812f3255056fc8f4db8de19aa677928c"
   },
   {
     "Rarity": "Mythic",
@@ -800,8 +785,7 @@
     "Map_W": 95,
     "Map_H": 378,
     "_timestamp": "2026-05-02T19:28:41.405316",
-    "_Creator_Seal_Hash": "abdbe60ac791407ed945d404f9905b584b925ea6638e2c876b88a54e6506d49a",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "abdbe60ac791407ed945d404f9905b584b925ea6638e2c876b88a54e6506d49a"
   },
   {
     "Rarity": "Mythic",
@@ -842,8 +826,7 @@
     "Map_W": 449,
     "Map_H": 240,
     "_timestamp": "2026-05-02T19:29:38.212276",
-    "_Creator_Seal_Hash": "14e35c1ea1d17458476a09ee5ada6a36ffcbfa016ba2f8eacd314f76396c0148",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "14e35c1ea1d17458476a09ee5ada6a36ffcbfa016ba2f8eacd314f76396c0148"
   },
   {
     "Rarity": "Mythic",
@@ -885,8 +868,7 @@
     "Map_W": 294,
     "Map_H": 214,
     "_timestamp": "2026-05-02T19:30:44.282079",
-    "_Creator_Seal_Hash": "c3ca75838e4168f07140e490d8cded28ca1cfd1400725ae0590b4ca98433cdf9",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "c3ca75838e4168f07140e490d8cded28ca1cfd1400725ae0590b4ca98433cdf9"
   },
   {
     "Rarity": "Mythic",
@@ -930,8 +912,7 @@
     "Map_W": 151,
     "Map_H": 74,
     "_timestamp": "2026-05-02T19:36:31.301635",
-    "_Creator_Seal_Hash": "976f18bdc4f1ea925c80a89adeed48f0b992d7cfb53457ca1ae44bbdf08a704f",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "976f18bdc4f1ea925c80a89adeed48f0b992d7cfb53457ca1ae44bbdf08a704f"
   },
   {
     "Rarity": "Mythic",
@@ -975,8 +956,7 @@
     "Map_W": 190,
     "Map_H": 175,
     "_timestamp": "2026-05-02T19:42:57.645477",
-    "_Creator_Seal_Hash": "5224ba3d8cd74de325bc19d2d584c717359af6e05a791d87038c4ee981a49c1a",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "5224ba3d8cd74de325bc19d2d584c717359af6e05a791d87038c4ee981a49c1a"
   },
   {
     "Rarity": "Mythic",
@@ -1021,8 +1001,7 @@
     "Map_W": 260,
     "Map_H": 150,
     "_timestamp": "2026-05-02T19:44:10.163842",
-    "_Creator_Seal_Hash": "acbf8b1f8bf73d223e58d429954b81a8bdfacda638a77d8f4286ac715b6648ad",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "acbf8b1f8bf73d223e58d429954b81a8bdfacda638a77d8f4286ac715b6648ad"
   },
   {
     "Rarity": "Epic",
@@ -1087,8 +1066,7 @@
     "_Creator_Seal_Hash": "b00c6695eb256db0d6e6dcfdae5e59689c7ca5e63c1c6b3ee0f6061ed74a0d6c",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1153,8 +1131,7 @@
     "_Creator_Seal_Hash": "dc1994281589f8caa3e94bbe08eb685e41eaeaf66a103923cad6d395942de478",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1219,8 +1196,7 @@
     "_Creator_Seal_Hash": "540113ae2bf48337f445969e6c4c5bf8993ffd5fad9527c1ce88d4f1e5e94724",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1285,8 +1261,7 @@
     "_Creator_Seal_Hash": "0dbbf9b7d7214518b7291cd623a0cd0e086bd17aa5b341bfc0f4c263290be512",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1351,8 +1326,7 @@
     "_Creator_Seal_Hash": "1c95c6e4bcffd6d92113b3c133fd87ecc7359ce5ff46c95f053971731bdac444",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1417,8 +1391,7 @@
     "_Creator_Seal_Hash": "7c244479e59644d57a582d69186f2e086c0b46ce2bbb06f0d4a9fa0efad13872",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1483,8 +1456,7 @@
     "_Creator_Seal_Hash": "2a0e451b965d5688af63817ab5f4511024bbf7472b934e31cc294fe71296fe07",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1549,8 +1521,7 @@
     "_Creator_Seal_Hash": "62c06a9f5cc84475355ce0a1ec2424fc51594652aef9aa0e82077a0cb7231651",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1615,8 +1586,7 @@
     "_Creator_Seal_Hash": "67dae754700783daf8e2e71bfa970ef0708e79151ee8bd889c8bc130c8411c33",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1681,8 +1651,7 @@
     "_Creator_Seal_Hash": "6603945f9d6d90e0e261c3476f07f355cb40fd68ec662f8930510441ba9da73a",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1747,8 +1716,7 @@
     "_Creator_Seal_Hash": "e75e919ed61d8bec79bdf43edc4c4a7c393b328bcf3dc5bcf3d5e7121363506a",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1813,8 +1781,7 @@
     "_Creator_Seal_Hash": "e5a16dce9545cfd49e8527c2a32a023ce3dadf5bb99f67183522cebbeeee61ca",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1879,8 +1846,7 @@
     "_Creator_Seal_Hash": "b2a67dda6cf5a435d14fafcb703e76c8a6f76133ff8dc46ac4ad4878db0f188c",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -1945,8 +1911,7 @@
     "_Creator_Seal_Hash": "e5d30003425073d714147d2822661fd4ffa66c9624711a7dce21f6be5f4b2267",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -2011,8 +1976,7 @@
     "_Creator_Seal_Hash": "55d97bf25224c11315e08b923941d01aae64eb568539e6bcf18532adecdbbc54",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -2079,8 +2043,7 @@
     "_last_clearing": "2026-05-03T16:31:20.771773",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2145,8 +2108,7 @@
     "_Creator_Seal_Hash": "c000810e3a10e3d4c7dd7ac65875ffdc755cd12fb85434d9ac03a03b67a11d1f",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2211,8 +2173,7 @@
     "_Creator_Seal_Hash": "9a5a33a48ee9ef4a33ee1e95a3903ba6bbe767eaac248dc895be2af48ace4563",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2277,8 +2238,7 @@
     "_Creator_Seal_Hash": "c495c54c9ec3276751f839a80e8e23bba5a1984516d849d2354d5b10d44d4644",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2343,8 +2303,7 @@
     "_Creator_Seal_Hash": "979d0507d5e8153af8d15b9bd7b51b77b538de0469c4b2474a007e93da412d6f",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2409,8 +2368,7 @@
     "_Creator_Seal_Hash": "9a1fea550ae053f9f122687bc946efc278e48203230eb35a5e6bb828ec563124",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2475,8 +2433,7 @@
     "_Creator_Seal_Hash": "68dee8a25bfe3064ef624cc55f70c8a12228f15f7c0c17232566339d846d5674",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2541,8 +2498,7 @@
     "_Creator_Seal_Hash": "0ea3bd4e27bafdff83c3be1184a12de1dc959021e6ac23becc9c29759550b5bd",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2608,8 +2564,7 @@
     "_Creator_Seal_Hash": "f821842cd15a885e5fa8cda1ae26ec87f6dedc4d2cb3376ec0ba1fffe6edb5c5",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2674,8 +2629,7 @@
     "_Creator_Seal_Hash": "e841d879cb7f7101e59f059dfa8e19bc04eaaff5cc93d4fc3fe3771e762d4d3e",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2740,8 +2694,7 @@
     "_Creator_Seal_Hash": "5e3fcc8b1e5a1afe2efe7be1c28460cfc47447f8928f240f4e51c14df5fe3dc9",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2806,8 +2759,7 @@
     "_Creator_Seal_Hash": "cc8bd544c6687f3807e7dbf6f301cb81a1bb2f87bc7b08bf6df1ba5e9b03ac55",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2872,8 +2824,7 @@
     "_Creator_Seal_Hash": "3881512d39b89d5f8ca5da6f0b919e3918538c39420d2c1410d5abc8d21063f5",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -2938,8 +2889,7 @@
     "_Creator_Seal_Hash": "53009b5093b445242d687245fc9a172299b11d6c0a0080d42d1b3589b4c4c8ff",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3004,8 +2954,7 @@
     "_Creator_Seal_Hash": "f2c5837950e5603a5cb217fb2182ddf2b8ee215bf98f320258dd16b736096a5f",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3070,8 +3019,7 @@
     "_Creator_Seal_Hash": "62687a5ebd554c3589fed601a91b156b9f8280333cb4012c21b19693c28828d0",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3136,8 +3084,7 @@
     "_Creator_Seal_Hash": "5428d473b5d2f7c03d1cabba62ee04132dbc7a75bdb87a7d9f07ef2777d8f698",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3202,8 +3149,7 @@
     "_Creator_Seal_Hash": "e6d2d331ef640e63fdbc960ca90d71228f59ff8c2d911d3185b90b12a1177bad",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3268,8 +3214,7 @@
     "_Creator_Seal_Hash": "4d624e206ae8b06bd3446fa8be6f05c120aaa0ac2d55bb763db6526f7c79ee7e",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3334,8 +3279,7 @@
     "_Creator_Seal_Hash": "3498e1dec9ec87446d60e17b51b1bb41f7fde3c0a9baa68673b960575b8460b5",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3400,8 +3344,7 @@
     "_Creator_Seal_Hash": "bd763a98db30b151d72f1baa160d44f629a1a0985ebac8d2072dac09f46ca271",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3466,8 +3409,7 @@
     "_Creator_Seal_Hash": "0083c2518ce76fb0fe8b320ce5f417ffa3237518255654eeb6bc3530ac1d87d9",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3532,8 +3474,7 @@
     "_Creator_Seal_Hash": "874d3e4e57c07b7e5c0ceec17c33334f513eedc3000f84c580a1ace0f27ac44c",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3598,8 +3539,7 @@
     "_Creator_Seal_Hash": "acd7e67a040b4aeb4d8d4339c643a9c09257b5d8f2614048be74dd492ed1d6bd",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3664,8 +3604,7 @@
     "_Creator_Seal_Hash": "016f44b93f3902ede5ecd2af8ed88b3d2300482f4ccba791abb3c80d2da5da54",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3730,8 +3669,7 @@
     "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3796,8 +3734,7 @@
     "_Creator_Seal_Hash": "298898fe5706fa87dab20dcf02af2f68e192a002d2b9ce9486de8237a783f526",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3861,8 +3798,7 @@
       "Resonance_Frequency": 0.95
     },
     "_timestamp": "2026-05-11T01:33:56.430964",
-    "_Creator_Seal_Hash": "88226496a874ba3eb4bc60e21d06cbc6b683c86d8097e08101e99e678ff8fe74",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "88226496a874ba3eb4bc60e21d06cbc6b683c86d8097e08101e99e678ff8fe74"
   },
   {
     "Rarity": "Common",
@@ -3927,8 +3863,7 @@
     "_Creator_Seal_Hash": "8665f08d7130b1ab8e1f426f848638f83a8256ea402935a50b491e5fdedea652",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -3992,8 +3927,7 @@
       "Resonance_Frequency": 0.7
     },
     "_timestamp": "2026-06-06T02:21:21.312545",
-    "_Creator_Seal_Hash": "9dfce49a220968c97209b178b8c883e50bfe10b66415a74bf9fd1c884bb7048a",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "9dfce49a220968c97209b178b8c883e50bfe10b66415a74bf9fd1c884bb7048a"
   },
   {
     "Rarity": "Common",
@@ -4057,8 +3991,7 @@
       "Resonance_Frequency": 0.7
     },
     "_timestamp": "2026-06-06T02:22:27.465768",
-    "_Creator_Seal_Hash": "80a1165420272437a125c74f45aa90f889a41a8ca45a4da2e221fa5bbd7f6c4a",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "80a1165420272437a125c74f45aa90f889a41a8ca45a4da2e221fa5bbd7f6c4a"
   },
   {
     "Rarity": "Common",
@@ -4124,8 +4057,7 @@
       "Resonance_Frequency": 0.7
     },
     "_timestamp": "2026-06-06T02:23:17.166629",
-    "_Creator_Seal_Hash": "8c332e4bbd1c14b25631c59a390fce17e4af57b190649cca10e5564d50803dcb",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "8c332e4bbd1c14b25631c59a390fce17e4af57b190649cca10e5564d50803dcb"
   },
   {
     "Rarity": "Common",
@@ -4190,8 +4122,7 @@
     "_Creator_Seal_Hash": "b681b7893d1ce289c2f36098e68a763755859b98416ab4fa9ebbd5a9be9e6cf9",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -4256,8 +4187,7 @@
     "_Creator_Seal_Hash": "d0ed43586ffdaf73b8b1ada83ec277e1cbbc2689f87509067794c49cecf0c66b",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -4322,8 +4252,7 @@
     "_Creator_Seal_Hash": "7aa29202786d461dae9b3a21b58c891e52852d9159c20ff3ea1c90b847602e1a",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -4388,8 +4317,7 @@
     "_Creator_Seal_Hash": "a49680b0857863ae443bd0c282ecbd5ff8ccd17c82b48b9b9cd250cc0806789f",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -4454,8 +4382,7 @@
     "_Creator_Seal_Hash": "6ca456f32707ecc988852a0c7e0e81a44b020f1aeb29a43f56ca07bd26f4acf0",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -4519,8 +4446,7 @@
       "Resonance_Frequency": 0.75
     },
     "_timestamp": "2026-05-10T03:11:34.255211",
-    "_Creator_Seal_Hash": "5ae4598733ed948b10e5fe8ebd3924a38e1fa0f2b0bb69a444207e7f44b53b50",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "5ae4598733ed948b10e5fe8ebd3924a38e1fa0f2b0bb69a444207e7f44b53b50"
   },
   {
     "Rarity": "Epic",
@@ -4584,8 +4510,7 @@
       "Resonance_Frequency": 0.85
     },
     "_timestamp": "2026-05-10T03:23:13.107873",
-    "_Creator_Seal_Hash": "7c8dbb423f6ba3879bd1c22383bb44bc23c3cc4587634955e8d45e79ec5ceba6",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "7c8dbb423f6ba3879bd1c22383bb44bc23c3cc4587634955e8d45e79ec5ceba6"
   },
   {
     "Rarity": "Epic",
@@ -4649,8 +4574,7 @@
       "Resonance_Frequency": 0.85
     },
     "_timestamp": "2026-05-10T03:35:54.066967",
-    "_Creator_Seal_Hash": "24a5a9c877c054b7c4ef1c12b9d2baf03df0d8268b16d1458a0a449126fb0db2",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "24a5a9c877c054b7c4ef1c12b9d2baf03df0d8268b16d1458a0a449126fb0db2"
   },
   {
     "Rarity": "Epic",
@@ -4714,8 +4638,7 @@
       "Resonance_Frequency": 0.75
     },
     "_timestamp": "2026-05-10T04:10:44.597071",
-    "_Creator_Seal_Hash": "aba206075982e51fb6d0feca8a8c29c7994d8dba0284f8364fb7b1eaac0654ec",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "aba206075982e51fb6d0feca8a8c29c7994d8dba0284f8364fb7b1eaac0654ec"
   },
   {
     "Rarity": "Epic",
@@ -4779,8 +4702,7 @@
       "Resonance_Frequency": 0.7
     },
     "_timestamp": "2026-05-10T04:26:25.904254",
-    "_Creator_Seal_Hash": "19caae4a1f7b2063fffc3b04434e25d0ae6005fda74740609761d10520c0812e",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "19caae4a1f7b2063fffc3b04434e25d0ae6005fda74740609761d10520c0812e"
   },
   {
     "Rarity": "Epic",
@@ -4844,8 +4766,7 @@
       "Resonance_Frequency": 0.95
     },
     "_timestamp": "2026-06-05T03:37:24.812881",
-    "_Creator_Seal_Hash": "22474898979515f422f732e6b11eccfb5184707dbf37e43eef1a9b9075b7adba",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "22474898979515f422f732e6b11eccfb5184707dbf37e43eef1a9b9075b7adba"
   },
   {
     "Rarity": "Epic",
@@ -4909,8 +4830,7 @@
       "Resonance_Frequency": 0.9
     },
     "_timestamp": "2026-06-05T03:46:12.691106",
-    "_Creator_Seal_Hash": "ed3875db00ed4096208ea8e65bff1587d3d13859c00c02fc8c767fc35646ed5d",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "ed3875db00ed4096208ea8e65bff1587d3d13859c00c02fc8c767fc35646ed5d"
   },
   {
     "Rarity": "Epic",
@@ -4974,8 +4894,7 @@
       "Resonance_Frequency": 0.75
     },
     "_timestamp": "2026-06-05T03:54:15.459353",
-    "_Creator_Seal_Hash": "ee477199b4b74952d223e01cae3b8f1787128530377ec849425fbfd65cc56e34",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "ee477199b4b74952d223e01cae3b8f1787128530377ec849425fbfd65cc56e34"
   },
   {
     "Rarity": "Epic",
@@ -5039,8 +4958,7 @@
       "Resonance_Frequency": 0.95
     },
     "_timestamp": "2026-06-05T04:01:39.871365",
-    "_Creator_Seal_Hash": "548056aa9dcd14a5655197a2f5f83a4d9dfada712d0f2b2c7781b9612d4f768b",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "548056aa9dcd14a5655197a2f5f83a4d9dfada712d0f2b2c7781b9612d4f768b"
   },
   {
     "Rarity": "Epic",
@@ -5104,8 +5022,7 @@
       "Resonance_Frequency": 0.65
     },
     "_timestamp": "2026-06-05T04:12:31.853428",
-    "_Creator_Seal_Hash": "01ab28b185a823e0ff29ab5e1f4f6399a1ba6adbc6bc2fd22f494391962c70f6",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "01ab28b185a823e0ff29ab5e1f4f6399a1ba6adbc6bc2fd22f494391962c70f6"
   },
   {
     "Rarity": "Epic",
@@ -5169,8 +5086,7 @@
       "Resonance_Frequency": 0.95
     },
     "_timestamp": "2026-06-05T04:25:33.609343",
-    "_Creator_Seal_Hash": "2eb2854396693c53a075f1af5b7d2f16470193389b3a09925ea243df347718a7",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "2eb2854396693c53a075f1af5b7d2f16470193389b3a09925ea243df347718a7"
   },
   {
     "Rarity": "Epic",
@@ -5234,8 +5150,7 @@
       "Resonance_Frequency": 0.65
     },
     "_timestamp": "2026-06-05T04:36:09.774836",
-    "_Creator_Seal_Hash": "115e8e3e55b9479dfde75e0e9a738b9d3241309a169b62ef02fe1ee3970cc7ff",
-    "Quarter": "Квартал Мастеров"
+    "_Creator_Seal_Hash": "115e8e3e55b9479dfde75e0e9a738b9d3241309a169b62ef02fe1ee3970cc7ff"
   },
   {
     "Rarity": "Rare",
@@ -5299,8 +5214,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5364,8 +5278,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5429,8 +5342,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5494,8 +5406,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5559,8 +5470,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5624,8 +5534,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5689,8 +5598,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5754,8 +5662,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5819,8 +5726,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5884,8 +5790,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -5949,8 +5854,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6014,8 +5918,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6079,8 +5982,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6144,8 +6046,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6209,8 +6110,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6274,8 +6174,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6339,8 +6238,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6404,8 +6302,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6469,8 +6366,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6534,8 +6430,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6594,8 +6489,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6659,8 +6553,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6728,8 +6621,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6793,8 +6685,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6858,8 +6749,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6923,8 +6813,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -6988,8 +6877,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7053,8 +6941,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7118,8 +7005,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7183,8 +7069,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7248,8 +7133,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7313,8 +7197,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7383,8 +7266,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7448,8 +7330,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7513,8 +7394,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7578,8 +7458,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7643,8 +7522,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7708,8 +7586,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7773,8 +7650,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7838,8 +7714,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7903,8 +7778,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -7968,8 +7842,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8033,8 +7906,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8098,8 +7970,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8163,8 +8034,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8228,8 +8098,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8293,8 +8162,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8358,8 +8226,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8423,8 +8290,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8488,8 +8354,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Rare",
@@ -8553,8 +8418,7 @@
     "_Creator_Seal_Hash": "",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8610,8 +8474,7 @@
     "Interaction_Scripts": "Оценить избыточность, Вынести вердикт, Очистить форму, Отфильтровать шум, Дать техническое задание, Запросить исправления",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8667,8 +8530,7 @@
     "Interaction_Scripts": "Оценить пропорции, Построить модульную сетку, Проверить на соответствие Золотому сечению, Оптимизировать векторный путь, Анализировать визуальную структуру, Выявить геометрические аномалии",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8724,8 +8586,7 @@
     "Interaction_Scripts": "Анализировать форму, Проектировать знак, Оптимизировать вектор, Проверять универсальность, Обсуждать эстетику, Искать идеальную пропорцию",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8781,8 +8642,7 @@
     "Interaction_Scripts": "Оценить кернинг, Подобрать гарнитуру, Объяснить типографскую иерархию, Скорректировать текстовый блок, Провести мастер-класс по лигатурам, Проанализировать удобочитаемость",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8838,8 +8698,7 @@
     "Interaction_Scripts": "Откалибровать оттенок, Проанализировать палитру, Выдать строгую оценку, Исправить цветовой дисбаланс, Прочитать лекцию о гармонии цвета, Зафиксировать 'идеальный' пигмент.",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8895,8 +8754,7 @@
     "Interaction_Scripts": "Показать голографический макет, Продемонстрировать масштаб, Предложить неожиданную поверхность, Проанализировать узнаваемость, Запустить проекцию, Обсудить охват",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -8952,8 +8810,7 @@
     "Interaction_Scripts": "Анимировать логотип, Создать временную шкалу, Добавить эффект перехода, Оптимизировать движение, Продемонстрировать динамику, Синхронизировать с музыкой",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -9009,8 +8866,7 @@
     "Interaction_Scripts": "Оптимизация изображений, Форматирование контента, Проверка соответствия гайдлайнам, Создание адаптивных макетов, Анализ трендов упаковки, Консультация по стандартам",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Common",
@@ -9066,8 +8922,7 @@
     "Interaction_Scripts": "Оценивает потенциал, Проводит аудит визуала, Даёт 'ценные' советы, Отклоняет 'несостоятельные' идеи, Сравнивает с конкурентами, Прогнозирует ROI.",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -9120,8 +8975,7 @@
     "_Creator_Seal_Hash": "c9cfec0b2fe92985b17531896b54914fea4a7f27ab3a54d8d8693b254b484f5d",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -9174,8 +9028,7 @@
     "_Creator_Seal_Hash": "165ce578899f0585fe9b8fb72e78336e6bc0b2fc5103969e1275beb4389a5960",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -9226,8 +9079,7 @@
       "Resonance_Frequency": 0.5
     },
     "_timestamp": "2026-06-01T04:02:08.633346",
-    "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "99a2903290de7f1efec0b46161274564df7a34a6e896edb2175e1b55a6797da9"
   },
   {
     "Rarity": "Common",
@@ -9240,8 +9092,7 @@
     "Backing_Status": "Обеспечено резервом",
     "Owner_ID": "P_0000000000",
     "allow_GND": false,
-    "Cartridge_Author_ID": "P_0000000000",
-    "Quarter": "Квартал Мастеров"
+    "Cartridge_Author_ID": "P_0000000000"
   },
   {
     "Rarity": "Epic",
@@ -9291,8 +9142,7 @@
       "Resonance_Frequency": 0.7
     },
     "_timestamp": "2026-05-16T22:34:29.168830",
-    "_Creator_Seal_Hash": "e51ac6cee7333067dd14338db3786239200cbe29d1191a82250c2c466b1a724a",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "e51ac6cee7333067dd14338db3786239200cbe29d1191a82250c2c466b1a724a"
   },
   {
     "Rarity": "Epic",
@@ -9342,8 +9192,7 @@
       "Resonance_Frequency": 0.6
     },
     "_timestamp": "2026-05-30T21:26:46.488693",
-    "_Creator_Seal_Hash": "a0a1eaeb8f1723184a157fed2ce3dc42a21f9b5eca01b6b44911e0a7cc9e2744",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "a0a1eaeb8f1723184a157fed2ce3dc42a21f9b5eca01b6b44911e0a7cc9e2744"
   },
   {
     "Rarity": "Epic",
@@ -9392,8 +9241,7 @@
       "Resonance_Frequency": 0.6
     },
     "_timestamp": "2026-06-05T03:27:11.909603",
-    "_Creator_Seal_Hash": "a95aae340fd0b490e7d18d689b05555c1c0afbfc806399e23ab28defceee6500",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "a95aae340fd0b490e7d18d689b05555c1c0afbfc806399e23ab28defceee6500"
   },
   {
     "Rarity": "Epic",
@@ -9443,8 +9291,7 @@
       "Resonance_Frequency": 0.6
     },
     "_timestamp": "2026-06-05T07:17:24.766830",
-    "_Creator_Seal_Hash": "9c066b33a384fb7596f09fb772441b99bb554c8513336840d2a09fade4eb0134",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "9c066b33a384fb7596f09fb772441b99bb554c8513336840d2a09fade4eb0134"
   },
   {
     "Rarity": "Epic",
@@ -9497,8 +9344,7 @@
       "Resonance_Frequency": 0.5
     },
     "_timestamp": "2026-06-05T07:18:56.328828",
-    "_Creator_Seal_Hash": "c8bcaec4c12ca5e77965c06f0e9a26d7c7d84d8fa200fabf9838a8d5edc9c9eb",
-    "Quarter": "Высотка"
+    "_Creator_Seal_Hash": "c8bcaec4c12ca5e77965c06f0e9a26d7c7d84d8fa200fabf9838a8d5edc9c9eb"
   },
   {
     "Rarity": "Rare",
@@ -9522,8 +9368,7 @@
     "Map_Y": 158,
     "Map_W": 310,
     "Map_H": 96,
-    "_timestamp": "2026-06-11T02:52:32.097398",
-    "Quarter": "Торговый Квартал"
+    "_timestamp": "2026-06-11T02:52:32.097398"
   },
   {
     "Rarity": "Rare",
@@ -9547,8 +9392,7 @@
     "Map_Y": 172,
     "Map_W": 130,
     "Map_H": 73,
-    "_timestamp": "2026-06-11T02:52:32.097398",
-    "Quarter": "Торговый Квартал"
+    "_timestamp": "2026-06-11T02:52:32.097398"
   },
   {
     "Rarity": "Epic",
@@ -9598,7 +9442,6 @@
       "Resonance_Frequency": 0.3
     },
     "_timestamp": "2026-06-12T02:31:07.807885",
-    "_Creator_Seal_Hash": "dd897156530d80358eedca95122722ead009ad909479abbbca2e6e31ef82f81f",
-    "Quarter": "Торговый Квартал"
+    "_Creator_Seal_Hash": "dd897156530d80358eedca95122722ead009ad909479abbbca2e6e31ef82f81f"
   }
 ]
