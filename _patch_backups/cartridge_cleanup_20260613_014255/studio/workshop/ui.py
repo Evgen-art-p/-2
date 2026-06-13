@@ -278,14 +278,21 @@ DEPT_TO_RUNTYPE = {
 
 
 def _dept_runtype(dept: str) -> str:
-    """Режим работы цеха Студии.
+    """ЗАКОН КАРТРИДЖА: режим работы цеха.
 
-    Источник истины — словарь DEPT_TO_RUNTYPE выше (приоритет Шефа:
-    video_long = episode, а не full из манифеста).
-    Неизвестный цех → дефолт "social".
-    Торговый Совет запускается из трейд-дашборда, не из Мастерской.
+    Сначала рабочие дефолты Шефа (словарь выше — они главнее манифеста:
+    у video_long рабочий режим episode, а не full из манифеста),
+    затем run_type из manifest.json картриджа — новый цех получает
+    свой режим сам, без правок этого файла. Дефолт: social.
     """
-    return DEPT_TO_RUNTYPE.get(dept, "social")
+    rt = DEPT_TO_RUNTYPE.get(dept)
+    if rt:
+        return rt
+    from studio.modules_registry import get_cartridge
+    cart = get_cartridge(dept)
+    if cart and cart.get("run_type"):
+        return cart["run_type"]
+    return "social"
 
 
 # ─── Названия цехов ─────────────────────────────────────

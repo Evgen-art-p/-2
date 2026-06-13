@@ -276,18 +276,6 @@ DEPT_TO_RUNTYPE = {
     "living_book":  "living_book",
 }
 
-
-def _dept_runtype(dept: str) -> str:
-    """Режим работы цеха Студии.
-
-    Источник истины — словарь DEPT_TO_RUNTYPE выше (приоритет Шефа:
-    video_long = episode, а не full из манифеста).
-    Неизвестный цех → дефолт "social".
-    Торговый Совет запускается из трейд-дашборда, не из Мастерской.
-    """
-    return DEPT_TO_RUNTYPE.get(dept, "social")
-
-
 # ─── Названия цехов ─────────────────────────────────────
 DEPT_LABELS = {
     "social_mix":   "🗓️ Соцсети",
@@ -331,7 +319,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
         # --- Клиент ---
         "current_client": "_sandbox",  # slug текущего клиента
         "run_date": datetime.now().strftime('%Y-%m-%d'),
-        "run_type": _dept_runtype(dept),  # ЗАКОН КАРТРИДЖА
+        "run_type": DEPT_TO_RUNTYPE.get(dept, "social"),
         "active_dept": dept,
         # --- Checkpoint ---
         "paused_at": None,        # worker_id где остановились
@@ -1357,7 +1345,7 @@ def page_workshop(dept: str = 'video_long', prompt: str = '') -> None:
             # выбрал его вручную через кнопки ПЛАН/ПОСТ
             if not state.get("run_type_locked", False):
                 dept = state.get("active_dept", "social_mix")
-                default_type = _dept_runtype(dept)
+                default_type = DEPT_TO_RUNTYPE.get(dept, "social")
                 new_run_type = detect_run_type_from_brief(
                     brief=brief,
                     dept=dept,

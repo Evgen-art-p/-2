@@ -20,6 +20,7 @@ from studio.modules_registry import (
     MODULES_DIR,
     get_worker_prompt, get_worker_info, get_worker_knowledge,
     get_dept_workers, get_dept_all_workers,
+    DEPT_PIPELINE_CONFIG,
 )
 # ══ Conflict System (Этап 6) ══
 try:
@@ -78,7 +79,7 @@ class CartridgeManifest:
 
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
         return cls(
-            id=module_id,  # ЗАКОН КАРТРИДЖА: id = имя папки (копия папки = новый цех)
+            id=data.get("id", module_id),
             label=data.get("label", module_id),
             icon=data.get("icon", "🔧"),
             version=data.get("version", "1.0"),
@@ -97,7 +98,7 @@ class CartridgeManifest:
 
     @classmethod
     def _build_from_legacy(cls, module_id: str) -> "CartridgeManifest":
-        """Строит manifest для папки без manifest.json (info.json + реальные папки)."""
+        """Строит manifest из существующих info.json + DEPT_PIPELINE_CONFIG."""
         info_path = MODULES_DIR / module_id / "info.json"
         info = {}
         if info_path.exists():
@@ -106,9 +107,14 @@ class CartridgeManifest:
             except Exception:
                 pass
 
-        # ЗАКОН КАРТРИДЖА: фазы спрашиваем у реестра
-        # (он сам читает manifest.json; без манифеста — дефолт 3×4 по папкам)
-        phases = dict(get_dept_workers(module_id))
+        # Фазы из modules_registry
+        phases = {}
+        config = DEPT_PIPELINE_CONFIG.get(module_id)
+        if config:
+            phases = config.get("phases", {})
+        else:
+            # Дефолт 3×4
+            phases = dict(get_dept_workers(module_id))
 
         return cls(
             id=module_id,

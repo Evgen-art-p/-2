@@ -151,33 +151,6 @@ ROLE_OPTIONS_MAP = {
     "trading":      TRADING_ROLE_OPTIONS,
 }
 
-
-# ── ЗАКОН КАРТРИДЖА (Спринт 45) ────────────────────────────────
-# Списки выше остаются как страховочный fallback.
-# Живые источники — сканер modules/ и phases из манифестов:
-# новый цех появляется в Странице Жизни сам, без правок этого файла.
-
-def get_workshop_options() -> list[str]:
-    """Цеха для селекта рождения: residents + все картриджи (живой скан)."""
-    from studio.modules_registry import list_cartridges
-    return ["", "residents"] + [c["id"] for c in list_cartridges()]
-
-
-def get_role_options(workshop: str) -> list[str]:
-    """Роли цеха — из phases его manifest.json, в порядке фаз.
-
-    residents — лор-роли (administrator/keeper/...), не из манифеста.
-    Цех без манифеста или без фаз — стандарт A01–A12.
-    """
-    if workshop == "residents":
-        return RESIDENT_ROLE_OPTIONS
-    from studio.modules_registry import get_cartridge
-    cart = get_cartridge(workshop)
-    if cart and cart.get("roles"):
-        return [""] + list(cart["roles"])
-    return PIPELINE_ROLE_OPTIONS
-
-
 def generate_agent_files(obj: dict, dna_static: dict,
                           core_phrase: str, anchor_points: str,
                           home_story: str, pull_vector: str,
@@ -1314,14 +1287,11 @@ def page_registry():
                                 _WORKSHOP_QUARTER = {"residents": "Высотка", "turbo": "Квартал Мастеров", "social_mix": "Квартал Мастеров", "video_long": "Квартал Мастеров", "video_shorts": "Квартал Мастеров", "web_story": "Квартал Мастеров", "clipmakers": "Квартал Мастеров", "advertising": "Квартал Мастеров", "emo_card": "Квартал Мастеров", "logo_design": "Квартал Мастеров", "market_hit": "Квартал Мастеров", "living_book": "Квартал Мастеров", "trading": "Торговый Квартал"}
                                 def on_workshop_change(e):
                                     ws = e.value or ""
-                                    # ЗАКОН КАРТРИДЖА: роли — из phases манифеста цеха
-                                    opts = get_role_options(ws)
+                                    opts = ROLE_OPTIONS_MAP.get(ws, [""])
                                     new_options = {v: v if v else "— не задана —" for v in opts}
-                                    # Автозаполнение квартала: манифест цеха → словарь → дефолт
+                                    # Автозаполнение квартала по цеху
                                     if agent_quarter_widget["w"] and ws:
-                                        from studio.modules_registry import get_cartridge
-                                        _cart = get_cartridge(ws)
-                                        auto_q = (_cart or {}).get("quarter") or _WORKSHOP_QUARTER.get(ws, "Квартал Мастеров")
+                                        auto_q = _WORKSHOP_QUARTER.get(ws, "Квартал Мастеров")
                                         agent_quarter_widget["w"].value = auto_q
                                         agent_quarter_widget["w"].update()
                                     if role_widget["w"]:
@@ -1331,7 +1301,7 @@ def page_registry():
 
                                 workshop_widget["w"] = ui.select(
                                     label="Workshop_ID (Цех)",
-                                    options={v: v if v else "— выбрать цех —" for v in get_workshop_options()},
+                                    options={v: v if v else "— выбрать цех —" for v in WORKSHOP_OPTIONS},
                                     on_change=on_workshop_change,
                                 ).classes("w-full")
 

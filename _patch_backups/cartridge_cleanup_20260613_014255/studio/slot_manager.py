@@ -19,7 +19,6 @@ from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 from studio.cartridge import CartridgeManifest, load_cartridge
-from studio.modules_registry import list_cartridges
 
 
 SLOTS_FILE = Path("studio/slots.json")
@@ -91,32 +90,6 @@ class SlotManager:
         except Exception as e:
             print(f"[SLOTS] Ошибка загрузки slots.json: {e}")
             self._init_default_slots()
-            return
-
-        # ЗАКОН КАРТРИДЖА: синхронизируем slots.json с реальными картриджами.
-        # slots.json мог быть создан до появления нового цеха (trading и др.) —
-        # добавляем недостающие, убираем исчезнувшие папки.
-        known = {s.slot_id for s in self.slots}
-        changed = False
-        for cart in list_cartridges():
-            if cart["id"] not in known:
-                self.slots.append(Slot(
-                    slot_id=cart["id"],
-                    module=cart["id"],
-                    label=cart["label"],
-                    enabled=True,
-                    order=cart["priority"],
-                ))
-                print(f"[SLOTS] + добавлен новый цех: {cart['id']}")
-                changed = True
-        existing_ids = {cart["id"] for cart in list_cartridges()}
-        before = len(self.slots)
-        self.slots = [s for s in self.slots if s.slot_id in existing_ids or s.slot_id == "residents"]
-        if len(self.slots) != before:
-            print(f"[SLOTS] - убраны исчезнувшие цеха: {before - len(self.slots)}")
-            changed = True
-        if changed:
-            self._save()
 
     def _init_default_slots(self):
         """Создаёт дефолтные слоты — по одному на каждый модуль."""
@@ -124,16 +97,33 @@ class SlotManager:
             self.slots = []
             return
 
-        # ЗАКОН КАРТРИДЖА: список слотов из сканера, не из info.json напрямую
+        order = 0
         self.slots = []
-        for cart in list_cartridges():
+        for d in sorted(MODULES_DIR.iterdir()):
+            if not d.is_dir():
+                continue
+            info_path = d / "info.json"
+            if not info_path.exists():
+                continue
+
+            try:
+                info = json.loads(info_path.read_text(encoding="utf-8"))
+            except Exception:
+                info = {}
+
+            module_id = d.name
+            # Пропускаем residents — это не цех
+            if module_id == "residents":
+                continue
+
             self.slots.append(Slot(
-                slot_id=cart["id"],
-                module=cart["id"],
-                label=cart["label"],
+                slot_id=module_id,
+                module=module_id,
+                label=info.get("label", module_id),
                 enabled=True,
-                order=cart["priority"],
+                order=info.get("priority", order * 10),
             ))
+            order += 1
 
         self._save()
 

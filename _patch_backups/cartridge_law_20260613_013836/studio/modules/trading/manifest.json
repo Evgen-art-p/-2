@@ -5,8 +5,6 @@
   "version": "1.0",
   "description": "Военный Совет: 4 сенсора → память → 3 трейдера параллельно → исполнение. Вердикт: входить или нет.",
   "run_type": "trading",
-  "quarter": "Торговый Квартал",
-  "client_facing": false,
   "phases": {
     "SENSORS": [
       "A01",

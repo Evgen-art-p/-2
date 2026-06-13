@@ -9,7 +9,7 @@ from nicegui import ui
 
 from studio.modules_registry import (
     MODULES_DIR, CURRENT_DEPT,
-    _read_json, list_cartridges,
+    _read_json,
 )
 from studio.config import BASE_DIR
 
@@ -82,35 +82,27 @@ DEPT_AVATAR_MAP = {
     "web_story": "web_story",
 }
 
-# ── ЗАКОН КАРТРИДЖА (Спринт 45) ────────────────────────────────
-# Список цехов больше НЕ ведётся руками — его строит сканер.
-# residents — первая, постоянная зона (не картридж: без manifest.json).
-# Остальные цеха появляются и исчезают вместе со своими папками
-# в modules/ — на лету, без патчей.
+# Список всех доступных цехов
+# residents — ПЕРВЫЙ в списке, постоянные жители Студии (Лока, ДЖем, ...)
+# is_permanent: True — НЕ показывать в аккордеоне, отдельная зона
+DEPARTMENTS = [
+    {"id": "residents",    "label": "резиденты",    "prefix": "", "is_permanent": True},
+    {"id": "turbo",        "label": "turbo",        "prefix": "A"},
+    {"id": "video_long",   "label": "video-long",   "prefix": "A"},
+    {"id": "video_shorts", "label": "video-shorts",  "prefix": "A"},
+    {"id": "social_mix",   "label": "social-mix",   "prefix": "A"},
+    {"id": "web_story",    "label": "web-story",    "prefix": "A"},
+    {"id": "clipmakers",   "label": "clipmakers",   "prefix": "A"},
+    {"id": "advertising",  "label": "advertising",  "prefix": "A"},
+    {"id": "emo_card",     "label": "emo-card",     "prefix": "A"},
+    {"id": "logo_design",  "label": "logo-design",  "prefix": "A"},
+    {"id": "market_hit",   "label": "market-hit",   "prefix": "A"},
+    {"id": "living_book",  "label": "living-book",  "prefix": "A"},
+    {"id": "trading",      "label": "trading",      "prefix": "A"},
+]
 
-def get_departments() -> list[dict]:
-    """Цеха Кабинета: резиденты + все картриджи из modules/ — живой скан."""
-    depts = [
-        {"id": "residents", "label": "резиденты", "prefix": "", "is_permanent": True},
-    ]
-    for c in list_cartridges():
-        depts.append({
-            "id": c["id"],
-            "label": c["id"].replace("_", "-"),  # стиль Кабинета: video_long → video-long
-            "prefix": "A",
-        })
-    return depts
-
-
-def get_city_departments() -> list[dict]:
-    """Цеха для аккордеона (без residents) — живой скан."""
-    return [d for d in get_departments() if not d.get("is_permanent")]
-
-
-# Снимки на момент импорта — только для обратной совместимости.
-# Живые места (аккордеон, карта, матрица, поиск) зовут функции выше.
-DEPARTMENTS = get_departments()
-CITY_DEPARTMENTS = get_city_departments()
+# Цехи для аккордеона (без residents)
+CITY_DEPARTMENTS = [d for d in DEPARTMENTS if not d.get("is_permanent")]
 
 # Цвета динамических параметров
 BAR_COLORS = {
@@ -280,7 +272,7 @@ def list_all_agents() -> dict[str, list[dict]]:
         {"residents": [...], "turbo": [...], "web_story": [...], ...}
     """
     result = {}
-    for dept in get_departments():
+    for dept in DEPARTMENTS:
         agents = list_dept_agents(dept["id"])
         if agents:
             result[dept["id"]] = agents
@@ -294,7 +286,7 @@ def search_agents_global(query: str) -> list[dict]:
         return []
 
     results = []
-    for dept in get_departments():
+    for dept in DEPARTMENTS:
         for agent in list_dept_agents(dept["id"]):
             name = f'{agent["id"]} {agent["label"]}'.lower()
             if query in name:

@@ -195,9 +195,12 @@ def page_cartridge_manager() -> None:
 
     sm = SlotManager()
 
-    # ЗАКОН КАРТРИДЖА: список модулей через сканер, не через info.json
-    from studio.modules_registry import list_cartridges as _lc
-    available_modules = [c["id"] for c in _lc()]
+    # Список всех доступных модулей (для кнопки «добавить»)
+    available_modules = []
+    if MODULES_DIR.exists():
+        for d in sorted(MODULES_DIR.iterdir()):
+            if d.is_dir() and d.name != "residents" and (d / "info.json").exists():
+                available_modules.append(d.name)
 
     # ═══ Рендер ═══════════════════════════════════════════
 

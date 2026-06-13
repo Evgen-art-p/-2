@@ -78,6 +78,13 @@
       "label": "📖 Живая Книга",
       "enabled": true,
       "order": 110
+    },
+    {
+      "slot_id": "trading",
+      "module": "trading",
+      "label": "⚔️ Торговый Цех",
+      "enabled": true,
+      "order": 100
     }
   ]
 }

@@ -310,35 +310,50 @@ def get_chain(start_from: int = 1, end_at: int = 12) -> list[str]:
 # Используется в ui.py вместо хардкода
 
 # Конфигурация цехов: какие фазы и checkpoints
-# ⚰️ ЗАКОН КАРТРИДЖА (Спринт 45): хардкод похоронен.
-# Фазы и revision_loop живут в manifest.json каждого цеха —
-# living_book носит их там со времён картриджной архитектуры,
-# get_dept_workers() и CartridgeManifest читают манифест напрямую.
-# Имя оставлено пустым для совместимости импортов (workshop/ui.py).
-DEPT_PIPELINE_CONFIG: dict = {}
+DEPT_PIPELINE_CONFIG = {
+    "living_book": {
+        "phases": {
+            "GENESIS":   ["A00", "A00a"],
+            "PRE-PROD":  ["A01", "A02", "A03", "A04"],
+            "PROD":      ["A05", "A06", "A07", "A08"],
+            "POST-PROD": ["A09", "A10", "A11", "A12"],
+            "DELIVERY":  ["A13", "A14", "A15", "A16"],
+        },
+        "revision_loop": {
+            # Если A00a (Вера Душа) возвращает REVISION — задача идёт назад на A00
+            "reviewer": "A00a",
+            "return_to": "A00",
+            "status_field": "verdict",      # поле в meta ответа
+            "revision_value": "REVISION",   # значение = переделка
+            "approved_value": "APPROVED",   # значение = прошло
+            "max_loops": 3,                 # максимум петель
+        },
+    },
+    # Другие цеха используют дефолтную структуру 3×4
+}
 
 
 def get_dept_workers(dept: str | None = None) -> dict[str, list[str]]:
     """Получить WORKERS dict для департамента.
 
-    ЗАКОН КАРТРИДЖА: фазы — из manifest.json цеха
-    (SENSORS/TRIBUNAL у trading, GENESIS/DELIVERY у living_book).
-    Без манифеста или фаз: стандартная структура 3×4 по реальным папкам.
+    Для living_book: читает из DEPT_PIPELINE_CONFIG.
+    Для остальных: стандартная структура 3×4.
+    Всегда читает реальные папки как fallback.
     """
     dept = dept or CURRENT_DEPT
 
-    # ЗАКОН КАРТРИДЖА: фазы цеха читаются из его manifest.json
-    cart = get_cartridge(dept)
-    if cart and cart.get("phases"):
+    # Проверяем есть ли конфиг для этого цеха
+    config = DEPT_PIPELINE_CONFIG.get(dept)
+    if config:
+        phases = config["phases"]
         # Валидируем: убираем агентов у которых нет папки
         dept_path = MODULES_DIR / dept
         validated = {}
-        for phase_name, agents in cart["phases"].items():
+        for phase_name, agents in phases.items():
             existing = [a for a in agents if _is_valid_dir(dept_path / a)]
             if existing:
                 validated[phase_name] = existing
-        if validated:
-            return validated
+        return validated
 
     # Дефолт: 3 фазы по 4 агента (старое поведение)
     dept_path = MODULES_DIR / dept
@@ -376,100 +391,6 @@ def get_dept_all_workers(dept: str | None = None) -> list[str]:
     return result
 
 
-# ═══════════════════════════════════════════════════════════════
-#  ЗАКОН КАРТРИДЖА (Спринт 45) — единственный сканер цехов
-#
-#  1. Картридж объявляет себя сам: папка в modules/ + manifest.json.
-#     Его id — ИМЯ ПАПКИ, не поле в манифесте.
-#     Копия папки (trading → trading_b) = новый цех, без коллизий.
-#  2. Никто не ведёт списков: Кабинет, Реестр, Приёмная, карта —
-#     все строят свои списки отсюда, на лету.
-#     Удалил папку — цех исчез отовсюду. Пусто — студия работает пустая.
-#  3. Город помнит снаружи: хроники, пульс, traces, NFT, биллинг
-#     живут вне modules/ и переживают любой картридж.
-# ═══════════════════════════════════════════════════════════════
-
-def _build_cartridge(d: Path) -> dict | None:
-    """Паспорт картриджа из его папки. None — если это не картридж."""
-    manifest_path = d / "manifest.json"
-    if not manifest_path.exists():
-        return None  # residents и прочие папки без манифеста — не картриджи
-
-    m = _read_json(manifest_path)
-    if not isinstance(m, dict):
-        m = {}
-    info = _read_json(d / "info.json")  # клиентская карточка (может не быть)
-    if not isinstance(info, dict):
-        info = {}
-
-    phases = m.get("phases", {})
-    if not isinstance(phases, dict):
-        phases = {}
-    roles = [a for agents in phases.values() if isinstance(agents, list) for a in agents]
-
-    prio = m.get("priority")
-    if prio is None:
-        prio = info.get("priority")
-    try:
-        prio = int(prio)
-    except (TypeError, ValueError):
-        prio = 100
-
-    return {
-        "id": d.name,                              # ЗАКОН: id = имя папки
-        "label": m.get("label", d.name),
-        "icon": m.get("icon", info.get("icon", "🔧")),
-        "run_type": m.get("run_type", d.name),
-        "phases": phases,
-        "roles": roles,                            # плоский A.. в порядке фаз
-        "qa_agent": m.get("qa_agent", ""),
-        "quarter": m.get("quarter", ""),           # квартал города (мост к Закону Пары)
-        "client_facing": m.get("client_facing"),   # None = решает наличие info.json
-        "has_info": bool(info),
-        "manifest": m,
-        "info": info,
-        "priority": prio,
-    }
-
-
-def list_cartridges() -> list[dict]:
-    """Все картриджи студии — живым сканом modules/, без списков в коде.
-
-    Сортировка: priority (манифест → info.json → 100), затем имя папки.
-    Битый манифест не валит сканер — цех пропускается с предупреждением.
-    """
-    carts: list[dict] = []
-    if not MODULES_DIR.exists():
-        return carts
-
-    for d in sorted(MODULES_DIR.iterdir()):
-        if not _is_valid_dir(d):
-            continue
-        try:
-            cart = _build_cartridge(d)
-        except Exception as e:
-            print(f"[CARTRIDGE] ⚠ {d.name}: манифест не прочитан — {e}")
-            continue
-        if cart:
-            carts.append(cart)
-
-    carts.sort(key=lambda c: (c["priority"], c["id"]))
-    return carts
-
-
-def get_cartridge(dept: str) -> dict | None:
-    """Паспорт одного картриджа по имени папки. None — цеха нет."""
-    if not dept:
-        return None
-    d = MODULES_DIR / dept
-    if not _is_valid_dir(d):
-        return None
-    try:
-        return _build_cartridge(d)
-    except Exception:
-        return None
-
-
 # === Совместимость с ui_reception.py ===
 @dataclass(frozen=True)
 class Dept:
@@ -484,41 +405,29 @@ class Dept:
 
 
 def load_depts() -> list[Dept]:
-    """Для ui_reception.py — список клиентских цехов.
-
-    ЗАКОН КАРТРИДЖА: источник — сканер list_cartridges().
-    Клиентская карточка (label, color, placeholder, suggest...) — info.json;
-    если её нет, поля берутся прямо из manifest.json.
-
-    Видимость в Приёмной:
-      client_facing: false в манифесте → скрыт всегда;
-      client_facing: true  в манифесте → виден даже без info.json;
-      флага нет → виден только если есть info.json (карточка = приглашение).
-    Так trading (Совет, не клиентский цех) остаётся за дверью Приёмной.
-    """
+    """Для ui_reception.py — список департаментов"""
     depts: list[Dept] = []
+    if not MODULES_DIR.exists():
+        return depts
 
-    for c in list_cartridges():
-        cf = c.get("client_facing")
-        if cf is False:
+    for d in MODULES_DIR.iterdir():
+        if not _is_valid_dir(d):
             continue
-        if cf is not True and not c.get("has_info"):
+        info_path = d / "info.json"
+        if not info_path.exists():
             continue
 
-        # info.json главнее манифеста — это карточка для клиента
-        src = dict(c.get("manifest") or {})
-        src.update(c.get("info") or {})
-
+        data = _read_json(info_path)
         depts.append(
             Dept(
-                id=c["id"],  # ЗАКОН: id = имя папки, не поле в файле
-                label=src.get("label", src.get("name", c["id"])),
-                icon=src.get("icon", "🔧"),
-                color=src.get("color", "gray"),
-                placeholder=src.get("placeholder", ""),
-                suggest=src.get("suggest", []) or [],
-                keywords=src.get("keywords", []) or [],
-                priority=int(src.get("priority", 100)),
+                id=data.get("id", d.name),
+                label=data.get("label", data.get("name", d.name)),
+                icon=data.get("icon", "🔧"),
+                color=data.get("color", "gray"),
+                placeholder=data.get("placeholder", ""),
+                suggest=data.get("suggest", []) or [],
+                keywords=data.get("keywords", []) or [],
+                priority=int(data.get("priority", 100)),
             )
         )
 

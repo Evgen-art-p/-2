@@ -419,25 +419,10 @@ def page_cabinet() -> None:
             except Exception:
                 pass
 
-        # Дом: резиденты → Высотка
-        #      рабочие → квартал из manifest.json цеха (quarter)
-        #      дефолт   → Квартал Мастеров
-        # ЗАКОН ПАРЫ: знаем и агента и цех → берём квартал из манифеста
+        # Дом: резиденты → Высотка, рабочие → Квартал Мастеров
         is_resident = agent.get("is_resident", False) or dept_id == "residents"
-        if is_resident:
-            return _fuzzy_find("Высотка")
-        # Спрашиваем манифест цеха — там уже лежит quarter (trading → Торговый Квартал)
-        try:
-            from studio.modules_registry import get_cartridge as _gc
-            _cart = _gc(dept_id)
-            _q = (_cart or {}).get("quarter", "")
-            if _q:
-                found = _fuzzy_find(_q)
-                if found:
-                    return found
-        except Exception:
-            pass
-        return _fuzzy_find("Квартал Мастеров")
+        home_keyword = "Высотка" if is_resident else "Квартал Мастеров"
+        return _fuzzy_find(home_keyword)
 
     def _refresh_map():
         """Обновить агентов и погоду на карте."""
