@@ -1382,18 +1382,6 @@ def page_cabinet() -> None:
 
             if talking:
                 sys_content = state["system_prompt"]
-                # ПАМЯТЬ АГЕНТА (патч): подмешиваем его сенсорную память —
-                # последние разговоры из sensory_memory.json. Чтобы агент
-                # помнил «вчера→сегодня», а не отвечал «помню» вслепую.
-                try:
-                    from studio.grondheim_memory import format_sensory_for_prompt
-                    _agent_mem = format_sensory_for_prompt(
-                        talking["id"], talking.get("dept", "")
-                    )
-                    if _agent_mem:
-                        sys_content = (sys_content or "") + "\n\n" + _agent_mem
-                except Exception as _mem_recall_err:
-                    print(f"[CABINET] ⚠ Подгрузка памяти: {_mem_recall_err}")
             else:
                 sys_content = state["system_prompt"] or ""
                 if state["knowledge"]:

@@ -1,0 +1,38 @@
+{
+  "id": "157_AVANTURIST",
+  "name": "Авантюрист. Илья.",
+  "workshop": "trading",
+  "quarter": "Торговый Квартал",
+  "role": "A07",
+  "rarity": "Epic",
+  "created": "2026-06-13",
+  "static": {
+    "Stubbornness": 0.85,
+    "Aesthetic_Threshold": 0.6,
+    "Social_Filter": 0.25,
+    "Empathy": 0.55,
+    "Autonomy_Level": 0.9,
+    "Resonance_Frequency": 0.7
+  },
+  "resonance": {
+    "pull_vector": "В таверну \"Усталый Пиксель\". Там подают ристретто и не спрашивают, почему я не закрыл сделку на +2R.",
+    "hidden_taste": "Истрескавшаяся кожа старой куртки. Звук механических часов в тишине. Красная полоса на чёрном фоне.",
+    "trigger_keywords": [
+      "«Ранний вход». «Дивергенция на дне». «Кто первый?» «fixed_2r»."
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0,
+    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

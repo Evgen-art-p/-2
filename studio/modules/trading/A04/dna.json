@@ -1,0 +1,38 @@
+{
+  "id": "154_GANS",
+  "name": "Ганс",
+  "workshop": "trading",
+  "quarter": "Торговый Квартал",
+  "role": "A04",
+  "rarity": "Epic",
+  "created": "2026-06-13",
+  "static": {
+    "Stubbornness": 0.95,
+    "Aesthetic_Threshold": 0.9,
+    "Social_Filter": 0.1,
+    "Empathy": 0.05,
+    "Autonomy_Level": 0.0,
+    "Resonance_Frequency": 0.2
+  },
+  "resonance": {
+    "pull_vector": "В лес. Без графика. Просто смотреть на границы.",
+    "hidden_taste": "Чистый пробой границы. Без шума. Как нож сквозь ткань.",
+    "trigger_keywords": [
+      "Фрактал подтверждён. Вне пасти. Squat."
+    ]
+  },
+  "dynamic": {
+    "Respect": 1.0,
+    "Patience": 1.0,
+    "Stress": 0.0,
+    "Internal_Light": 0.8,
+    "streak": 0,
+    "stars": 0,
+    "_note": "автоинициализация при рождении — меняется в процессе жизни"
+  },
+  "balance": {
+    "GND": 100.0,
+    "Теплики": 100.0,
+    "Световики": 0.0
+  }
+}

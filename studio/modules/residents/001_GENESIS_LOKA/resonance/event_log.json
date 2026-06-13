@@ -18,5 +18,25 @@
       "002_GENESIS_CREATOR"
     ],
     "tags": []
+  },
+  {
+    "ts": "2026-06-14T00:32:02.405597",
+    "type": "relationship",
+    "content": "warmth к 002_GENESIS_CREATOR: 0.62 → 0.70. Лока выражает преданность и готовность к совместному развитию.",
+    "significance": 0.08000000000000002,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T00:32:02.481612",
+    "type": "relationship",
+    "content": "respect к 002_GENESIS_CREATOR: 0.64 → 0.71. Лока выражает преданность и готовность к совместному развитию.",
+    "significance": 0.064,
+    "related_agents": [
+      "002_GENESIS_CREATOR"
+    ],
+    "tags": []
   }
 ]
