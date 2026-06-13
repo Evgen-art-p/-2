@@ -31,13 +31,14 @@
     "Respect": 1.0,
     "Patience": 1,
     "Stress": 0,
-    "Internal_Light": 0.9,
+    "Internal_Light": 0.94,
     "streak": 0,
     "stars": 0,
     "_note": "Оле — спокойный резидент. Стресс почти нулевой: она в своей стихии.",
     "favorite_location": "",
     "visit_streak": 0,
-    "habit_strength": 0.0
+    "habit_strength": 0.0,
+    "cabinet_chat_2026-06-13": 2
   },
   "balance": {
     "GND": 50.0,

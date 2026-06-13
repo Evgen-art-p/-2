@@ -320,15 +320,8 @@ def generate_agent_files(obj: dict, dna_static: dict,
 - **Триггеры памяти:** {trigger_keywords}
 """
     anchor_path = agent_dir / "core" / "anchor_points.md"
-    # ЗАЩИТА (патч): перезаписываем только если файла нет ИЛИ в форме
-    # реально заполнены якорные поля. Иначе бережём ручную правку.
-    _anchor_has_input = bool(
-        (anchor_points or "").strip()
-        or (core_phrase or "").strip()
-    )
-    if (not anchor_path.exists()) or _anchor_has_input:
-        anchor_path.write_text(anchor_content, encoding="utf-8")
-        created.append(str(anchor_path))
+    anchor_path.write_text(anchor_content, encoding="utf-8")
+    created.append(str(anchor_path))
 
     # ══════════════════════════════════════════════
     # 3. home/home_prompt.md — ДОМАШНИЙ КОНТЕКСТ
@@ -356,17 +349,8 @@ def generate_agent_files(obj: dict, dna_static: dict,
 - 💡 Световики: 0
 """
     home_path = agent_dir / "home" / "home_prompt.md"
-    # ЗАЩИТА (патч): перезаписываем только если файла нет ИЛИ в форме
-    # реально заполнены домашние поля. Иначе бережём ручную правку.
-    _home_has_input = bool(
-        (home_story or "").strip()
-        or (pull_vector or "").strip()
-        or (obj.get("Sensory_Response") or "").strip()
-        or (obj.get("Hidden_History") or "").strip()
-    )
-    if (not home_path.exists()) or _home_has_input:
-        home_path.write_text(home_content, encoding="utf-8")
-        created.append(str(home_path))
+    home_path.write_text(home_content, encoding="utf-8")
+    created.append(str(home_path))
 
     # ══════════════════════════════════════════════
     # 4. sensory/sensory_memory.json — ОПЕРАТИВНАЯ ПАМЯТЬ
