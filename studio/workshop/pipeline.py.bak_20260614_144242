@@ -383,7 +383,7 @@ def build_agent_context(
     dept = state.get("active_dept", "")
 
     # ── Определяем режим ─────────────────────────────────────
-    agent_mode = _detect_agent_mode(worker_id, state)
+    agent_mode = _detect_agent_mode(worker_id)
     is_work = (agent_mode == "work")
 
     context = f"=== RUN MODE ===\nrun_type: {run_mode or state['run_type']}\n\n"

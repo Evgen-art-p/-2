@@ -1,5 +1,78 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-06-14T14:12:29.968802",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Без данных фрактала я слеп. Стою у стены. Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": false,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.0,\n    \"entry_tri",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T14:25:55.016981",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Морж ещё не выставил границу. Я без глаз. Стою у стены. Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": false,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.0,\n",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T14:32:42.632631",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал есть. Вне пасти. В зоне SQUAT — тишина сжатой пружины. Толпа замирает перед тем, как сбросить позиции умным деньгам. Триггер.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n  ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T14:45:01.429844",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T14:54:30.392196",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T15:02:32.808990",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T15:09:21.838399",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал вне пасти. SQUAT — объём есть, диапазон сжат. Толпа сбрасывает умным деньгам. Триггер.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw\": true,\n    \"abs",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T15:14:17.939948",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T15:20:21.514168",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    }
+  ],
   "summary": "",
   "last_location": "",
   "location_tags": []

@@ -298,7 +298,6 @@ async def run_council(csv_path: Path, symbol: str, timeframe: str,
         "chain_data":    {},
         "results":       {},
         "_agent_ids":    [],
-        "_force_work_mode": True,   # CLI-ран: агенты всегда в WORK-режиме
     }
 
     callbacks = ProtocolCallbacks()

@@ -503,14 +503,18 @@ def build_market_data(
             "crossed_zero": ao_crossed_zero,
             "zero_dir":     ao_zero_dir,
             "direction":    ao_direction,
-            # Последние 6 пивотов AO — Искре нужно 2 пары для дивергенции
-            "pivots":       _find_ao_pivots(ao_series, bars)[-6:],
+            # История последних 50 значений — нужна Искре для поиска пивотов/дивергенций
+            "history":      [round(v, 8) for v in ao_series[-50:] if v is not None],
+            # Пивоты AO (локальные минимумы и максимумы) — последние 10
+            "pivots":       _find_ao_pivots(ao_series, bars)[-10:],
         },
 
         "ac": {
             "value":      round(ac_cur,  8) if ac_cur  is not None else None,
             "prev_value": round(ac_prev, 8) if ac_prev is not None else None,
             "direction":  ac_direction,
+            # История последних 50 значений
+            "history":    [round(v, 8) for v in ac_series[-50:] if v is not None],
         },
 
         "mfi": {

@@ -388,43 +388,6 @@ def fractal_outside_jaw(fractal_price: float, jaw: float,
 # ГЛАВНАЯ ФУНКЦИЯ — СБОРКА market_data
 # ════════════════════════════════════════════════════════════
 
-def _find_ao_pivots(ao_series: list, bars: list[dict]) -> list[dict]:
-    """
-    Находит пивоты AO (локальные минимумы и максимумы).
-    Пивот = значение ниже/выше двух соседних с каждой стороны.
-    Возвращает список {index, ao_value, price_low, price_high, date, type}.
-    Нужен Искре для поиска дивергенций.
-    """
-    pivots = []
-    n = len(ao_series)
-    for i in range(2, n - 2):
-        v = ao_series[i]
-        if v is None:
-            continue
-        neighbors = [ao_series[i-2], ao_series[i-1],
-                     ao_series[i+1], ao_series[i+2]]
-        if any(x is None for x in neighbors):
-            continue
-        b = bars[i] if i < len(bars) else {}
-        if v < neighbors[0] and v < neighbors[1] and            v < neighbors[2] and v < neighbors[3]:
-            pivots.append({
-                "type":       "MIN",
-                "ao_value":   round(v, 8),
-                "price_low":  round(b.get("low",  0), 6),
-                "price_high": round(b.get("high", 0), 6),
-                "date":       b.get("date", ""),
-            })
-        elif v > neighbors[0] and v > neighbors[1] and              v > neighbors[2] and v > neighbors[3]:
-            pivots.append({
-                "type":       "MAX",
-                "ao_value":   round(v, 8),
-                "price_low":  round(b.get("low",  0), 6),
-                "price_high": round(b.get("high", 0), 6),
-                "date":       b.get("date", ""),
-            })
-    return pivots
-
-
 def build_market_data(
     bars:      list[dict],
     symbol:    str   = "UNKNOWN",
@@ -503,8 +466,6 @@ def build_market_data(
             "crossed_zero": ao_crossed_zero,
             "zero_dir":     ao_zero_dir,
             "direction":    ao_direction,
-            # Последние 6 пивотов AO — Искре нужно 2 пары для дивергенции
-            "pivots":       _find_ao_pivots(ao_series, bars)[-6:],
         },
 
         "ac": {

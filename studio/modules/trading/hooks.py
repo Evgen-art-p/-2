@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from .williams_core import build_market_data, read_mt5_csv
+from studio.modules.trading.williams_core import build_market_data, read_mt5_csv
 
 # ── Путь к Атласу Ошибок ──────────────────────────────────
 ATLAS_PATH = Path("economy/data/atlas_trading.jsonl")

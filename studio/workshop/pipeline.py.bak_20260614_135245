@@ -257,15 +257,11 @@ def _get_colleague_relations(worker_id: str, dept: str, agent_ids: list) -> str:
 
 def build_settings_ctx(state: dict) -> str:
     """Формирует блок PROJECT SETTINGS для агентов"""
-    s = state.get("settings", {})
-    # Для trading-цеха format/duration/style не нужны — возвращаем пустую строку
-    if not any(k in s for k in ("format", "duration", "style")):
-        return ""
     return (
         f"=== PROJECT SETTINGS ===\n"
-        f"Format: {s.get('format', '')}\n"
-        f"Duration: {s.get('duration', '')} sec\n"
-        f"Style: {s.get('style', '')}\n"
+        f"Format: {state['settings']['format']}\n"
+        f"Duration: {state['settings']['duration']} sec\n"
+        f"Style: {state['settings']['style']}\n"
     )
 
 
@@ -290,23 +286,16 @@ def build_files_ctx(state: dict) -> str:
 # Идея Евгена: на работе важна рабочая память,
 # дома — городская и личная. Как у человека.
 
-def _detect_agent_mode(worker_id: str, state: dict = None) -> str:
+def _detect_agent_mode(worker_id: str) -> str:
     """
     Определяет режим агента: 'work' или 'home'.
 
     'work' → is_agent_working() вернул данные о незакрытом ране.
     'home' → агент свободен (прогулка, утро, вечер).
 
-    Если state содержит _force_work_mode=True (CLI-запуски, run_council и т.п.)
-    — сразу возвращаем 'work' без обращения к city_pulse.
-
     Использует city_pulse.is_agent_working() — единственный источник правды.
     Тот же вызов что и в grondheim_memory._is_agent_working() после патча #26.
     """
-    # CLI-ран или любой запуск без UI — явный флаг в state
-    if state and state.get("_force_work_mode"):
-        print(f"[MODE] {worker_id}: WORK (force)")
-        return "work"
     try:
         from studio.city_pulse import is_agent_working as _cp_working
         result = _cp_working(worker_id, max_hours=8.0)
@@ -383,7 +372,7 @@ def build_agent_context(
     dept = state.get("active_dept", "")
 
     # ── Определяем режим ─────────────────────────────────────
-    agent_mode = _detect_agent_mode(worker_id, state)
+    agent_mode = _detect_agent_mode(worker_id)
     is_work = (agent_mode == "work")
 
     context = f"=== RUN MODE ===\nrun_type: {run_mode or state['run_type']}\n\n"
@@ -575,91 +564,6 @@ def build_agent_context(
                     )
         except Exception:
             pass
-
-    # ══ CHAIN DATA (market_data и другие данные цеха) ══════════
-    # Форматируем chain_data в текст для агентов.
-    # trading-цех кладёт сюда market_data, atlas_digest, trade_setup и т.д.
-    _chain = state.get("chain_data", {})
-    if _chain:
-        _md = _chain.get("market_data")
-        if _md:
-            # Форматируем market_data читаемо для промпта
-            _md_lines = ["=== MARKET DATA ==="]
-            _md_lines.append(f"symbol: {_md.get('symbol', '')}")
-            _md_lines.append(f"timeframe: {_md.get('timeframe', '')}")
-            _md_lines.append(f"bar_time: {_md.get('bar_time', '')}")
-            # price
-            _p = _md.get("price", {})
-            if _p:
-                _md_lines.append(
-                    f"price: open={_p.get('open')} high={_p.get('high')} "
-                    f"low={_p.get('low')} close={_p.get('close')}"
-                )
-            # alligator
-            _al = _md.get("alligator", {})
-            if _al:
-                _al_state = (
-                    "sleeping" if _al.get("sleeping") else
-                    "mature" if _al.get("mature") else
-                    f"open {_al.get('bars_open', 0)} bars"
-                )
-                _md_lines.append(
-                    f"alligator: jaw={_al.get('jaw')} teeth={_al.get('teeth')} "
-                    f"lips={_al.get('lips')} state={_al_state}"
-                )
-            # ao
-            _ao = _md.get("ao", {})
-            if _ao:
-                _md_lines.append(
-                    f"ao: value={_ao.get('value')} prev={_ao.get('prev_value')} "
-                    f"direction={_ao.get('direction')} crossed_zero={_ao.get('crossed_zero')}"
-                )
-                # ao history для дивергенций
-                if _ao.get("history"):
-                    _md_lines.append(f"ao.history (last 10): {_ao['history'][-10:]}")
-                if _ao.get("pivots"):
-                    _md_lines.append(f"ao.pivots: {_ao['pivots'][-5:]}")
-            # ac
-            _ac = _md.get("ac", {})
-            if _ac:
-                _md_lines.append(
-                    f"ac: value={_ac.get('value')} direction={_ac.get('direction')}"
-                )
-            # mfi
-            _mfi = _md.get("mfi", {})
-            if _mfi:
-                _md_lines.append(
-                    f"mfi: type={_mfi.get('type')} volume={_mfi.get('volume')}"
-                )
-            # fractals
-            _fr = _md.get("fractals", {})
-            if _fr:
-                _md_lines.append(
-                    f"fractals: up={_fr.get('count_up')} down={_fr.get('count_down')}"
-                )
-                if _fr.get("last_up"):
-                    _md_lines.append(f"fractals.last_up: {_fr['last_up']}")
-                if _fr.get("last_down"):
-                    _md_lines.append(f"fractals.last_down: {_fr['last_down']}")
-            # divergence / exit_bell
-            if _md.get("divergence_ao"):
-                _md_lines.append("divergence_ao: TRUE (бычья дивергенция AO — Точка Ноль!)")
-            if _md.get("exit_bell"):
-                _md_lines.append("exit_bell: TRUE (импульс выдохся — звонок выхода)")
-            _md_lines.append("=== END MARKET DATA ===")
-            context += "\n".join(_md_lines) + "\n\n"
-            print(f"[CONTEXT] {worker_id}: market_data инжектирован ({len(_md_lines)} строк)")
-
-        # Остальные ключи chain_data (кроме market_data — уже выше)
-        _chain_other = {k: v for k, v in _chain.items() if k != "market_data"}
-        if _chain_other:
-            try:
-                _chain_str = json.dumps(_chain_other, ensure_ascii=False, indent=2)
-                context += (
-                    f"=== CHAIN DATA ===\n{_chain_str}\n=== END CHAIN DATA ===\n\n"
-                )
-            except Exception:
-                pass
 
     # ══ ФАЙЛЫ И ПРЕДЫДУЩИЕ РЕЗУЛЬТАТЫ ════════════════════════
     if files_ctx:

@@ -306,9 +306,6 @@ class CartridgeRunner:
         self.state["_slot_id"] = self.slot_id
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
 
-        # ── HOOK: on_before_run — подготовка данных перед цепочкой ──
-        self._call_hook("on_before_run", self.state)
-
         # ── ЧЕСТНЫЙ РАБОЧИЙ СТАТУС: смена началась · ПАТЧ city_red №3 ──
         # При CONTINUE (from_worker) стартуют только оставшиеся агенты.
         _work_agents = all_agents[start_index:]
@@ -637,9 +634,6 @@ class CartridgeRunner:
         previous_output = ""
 
         await self.callbacks.on_pipeline_start(self.slot_id, run_type)
-
-        # ── HOOK: on_before_run — подготовка данных перед цепочкой ──
-        self._call_hook("on_before_run", self.state)
 
         # ── ЧЕСТНЫЙ РАБОЧИЙ СТАТУС: турбо-смена началась · ПАТЧ city_red №3 ──
         self._log_work_status("start", list(turbo_agents))
