@@ -1,10 +1,10 @@
 {
   "A02": {
-    "warmth": 0.725,
-    "trust": 0.635,
+    "warmth": 1.0,
+    "trust": 0.92,
     "respect": 0.5,
     "rivalry": 0.0,
-    "last_interaction": "2026-06-14T15:19:11.602037",
+    "last_interaction": "2026-06-14T17:51:24.501808",
     "memory": "Передача работы в пайплайне turbo"
   }
 }

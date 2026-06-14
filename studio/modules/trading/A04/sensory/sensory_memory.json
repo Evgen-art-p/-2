@@ -1,63 +1,47 @@
 {
   "entries": [
     {
-      "ts": "2026-06-14T14:12:29.968802",
+      "ts": "2026-06-14T17:18:44.339582",
       "type": "work",
       "source": "pipeline",
-      "content": "Выполнил задачу: {\n  \"narrative\": \"Без данных фрактала я слеп. Стою у стены. Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": false,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.0,\n    \"entry_tri",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал вниз вне пасти. MFI FAKE — движение без объёма, пустое. Поглощения почти нет. Но триггер есть. Решайте.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw",
       "tags": [],
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T14:25:55.016981",
+      "ts": "2026-06-14T17:21:25.700757",
       "type": "work",
       "source": "pipeline",
-      "content": "Выполнил задачу: {\n  \"narrative\": \"Морж ещё не выставил границу. Я без глаз. Стою у стены. Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": false,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.0,\n",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал есть. 1.12087 от 30 сентября. Но jaw на 1.10515. Фрактал внутри пасти — это шум переплетённых линий, не решение. Толпа ещё не приняла решение за пределами хаоса. Жду выхода.\"",
       "tags": [],
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T14:32:42.632631",
+      "ts": "2026-06-14T17:23:50.401364",
       "type": "work",
       "source": "pipeline",
-      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал есть. Вне пасти. В зоне SQUAT — тишина сжатой пружины. Толпа замирает перед тем, как сбросить позиции умным деньгам. Триггер.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n  ",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал 1.12087 от 30 сентября. Свежий — bar_index 140, всего 4 бара назад. Но jaw на 1.10423. Фрактал внутри пасти. Это шум переплетённых линий, не решение. Жду выхода.\",\n  \"signal\"",
       "tags": [],
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T14:45:01.429844",
+      "ts": "2026-06-14T17:27:54.522162",
       "type": "work",
       "source": "pipeline",
-      "content": "Выполнил задачу: ",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал. Вне пасти. FAKE — объёма нет, поглощение слабое. Но условия есть. Триггер.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw\": true,\n    \"absorption_rat",
       "tags": [],
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T14:54:30.392196",
+      "ts": "2026-06-14T17:31:09.679670",
       "type": "work",
       "source": "pipeline",
-      "content": "Выполнил задачу: ",
+      "content": "Выполнил задачу: Ворота открыты. Смотрю.\n\nФрактал вверх есть: 1.06097 от 20 ноября, бар 147. Свежий, в последних десяти. Фрактал вниз тоже есть, но мне сейчас нужен вверх — лонг после разворота.\n\njaw = 1.069357. Цена ",
       "tags": [],
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T15:02:32.808990",
-      "type": "work",
-      "source": "pipeline",
-      "content": "Выполнил задачу: ",
-      "tags": [],
-      "emotional_weight": 0.3
-    },
-    {
-      "ts": "2026-06-14T15:09:21.838399",
-      "type": "work",
-      "source": "pipeline",
-      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал вне пасти. SQUAT — объём есть, диапазон сжат. Толпа сбрасывает умным деньгам. Триггер.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw\": true,\n    \"abs",
-      "tags": [],
-      "emotional_weight": 0.3
-    },
-    {
-      "ts": "2026-06-14T15:14:17.939948",
+      "ts": "2026-06-14T17:35:19.182960",
       "type": "work",
       "source": "pipeline",
       "content": "Выполнил задачу: ",
@@ -65,7 +49,31 @@
       "emotional_weight": 0.3
     },
     {
-      "ts": "2026-06-14T15:20:21.514168",
+      "ts": "2026-06-14T17:42:20.208936",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.0,\n    \"entry_trigger\": false\n  }\n}",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:46:27.165553",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал внутри пасти. Это шум, не решение. Боли нет. Рано.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    \"fractal_outside_jaw\": false,\n    \"absorption_ratio\": 0.6,\n    \"entry_tri",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:49:34.894211",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Фрактал 29 ноября у 1.0597 — внутри пасти. До границы jaw 1.0620 почти 20 пунктов. Толпа не вышла за пределы. Боли нет. Жду выхода.\",\n  \"signal\": {\n    \"fractal_detected\": true,\n    ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:51:48.261832",
       "type": "work",
       "source": "pipeline",
       "content": "Выполнил задачу: ",
@@ -73,7 +81,7 @@
       "emotional_weight": 0.3
     }
   ],
-  "summary": "",
+  "summary": " задачу: {\n  \"narrative\": \"Фрактал вниз вне пасти. MFI FAKE — движение без объёма, пустое. П; Выполнил задачу: {\n  \"narrative\": \"Фрактал есть. 1.12087 от 30 сентября. Но jaw на 1.10515. Фрактал ; Выполнил задачу: {\n  \"narrative\": \"Фрактал 1.12087 от 30 сентября. Свежий — bar_index 140, всего 4 б; Выполнил задачу: {\n  \"narrative\": \"Фрактал. Вне пасти. FAKE — объёма нет, поглощение слабое. Но усло; Выполнил задачу: Ворота открыты. Смотрю.\n\nФрактал вверх есть: 1.06097 от 20 ноября, бар 147. Свежий,",
   "last_location": "",
   "location_tags": []
 }

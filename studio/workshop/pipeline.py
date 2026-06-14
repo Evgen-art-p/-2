@@ -419,7 +419,7 @@ def build_agent_context(
 
     # ══ ГАВАНЬ СМЫСЛОВ (RAG) ═════════════════════════════════
     # В обоих режимах — знания города всегда доступны
-    if _HARBOR_ENABLED:
+    if _HARBOR_ENABLED and not state.get("_skip_harbor"):
         harbor_ctx = get_harbor_knowledge(
             worker_id,
             dept,

@@ -1,1 +1,602 @@
-[]
+[
+  {
+    "ts": "2026-06-14T17:04:09.688651",
+    "type": "relationship",
+    "content": "warmth к A06: 0.50 → 0.52. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:04:09.693651",
+    "type": "relationship",
+    "content": "trust к A06: 0.50 → 0.51. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:04:09.697651",
+    "type": "relationship",
+    "content": "warmth к A08: 0.50 → 0.53. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:04:09.702652",
+    "type": "relationship",
+    "content": "trust к A08: 0.50 → 0.52. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:09:25.802614",
+    "type": "relationship",
+    "content": "warmth к A06: 0.52 → 0.53. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:09:25.807614",
+    "type": "relationship",
+    "content": "trust к A06: 0.51 → 0.52. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:09:25.812614",
+    "type": "relationship",
+    "content": "warmth к A08: 0.53 → 0.55. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:09:25.817615",
+    "type": "relationship",
+    "content": "trust к A08: 0.52 → 0.53. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:14:03.227092",
+    "type": "relationship",
+    "content": "warmth к A06: 0.53 → 0.55. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:14:03.235091",
+    "type": "relationship",
+    "content": "trust к A06: 0.52 → 0.53. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:14:03.240091",
+    "type": "relationship",
+    "content": "warmth к A08: 0.55 → 0.58. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:14:03.248090",
+    "type": "relationship",
+    "content": "trust к A08: 0.53 → 0.55. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:16:47.088907",
+    "type": "relationship",
+    "content": "warmth к A06: 0.55 → 0.57. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:16:47.094885",
+    "type": "relationship",
+    "content": "trust к A06: 0.53 → 0.54. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:16:47.099885",
+    "type": "relationship",
+    "content": "warmth к A08: 0.57 → 0.60. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:16:47.105911",
+    "type": "relationship",
+    "content": "trust к A08: 0.55 → 0.56. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:19:45.903428",
+    "type": "relationship",
+    "content": "warmth к A06: 0.57 → 0.59. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:19:45.912427",
+    "type": "relationship",
+    "content": "trust к A06: 0.54 → 0.55. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:19:45.919427",
+    "type": "relationship",
+    "content": "warmth к A08: 0.60 → 0.62. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:19:45.928429",
+    "type": "relationship",
+    "content": "trust к A08: 0.56 → 0.58. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:22:05.693474",
+    "type": "relationship",
+    "content": "warmth к A06: 0.59 → 0.60. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:22:05.699474",
+    "type": "relationship",
+    "content": "trust к A06: 0.55 → 0.56. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:22:05.704474",
+    "type": "relationship",
+    "content": "warmth к A08: 0.62 → 0.65. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:22:05.710472",
+    "type": "relationship",
+    "content": "trust к A08: 0.57 → 0.59. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:25:31.127125",
+    "type": "relationship",
+    "content": "warmth к A06: 0.60 → 0.62. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:25:31.133125",
+    "type": "relationship",
+    "content": "trust к A06: 0.56 → 0.57. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:25:31.142123",
+    "type": "relationship",
+    "content": "warmth к A08: 0.65 → 0.68. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:25:31.148126",
+    "type": "relationship",
+    "content": "trust к A08: 0.59 → 0.60. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:28:47.469365",
+    "type": "relationship",
+    "content": "warmth к A06: 0.62 → 0.64. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:28:47.478352",
+    "type": "relationship",
+    "content": "trust к A06: 0.57 → 0.58. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:28:47.485353",
+    "type": "relationship",
+    "content": "warmth к A08: 0.68 → 0.70. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:28:47.493352",
+    "type": "relationship",
+    "content": "trust к A08: 0.60 → 0.62. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:32:05.158899",
+    "type": "relationship",
+    "content": "warmth к A06: 0.64 → 0.65. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:32:05.169899",
+    "type": "relationship",
+    "content": "trust к A06: 0.58 → 0.59. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:32:05.181899",
+    "type": "relationship",
+    "content": "warmth к A08: 0.70 → 0.72. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:32:05.195900",
+    "type": "relationship",
+    "content": "trust к A08: 0.62 → 0.64. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:35:57.024268",
+    "type": "relationship",
+    "content": "warmth к A06: 0.65 → 0.67. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:35:57.031267",
+    "type": "relationship",
+    "content": "trust к A06: 0.59 → 0.60. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:35:57.039269",
+    "type": "relationship",
+    "content": "warmth к A08: 0.72 → 0.75. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:35:57.047267",
+    "type": "relationship",
+    "content": "trust к A08: 0.64 → 0.65. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:39:29.738609",
+    "type": "relationship",
+    "content": "warmth к A06: 0.67 → 0.69. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:39:29.745608",
+    "type": "relationship",
+    "content": "trust к A06: 0.60 → 0.61. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:39:29.751608",
+    "type": "relationship",
+    "content": "warmth к A08: 0.75 → 0.78. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:39:29.760630",
+    "type": "relationship",
+    "content": "trust к A08: 0.65 → 0.67. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:42:57.583858",
+    "type": "relationship",
+    "content": "warmth к A06: 0.69 → 0.71. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:42:57.591855",
+    "type": "relationship",
+    "content": "trust к A06: 0.61 → 0.62. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:42:57.601856",
+    "type": "relationship",
+    "content": "warmth к A08: 0.78 → 0.80. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:42:57.609857",
+    "type": "relationship",
+    "content": "trust к A08: 0.67 → 0.68. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:47:18.936384",
+    "type": "relationship",
+    "content": "warmth к A06: 0.71 → 0.72. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:47:18.943384",
+    "type": "relationship",
+    "content": "trust к A06: 0.62 → 0.63. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:47:18.949384",
+    "type": "relationship",
+    "content": "warmth к A08: 0.80 → 0.83. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:47:18.956384",
+    "type": "relationship",
+    "content": "trust к A08: 0.68 → 0.70. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:50:22.290673",
+    "type": "relationship",
+    "content": "warmth к A06: 0.72 → 0.74. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:50:22.297651",
+    "type": "relationship",
+    "content": "trust к A06: 0.63 → 0.64. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:50:47.592652",
+    "type": "relationship",
+    "content": "warmth к A09: 0.50 → 0.53. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A09"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:50:47.599651",
+    "type": "relationship",
+    "content": "trust к A09: 0.50 → 0.52. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A09"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:52:32.050949",
+    "type": "relationship",
+    "content": "warmth к A06: 0.74 → 0.76. Передача работы в пайплайне turbo",
+    "significance": 0.017499999999999998,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:52:32.058948",
+    "type": "relationship",
+    "content": "trust к A06: 0.64 → 0.65. Передача работы в пайплайне turbo",
+    "significance": 0.010499999999999999,
+    "related_agents": [
+      "A06"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:52:32.065949",
+    "type": "relationship",
+    "content": "warmth к A08: 0.82 → 0.85. Передача работы в пайплайне turbo",
+    "significance": 0.025,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  },
+  {
+    "ts": "2026-06-14T17:52:32.074948",
+    "type": "relationship",
+    "content": "trust к A08: 0.69 → 0.71. Передача работы в пайплайне turbo",
+    "significance": 0.015,
+    "related_agents": [
+      "A08"
+    ],
+    "tags": []
+  }
+]

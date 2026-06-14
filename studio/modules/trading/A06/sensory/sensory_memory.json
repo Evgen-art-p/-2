@@ -1,5 +1,126 @@
 {
-  "entries": [],
+  "entries": [
+    {
+      "ts": "2026-06-14T17:04:09.669651",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:09:25.783615",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:14:03.204091",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:16:47.068908",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:19:45.874428",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:22:05.671497",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:25:31.100123",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:28:47.441351",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:32:05.119897",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:35:56.997268",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:39:29.715630",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:42:57.547858",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:47:18.911384",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: {\n  \"narrative\": \"Приседающего нет. Искра молчит. Аллигатор смотрит вниз. Книга не сошлась.\",\n  \"signal\": {\n    \"brut_verdict\": \"REJECTED\",\n    \"brut_reason\": \"NO_SQUAT\",\n    \"brut_entry\": null,\n    \"",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:50:22.264651",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    },
+    {
+      "ts": "2026-06-14T17:52:32.018943",
+      "type": "work",
+      "source": "pipeline",
+      "content": "Выполнил задачу: ",
+      "tags": [],
+      "emotional_weight": 0.3
+    }
+  ],
   "summary": "",
   "last_location": "",
   "location_tags": []

@@ -115,6 +115,8 @@ async def run_one(bars_window: list[dict], symbol: str,
     state = {
         "active_dept":  "trading",
         "run_type":     "batch_council",
+        "_force_work_mode": True,   # CLI-ран: агенты в WORK, не HOME
+        "_skip_harbor":     True,   # batch: без RAG (трейдеру нужен рынок, не runs/)
         "master_brief": (
             f"Военный Совет · {symbol} {timeframe} · {date_label}. "
             f"Батч-прогон для накопления Атласа и обновления ДНК. "
