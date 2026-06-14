@@ -1,0 +1,11 @@
+{
+  "id": "A09",
+  "registry_id": "159_ISPOLNITEL",
+  "label": "Исполнитель.",
+  "avatar": "159_ISPOLNITEL",
+  "role": "Оператор исполнения. QA-инженер живых ордеров.",
+  "greeting": "Цель вижу. Исполняю.",
+  "icon": "🤖",
+  "workshop": "trading",
+  "quarter": "Торговый Квартал"
+}

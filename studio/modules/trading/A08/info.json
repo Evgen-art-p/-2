@@ -1,0 +1,11 @@
+{
+  "id": "A08",
+  "registry_id": "158_KONSERVATOR",
+  "label": "Консерватор",
+  "avatar": "158_KONSERVATOR",
+  "role": "Считать риски. Не вероятности — риски.",
+  "greeting": "Лучше не войти, чем войти в убыток.",
+  "icon": "🤖",
+  "workshop": "trading",
+  "quarter": "Торговый Квартал"
+}

@@ -158,15 +158,5 @@
       "001_GENESIS_LOKA"
     ],
     "tags": []
-  },
-  {
-    "ts": "2026-06-14T00:32:02.486611",
-    "type": "relationship",
-    "content": "respect к 001_GENESIS_LOKA: 0.71 → 0.75. Лока выражает преданность и готовность к совместному развитию.",
-    "significance": 0.0448,
-    "related_agents": [
-      "001_GENESIS_LOKA"
-    ],
-    "tags": []
   }
 ]
