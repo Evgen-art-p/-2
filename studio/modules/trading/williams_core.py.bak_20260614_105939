@@ -239,56 +239,6 @@ def detect_fractals(bars: list[dict], lookback: int = 2) -> dict:
     }
 
 
-def detect_squat_bars(bars: list[dict], point: float = None) -> dict:
-    """
-    Приседающие бары (Squat) — окно Profitunity Вильямса (+Vol, −MFI).
-    По "Торговому Хаосу", гл. 6: рынок присел перед рывком, готовясь
-    прыгнуть в любую сторону. ВХОД — на ПРОБОЕ приседающего, не на нём.
-
-    ЗАКОН ЯДРА: здесь только ФАКТ — где приседающие бары. Никакого
-    суждения о том, разворотный приседающий или мерный. Это суждение
-    выносят ТРЕЙДЕРЫ (A06/A07/A08), каждый своим порогом — для того
-    их и трое. Ядро не имеет мнения. Дивергенция (Точка Ноль) уже
-    отдаётся отдельным полем market_data — трейдеры сводят сами.
-
-    Возвращает:
-      last_squat — последний приседающий бар ряда (high/low/index/date)
-      all        — все приседающие ряда
-      count      — сколько всего
-    """
-    n = len(bars)
-    squats = []
-
-    for i in range(1, n):
-        b  = bars[i]
-        pb = bars[i - 1]
-        if b["volume"] == 0 or pb["volume"] == 0:
-            continue
-
-        # MFI = (H−L)/_Point/Volume — формула BWMFI
-        def _mfi(bar):
-            v = (bar["high"] - bar["low"]) / bar["volume"]
-            return v / point if point else v
-
-        vol_up   = b["volume"] > pb["volume"]
-        mfi_down = _mfi(b) < _mfi(pb)
-
-        # Приседающий: объём вырос, MFI упал
-        if vol_up and mfi_down:
-            squats.append({
-                "bar_index": i,
-                "high":      round(b["high"], 6),
-                "low":       round(b["low"], 6),
-                "date":      b["date"],
-            })
-
-    return {
-        "last_squat": squats[-1] if squats else None,
-        "all":        squats,
-        "count":      len(squats),
-    }
-
-
 def compute_mfi(bar: dict, prev_bar: dict, point: float = None) -> dict:
     """
     Bill Williams Market Facilitation Index (BWMFI).
@@ -413,7 +363,6 @@ def build_market_data(
     ac_series  = compute_ac_series(ao_series)
     fractals   = detect_fractals(bars)
     _point     = get_point(symbol, point)
-    squat      = detect_squat_bars(bars, point=_point)
     mfi        = compute_mfi(bars[-1], bars[-2], point=_point)
     divergence = detect_ao_divergence(bars, ao_series)
 
@@ -495,11 +444,6 @@ def build_market_data(
             "last_down":  fractals["last_down"],
             "count_up":   fractals["count_up"],
             "count_down": fractals["count_down"],
-        },
-
-        "squat": {
-            "last_squat": squat["last_squat"],
-            "count":      squat["count"],
         },
     }
 
