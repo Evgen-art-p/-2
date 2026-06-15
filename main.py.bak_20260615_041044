@@ -50,17 +50,20 @@ def assembly():
 @ui.page('/registry')
 def registry():
     page_registry()
-
+    
 
 @ui.page('/cartridges')
 def cartridges():
-    page_cartridge_manager()
+    page_cartridge_manager()    
 
 @ui.page("/living_book_loader")
 def living_book_loader_page():
-    page_book_loader()
+    page_book_loader()    
 
-# ══ Loka-Filter ══
+# ══ Loka-Filter: пульс города при старте · Спринт 21 ══
+# Daemon-тред — не блокирует запуск студии если что-то пойдёт не так.
+# Затухает сенсорная память ВСЕХ агентов: Cabinet, city_walker, резиденты.
+# Без этого агенты не стареют вне пайплайна — город стоит.
 import threading as _loka_thread
 def _run_loka_filter():
     try:
@@ -69,30 +72,42 @@ def _run_loka_filter():
         print("[LOKA-FILTER] Пульс города завершён")
     except Exception as _err:
         print(f"[LOKA-FILTER] Ошибка: {_err}")
-_loka_thread.Thread(target=_run_loka_filter, daemon=True, name="LokaFilterStartup").start()
+_loka_thread.Thread(
+    target=_run_loka_filter,
+    daemon=True,
+    name="LokaFilterStartup",
+).start()
 print("[LOKA-FILTER] Пульс города запущен в фоне")
 # ══ END Loka-Filter ══
 
 from studio.api_trading import router as trading_router
 app.include_router(trading_router)
 
-# ══ MT5 Bridge ══
+
+# ══ MT5 Bridge: сигналы в реальном времени · Торговый Цех ══
+# Daemon-тред — читает бары из MT5, пишет mt5_signals.json.
+# Индикатор AI_Tribunal читает файл и рисует стрелки на графике.
 import threading as _mt5_thread
 def _run_mt5_bridge():
     try:
         import MetaTrader5 as mt5
-        import json, time, shutil
+        import json, time
         from pathlib import Path
         from datetime import datetime
 
         SIGNALS_PATH = Path(r"C:\mt5signals\mt5_signals.json")
-        COMMON_PATH  = Path(r"C:\Users\Public\Documents\MetaQuotes\Terminal\Common\Files\mt5_signals.json")
 
+        # Импортируем williams_core
         import sys
         sys.path.insert(0, str(Path(__file__).parent))
-        from studio.modules.trading.williams_core import build_market_data, get_point
+        from studio.modules.trading.williams_core import (
+            build_market_data, get_point
+        )
 
-        TF_MAP = {"M1": 1, "M5": 5, "M15": 15, "H1": 16385, "H4": 16388, "D1": 16408}
+        TF_MAP = {
+            "M1":  1, "M5":  5, "M15": 15,
+            "H1":  16385, "H4": 16388, "D1": 16408,
+        }
 
         def _get_bars(symbol, tf_int, count):
             if not mt5.initialize():
@@ -116,17 +131,19 @@ def _run_mt5_bridge():
             return bars
 
         def _scan(bars, symbol, timeframe):
-            point = get_point(symbol)
+            point   = get_point(symbol)
             signals = []
-            for i in range(40, len(bars)):
+            n       = len(bars)
+            for i in range(40, n):
                 window = bars[max(0, i-199):i+1]
                 import io, sys as _sys
-                _old = _sys.stdout
+                _old_stdout = _sys.stdout
                 _sys.stdout = io.StringIO()
                 try:
-                    md = build_market_data(window, symbol=symbol, timeframe=timeframe, point=point)
+                    md = build_market_data(window, symbol=symbol,
+                                           timeframe=timeframe, point=point)
                 finally:
-                    _sys.stdout = _old
+                    _sys.stdout = _old_stdout
                 if not md:
                     continue
                 has_div  = bool(md.get("divergence_ao"))
@@ -157,21 +174,23 @@ def _run_mt5_bridge():
             return signals
 
         def _live_signal(bars, symbol, timeframe):
-            md = build_market_data(bars[-200:], symbol=symbol, timeframe=timeframe)
+            md = build_market_data(bars[-200:], symbol=symbol,
+                                   timeframe=timeframe)
             if not md:
                 return {}
             return {
-                "t1_status":   "CONFIRMED" if md.get("ao", {}).get("crossed_zero") and md.get("divergence_ao")
-                               else "DETECTED" if md.get("divergence_ao") else "NOT_FOUND",
-                "morj_status": "AWAKE" if md.get("alligator", {}).get("mature")
-                               else "WAKING" if not md.get("alligator", {}).get("sleeping")
-                               else "SLEEPING",
-                "divergence":  bool(md.get("divergence_ao")),
-                "exit_bell":   bool(md.get("exit_bell")),
-                "bar_time":    md.get("bar_time", ""),
-                "alligator":   md.get("alligator", {}),
+                "t1_status":  "CONFIRMED" if md.get("ao", {}).get("crossed_zero") and md.get("divergence_ao")
+                              else "DETECTED" if md.get("divergence_ao") else "NOT_FOUND",
+                "morj_status": "AWAKE"   if md.get("alligator", {}).get("mature")
+                              else "WAKING" if not md.get("alligator", {}).get("sleeping")
+                              else "SLEEPING",
+                "divergence": bool(md.get("divergence_ao")),
+                "exit_bell":  bool(md.get("exit_bell")),
+                "bar_time":   md.get("bar_time", ""),
+                "alligator":  md.get("alligator", {}),
             }
 
+        # Настройки по умолчанию
         SYMBOL    = "XAUUSD"
         TIMEFRAME = "H4"
         TF_INT    = TF_MAP.get(TIMEFRAME, 16388)
@@ -192,15 +211,13 @@ def _run_mt5_bridge():
                         "signals":   signals,
                         "live":      live,
                     }
-                    # Пишем основной файл
-                    SIGNALS_PATH.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-                    # Копируем в Common\Files для MT5
-                    try:
-                        COMMON_PATH.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(SIGNALS_PATH, COMMON_PATH)
-                    except Exception as _ce:
-                        print(f"[MT5-BRIDGE] Копирование не удалось: {_ce}")
-                    print(f"[MT5-BRIDGE] {SYMBOL} {TIMEFRAME}: {len(signals)} сигналов, t1={live.get('t1_status')}")
+                    SIGNALS_PATH.write_text(
+                        json.dumps(data, ensure_ascii=False),
+                        encoding="utf-8"
+                    )
+                    print(f"[MT5-BRIDGE] {SYMBOL} {TIMEFRAME}: "
+                          f"{len(signals)} сигналов, "
+                          f"t1={live.get('t1_status')}")
             except Exception as _e:
                 print(f"[MT5-BRIDGE] Ошибка: {_e}")
             time.sleep(60)
@@ -210,7 +227,11 @@ def _run_mt5_bridge():
     except Exception as _err:
         print(f"[MT5-BRIDGE] Критическая ошибка: {_err}")
 
-_mt5_thread.Thread(target=_run_mt5_bridge, daemon=True, name="MT5Bridge").start()
+_mt5_thread.Thread(
+    target=_run_mt5_bridge,
+    daemon=True,
+    name="MT5Bridge",
+).start()
 print("[MT5-BRIDGE] Фоновый поток запущен")
 # ══ END MT5 Bridge ══
 
@@ -218,4 +239,9 @@ from studio.slot_manager import SlotManager
 SlotManager().print_summary()
 
 if __name__ in {"__main__", "__mp_main__"}:
-    ui.run(reload=False, reconnect_timeout=300)
+    # reconnect_timeout=300: браузер ждёт 5 минут пока агент думает
+    # (дефолт NiceGUI ~30 сек — меньше чем один LLM-запрос)
+    ui.run(
+        reload=False,
+        reconnect_timeout=300,
+    )

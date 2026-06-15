@@ -186,6 +186,11 @@ def on_before_agent(state: dict, agent_id: str) -> dict:
             })
             state["_skip_agent"] = True
             print("[GATE] ⏭  A04 Ганс пропущен")
+
+    # Живое состояние трейдера перед Трибуналом
+    if agent_id in ("A06", "A07", "A08"):
+        _prepare_trader_state(state, agent_id)
+
     return state
 
 
@@ -634,3 +639,170 @@ def _print_market_summary(md: dict):
     if md["divergence_ao"]: print("  ⚡ ДИВЕРГЕНЦИЯ AO (бычья) — Точка Ноль!")
     if md["exit_bell"]:     print("  🔔 EXIT BELL — импульс выдохся")
     print()
+
+
+def _calc_missed_moves(trader_name: str, all_records: list) -> dict:
+    """
+    Пропущенные движения трейдера.
+
+    Смотрим все записи PnL — если в тот же момент другой трейдер
+    взял прибыль, а этот не участвовал (нет записи с тем же
+    opened_at) — это пропуск.
+
+    Возвращает: {"count": N, "last_symbol": "XAUUSD",
+                 "last_r": 2.0, "last_date": "..."}
+    """
+    if not all_records:
+        return {"count": 0}
+
+    # Группируем по opened_at — момент когда был сигнал
+    by_moment = {}
+    for rec in all_records:
+        moment = rec.get("opened_at", "")
+        if not moment:
+            continue
+        if moment not in by_moment:
+            by_moment[moment] = []
+        by_moment[moment].append(rec)
+
+    missed = []
+    for moment, recs in by_moment.items():
+        # Участвовал ли наш трейдер в этом моменте
+        our = [r for r in recs if r.get("trader") == trader_name]
+        others = [r for r in recs
+                  if r.get("trader") != trader_name
+                  and (r.get("pnl_r") or 0) > 1.0]  # другой взял > 1R
+
+        if not our and others:
+            # Наш не участвовал, другой взял прибыль
+            best = max(others, key=lambda r: r.get("pnl_r", 0))
+            missed.append({
+                "symbol":  best.get("symbol", "?"),
+                "pnl_r":   best.get("pnl_r", 0),
+                "trader":  best.get("trader", "?"),
+                "date":    moment[:16] if moment else "?",
+            })
+
+    if not missed:
+        return {"count": 0}
+
+    last = missed[-1]
+    return {
+        "count":       len(missed),
+        "last_symbol": last["symbol"],
+        "last_r":      last["pnl_r"],
+        "last_trader": last["trader"],
+        "last_date":   last["date"],
+    }
+
+
+def _prepare_trader_state(state: dict, agent_id: str):
+    """
+    Читает trading_pnl.jsonl и собирает живое состояние
+    конкретного трейдера перед его вызовом.
+
+    Факты:
+      — последние 5 сделок в R
+      — серия убытков/побед подряд
+      — итог последних 10 в R
+      — пропущенные движения (другие взяли, ты нет)
+
+    Никаких условий — трейдер читает и сам решает.
+    """
+    trader_name = {
+        "A06": "BRUT",
+        "A07": "AVANTURIST",
+        "A08": "KONSERVATOR",
+    }.get(agent_id)
+    if not trader_name:
+        return
+
+    cd = state.setdefault("chain_data", {})
+
+    if not PNL_PATH.exists():
+        cd["trader_state"] = "Торговой истории нет. Первый сигнал."
+        return
+
+    # Читаем ВСЕ записи (нужны для пропущенных движений)
+    all_records = []
+    our_records = []
+    try:
+        with open(PNL_PATH, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                    if rec.get("pnl_r") is not None:
+                        all_records.append(rec)
+                        if rec.get("trader") == trader_name:
+                            our_records.append(rec)
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        cd["trader_state"] = "Не могу прочитать журнал сделок."
+        return
+
+    if not our_records:
+        cd["trader_state"] = f"Сделок {trader_name} в журнале нет. Чистый старт."
+        return
+
+    last10 = our_records[-10:]
+    last5  = our_records[-5:]
+
+    # Серия убытков подряд
+    consecutive_loss = 0
+    for rec in reversed(our_records):
+        if (rec.get("pnl_r") or 0) < 0:
+            consecutive_loss += 1
+        else:
+            break
+
+    # Серия побед подряд
+    consecutive_win = 0
+    for rec in reversed(our_records):
+        if (rec.get("pnl_r") or 0) > 0:
+            consecutive_win += 1
+        else:
+            break
+
+    total_r_10 = round(sum(r.get("pnl_r", 0) for r in last10), 2)
+
+    last5_str = "  ".join(
+        f"{'+' if r.get('pnl_r', 0) > 0 else ''}{r.get('pnl_r', 0)}R"
+        f"({r.get('close_reason', '?')})"
+        for r in last5
+    )
+
+    last_ts      = our_records[-1].get("closed_at") or our_records[-1].get("ts", "")
+    total_trades = len(our_records)
+
+    lines = [
+        f"Последние 5 сделок: {last5_str}",
+        f"Итог последних 10: {'+' if total_r_10 >= 0 else ''}{total_r_10}R",
+        f"Всего сделок в журнале: {total_trades}",
+        f"Последняя сделка: {last_ts[:16] if last_ts else 'неизвестно'}",
+    ]
+
+    if consecutive_loss >= 2:
+        lines.append(f"Серия убытков подряд: {consecutive_loss}")
+    if consecutive_win >= 2:
+        lines.append(f"Серия побед подряд: {consecutive_win}")
+
+    # ── Пропущенные движения ──────────────────────────────
+    missed = _calc_missed_moves(trader_name, all_records)
+    if missed.get("count", 0) > 0:
+        lines.append(
+            f"Сильных движений без тебя: {missed['count']}"
+        )
+        lines.append(
+            f"Последний пропуск: {missed['last_symbol']} "
+            f"+{missed['last_r']}R — взял {missed['last_trader']} "
+            f"({missed['last_date']})"
+        )
+
+    cd["trader_state"] = "\n".join(lines)
+    print(f"[STATE] 📊 {agent_id}: {consecutive_loss} убытков подряд, "
+          f"итог 10: {total_r_10}R, пропущено: {missed.get('count', 0)}")
+

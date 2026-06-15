@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from .williams_core import build_market_data, read_mt5_csv
+from studio.modules.trading.williams_core import build_market_data, read_mt5_csv
 
 # ── Путь к Атласу Ошибок ──────────────────────────────────
 ATLAS_PATH = Path("economy/data/atlas_trading.jsonl")
@@ -153,6 +153,13 @@ def on_before_run(state: dict) -> dict:
 
     state.setdefault("chain_data", {})["market_data"] = market_data
     # history_dna уже загружен из trading_state.json выше
+
+    # Подушка безопасности Вильямса: экстремум второго бара назад.
+    # Кладём в chain_data, чтобы _prepare_trade_setup взял оттуда.
+    cd = state.setdefault("chain_data", {})
+    if len(bars) >= 3:
+        cd["_bar_back2_low"]  = bars[-3]["low"]
+        cd["_bar_back2_high"] = bars[-3]["high"]
 
     _settle_positions(state)          # закрытие позиций — стоп / exit_bell
     _print_market_summary(market_data)
@@ -298,6 +305,7 @@ def _settle_positions(state: dict):
         return
 
     low       = md.get("price", {}).get("low")
+    high      = md.get("price", {}).get("high")
     close     = md.get("price", {}).get("close")
     bell      = bool(md.get("exit_bell"))
     bar_time  = md.get("bar_time", "")
@@ -308,12 +316,16 @@ def _settle_positions(state: dict):
     for pos in positions:
         entry = pos.get("entry")
         stop  = pos.get("stop")
+        direction = pos.get("direction", "LONG")  # legacy позиции = LONG
         if entry is None or stop is None:
             still_open.append(pos)
             continue
 
         exit_price, reason = None, None
-        if low is not None and low <= stop:
+        # Стоп — зеркально по направлению
+        if direction == "LONG" and low is not None and low <= stop:
+            exit_price, reason = stop, "STOP_LOSS"
+        elif direction == "SHORT" and high is not None and high >= stop:
             exit_price, reason = stop, "STOP_LOSS"
         elif bell and close is not None:
             exit_price, reason = close, "EXIT_BELL"
@@ -322,8 +334,13 @@ def _settle_positions(state: dict):
             still_open.append(pos)
             continue
 
-        risk      = entry - stop
-        pnl_price = round(exit_price - entry, 6)
+        # PnL зеркально: для шорта прибыль когда цена УПАЛА (entry > exit)
+        if direction == "LONG":
+            risk      = entry - stop
+            pnl_price = round(exit_price - entry, 6)
+        else:  # SHORT
+            risk      = stop - entry
+            pnl_price = round(entry - exit_price, 6)
         pnl_r     = round(pnl_price / risk, 4) if risk > 0 else None
 
         record = {
@@ -372,31 +389,95 @@ def _settle_positions(state: dict):
 
 def _prepare_trade_setup(state: dict):
     """
-    Готовит цены входа/стопа для трибунала. СЧИТАЕТ КОД — трейдеры копируют.
-    Стоп — системный (за лоу Волны 2), не личный. ЗАКОН ТРИБУНАЛА.
+    Готовит цены входа/стопа для Трибунала. СЧИТАЕТ КОД — трейдеры
+    читают setup как ФАКТ рынка. Суждение "входить или нет" — за ними.
 
-    v1: только LONG (бычий разворот от Точки Ноль).
-    Зеркальная SHORT-логика — после бэктеста.
+    Канон Котина/Вильямса ("Торговый Хаос", гл. 6):
+      ВХОД   = ПРОБОЙ приседающего (Squat = +Vol, −MFI).
+               LONG:  Buy Stop  над high приседающего + тик
+               SHORT: Sell Stop под low  приседающего − тик
+      НАПРАВЛЕНИЕ определяется сигналом Искры:
+               divergence_ao=True → LONG  (Точка Ноль, "родится новый")
+               exit_bell=True     → SHORT (5-я волна выдохлась)
+               иначе              → setup пустой (нет ставки)
+      СТОП   = подушка безопасности Вильямса — экстремум второго
+               бара назад + один тик, в сторону против сделки.
+               Это защита от "пьяного рынка", а не точка входа.
+      TP     = None — фикс-тейка у Вильямса нет, выход по exit_bell
+               всем объёмом (в _settle_positions).
 
-    entry = цена фрактала вверх (Ганс) — Buy Stop ставится над ней
-    stop  = последний нижний фрактал (аппроксимация лоу Волны 2)
-    tp    = None — тейка нет, выход всей позицией по exit_bell
+    ЗАКОН ЯДРА: ничего не решаем за трейдеров. Разворотный приседающий
+    или мерный, брать или не брать — это их работа, для того их и трое.
+    Здесь только цены. Если приседающего нет — entry=None, трейдеры
+    вернут REJECTED с причиной NO_SQUAT.
     """
     chain = state.get("chain_data", {})
     md    = chain.get("market_data", {})
-    fr    = md.get("fractals", {})
-    up    = fr.get("last_up") or {}
-    down  = fr.get("last_down") or {}
+
+    sq_block = md.get("squat", {}) or {}
+    squat    = sq_block.get("last_squat")
+    bullish  = bool(md.get("divergence_ao"))
+    bearish  = bool(md.get("exit_bell"))
+    price_lo = md.get("price", {}).get("low")
+    price_hi = md.get("price", {}).get("high")
+
+    # ── Направление по Искре ─────────────────────────────────
+    if bullish and not bearish:
+        direction = "LONG"
+    elif bearish and not bullish:
+        direction = "SHORT"
+    else:
+        direction = None  # нет разворотного контекста — нет setup
+
+    # ── Тик (минимальный шаг цены) ───────────────────────────
+    # Берём из williams_core POINT_MAP через символ market_data.
+    # Импорт здесь, чтобы не плодить циклических зависимостей сверху.
+    from .williams_core import get_point
+    tick = get_point(md.get("symbol", "UNKNOWN"))
+
+    # ── Вход: пробой приседающего ────────────────────────────
+    entry = None
+    if squat and direction == "LONG":
+        entry = round(squat["high"] + tick, 6)
+    elif squat and direction == "SHORT":
+        entry = round(squat["low"] - tick, 6)
+
+    # ── Стоп: подушка безопасности (экстремум 2-го бара назад) ─
+    # Канон: второй бар назад от рассматриваемого, со старшего ТФ.
+    # У нас в market_data только один ТФ — берём 2-й бар назад
+    # текущего ТФ как ближайшую к канону аппроксимацию. По-настоящему
+    # двухтаймфреймовая подушка ляжет, когда hooks начнёт читать HTF.
+    stop = None
+    bars2_low  = chain.get("_bar_back2_low")
+    bars2_high = chain.get("_bar_back2_high")
+    if direction == "LONG" and bars2_low is not None:
+        stop = round(bars2_low - tick, 6)
+    elif direction == "SHORT" and bars2_high is not None:
+        stop = round(bars2_high + tick, 6)
+    # Fallback: пока on_before_run не положит _bar_back2_* —
+    # используем текущий low/high как грубую защиту, чтобы
+    # setup не был совсем пустым на первом прогоне после патча.
+    if stop is None:
+        if direction == "LONG" and price_lo is not None:
+            stop = round(price_lo - tick, 6)
+        elif direction == "SHORT" and price_hi is not None:
+            stop = round(price_hi + tick, 6)
 
     chain["trade_setup"] = {
-        "direction":    "LONG",
-        "entry":        up.get("price"),
-        "stop":         down.get("price"),
+        "direction":    direction,
+        "entry":        entry,
+        "stop":         stop,
         "tp":           None,
         "lot_fraction": 0.33,
+        "source":       "squat" if squat else None,
     }
-    print(f"[SETUP] 🎯 trade_setup: entry={up.get('price')}, "
-          f"stop={down.get('price')}, tp=None (exit_bell)")
+    if entry is None:
+        print(f"[SETUP] ⛔ нет setup: "
+              f"squat={'есть' if squat else 'нет'}, "
+              f"искра={direction or 'NOT_FOUND'}")
+    else:
+        print(f"[SETUP] 🎯 {direction}: entry={entry}, stop={stop}, "
+              f"tp=None (exit_bell), вход по приседающему")
 
 
 def _prepare_atlas_digest(state: dict):
