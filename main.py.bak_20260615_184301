@@ -121,31 +121,17 @@ def _run_mt5_bridge():
             if mfi_type == "FADE":   return "DISBELIEF"
             return "NEUTRAL"
 
-        def _hans_breakout(md, window):
-            """
-            Ганс: ПРОБОЙ фрактала вне пасти (момент удара, не координата).
-            LONG:  верхний фрактал был выше Jaw, и close пересёк его уровень
-                   снизу вверх на этом баре (close[-2] < fp <= close[-1]).
-            SHORT: нижний фрактал был ниже Jaw, close пересёк сверху вниз.
-            Возвращает "LONG"/"SHORT"/None.
-            Формирование фрактала — лишь координата. Сигнал рождается
-            в момент пробоя: рынок принял решение, Волна 3 жива.
-            """
-            jaw = md.get("alligator", {}).get("jaw")
-            if jaw is None or len(window) < 2:
-                return None
+        def _fractal_outside_jaw(md):
+            """Фрактал вне пасти: LONG если верхний выше Jaw, SHORT если нижний ниже."""
+            jaw  = md.get("alligator", {}).get("jaw")
             up   = md.get("fractals", {}).get("last_up")
             down = md.get("fractals", {}).get("last_down")
-            c_prev = window[-2]["close"]
-            c_cur  = window[-1]["close"]
-            if up and up.get("price", 0) > jaw:
-                fp = up["price"]
-                if c_prev < fp <= c_cur:
-                    return "LONG"
+            if jaw is None:
+                return None
+            if up   and up.get("price", 0)   > jaw:
+                return "LONG"
             if down and down.get("price", 0) < jaw:
-                fp = down["price"]
-                if c_prev > fp >= c_cur:
-                    return "SHORT"
+                return "SHORT"
             return None
 
         def _suppress(fn, *a, **kw):
@@ -182,8 +168,8 @@ def _run_mt5_bridge():
                 # ── Морж: только что проснулся ───────────────────────
                 alligator_wake = (not sleeping and prev_sleeping)
 
-                # ── Ганс: ПРОБОЙ фрактала вне пасти ──────────────────
-                hans = _hans_breakout(md, window)
+                # ── Ганс: фрактал вне пасти (LONG/SHORT/None) ────────
+                hans = _fractal_outside_jaw(md)
                 fractal_outside = (hans is not None)
 
                 # ── Паникёр: фаза по MFI ─────────────────────────────
@@ -199,13 +185,12 @@ def _run_mt5_bridge():
 
                 # Значимый бар = есть хоть один сигнал любого агента.
                 # bdb_candidate сам по себе НЕ триггерит (он на ~44% баров).
-                # Триггер записи — только РЕДКИЕ событийные сигналы.
-                # exit_bell (24%) и panic_phase (50%) — раскраска, не повод
-                # записи: они пишутся в бар если он значим по другой причине.
                 any_flag = (
-                    bdb_strong or confirmed              # Искра: Точка Ноль, подтверждение
-                    or alligator_wake                    # Морж: проснулся
-                    or fractal_outside                   # Ганс: пробой
+                    bdb_strong or confirmed              # Искра
+                    or alligator_wake                    # Морж
+                    or fractal_outside                   # Ганс
+                    or has_bell                          # Искра (выход)
+                    or panic_phase in ("FOMO", "LIQUIDATION")  # Паникёр
                 )
                 if not any_flag:
                     continue
