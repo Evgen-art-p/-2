@@ -87,7 +87,6 @@ def _run_mt5_bridge():
 
         SIGNALS_PATH = Path(r"C:\mt5signals\mt5_signals.json")
         COMMON_PATH  = Path(r"C:\Users\Public\Documents\MetaQuotes\Terminal\Common\Files\mt5_signals.json")
-        TERMINAL_PATH = Path(r"C:\Program Files\MetaTrader 5\MQL5\Files\mt5_signals.json")
 
         import sys
         sys.path.insert(0, str(Path(__file__).parent))
@@ -284,13 +283,7 @@ def _run_mt5_bridge():
                         COMMON_PATH.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(SIGNALS_PATH, COMMON_PATH)
                     except Exception as _ce:
-                        print(f"[MT5-BRIDGE] Копирование в Common не удалось: {_ce}")
-                    # Копируем прямо в песочницу индикатора (главное!)
-                    try:
-                        TERMINAL_PATH.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(SIGNALS_PATH, TERMINAL_PATH)
-                    except Exception as _te:
-                        print(f"[MT5-BRIDGE] Копирование в Terminal не удалось: {_te}")
+                        print(f"[MT5-BRIDGE] Копирование не удалось: {_ce}")
                     print(f"[MT5-BRIDGE] {SYMBOL} {TIMEFRAME}: {len(signals)} сигналов, t1={live.get('t1_status')}")
             except Exception as _e:
                 print(f"[MT5-BRIDGE] Ошибка: {_e}")
