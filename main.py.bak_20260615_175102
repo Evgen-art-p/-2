@@ -128,6 +128,13 @@ def _run_mt5_bridge():
             return frac.get("price", 0) < jaw
 
         def _suppress(fn, *a, **kw):
+            """Вызывает fn без вывода в stdout."""
+            import io, sys as _s
+            old = _s.stdout; _s.stdout = io.StringIO()
+            try:    return fn(*a, **kw)
+            finally: _s.stdout = old
+
+        def _suppress(fn, *a, **kw):
             import io, sys as _s
             old = _s.stdout; _s.stdout = io.StringIO()
             try:    return fn(*a, **kw)
@@ -178,11 +185,13 @@ def _run_mt5_bridge():
 
                 prev_sleeping = sleeping
 
-                # ИСТОРИЯ: рисуем ТОЛЬКО bdb_strong — Точка Ноль (~3-4/год).
-                # Морж/Ганс/Паникёр/confirmed работают на живом КРАЮ графика
-                # (см. live_signal), а не размечают всю историю — на тренде
-                # они срабатывают постоянно и дают кашу.
-                if not bdb_strong:
+                # Только значимые бары — bdb_candidate НЕ рисуется
+                # (он контекст для агентов, не для индикатора)
+                any_flag = (
+                    bdb_strong or alligator_wake or fractal_outside
+                    or has_bell or confirmed
+                )
+                if not any_flag:
                     continue
 
                 # Цена входа — только по bdb_strong
