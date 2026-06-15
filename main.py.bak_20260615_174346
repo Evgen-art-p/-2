@@ -185,11 +185,11 @@ def _run_mt5_bridge():
 
                 prev_sleeping = sleeping
 
-                # Только значимые бары — bdb_candidate НЕ рисуется
-                # (он контекст для агентов, не для индикатора)
+                # Только значимые бары
                 any_flag = (
-                    bdb_strong or alligator_wake or fractal_outside
-                    or has_bell or confirmed
+                    bdb_strong or bdb_candidate or alligator_wake
+                    or fractal_outside or has_bell or confirmed
+                    or panic_phase in ("FOMO", "LIQUIDATION")
                 )
                 if not any_flag:
                     continue
