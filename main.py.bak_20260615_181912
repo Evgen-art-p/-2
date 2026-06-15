@@ -122,17 +122,10 @@ def _run_mt5_bridge():
             return "NEUTRAL"
 
         def _fractal_outside_jaw(md):
-            """Фрактал вне пасти: LONG если верхний выше Jaw, SHORT если нижний ниже."""
             jaw  = md.get("alligator", {}).get("jaw")
-            up   = md.get("fractals", {}).get("last_up")
-            down = md.get("fractals", {}).get("last_down")
-            if jaw is None:
-                return None
-            if up   and up.get("price", 0)   > jaw:
-                return "LONG"
-            if down and down.get("price", 0) < jaw:
-                return "SHORT"
-            return None
+            frac = md.get("fractals",  {}).get("last_down")
+            if jaw is None or frac is None: return False
+            return frac.get("price", 0) < jaw
 
         def _suppress(fn, *a, **kw):
             import io, sys as _s
@@ -161,16 +154,18 @@ def _run_mt5_bridge():
                 bdb_strong    = bool(db.get("bdb_strong"))
                 bdb_candidate = bool(db.get("bdb_candidate"))
                 direction     = db.get("direction")
+                # AO пересёк ноль снизу вверх — CONFIRMED (звезда)
                 confirmed = bool(
                     ao.get("crossed_zero") and ao.get("zero_dir") == "UP"
                 )
 
-                # ── Морж: только что проснулся ───────────────────────
+                # ── Морж: аллигатор только что проснулся ──────────────
                 alligator_wake = (not sleeping and prev_sleeping)
 
-                # ── Ганс: фрактал вне пасти (LONG/SHORT/None) ────────
-                hans = _fractal_outside_jaw(md)
-                fractal_outside = (hans is not None)
+                # ── Ганс: фрактал ниже Jaw ────────────────────────────
+                jaw  = md.get("alligator", {}).get("jaw")
+                frac = md.get("fractals",  {}).get("last_down")
+                fractal_outside = bool(jaw and frac and frac.get("price", 0) < jaw)
 
                 # ── Паникёр: фаза по MFI ─────────────────────────────
                 mfi_type = md.get("mfi", {}).get("type", "")
@@ -183,18 +178,14 @@ def _run_mt5_bridge():
 
                 prev_sleeping = sleeping
 
-                # Значимый бар = есть хоть один сигнал любого агента.
-                # bdb_candidate сам по себе НЕ триггерит (он на ~44% баров).
-                any_flag = (
-                    bdb_strong or confirmed              # Искра
-                    or alligator_wake                    # Морж
-                    or fractal_outside                   # Ганс
-                    or has_bell                          # Искра (выход)
-                    or panic_phase in ("FOMO", "LIQUIDATION")  # Паникёр
-                )
-                if not any_flag:
+                # ИСТОРИЯ: рисуем ТОЛЬКО bdb_strong — Точка Ноль (~3-4/год).
+                # Морж/Ганс/Паникёр/confirmed работают на живом КРАЮ графика
+                # (см. live_signal), а не размечают всю историю — на тренде
+                # они срабатывают постоянно и дают кашу.
+                if not bdb_strong:
                     continue
 
+                # Цена входа — только по bdb_strong
                 entry_price = None
                 stop_price  = None
                 if bdb_strong:
@@ -204,22 +195,15 @@ def _run_mt5_bridge():
                 signals.append({
                     "date":                bars[i]["date"],
                     "bar_index":           i,
-                    # Искра
                     "bdb_strong":          bdb_strong,
                     "bdb_candidate":       bdb_candidate,
                     "bdb_direction":       direction,
                     "confirmed":           confirmed,
-                    # Морж
                     "alligator_wake":      alligator_wake,
                     "alligator_sleeping":  sleeping,
-                    # Ганс
                     "fractal_outside_jaw": fractal_outside,
-                    "hans_direction":      hans,
-                    # Паникёр
                     "panic_phase":         panic_phase,
-                    # Выход
                     "exit_bell":           has_bell,
-                    # Цены
                     "entry_price":         entry_price,
                     "stop_price":          stop_price,
                 })
