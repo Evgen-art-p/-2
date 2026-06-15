@@ -330,76 +330,42 @@ def compute_mfi(bar: dict, prev_bar: dict, point: float = None) -> dict:
 
 def detect_ao_divergence(bars: list[dict], ao_series: list[Optional[float]]) -> dict:
     """
-    Дивергенция AO — строгая логика по Вильямсу ("Торговый Хаос").
-
-    БЫЧЬЯ (Точка Ноль):
-      1. Берём ВСЕ локальные минимумы цены (low ниже соседей слева и справа).
-      2. Для каждого такого минимума фиксируем значение AO в том же баре.
-      3. Берём последние два минимума где AO < 0.
-      4. Проверяем: цена[2] < цена[1]  (второй минимум цены ниже)
-                    AO[2]   > AO[1]    (второй минимум AO выше — дивергенция)
-      5. КРИТИЧНО: между барами минимума-1 и минимума-2 AO ни разу
-         не пересёк ноль снизу вверх (не стал положительным).
-         Пересечение нуля = конец текущего медвежьего импульса.
-         После него — новый импульс, старая дивергенция недействительна.
-
-    МЕДВЕЖЬЯ (exit_bell):
-      Зеркально: максимумы цены, AO > 0, AO не пересекал ноль вниз.
-
-    Это убирает 90%+ ложных сигналов по сравнению с lookback=50.
+    Дивергенция AO:
+      БЫЧЬЯ  — цена ↓ новый минимум, AO↑ минимум выше (оба ниже нуля)
+               → Точка Ноль (DETECTED для Искры)
+      МЕДВЕЖЬЯ — цена↑ новый максимум, AO↓ максимум ниже (оба выше нуля)
+               → exit_bell (конец импульса)
     """
-    n = len(bars)
-    if n < 5:
-        return {"bullish": False, "bearish": False}
+    lookback    = min(50, len(bars) - 1)
+    window_bars = bars[-lookback:]
+    window_ao   = ao_series[-lookback:]
 
-    # ── собираем локальные минимумы цены с AO в том же баре ─────────────
-    # Локальный минимум: low[i] < low[i-1] И low[i] < low[i+1]
-    # (стандартное определение, аналог IsBottom в MQL5-индикаторах)
-    price_lows  = []  # (bar_index, price_low, ao_value)
-    price_highs = []  # (bar_index, price_high, ao_value)
+    lows_price  = []; lows_ao   = []
+    highs_price = []; highs_ao  = []
 
-    for i in range(1, n - 1):
-        ao = ao_series[i]
+    for i in range(2, len(window_bars) - 2):
+        b  = window_bars[i]
+        ao = window_ao[i]
         if ao is None:
             continue
-        b  = bars[i]
-        bp = bars[i - 1]
-        bn = bars[i + 1]
+        if b["low"]  < window_bars[i-1]["low"]  and b["low"]  < window_bars[i+1]["low"]:
+            lows_price.append(b["low"]);  lows_ao.append(ao)
+        if b["high"] > window_bars[i-1]["high"] and b["high"] > window_bars[i+1]["high"]:
+            highs_price.append(b["high"]); highs_ao.append(ao)
 
-        if b["low"]  < bp["low"]  and b["low"]  < bn["low"]:
-            price_lows.append((i, b["low"],  ao))
-        if b["high"] > bp["high"] and b["high"] > bn["high"]:
-            price_highs.append((i, b["high"], ao))
-
-    # ── бычья дивергенция ────────────────────────────────────────────────
     bullish = False
-    # Из всех минимумов берём только те где AO < 0
-    neg_lows = [(i, p, a) for (i, p, a) in price_lows if a < 0]
-    if len(neg_lows) >= 2:
-        i1, p1, a1 = neg_lows[-2]
-        i2, p2, a2 = neg_lows[-1]
-        # Цена вниз, AO вверх
-        if p2 < p1 and a2 > a1:
-            # Проверка: AO между i1 и i2 не пересекал ноль (не уходил в +)
-            segment = [v for v in ao_series[i1 + 1: i2] if v is not None]
-            zero_cross = any(v >= 0 for v in segment)
-            if not zero_cross:
-                bullish = True
+    if len(lows_price) >= 2:
+        p1, p2 = lows_price[-2], lows_price[-1]
+        a1, a2 = lows_ao[-2],    lows_ao[-1]
+        if p2 < p1 and a2 > a1 and a1 < 0 and a2 < 0:
+            bullish = True
 
-    # ── медвежья дивергенция ─────────────────────────────────────────────
     bearish = False
-    # Из всех максимумов берём только те где AO > 0
-    pos_highs = [(i, p, a) for (i, p, a) in price_highs if a > 0]
-    if len(pos_highs) >= 2:
-        i1, p1, a1 = pos_highs[-2]
-        i2, p2, a2 = pos_highs[-1]
-        # Цена вверх, AO вниз
-        if p2 > p1 and a2 < a1:
-            # Проверка: AO между i1 и i2 не пересекал ноль (не уходил в -)
-            segment = [v for v in ao_series[i1 + 1: i2] if v is not None]
-            zero_cross = any(v <= 0 for v in segment)
-            if not zero_cross:
-                bearish = True
+    if len(highs_price) >= 2:
+        p1, p2 = highs_price[-2], highs_price[-1]
+        a1, a2 = highs_ao[-2],    highs_ao[-1]
+        if p2 > p1 and a2 < a1 and a1 > 0 and a2 > 0:
+            bearish = True
 
     return {"bullish": bullish, "bearish": bearish}
 
