@@ -679,119 +679,6 @@ def compute_rubber_band(
     }
 
 
-def read_ao_wave_form(
-    bars:         list,
-    ao_series:    list,
-    teeth_series: list,
-    window:       int = 150,
-) -> dict:
-    """
-    ЧИТАЛКА ФОРМЫ AO — глаз Искры. Кладёт ФАКТЫ структуры, НЕ вердикты.
-
-    Закон (Шеф, 2026-06-16): Искра — СЕНСОР. Она докладывает что видит,
-    решения не принимает. «Вижу/спускайся/молчи» здесь НЕТ — это работа
-    трейдеров, которые сводят факты всех сенсоров (Искра+Морж+Ганс+Паникёр)
-    в комплекс. Разделение анализа защищает трейдеров от перегруза.
-
-    Идёт по окну 140-150 баров. Факты на стол:
-      anchor_ao_max  — горб-царь ВВЕРХ (самый крупный MAX) = третья волна лонга.
-      anchor_ao_min  — горб-царь ВНИЗ  (самый крупный MIN) = третья волна шорта.
-                       Окно держит ОДНУ структуру → царь один. Якорь дивера:
-                       без главного горба дивер ложный (правило Эллиотта:
-                       третья не самая короткая).
-      zero_cross_after_max — AO пересёк ноль ВНИЗ после верхнего царя (4-я лонга).
-      zero_cross_after_min — AO пересёк ноль ВВЕРХ после нижнего царя (4-я шорта).
-      divergence_dir — КОМПАС: есть дивер AO и какой (BULL/BEAR/None).
-                       Показывает СТОРОНУ зоны разворота. Грубо. Из detect_ao_divergence.
-      bdb_dir        — ТОЧКА: есть B/D/B бар Вильямса и какой (BULL/BEAR/None).
-                       Конкретный бар цены. Из detect_divergent_bar (bdb_strong).
-      bdb_price      — цена этого бара (low для BULL, high для BEAR) или None.
-      bar_date       — дата последнего бара окна.
-
-    Спуск по ТФ (лесенка в mt5_feed) даёт ту же читалку на младшем масштабе,
-    где структура видна красивее и бар точнее. Но это прогон Искры по ТФ,
-    не вердикт читалки: читалка на КАЖДОМ ТФ просто докладывает факты.
-    """
-    n = len(bars)
-    if n < 40 or not ao_series:
-        return _empty_wave_form()
-
-    w   = min(window, n)
-    off = n - w
-    ao_w   = ao_series[off:]
-    bars_w = bars[off:]
-    teeth_w = teeth_series[off:] if teeth_series else None
-
-    # ── пивоты AO в окне (локальные экстремумы, как _find_ao_pivots) ──
-    pv = []  # (local_idx, type, ao_value)
-    for i in range(2, w - 2):
-        v = ao_w[i]
-        if v is None:
-            continue
-        nb = [ao_w[i-2], ao_w[i-1], ao_w[i+1], ao_w[i+2]]
-        if any(x is None for x in nb):
-            continue
-        if v < nb[0] and v < nb[1] and v < nb[2] and v < nb[3]:
-            pv.append((i, "MIN", v))
-        elif v > nb[0] and v > nb[1] and v > nb[2] and v > nb[3]:
-            pv.append((i, "MAX", v))
-
-    # ── цари окна: самый крупный горб в каждую сторону (факт) ──
-    maxes = [(i, v) for (i, t, v) in pv if t == "MAX"]
-    mins  = [(i, v) for (i, t, v) in pv if t == "MIN"]
-    amax_i, amax_v = (max(maxes, key=lambda x: x[1]) if maxes else (None, None))
-    amin_i, amin_v = (min(mins,  key=lambda x: x[1]) if mins  else (None, None))
-
-    # ── пересечение нуля ПОСЛЕ царя (факт: четвёртая пошла) ──
-    def _crossed_after(idx, below):
-        if idx is None:
-            return False
-        seg = [v for v in ao_w[idx + 1:] if v is not None]
-        return any((v < 0) if below else (v > 0) for v in seg)
-
-    zc_max = _crossed_after(amax_i, below=True)
-    zc_min = _crossed_after(amin_i, below=False)
-
-    # ── дивер-КОМПАС (факт, из ядра) ──
-    div = detect_ao_divergence(bars_w, ao_w)
-    div_dir = "BULL" if div.get("bullish") else "BEAR" if div.get("bearish") else None
-
-    # ── B/D/B бар-ТОЧКА (факт, из ядра) ──
-    bdb_dir = None
-    bdb_price = None
-    if teeth_w is not None:
-        db = detect_divergent_bar(bars_w, ao_w, teeth_w)
-        if db.get("bdb_strong"):
-            bdb_dir = db.get("direction")
-            if bdb_dir == "BULL":
-                bdb_price = round(bars_w[-1]["low"], 6)
-            elif bdb_dir == "BEAR":
-                bdb_price = round(bars_w[-1]["high"], 6)
-
-    return {
-        "anchor_ao_max":        round(amax_v, 4) if amax_v is not None else None,
-        "anchor_ao_min":        round(amin_v, 4) if amin_v is not None else None,
-        "zero_cross_after_max": bool(zc_max),
-        "zero_cross_after_min": bool(zc_min),
-        "divergence_dir":       div_dir,
-        "bdb_dir":              bdb_dir,
-        "bdb_price":            bdb_price,
-        "bar_date":             bars_w[-1]["date"] if bars_w else None,
-        "window":               w,
-    }
-
-
-def _empty_wave_form() -> dict:
-    return {
-        "anchor_ao_max": None, "anchor_ao_min": None,
-        "zero_cross_after_max": False, "zero_cross_after_min": False,
-        "divergence_dir": None, "bdb_dir": None, "bdb_price": None,
-        "bar_date": None, "window": 0,
-    }
-
-
-
-
 def build_market_data(
     bars:      list[dict],
     symbol:    str   = "UNKNOWN",
@@ -836,10 +723,6 @@ def build_market_data(
         _rb_dir = "BULL" if alligator["lips"] > alligator["teeth"] else "BEAR"
     rubber_band = compute_rubber_band(
         bars, lips_series, teeth_series, _rb_dir, _point)
-
-    # Читалка формы AO — факты структуры для Искры v2 (окно 140-150).
-    # Сенсор кладёт факты (дивер-компас, B/D/B-точка, горб-царь), не вердикты.
-    wave_form = read_ao_wave_form(bars, ao_series, teeth_series)
 
     print(f"[CORE]    _Point={_point} ({symbol})")
 
@@ -919,7 +802,6 @@ def build_market_data(
 
         "divergent_bar": divergent_bar,          # BuDB/BDB по Profitunity
         "rubber_band":   rubber_band,            # резинка Джастин (глаза Моржа)
-        "wave_form":     wave_form,            # факты формы AO (глаз Искры v2)
 
         "fractals": {
             "last_up":    fractals["last_up"],

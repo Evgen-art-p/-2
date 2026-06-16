@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "updated": "2026-06-16T08:51:48.093540",
+  "updated": "2026-06-16T22:53:13.944566",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "pivot_MIN:-225.34_11.06; pivot_MAX:98.52_15.06"
+    "history_dna": "pivot_MIN:94.30_16.06; pivot_MAX:98.52_15.06"
   },
   "positions": []
 }
