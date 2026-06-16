@@ -156,7 +156,6 @@ def compute_alligator(highs: list[float], lows: list[float],
         "mature":       mature,
         "bars_open":    bars_open,
         "teeth_series": teeth_s,
-        "lips_series":  lips_s,
     }
 
 
@@ -581,104 +580,6 @@ def _ao_divergence_at_bar(bars: list, ao_series: list, i: int, direction) -> boo
 
 
 
-
-def compute_rubber_band(
-    bars:         list,
-    lips_series:  list,
-    teeth_series: list,
-    direction:    str,
-    point:        float,
-) -> dict:
-    """
-    «РЕЗИНКА» Джастин Вильямс — натяжение цены от Зелёной линии (Губы).
-    Делает наглядным то, что раньше мерили «на глаз» (ангуляцию).
-
-    Натяжение = пустота между экстремумом цены и Губами:
-      UP (аптренд):   distance = high - lips   (как далеко вершина оторвалась)
-      DOWN (даунтренд): distance = lips - low   (как далеко дно убежало)
-    Всё в point — безразмерно, на любом активе (закон ядра).
-
-    История максимума копится ОТ ПЕРЕСЕЧЕНИЯ close с Teeth (рождение
-    волны). По Джастин: натяжение достигает ПИКА на дивергентном баре —
-    поэтому is_peak = текущая дистанция это максимум за жизнь движения.
-
-    direction приходит снаружи (из divergent_bar.direction или наклона
-    Аллигатора). Если None — резинка не натянута (нет тренда для отрыва).
-
-    ЗАКОН: ядро только МЕРЯЕТ. «Натянута/вяло» — факт физики, не команда.
-    Морж это ЧИТАЕТ и созерцает. Решают трейдеры.
-    """
-    empty = {
-        "direction": None, "distance_now": None, "distance_max": None,
-        "tension_ratio": None, "is_peak": False, "bars_in_band": None,
-    }
-    if direction not in ("BULL", "BEAR") or not point:
-        return empty
-    if not lips_series or not teeth_series:
-        return empty
-
-    i = len(bars) - 1
-    if i < 1:
-        return empty
-
-    def _dist(idx):
-        """Натяжение на баре idx в point. None если нет Губ."""
-        lp = lips_series[idx] if idx < len(lips_series) else None
-        if lp is None:
-            return None
-        b = bars[idx]
-        if direction == "BULL":
-            return (b["high"] - lp) / point
-        else:
-            return (lp - b["low"]) / point
-
-    # Якорь: последнее пересечение close с Teeth в сторону тренда.
-    # BULL-импульс рождается, когда close ушёл ВВЕРХ через Teeth.
-    anchor = None
-    for k in range(i, 0, -1):
-        t  = teeth_series[k]   if k   < len(teeth_series) else None
-        tp = teeth_series[k-1] if k-1 < len(teeth_series) else None
-        if t is None or tp is None:
-            continue
-        c  = bars[k]["close"]
-        cp = bars[k-1]["close"]
-        if direction == "BULL":
-            if cp <= tp and c > t:   # пробил Teeth вверх — старт волны
-                anchor = k
-                break
-        else:
-            if cp >= tp and c < t:   # пробил Teeth вниз
-                anchor = k
-                break
-    if anchor is None:
-        anchor = max(1, i - 7)   # нет чистого пересечения — окно по умолчанию
-
-    distance_now = _dist(i)
-    if distance_now is None:
-        return empty
-
-    # Максимум натяжения от якоря до текущего бара
-    distance_max = distance_now
-    for k in range(anchor, i + 1):
-        d = _dist(k)
-        if d is not None and d > distance_max:
-            distance_max = d
-
-    eps = 1e-6
-    tension_ratio = (distance_now / distance_max) if distance_max > eps else 0.0
-    is_peak = distance_now >= distance_max * (1 - 0.02)   # на пике (±2%)
-    bars_in_band = i - anchor
-
-    return {
-        "direction":     direction,
-        "distance_now":  round(distance_now, 1),
-        "distance_max":  round(distance_max, 1),
-        "tension_ratio": round(tension_ratio, 3),
-        "is_peak":       bool(is_peak),
-        "bars_in_band":  bars_in_band,
-    }
-
-
 def build_market_data(
     bars:      list[dict],
     symbol:    str   = "UNKNOWN",
@@ -715,14 +616,6 @@ def build_market_data(
     divergence = detect_ao_divergence(bars, ao_series)
     teeth_series = alligator.get("teeth_series")
     divergent_bar = detect_divergent_bar(bars, ao_series, teeth_series)
-    lips_series   = alligator.get("lips_series")
-    # Резинка Джастин: направление берём из дивергентного бара,
-    # а если он молчит — из наклона Аллигатора (Губы vs Зубы).
-    _rb_dir = divergent_bar.get("direction")
-    if _rb_dir is None and alligator.get("lips") is not None:
-        _rb_dir = "BULL" if alligator["lips"] > alligator["teeth"] else "BEAR"
-    rubber_band = compute_rubber_band(
-        bars, lips_series, teeth_series, _rb_dir, _point)
 
     print(f"[CORE]    _Point={_point} ({symbol})")
 
@@ -801,7 +694,6 @@ def build_market_data(
         "exit_bell":     divergence["bearish"],  # Конец импульса
 
         "divergent_bar": divergent_bar,          # BuDB/BDB по Profitunity
-        "rubber_band":   rubber_band,            # резинка Джастин (глаза Моржа)
 
         "fractals": {
             "last_up":    fractals["last_up"],

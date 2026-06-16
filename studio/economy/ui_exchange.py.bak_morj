@@ -61,7 +61,6 @@ def page_exchange() -> None:
         "iskra_stats": {},         # статистика Искры
         "market": {},              # symbol/timeframe/bar_time/point
         "running": False,          # идёт прогон РЫНОК
-        "morj_last_run": None,     # рабочая память Моржа для чата
     }
 
     # Refs на элементы UI — заполняются при сборке layout.
@@ -144,62 +143,6 @@ def page_exchange() -> None:
         st  = state["iskra_stats"]
         mk  = state["market"]
         stats_ref["element"].clear()
-
-        # ─── Приборы Моржа (A02): пасть + резинка + стата ───
-        if state["active_agent"] == "A02":
-            msig = state.get("morj_signal", {})
-            mst  = state.get("morj_stats", {})
-            rb   = state.get("morj_rubber", {})
-            mmk  = state.get("morj_market", {})
-            if not msig:
-                with stats_ref["element"]:
-                    ui.html('<div style="color:rgba(255,255,255,0.3); font-size:11px; '
-                            'padding:10px; text-align:center;">Морж ещё не смотрел — '
-                            'нажми РЫНОК (нужен сигнал Искры)</div>')
-                return
-            mstatus = msig.get("morj_status", "—")
-            st_color = {"AWAKE": "#00ff88", "WAKING": "#ffb400",
-                        "SLEEPING": "rgba(255,255,255,0.4)"}.get(mstatus, "rgba(255,255,255,0.4)")
-            peak = msig.get("tension_peak")
-            peak_txt = "🔴 НА ПРЕДЕЛЕ" if peak else "вяло"
-            peak_color = "#ff5050" if peak else "rgba(255,255,255,0.4)"
-            ratio = rb.get("tension_ratio")
-            ratio_txt = f"{ratio}" if ratio is not None else "—"
-            dist = rb.get("distance_now")
-            dist_txt = f"{dist} пт" if dist is not None else "—"
-            wave1 = "✓" if msig.get("wave_1_validated") else "—"
-            alst = (msig.get("alligator_state") or {})
-            bopen = alst.get("bars_open", "—")
-            with stats_ref["element"]:
-                ui.html(f'''
-                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ПАСТЬ</span>
-                    <span style="color:{st_color}; font-size:11px; font-weight:700;">{mstatus}</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">РЕЗИНКА</span>
-                    <span style="color:{peak_color}; font-size:11px; font-weight:700;">{peak_txt}</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">НАТЯЖЕНИЕ</span>
-                    <span style="color:rgba(0,204,255,0.9); font-size:11px;">{ratio_txt} · {dist_txt}</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ВОЛНА 1 / БАРОВ ОТКРЫТ</span>
-                    <span style="color:rgba(255,255,255,0.7); font-size:11px;">{wave1} · {bopen}</span>
-                  </div>
-                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;
-                              color:rgba(255,255,255,0.35); font-size:9px; line-height:1.7;">
-                    взглядов: {mst.get("runs",0)} ·
-                    проснулся: {mst.get("awake",0)} ·
-                    спал: {mst.get("sleeping",0)} ·
-                    пиков: {mst.get("tension_peaks",0)}
-                    <br>{mmk.get("symbol","")} {mmk.get("timeframe","")} · {mmk.get("bar_time","")}
-                  </div>
-                </div>
-                ''')
-            return
 
         # Только для Искры показываем её приборы; для других — заглушка.
         if state["active_agent"] != "A01":
@@ -306,50 +249,6 @@ def page_exchange() -> None:
         update_chat_display()
         ui.notify(f"✴️ Искра: {sig.get('t1_status','—')}", type="positive")
 
-        # ── ЕСТЬ СИГНАЛ? → будим Моржа (и остальных сенсоров) ────
-        # Закон Шефа: Искра молчит (NOT_FOUND) → цех спит. Крикнула
-        # сигнал → просыпаются сенсоры. Морж не гейт — он голос:
-        # кладёт факт (пасть, резинка, масштаб) на стол. Решат трейдеры.
-        t1 = sig.get("t1_status", "NOT_FOUND")
-        if t1 in ("DETECTED", "CONFIRMED"):
-            ui.notify("📣 Искра: есть сигнал — бужу Моржа...", type="info")
-            try:
-                from studio.modules.trading.morj_live import run_morj
-                mr = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: run_morj(symbol="XAUUSD", timeframe="H4"))
-            except Exception as e:
-                ui.notify(f"Морж не проснулся: {e}", type="negative")
-                mr = {"ok": False}
-
-            if mr.get("ok"):
-                msig = mr.get("signal", {})
-                rb   = mr.get("rubber_band", {})
-                state["reports"]["A02"] = mr.get("narrative", "") or mr.get("raw", "")
-                # Приборы Моржа в state (как iskra_signal/iskra_stats)
-                state["morj_signal"] = msig
-                state["morj_stats"]  = mr.get("stats", {})
-                state["morj_rubber"] = rb
-                state["morj_market"] = mr.get("market", {})
-                # Рабочая память Моржа для чата (как у Искры)
-                state["morj_last_run"] = {
-                    "narrative":   mr.get("narrative", ""),
-                    "signal":      msig,
-                    "market":      mr.get("market", {}),
-                    "rubber_band": rb,
-                    "iskra_status": mr.get("iskra_status", t1),
-                }
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "A02",
-                    "content": (f"🦭 Посмотрел. Пасть: "
-                                f"{msig.get('morj_status','—')}, резинка "
-                                f"{'натянута' if msig.get('tension_peak') else 'вяло'}. "
-                                f"Отчёт справа.")})
-                update_chat_display()
-                update_avatar_states()
-                ui.notify(f"🦭 Морж: {msig.get('morj_status','—')}", type="positive")
-            else:
-                ui.notify("🦭 Морж смолчал (нет данных или сбой)", type="warning")
-
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
@@ -413,22 +312,8 @@ def page_exchange() -> None:
 
         agent_id = state["active_agent"]
 
-        # Живой чат: Искра (A01) и Морж (A02). Остальные — по очереди.
-        if agent_id == "A02":
-            ui.notify("🦭 Морж смотрит...", type="info")
-            try:
-                from studio.modules.trading.morj_live import chat_with_morj
-                dialog = [m for m in state["chat_history"]
-                          if m.get("role") in ("user", "assistant") and m.get("content")]
-                reply = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: chat_with_morj(msg, state.get("morj_last_run"), dialog))
-            except Exception as e:
-                reply = f"⚠️ Морж не смог ответить: {e}"
-            state["chat_history"].append({
-                "role": "assistant", "agent": "A02", "content": reply})
-            update_chat_display()
-            return
-
+        # Пока живой чат подключён только для Искры (A01). Остальные —
+        # подключим когда дойдём до них по цепочке.
         if agent_id != "A01":
             state["chat_history"].append({
                 "role": "assistant", "agent": agent_id,
