@@ -1,6 +1,6 @@
-# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.3
+# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.4
 ## studio/modules/trading/CHAIN_CONTRACT.md
-## Студия «Шесть Пальцев» · 2026-06-10
+## Студия «Шесть Пальцев» · 2026-06-16
 
 > Это единственный источник правды для contract_validator.
 > Каждый агент пишет строго то что указано в "Пишет".
@@ -16,7 +16,7 @@
 | Агент | Пишет | Читает |
 |-------|-------|--------|
 | A01 Искра | `t1_status`, `divergence`, `zero_cross_up`, `zero_point_price`, `exit_bell`, `history_dna` | `market_data`, `history_dna` |
-| A02 Морж | `morj_status`, `alligator_state`, `wave_1_validated` | `market_data`, `t1_status` |
+| A02 Морж | `morj_status`, `alligator_state`, `wave_1_validated`, `tension_peak` | `market_data`, `market_data.rubber_band`, `t1_status` |
 | A03 Паникёр | `panic_phase`, `crowd_sentiment`, `action_for_traders` | `market_data.price`, `t1_status`, `morj_status` |
 | A04 Ганс | `fractal_detected`, `fractal_outside_jaw`, `absorption_ratio`, `entry_trigger` | `market_data.fractals`, `market_data.mfi`, `market_data.alligator.jaw`, `t1_status`, `wave_1_validated` |
 | A05 Архивариус | `sample_size`, `success_rate`, `top_failure_reason`, `arkhiv_confidence` | `t1_status`, `morj_status`, `panic_phase`, `entry_trigger`, `atlas_digest` |
@@ -77,9 +77,18 @@ GATE 2 — Хард-стоп:
   "price": {"open": 0.0, "high": 0.0, "low": 0.0, "close": 0.0},
   "divergence_ao": false,
   "exit_bell": false,
-  "fractals": {"last_up": null, "last_down": null, "count_up": 0, "count_down": 0}
+  "fractals": {"last_up": null, "last_down": null, "count_up": 0, "count_down": 0},
+  "rubber_band": {"direction": "BULL", "distance_now": 0.0, "distance_max": 0.0,
+                  "tension_ratio": 0.0, "is_peak": false, "bars_in_band": 0}
 }
 ```
+
+ОКНО АНАЛИЗА: build_market_data(analysis_window=150). Математика
+индикаторов считается на всей истории (прогрев средних), но ПОИСК
+событий (дивергенция AO, якорь резинки) — в последних 150 барах.
+Правило разрешения 100-140: <100 микротренд, >150 AO сплющен.
+rubber_band — «резинка» Джастин: натяжение цена↔Губы (зелёная) в point;
+is_peak=true когда дистанция на пике (момент дивергентного бара).
 
 ### t1_status (A01 Искра)
 `NOT_FOUND` | `DETECTED` | `CONFIRMED`
@@ -92,6 +101,13 @@ CONFIRMED возможен только после DETECTED.
 AWAKE = bars_open ≥ 8 = зрелый. Отдельного MATURE-статуса НЕТ —
 зрелость также видна в `alligator_state.mature`.
 Консерватор требует `morj_status=AWAKE`.
+
+### tension_peak (A02 Морж) — резинка/ангуляция Джастин
+`true` | `false`
+Морж копирует market_data.rubber_band.is_peak — натяжение на пике в
+момент сигнала Искры (затвор). ОТДЕЛЬНЫЙ факт, НЕ подмешивается в
+wave_1_validated. Две лампочки независимы: пасть (wave_1_validated)
+и ангуляция (tension_peak). Трейдеры читают как факт, решают сами.
 
 ### panic_phase (A03 Паникёр)
 `NEUTRAL` | `DISBELIEF` | `FOMO` | `LIQUIDATION`
@@ -139,7 +155,11 @@ Magic numbers: BRUT=100001, AVANTURIST=100002, KONSERVATOR=100003.
 
 ---
 
-*CHAIN_CONTRACT v1.3 · Торговый Цех · 2026-06-10*
+*CHAIN_CONTRACT v1.4 · Торговый Цех · 2026-06-16*
+*v1.4: РЕЗИНКА ДЖАСТИН. Морж пишет tension_peak (ангуляция, is_peak резинки).*
+*market_data получил блок rubber_band (натяжение цена-Губы в point).*
+*Окно анализа 140-150 баров (analysis_window=150) — математика не тронута.*
+*tension_peak независим от wave_1_validated (две лампочки Моржа).*
 *v1.3: ПОЛНАЯ КАНОНИЗАЦИЯ. Нумерация по MASTER (A01 Искра, A02 Морж).*
 *GATE 3 удалён (ЗАКОН ТРИБУНАЛА). history_dna у Искры и A09.*
 *Добавлены служебные ключи hooks: trade_setup, atlas_digest, prev_*, open_positions.*
