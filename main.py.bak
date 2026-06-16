@@ -82,11 +82,13 @@ print("[LOKA-FILTER] Пульс города запущен в фоне")
 from studio.api_trading import router as trading_router
 app.include_router(trading_router)
 
-# ══ MT5 Feed — насос котировок (ПО ТРЕБОВАНИЮ) ══
-# Насос НЕ стартует при запуске студии. MT5 нужен только когда
-# Шеф пришёл торговать — контур поднимается по кнопке «РЫНОК»
-# на странице Биржи (/exchange). Делаешь мультик — терминал не трогается.
-# Модуль импортируется лениво внутри страницы Биржи, здесь не запускаем.
+# ══ MT5 Feed — насос котировок ══
+# Старый встроенный мост (хардкод XAUUSD/H4 + POINT_MAP) вырезан.
+# Теперь — отдельный модуль studio/modules/trading/mt5_feed.py:
+# тянет любой инструмент из watchlist, point берёт из терминала,
+# мозги агентов живут в hooks.py. Боевой режим по умолчанию выключен.
+from studio.modules.trading.mt5_feed import start_mt5_feed
+start_mt5_feed()
 # ══ END MT5 Feed ══
 
 from studio.slot_manager import SlotManager

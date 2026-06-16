@@ -1,0 +1,329 @@
+# studio/modules/trading/iskra_live.py
+# ─────────────────────────────────────────────────────────────
+# ЖИВОЙ ПРОГОН ИСКРЫ (A01) — первое звено Совета Биржи
+# Версия: 0.1 · Спринт 45 · 2026-06-16
+#
+# Это МОЗГ прогона, не UI. Каркас (ui_exchange.py) зовёт run_iskra()
+# по кнопке «РЫНОК». Шаги:
+#   1. поднять контур: взять свежие бары из терминала (через насос)
+#   2. посчитать market_data ядром (williams_core, point из терминала)
+#   3. дать Искре думать живой моделью: промт forge + WILLIAMS_MATH
+#      + market_data + её history_dna (рабочая память прошлого прогона)
+#   4. распарсить двухслойный ответ {narrative, signal}
+#   5. narrative → отчёт, signal → цифры под аватаром
+#   6. сохранить history_dna, обновить статистику Искры
+#
+# Искра НЕ торгует — она датчик. Её сигнал позже будит цепочку.
+# Здесь только Искра. Остальные агенты — следующими шагами.
+# ─────────────────────────────────────────────────────────────
+
+import json
+import re
+from pathlib import Path
+from datetime import datetime
+from typing import Optional
+
+from studio.llm import chat
+
+_HERE        = Path(__file__).resolve().parent
+A01_DIR      = _HERE / "A01"
+PROMPT_PATH  = A01_DIR / "forge" / "prompt.md"
+KNOWLEDGE    = A01_DIR / "forge" / "knowledge" / "WILLIAMS_MATH.md"
+STATE_DIR    = _HERE / "state"
+STATS_PATH   = STATE_DIR / "iskra_stats.json"         # накопительная статистика (наш слой)
+
+
+# ════════════════════════════════════════════════════════════
+# ПАМЯТЬ ИСКРЫ — ШТАТНЫЙ trading_state.json (CHAIN_CONTRACT)
+# ─────────────────────────────────────────────────────────────
+# Контракт: Искра читает prev_t1_status / prev_zero_point_price,
+# которые живут в trading_state["iskra"]. Это ЕДИНОЕ место памяти
+# цеха — отсюда же её прочитает Морж. Не плодим свой файл.
+# Переиспользуем load/save из hooks — один источник правды.
+# ════════════════════════════════════════════════════════════
+
+def _load_iskra_memory() -> dict:
+    """
+    Читает память Искры из штатного trading_state.json.
+    Возвращает {t1_status, zero_point_price, history_dna}.
+    """
+    from studio.modules.trading.hooks import load_trading_state
+    tstate = load_trading_state()
+    return tstate.get("iskra", {
+        "t1_status": "NOT_FOUND", "zero_point_price": None, "history_dna": ""})
+
+
+def _save_iskra_memory(signal: dict):
+    """
+    Пишет память Искры в штатный trading_state.json — туда, откуда
+    её прочитает Морж и следующий прогон самой Искры (prev_*).
+    """
+    from studio.modules.trading.hooks import load_trading_state, save_trading_state
+    tstate = load_trading_state()
+    tstate.setdefault("iskra", {})
+    tstate["iskra"]["t1_status"]        = signal.get("t1_status", "NOT_FOUND")
+    tstate["iskra"]["zero_point_price"] = signal.get("zero_point_price")
+    tstate["iskra"]["history_dna"]      = signal.get("history_dna", "")
+    save_trading_state(tstate)
+
+
+# ════════════════════════════════════════════════════════════
+# СТАТИСТИКА ИСКРЫ — её винрейт как датчика (под аватар)
+# ════════════════════════════════════════════════════════════
+
+def _load_stats() -> dict:
+    """Накопительная статистика Искры."""
+    try:
+        if STATS_PATH.exists():
+            return json.loads(STATS_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        pass
+    return {"runs": 0, "detected": 0, "confirmed": 0,
+            "annulled": 0, "exit_bells": 0}
+
+
+def _update_stats(prev_status: str, signal: dict) -> dict:
+    """
+    Обновляет статистику по переходу статуса.
+      DETECTED      → +1 нашла Точку Ноль
+      CONFIRMED     → +1 подтвердилась (разворот факт)
+      было DETECTED, стало NOT_FOUND → +1 аннулирована
+      exit_bell     → +1 колокол выхода
+    """
+    stats = _load_stats()
+    stats["runs"] = stats.get("runs", 0) + 1
+    new_status = signal.get("t1_status", "NOT_FOUND")
+
+    if new_status == "DETECTED" and prev_status != "DETECTED":
+        stats["detected"] = stats.get("detected", 0) + 1
+    if new_status == "CONFIRMED" and prev_status != "CONFIRMED":
+        stats["confirmed"] = stats.get("confirmed", 0) + 1
+    if prev_status == "DETECTED" and new_status == "NOT_FOUND":
+        stats["annulled"] = stats.get("annulled", 0) + 1
+    if signal.get("exit_bell"):
+        stats["exit_bells"] = stats.get("exit_bells", 0) + 1
+
+    STATS_PATH.write_text(
+        json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
+    return stats
+
+
+# ════════════════════════════════════════════════════════════
+# ПАРСИНГ ДВУХСЛОЙНОГО ОТВЕТА ИСКРЫ
+# ════════════════════════════════════════════════════════════
+
+def _parse_iskra(response: str) -> tuple[str, dict]:
+    """
+    Достаёт из ответа модели {narrative, signal}.
+    Искра отвечает JSON по CHAIN_CONTRACT v1.1. Если обёрнут в ```json
+    или есть лишний текст — вытаскиваем первый JSON-объект.
+    Возвращает (narrative, signal_dict). При сбое — текст как narrative.
+    """
+    # Снять markdown-обёртку ```json ... ```
+    cleaned = re.sub(r"```(?:json)?", "", response).strip()
+    # Найти первый сбалансированный JSON-объект
+    start = cleaned.find("{")
+    if start != -1:
+        depth = 0
+        for i in range(start, len(cleaned)):
+            if cleaned[i] == "{":
+                depth += 1
+            elif cleaned[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        obj = json.loads(cleaned[start:i + 1])
+                        narrative = obj.get("narrative", "")
+                        signal = obj.get("signal", {}) or {}
+                        return narrative, signal
+                    except json.JSONDecodeError:
+                        break
+    # Не распарсилось — весь текст как голос, пустой сигнал
+    return response.strip(), {}
+
+
+# ════════════════════════════════════════════════════════════
+# ГЛАВНАЯ ФУНКЦИЯ — один прогон Искры
+# ════════════════════════════════════════════════════════════
+
+def chat_with_iskra(question: str, last_run: Optional[dict] = None,
+                    dialog: Optional[list] = None) -> str:
+    """
+    РАБОЧИЙ разговор с Искрой (клик пузырька + вопрос в чате).
+
+    Она отвечает живым голосом, ЗНАЯ свой последний прогон рынка:
+    last_run = {narrative, signal, market}. Это её рабочая память —
+    Шеф дёрнул за плечо у монитора, она помнит что секунду назад видела.
+
+    Без обращения к терминалу: болтовня не должна поднимать MT5.
+    Если прогона ещё не было — честно отвечает, что рынок не смотрела.
+    """
+    prompt = PROMPT_PATH.read_text(encoding="utf-8") if PROMPT_PATH.exists() else ""
+
+    # Рабочий контекст последнего прогона — в системный довесок.
+    if last_run:
+        sig = last_run.get("signal", {})
+        mk  = last_run.get("market", {})
+        work_ctx = (
+            "\n\n=== ТВОЙ ПОСЛЕДНИЙ ПРОГОН РЫНКА (рабочая память) ===\n"
+            f"Инструмент: {mk.get('symbol','?')} {mk.get('timeframe','?')} "
+            f"· бар {mk.get('bar_time','?')}\n"
+            f"Твой статус: {sig.get('t1_status','—')}\n"
+            f"Дивергенция: {sig.get('divergence','—')}\n"
+            f"Точка Ноль: {sig.get('zero_point_price')}\n"
+            f"Колокол выхода: {sig.get('exit_bell')}\n"
+            f"Что ты сказала: {last_run.get('narrative','')}\n"
+            "=== КОНЕЦ ПРОГОНА ===\n\n"
+            "Шеф спрашивает тебя про ЭТОТ прогон. Отвечай в рабочем режиме — "
+            "конкретно, по своим инструментам, как датчик у монитора. "
+            "Живым голосом, БЕЗ JSON — это разговор, не сигнал."
+        )
+    else:
+        work_ctx = (
+            "\n\n=== РАБОЧИЙ РЕЖИМ ===\n"
+            "Ты ещё не смотрела рынок в этой сессии (РЫНОК не запускали). "
+            "Если Шеф спрашивает про рынок — честно скажи, что нужно нажать "
+            "РЫНОК, чтобы ты взглянула на свежий бар. Отвечай живым голосом, без JSON."
+        )
+
+    system = prompt + work_ctx
+
+    # История диалога без последнего вопроса (он пойдёт как user).
+    history = []
+    if dialog:
+        for m in dialog[:-1]:
+            r = m.get("role")
+            c = m.get("content", "")
+            if r in ("user", "assistant") and c:
+                history.append({"role": r, "content": c})
+
+    try:
+        return chat(
+            system=system,
+            user=question,
+            history=history,
+            agent_id="A01_ISKRA",
+            slot_id="trading",
+        )
+    except Exception as e:
+        return f"⚠️ Искра не смогла ответить: {e}"
+
+
+def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
+              bars_count: int = 300) -> dict:
+    """
+    Один живой прогон Искры по свежему бару из терминала.
+
+    Возвращает словарь для каркаса:
+      {
+        "ok": bool,
+        "error": str | None,
+        "narrative": str,        # голос Искры → в отчёт
+        "signal": dict,          # машина → в цифры под аватаром
+        "stats": dict,           # статистика → под аватар
+        "market": {symbol, timeframe, bar_time, point},
+      }
+    """
+    # ── 1. Поднять контур: бары + point из терминала ─────────
+    from studio.modules.trading.mt5_feed import _terminal, _fetch
+    mt5 = _terminal()
+    if mt5 is None:
+        return {"ok": False, "error": "MetaTrader5 не установлен в Python",
+                "narrative": "", "signal": {}, "stats": _load_stats(), "market": {}}
+
+    bars, point = _fetch(mt5, symbol, timeframe, bars_count)
+    if not bars or point is None:
+        return {"ok": False,
+                "error": f"Терминал не дал котировки {symbol} {timeframe}. "
+                         f"Открыт ли MetaTrader и виден ли символ?",
+                "narrative": "", "signal": {}, "stats": _load_stats(), "market": {}}
+
+    # ── 2. Посчитать market_data ядром ───────────────────────
+    from studio.modules.trading.williams_core import build_market_data
+    md = build_market_data(bars, symbol=symbol, timeframe=timeframe, point=point)
+    if not md:
+        return {"ok": False, "error": "Ядро не собрало market_data",
+                "narrative": "", "signal": {}, "stats": _load_stats(), "market": {}}
+
+    # ── 3. Собрать контекст для Искры ────────────────────────
+    prompt = PROMPT_PATH.read_text(encoding="utf-8") if PROMPT_PATH.exists() else ""
+    knowledge = KNOWLEDGE.read_text(encoding="utf-8") if KNOWLEDGE.exists() else ""
+
+    # Память из ШТАТНОГО trading_state (CHAIN_CONTRACT: prev_*).
+    mem = _load_iskra_memory()
+    prev_status     = mem.get("t1_status", "NOT_FOUND")
+    prev_zero       = mem.get("zero_point_price")
+    history_dna     = mem.get("history_dna", "")
+
+    # market_data Искре — её органы: AO/AC + ГОТОВЫЕ ПИВОТЫ из движка.
+    # Пивоты (ao.pivots) движок уже посчитал — Искра не считает глазами
+    # по сырой цене, а читает факт. Это синхронизирует голос с движком.
+    ao_block = md.get("ao", {})
+    md_for_iskra = {
+        "symbol":    md.get("symbol"),
+        "timeframe": md.get("timeframe"),
+        "bar_time":  md.get("bar_time"),
+        "ao": {
+            "value":        ao_block.get("value"),
+            "prev_value":   ao_block.get("prev_value"),
+            "crossed_zero": ao_block.get("crossed_zero"),
+            "zero_dir":     ao_block.get("zero_dir"),
+            "direction":    ao_block.get("direction"),
+            "pivots":       ao_block.get("pivots", []),   # ← готовые пивоты
+        },
+        "ac":            md.get("ac", {}),
+        "divergence_ao": md.get("divergence_ao"),   # флаг движка (2 послед. пивота)
+        "exit_bell":     md.get("exit_bell"),
+        "divergent_bar": md.get("divergent_bar", {}),
+        "price":         md.get("price", {}),
+    }
+
+    user_msg = (
+        "=== ТВОЯ РАБОЧАЯ ПАМЯТЬ (прошлый прогон) ===\n"
+        f"prev_t1_status: {prev_status}\n"
+        f"prev_zero_point_price: {prev_zero}\n"
+        f"history_dna: {history_dna or '(пусто — первый прогон, сравнивать не с чем)'}\n\n"
+        "=== MARKET_DATA (свежий бар из терминала) ===\n"
+        f"{json.dumps(md_for_iskra, ensure_ascii=False, indent=2)}\n\n"
+        "Помни закон: твой t1_status (signal) должен совпадать с флагом "
+        "divergence_ao движка. Голос (narrative) может рассуждать шире, "
+        "но сигнал — это движок. Выдай строго двухслойный JSON "
+        "{narrative, signal} по CHAIN_CONTRACT. Ничего вне JSON."
+    )
+
+    # ── 4. Искра думает живой моделью ────────────────────────
+    try:
+        response = chat(
+            system=prompt,
+            user=user_msg,
+            knowledge=knowledge,
+            agent_id="A01_ISKRA",
+            slot_id="trading",
+        )
+    except Exception as e:
+        return {"ok": False, "error": f"Искра не смогла подумать: {e}",
+                "narrative": "", "signal": {}, "stats": _load_stats(),
+                "market": {"symbol": symbol, "timeframe": timeframe,
+                           "bar_time": md.get("bar_time"), "point": point}}
+
+    # ── 5. Распарсить ответ ──────────────────────────────────
+    narrative, signal = _parse_iskra(response)
+
+    # ── 6. Сохранить память (штатно) и статистику ────────────
+    _save_iskra_memory(signal)
+    stats = _update_stats(prev_status, signal)
+
+    return {
+        "ok": True,
+        "error": None,
+        "narrative": narrative,
+        "signal": signal,
+        "stats": stats,
+        "market": {
+            "symbol":   symbol,
+            "timeframe": timeframe,
+            "bar_time": md.get("bar_time"),
+            "point":    point,
+        },
+        "raw": response,   # на случай если парсинг частичный — для отладки
+    }

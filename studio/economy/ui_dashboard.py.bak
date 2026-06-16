@@ -1622,14 +1622,6 @@ def dashboard_page():
                             'background:rgba(99,130,255,0.08);'
                             'border:1px solid rgba(99,130,255,0.15);'
                         )
-                        # Биржа — перекидывает на отдельную страницу Совета (каркас воркшопа)
-                        ui.button('Биржа', on_click=lambda: ui.navigate.to('/exchange')).props('flat dense').style(
-                            'font-family:JetBrains Mono,monospace; font-size:0.55rem;'
-                            'letter-spacing:0.06em; color:rgba(0,204,255,0.75);'
-                            'padding:2px 8px; border-radius:4px;'
-                            'background:rgba(0,204,255,0.10);'
-                            'border:1px solid rgba(0,204,255,0.25);'
-                        )
                 refs["detail_panel"] = ui.element('div').classes('cab-tab-content')
 
     # ── INIT ──

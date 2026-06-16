@@ -1,7 +1,7 @@
 # studio/modules/trading/williams_core.py
 # ─────────────────────────────────────────────────────────────
 # МАТЕМАТИКА ВИЛЬЯМСА — изолированное ядро
-# Версия: 1.1 · Спринт 45 · 2026-06-16 · POINT_MAP убран, point обязателен
+# Версия: 1.0 · Спринт 43 · 2026-06-09
 #
 # ЗАКОН: этот файл не знает про Грондхейм, агентов, cartridge.
 # Принимает CSV или список баров → возвращает market_data.
@@ -20,13 +20,32 @@ from typing import Optional
 
 
 # ════════════════════════════════════════════════════════════
-# ТОЧНОСТЬ ЦЕНЫ (point)
+# _Point по тикерам (стандарт MT5)
 # ════════════════════════════════════════════════════════════
-#
-# ЗАКОН: ядро НЕ знает тикеры. point (минимальный шаг цены) приходит
-# снаружи как обязательный параметр — из терминала (symbol_info.point)
-# для живого потока, или задаётся явно для лабораторных прогонов.
-# Никаких встроенных таблиц активов: это и есть отказ от зависимости.
+
+POINT_MAP = {
+    "EURUSD": 0.00001,
+    "GBPUSD": 0.00001,
+    "USDJPY": 0.001,
+    "AUDUSD": 0.00001,
+    "USDCHF": 0.00001,
+    "USDCAD": 0.00001,
+    "XAUUSD": 0.01,
+    "XAGUSD": 0.001,
+    "SP500":  0.01,
+    "US500":  0.01,
+    "NAS100": 0.01,
+    "AAPL":   0.001,
+    "TSLA":   0.001,
+    "MSFT":   0.001,
+}
+
+
+def get_point(symbol: str, override: float = None) -> float:
+    """Возвращает _Point для символа. override имеет приоритет."""
+    if override:
+        return override
+    return POINT_MAP.get(symbol.upper(), 0.00001)
 
 
 # ════════════════════════════════════════════════════════════
@@ -95,8 +114,7 @@ def _smma_series(medians: list[float], period: int) -> list[Optional[float]]:
     return result
 
 
-def compute_alligator(highs: list[float], lows: list[float],
-                      point: float = None) -> dict:
+def compute_alligator(highs: list[float], lows: list[float]) -> dict:
     """
     Аллигатор Вильямса:
       Jaw(13)  — SMMA(13) медианы
@@ -126,12 +144,6 @@ def compute_alligator(highs: list[float], lows: list[float],
             "bars_open": 0,
         }
 
-    # Порог раскрытия пасти — в единицах point (НЕ абсолютная цена).
-    # 50 пунктов: для EURUSD (point=0.00001) это 0.0005 — как было;
-    # для золота (point=0.01) это 0.5 — корректный масштаб. Один
-    # безразмерный порог вместо хардкода под Forex.
-    open_threshold = 50 * point if point else 0.0005
-
     # Считаем bars_open (сколько баров подряд открыт)
     bars_open = 0
     for i in range(len(jaw_s) - 1, -1, -1):
@@ -139,7 +151,7 @@ def compute_alligator(highs: list[float], lows: list[float],
         if j is None or t is None or l is None:
             break
         spread = max(abs(j - t), abs(t - l), abs(j - l))
-        if spread < open_threshold:
+        if spread < 0.0005:  # Forex-порог; для XAUUSD/SP500 пересчитать
             break
         bars_open += 1
 
@@ -590,27 +602,21 @@ def build_market_data(
     Из сырых баров собирает market_data для всего Совета.
     Структура согласно CHAIN_CONTRACT.md.
 
-    point — минимальный шаг цены (_Point в MT5). ОБЯЗАТЕЛЕН.
-    Приходит снаружи: из терминала (symbol_info.point) для живого
-    потока, или явно для лабораторных прогонов. Ядро не угадывает
-    точность по тикеру — оно слепо к активу.
+    point — минимальный шаг цены (_Point в MT5).
+    Если не передан — берётся из POINT_MAP по символу.
     """
     if len(bars) < 40:
         print(f"[CORE] ❌ Недостаточно баров: {len(bars)} (нужно ≥ 40)")
         return {}
 
-    if not point:
-        print(f"[CORE] ❌ point не передан ({symbol}) — ядру нужна точность цены")
-        return {}
-
     highs = [b["high"]  for b in bars]
     lows  = [b["low"]   for b in bars]
 
-    _point     = point
-    alligator  = compute_alligator(highs, lows, point=_point)
+    alligator  = compute_alligator(highs, lows)
     ao_series  = compute_ao_series(highs, lows)
     ac_series  = compute_ac_series(ao_series)
     fractals   = detect_fractals(bars)
+    _point     = get_point(symbol, point)
     squat      = detect_squat_bars(bars, point=_point)
     mfi        = compute_mfi(bars[-1], bars[-2], point=_point)
     divergence = detect_ao_divergence(bars, ao_series)
@@ -647,7 +653,6 @@ def build_market_data(
     return {
         "symbol":     symbol,
         "timeframe":  timeframe,
-        "point":      _point,
         "bar_time":   last_bar["date"],
         "bars_total": len(bars),
 

@@ -1,0 +1,8 @@
+{
+  "_comment": "watchlist — что наблюдать. mode: data|council. live: реальные ордера (по умолчанию false). point НЕ здесь — он из терминала.",
+  "poll_seconds": 60,
+  "history_bars": 2000,
+  "watchlist": [
+    {"symbol": "XAUUSD", "timeframe": "H4", "mode": "data", "live": false}
+  ]
+}
