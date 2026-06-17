@@ -350,38 +350,6 @@ def page_exchange() -> None:
             else:
                 ui.notify("🦭 Морж смолчал (нет данных или сбой)", type="warning")
 
-            # ── EXCHANGE_PANIKYOR: Паникёр после Моржа (та же цепочка/затвор) ──
-            # Паникёр чует толпу структурой (окна MFI). Наследует этаж Искры сам.
-            ui.notify("😱 Бужу Паникёра — мерит толпу...", type="info")
-            try:
-                from studio.modules.trading.panikyor_live import run_panikyor
-                pr = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: run_panikyor(symbol="XAUUSD", timeframe="H4"))
-            except Exception as e:
-                ui.notify(f"Паникёр не проснулся: {e}", type="negative")
-                pr = {"ok": False}
-
-            if pr.get("ok"):
-                psig = pr.get("signal", {})
-                state["reports"]["A03"] = pr.get("narrative", "") or pr.get("raw", "")
-                state["panic_signal"] = psig
-                state["panic_stats"]  = pr.get("stats", {})
-                state["panic_market"] = pr.get("market", {})
-                state["panic_last_run"] = {
-                    "narrative": pr.get("narrative", ""),
-                    "signal":    psig,
-                    "market":    pr.get("market", {}),
-                }
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "A03",
-                    "content": (f"😱 Толпа: {psig.get('panic_phase','—')}. "
-                                f"{psig.get('crowd_sentiment','')} Отчёт справа.")})
-                update_chat_display()
-                update_avatar_states()
-                ui.notify(f"😱 Паникёр: {psig.get('panic_phase','—')}", type="positive")
-            else:
-                ui.notify("😱 Паникёр смолчал (нет данных или сбой)", type="warning")
-
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
