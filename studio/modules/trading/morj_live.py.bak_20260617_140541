@@ -30,7 +30,7 @@ from studio.llm import chat
 _HERE        = Path(__file__).resolve().parent
 A02_DIR      = _HERE / "A02"
 PROMPT_PATH  = A02_DIR / "forge" / "prompt.md"
-KNOWLEDGE    = A02_DIR / "forge" / "knowledge" / "MORJ_MATH.md"   # книга Моржа (Аллигатор+резинка)  # MORJ_KNOWLEDGE_FILE
+KNOWLEDGE    = A02_DIR / "forge" / "knowledge" / "WILLIAMS_MATH.md"   # если появится
 STATE_DIR    = _HERE / "state"
 STATS_PATH   = STATE_DIR / "morj_stats.json"
 
