@@ -48,8 +48,7 @@ def _load_iskra_signal() -> dict:
     from studio.modules.trading.hooks import load_trading_state
     tstate = load_trading_state()
     return tstate.get("iskra", {
-        "t1_status": "NOT_FOUND", "zero_point_price": None,
-        "trend_direction": None, "found_timeframe": None})  # MORJ_INHERIT_V2 — масштаб спуска
+        "t1_status": "NOT_FOUND", "zero_point_price": None})
 
 
 def _load_morj_memory() -> dict:
@@ -61,9 +60,7 @@ def _load_morj_memory() -> dict:
         "history_dna": ""})
 
 
-def _save_morj_memory(signal: dict, alligator: Optional[dict] = None,
-                      scale_timeframe: Optional[str] = None,
-                      inherited_dir: Optional[str] = None):  # MORJ_INHERIT_V2
+def _save_morj_memory(signal: dict, alligator: Optional[dict] = None):
     """
     Пишет память Моржа в штатный trading_state — туда, откуда её
     прочитает Ганс (A04, ждёт wave_1_validated) и Паникёр (ждёт morj_status).
@@ -90,11 +87,6 @@ def _save_morj_memory(signal: dict, alligator: Optional[dict] = None,
     tstate["morj"]["wave_1_validated"] = bool(signal.get("wave_1_validated", False))
     tstate["morj"]["tension_peak"]     = bool(signal.get("tension_peak", False))
     tstate["morj"]["history_dna"]      = signal.get("history_dna", "")
-    # MORJ_INHERIT_V2: связка для Ганса — ФАКТ прогона (где смотрели,
-    # что унаследовали от Искры). Ганс получит точку Искры + контекст
-    # Моржа В ОДНОМ масштабе, не вразнобой.
-    tstate["morj"]["scale_timeframe"]  = scale_timeframe
-    tstate["morj"]["inherited_dir"]    = inherited_dir
     if alligator is not None:
         # alligator_state — контракт обещает, дашборд показывает
         tstate["morj"]["alligator_state"] = {
@@ -247,15 +239,6 @@ def run_morj(symbol: str = "XAUUSD", timeframe: str = "H4",
     iskra = _load_iskra_signal()
     iskra_status = iskra.get("t1_status", "NOT_FOUND")
     iskra_zero   = iskra.get("zero_point_price")
-    # MORJ_INHERIT_V2: масштаб и сторона спуска Искры.
-    # Морж ИДЁТ СМОТРЕТЬ туда, куда показала Искра (этаж), но видит и судит сам.
-    iskra_tf    = iskra.get("found_timeframe")    # этаж, где Искра нашла точку
-    iskra_dir   = iskra.get("trend_direction")    # сторона разворота (BULL/BEAR)
-    # Наследуем этаж: Искра нашла → смотрим на ЕЁ ТФ. Молчит → аргумент (как было).
-    if iskra_tf:
-        print(f"[MORJ] 🔗 Наследую масштаб Искры: {timeframe} → {iskra_tf} "
-              f"(сторона {iskra_dir or '—'})")
-        timeframe = iskra_tf
 
     # ── 1. Поднять контур: бары + point из терминала ─────────
     from studio.modules.trading.mt5_feed import _terminal, _fetch
@@ -322,10 +305,6 @@ def run_morj(symbol: str = "XAUUSD", timeframe: str = "H4",
         "=== ЗАТВОР: СИГНАЛ ИСКРЫ (из общей шины) ===\n"
         f"t1_status: {iskra_status}\n"
         f"zero_point_price: {iskra_zero}\n"
-        f"Искра нашла разворот на этаже: {iskra_tf or '—'} "
-        f"(ты смотришь СВОЙ Аллигатор и резинку на ЭТОМ этаже)\n"
-        f"Сторона разворота: {iskra_dir or '—'} "
-        f"(резинку суди в эту сторону: BULL — натяжение вниз для отскока вверх)\n"
         "Это твой момент фиксации. Натяжение растёт долго — но СЕЙЧАС,\n"
         "когда Искра подала голос, ты делаешь срез: на пике ли резинка.\n\n"
         "=== ТВОЯ РАБОЧАЯ ПАМЯТЬ (прошлый взгляд) ===\n"
@@ -368,8 +347,7 @@ def run_morj(symbol: str = "XAUUSD", timeframe: str = "H4",
 
     # ── 6. Распарсить, сохранить память и статистику ─────────
     narrative, signal = _parse_morj(response)
-    _save_morj_memory(signal, alligator=alligator,
-                      scale_timeframe=timeframe, inherited_dir=iskra_dir)  # MORJ_INHERIT_V2
+    _save_morj_memory(signal, alligator=alligator)
     stats = _update_stats(signal)
 
     # ── 6b. ПЕТЛЯ ОБУЧЕНИЯ — точность стража → ДНК ──────────

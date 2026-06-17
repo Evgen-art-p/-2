@@ -64,15 +64,6 @@ def _save_iskra_memory(signal: dict):
     tstate["iskra"]["t1_status"]        = signal.get("t1_status", "NOT_FOUND")
     tstate["iskra"]["zero_point_price"] = signal.get("zero_point_price")
     tstate["iskra"]["history_dna"]      = signal.get("history_dna", "")
-    # ── ISKRA_MEM_V2: два поля спуска v2 — Морж наследует масштаб ──
-    # found_timeframe берём из signal (его кладёт user_msg при found),
-    # с фоллбэком на старое имя timeframe. trend_direction = компас спуска.
-    tstate["iskra"]["trend_direction"] = (
-        signal.get("trend_direction") or signal.get("compass")
-    )
-    tstate["iskra"]["found_timeframe"] = (
-        signal.get("found_timeframe") or signal.get("timeframe")
-    )
     save_trading_state(tstate)
 
 

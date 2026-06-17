@@ -15,7 +15,7 @@
 
 | Агент | Пишет | Читает |
 |-------|-------|--------|
-| A01 Искра | `t1_status`, `divergence`, `zero_cross_up`, `zero_point_price`, `exit_bell`, `history_dna`, `trend_direction`, `found_timeframe` | `market_data`, `history_dna` |
+| A01 Искра | `t1_status`, `divergence`, `zero_cross_up`, `zero_point_price`, `exit_bell`, `history_dna` | `market_data`, `history_dna` |
 | A02 Морж | `morj_status`, `alligator_state`, `wave_1_validated`, `tension_peak` | `market_data`, `market_data.rubber_band`, `t1_status` |
 | A03 Паникёр | `panic_phase`, `crowd_sentiment`, `action_for_traders` | `market_data.price`, `t1_status`, `morj_status` |
 | A04 Ганс | `fractal_detected`, `fractal_outside_jaw`, `absorption_ratio`, `entry_trigger` | `market_data.fractals`, `market_data.mfi`, `market_data.alligator.jaw`, `t1_status`, `wave_1_validated` |
@@ -96,13 +96,6 @@ CONFIRMED возможен только после DETECTED.
 Аннулирование: цена пробила Точку Ноль вниз → сброс в NOT_FOUND.
 Состояние переживает прогон через trading_state.json.
 
-### trend_direction / found_timeframe (A01 Искра — спуск v2)  <!-- ISKRA_CONTRACT_V2 -->
-`trend_direction`: `BULL` | `BEAR` | `null` — сторона разворота (компас спуска).
-`found_timeframe`: этаж лесенки, где Искра нашла точку B/D/B (напр. `H1`), или `null`.
-Искра ставит оба при `t1_status=DETECTED` (точка найдена спуском). При NOT_FOUND — null.
-Читает A02 Морж: встаёт на тот же масштаб (`found_timeframe`) и сторону (`trend_direction`).
-Переживают прогон через trading_state["iskra"].
-
 ### morj_status (A02 Морж)
 `SLEEPING` | `WAKING` | `AWAKE`
 AWAKE = bars_open ≥ 8 = зрелый. Отдельного MATURE-статуса НЕТ —
@@ -162,9 +155,7 @@ Magic numbers: BRUT=100001, AVANTURIST=100002, KONSERVATOR=100003.
 
 ---
 
-*CHAIN_CONTRACT v1.5 · Торговый Цех · 2026-06-16*
-*v1.5: КОНТУР ИСКРЫ v2. Искра пишет trend_direction + found_timeframe
-(спуск по лесенке ТФ). Морж наследует масштаб и сторону. РАЗРЫВ 3 закрыт.*
+*CHAIN_CONTRACT v1.4 · Торговый Цех · 2026-06-16*
 *v1.4: РЕЗИНКА ДЖАСТИН. Морж пишет tension_peak (ангуляция, is_peak резинки).*
 *market_data получил блок rubber_band (натяжение цена-Губы в point).*
 *Окно анализа 140-150 баров (analysis_window=150) — математика не тронута.*
