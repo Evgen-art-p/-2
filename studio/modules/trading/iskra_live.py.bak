@@ -188,6 +188,15 @@ def chat_with_iskra(question: str, last_run: Optional[dict] = None,
 
     system = prompt + work_ctx
 
+    # Душа города и в разговоре — настроение красит ответ.
+    try:
+        from studio.grondheim_memory import format_soul_for_agent
+        soul = format_soul_for_agent("A01_ISKRA", dept="trading")
+        if soul:
+            system = prompt + "\n\n=== ТВОЁ СОСТОЯНИЕ (душа) ===\n" + soul + "\n\n" + work_ctx
+    except Exception:
+        pass
+
     # История диалога без последнего вопроса (он пойдёт как user).
     history = []
     if dialog:
@@ -249,6 +258,18 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
     prompt = PROMPT_PATH.read_text(encoding="utf-8") if PROMPT_PATH.exists() else ""
     knowledge = KNOWLEDGE.read_text(encoding="utf-8") if KNOWLEDGE.exists() else ""
 
+    # ДУША ГОРОДА — настроение, ДНК, отношения, память.
+    # Искра думает не голым промтом, а со своим характером: устала,
+    # на streak'е, поругалась на прогулке — это окрасит её голос.
+    # Граница: душа красит NARRATIVE (голос), но SIGNAL остаётся
+    # фактом движка. Настроение не создаёт дивергенцию из воздуха.
+    soul = ""
+    try:
+        from studio.grondheim_memory import format_soul_for_agent
+        soul = format_soul_for_agent("A01_ISKRA", dept="trading")
+    except Exception as e:
+        print(f"[ISKRA] ⚠️  Душа не загрузилась ({e}) — работаю без неё")
+
     # Память из ШТАТНОГО trading_state (CHAIN_CONTRACT: prev_*).
     mem = _load_iskra_memory()
     prev_status     = mem.get("t1_status", "NOT_FOUND")
@@ -291,10 +312,25 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
         "{narrative, signal} по CHAIN_CONTRACT. Ничего вне JSON."
     )
 
-    # ── 4. Искра думает живой моделью ────────────────────────
+    # ── 4. Искра думает живой моделью (с душой) ──────────────
+    # system = промт-роль + душа города. Душа окрашивает голос,
+    # но закон жёсткий: signal = факт движка, настроение не создаёт
+    # дивергенцию. Злая Искра звучит резче, но врать о рынке не может.
+    system_full = prompt
+    if soul:
+        system_full = (
+            prompt
+            + "\n\n=== ТВОЁ СОСТОЯНИЕ И ПАМЯТЬ (душа) ===\n"
+            + soul
+            + "\n\n=== ГРАНИЦА ===\n"
+            "Твоё настроение красит ГОЛОС (narrative) — устала, на streak'е, "
+            "поругалась на прогулке. Но СИГНАЛ (signal) — это факт движка. "
+            "Злость не рождает дивергенцию, усталость не прячет её. "
+            "Чувствуй как хочешь, но отражай рынок честно."
+        )
     try:
         response = chat(
-            system=prompt,
+            system=system_full,
             user=user_msg,
             knowledge=knowledge,
             agent_id="A01_ISKRA",
@@ -312,6 +348,21 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
     # ── 6. Сохранить память (штатно) и статистику ────────────
     _save_iskra_memory(signal)
     stats = _update_stats(prev_status, signal)
+
+    # ── 6b. ПЕТЛЯ ОБУЧЕНИЯ — точность отражения → ДНК ────────
+    # Искра учится не на деньгах (это трейдеры), а на ТОЧНОСТИ.
+    #   подтвердилась (DETECTED→CONFIRMED) → good_work (streak↑, Light↑)
+    #   аннулировалась (DETECTED→NOT_FOUND) → bad_work (streak↓, Stress↑)
+    # Так датчик со временем становится точнее — путь к мастерству.
+    new_status = signal.get("t1_status", "NOT_FOUND")
+    try:
+        from studio.grondheim_memory import sync_to_dna
+        if prev_status == "DETECTED" and new_status == "CONFIRMED":
+            sync_to_dna("A01_ISKRA", "good_work", intensity=0.6, dept="trading")
+        elif prev_status == "DETECTED" and new_status == "NOT_FOUND":
+            sync_to_dna("A01_ISKRA", "bad_work", intensity=0.5, dept="trading")
+    except Exception as e:
+        print(f"[ISKRA] ⚠️  sync_to_dna не сработал ({e})")
 
     return {
         "ok": True,
