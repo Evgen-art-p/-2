@@ -62,6 +62,8 @@ def page_exchange() -> None:
         "market": {},              # symbol/timeframe/bar_time/point
         "running": False,          # идёт прогон РЫНОК
         "morj_last_run": None,     # рабочая память Моржа для чата
+        "panic_last_run": None,    # рабочая память Паникёра для чата
+        "hans_last_run": None,     # рабочая память Ганса для чата
     }
 
     # Refs на элементы UI — заполняются при сборке layout.
@@ -196,6 +198,57 @@ def page_exchange() -> None:
                     спал: {mst.get("sleeping",0)} ·
                     пиков: {mst.get("tension_peaks",0)}
                     <br>{mmk.get("symbol","")} {mmk.get("timeframe","")} · {mmk.get("bar_time","")}
+                  </div>
+                </div>
+                ''')
+            return
+
+        # ─── Приборы Ганса (A04): фрактал + Красная + поглощение ───
+        if state["active_agent"] == "A04":
+            hsig = state.get("hans_signal", {})
+            hst  = state.get("hans_stats", {})
+            hmk  = state.get("hans_market", {})
+            if not hsig:
+                with stats_ref["element"]:
+                    ui.html('<div style="color:rgba(255,255,255,0.3); font-size:11px; '
+                            'padding:10px; text-align:center;">Ганс ещё не выходил на след — '
+                            'нажми РЫНОК (нужен сигнал Искры)</div>')
+                return
+            valid = hsig.get("fractal_valid")
+            v_txt = "🎯 ВНЕ КРАСНОЙ" if valid else "пусто"
+            v_color = "#00ff88" if valid else "rgba(255,255,255,0.4)"
+            side = hsig.get("fractal_side") or "—"
+            fprice = hsig.get("fractal_price")
+            fprice_txt = f"{fprice}" if fprice is not None else "—"
+            absr = hsig.get("absorption_ratio")
+            absr_txt = f"{absr}" if absr is not None else "—"
+            abs_color = "#ff5050" if (absr is not None and absr >= 0.7) else "rgba(255,255,255,0.7)"
+            with stats_ref["element"]:
+                ui.html(f'''
+                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
+                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ФРАКТАЛ</span>
+                    <span style="color:{v_color}; font-size:11px; font-weight:700;">{v_txt}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
+                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">СТОРОНА</span>
+                    <span style="color:rgba(255,255,255,0.7); font-size:11px;">{side}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
+                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ЦЕНА (ОРИЕНТИР)</span>
+                    <span style="color:rgba(0,204,255,0.9); font-size:11px;">{fprice_txt}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ПОГЛОЩЕНИЕ</span>
+                    <span style="color:{abs_color}; font-size:11px;">{absr_txt}</span>
+                  </div>
+                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;
+                              color:rgba(255,255,255,0.35); font-size:9px; line-height:1.7;">
+                    выходов: {hst.get("runs",0)} ·
+                    добыча: {hst.get("valid",0)} ·
+                    мёртвых: {hst.get("dead",0)} ·
+                    пусто: {hst.get("none",0)}
+                    <br>{hmk.get("symbol","")} {hmk.get("timeframe","")} · {hmk.get("bar_time","")}
                   </div>
                 </div>
                 ''')
@@ -382,6 +435,43 @@ def page_exchange() -> None:
             else:
                 ui.notify("😱 Паникёр смолчал (нет данных или сбой)", type="warning")
 
+            # ── EXCHANGE_HANS: Ганс после Паникёра (та же цепочка/затвор) ──
+            # Ганс ищет действительный фрактал вне Красной линии. Наследует
+            # этаж Искры сам. БЕЗ ГЕЙТА (§1f) — кладёт факт на стол ВСЕГДА.
+            ui.notify("🎯 Бужу Ганса — ищет фрактал...", type="info")
+            try:
+                from studio.modules.trading.hans_live import run_hans
+                hr = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: run_hans(symbol="XAUUSD", timeframe="H4"))
+            except Exception as e:
+                ui.notify(f"Ганс не проснулся: {e}", type="negative")
+                hr = {"ok": False}
+
+            if hr.get("ok"):
+                hsig = hr.get("signal", {})
+                state["reports"]["A04"] = hr.get("narrative", "") or hr.get("raw", "")
+                state["hans_signal"] = hsig
+                state["hans_stats"]  = hr.get("stats", {})
+                state["hans_market"] = hr.get("market", {})
+                state["hans_last_run"] = {
+                    "narrative": hr.get("narrative", ""),
+                    "signal":    hsig,
+                    "market":    hr.get("market", {}),
+                }
+                valid = hsig.get("fractal_valid")
+                prey = (f"добыча {hsig.get('fractal_side','—')} "
+                        f"@ {hsig.get('fractal_price','—')}" if valid
+                        else "добычи нет")
+                state["chat_history"].append({
+                    "role": "assistant", "agent": "A04",
+                    "content": (f"🎯 Фрактал: {prey}. Отчёт справа.")})
+                update_chat_display()
+                update_avatar_states()
+                ui.notify(f"🎯 Ганс: {'фрактал вне Красной' if valid else 'пусто'}",
+                          type="positive")
+            else:
+                ui.notify("🎯 Ганс смолчал (нет данных или сбой)", type="warning")
+
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
@@ -458,6 +548,36 @@ def page_exchange() -> None:
                 reply = f"⚠️ Морж не смог ответить: {e}"
             state["chat_history"].append({
                 "role": "assistant", "agent": "A02", "content": reply})
+            update_chat_display()
+            return
+
+        if agent_id == "A03":
+            ui.notify("😱 Паникёр чувствует...", type="info")
+            try:
+                from studio.modules.trading.panikyor_live import chat_with_panikyor
+                dialog = [m for m in state["chat_history"]
+                          if m.get("role") in ("user", "assistant") and m.get("content")]
+                reply = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: chat_with_panikyor(msg, state.get("panic_last_run"), dialog))
+            except Exception as e:
+                reply = f"⚠️ Паникёр не смог ответить: {e}"
+            state["chat_history"].append({
+                "role": "assistant", "agent": "A03", "content": reply})
+            update_chat_display()
+            return
+
+        if agent_id == "A04":
+            ui.notify("🎯 Ганс на следу...", type="info")
+            try:
+                from studio.modules.trading.hans_live import chat_with_hans
+                dialog = [m for m in state["chat_history"]
+                          if m.get("role") in ("user", "assistant") and m.get("content")]
+                reply = await asyncio.get_event_loop().run_in_executor(
+                    None, lambda: chat_with_hans(msg, state.get("hans_last_run"), dialog))
+            except Exception as e:
+                reply = f"⚠️ Ганс не смог ответить: {e}"
+            state["chat_history"].append({
+                "role": "assistant", "agent": "A04", "content": reply})
             update_chat_display()
             return
 

@@ -1,6 +1,6 @@
-# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.4
+# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.7
 ## studio/modules/trading/CHAIN_CONTRACT.md
-## Студия «Шесть Пальцев» · 2026-06-16
+## Студия «Шесть Пальцев» · 2026-06-17
 
 > Это единственный источник правды для contract_validator.
 > Каждый агент пишет строго то что указано в "Пишет".
@@ -18,11 +18,11 @@
 | A01 Искра | `t1_status`, `divergence`, `zero_cross_up`, `zero_point_price`, `exit_bell`, `history_dna`, `trend_direction`, `found_timeframe` | `market_data`, `history_dna` |
 | A02 Морж | `morj_status`, `alligator_state`, `wave_1_validated`, `tension_peak` | `market_data`, `market_data.rubber_band`, `t1_status` |
 | A03 Паникёр | `panic_phase`, `crowd_sentiment`, `action_for_traders`, `scale_timeframe` | `market_data.mfi`, `market_data.price`, `t1_status`, `morj_status`, `found_timeframe` |
-| A04 Ганс | `fractal_detected`, `fractal_outside_jaw`, `absorption_ratio`, `entry_trigger` | `market_data.fractals`, `market_data.mfi`, `market_data.alligator.jaw`, `t1_status`, `wave_1_validated` |
-| A05 Архивариус | `sample_size`, `success_rate`, `top_failure_reason`, `arkhiv_confidence` | `t1_status`, `morj_status`, `panic_phase`, `entry_trigger`, `atlas_digest` |
-| A06 Брут | `brut_verdict`, `brut_reason`, `brut_entry`, `brut_stop`, `brut_tp`, `brut_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
-| A07 Авантюрист | `avan_verdict`, `avan_reason`, `avan_entry`, `avan_stop`, `avan_tp`, `avan_lot` | `t1_status`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate`, `trade_setup` |
-| A08 Консерватор | `cons_verdict`, `cons_reason`, `cons_entry`, `cons_stop`, `cons_tp`, `cons_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `entry_trigger`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
+| A04 Ганс | `fractal_valid`, `fractal_side`, `fractal_price`, `absorption_ratio`, `scale_timeframe` | `market_data.fractals`, `market_data.alligator.teeth`, `market_data.mfi`, `market_data.squat`, `t1_status`, `morj_status`, `trend_direction`, `found_timeframe` |
+| A05 Архивариус | `sample_size`, `success_rate`, `top_failure_reason`, `arkhiv_confidence` | `t1_status`, `morj_status`, `panic_phase`, `fractal_valid`, `atlas_digest` |
+| A06 Брут | `brut_verdict`, `brut_reason`, `brut_entry`, `brut_stop`, `brut_tp`, `brut_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
+| A07 Авантюрист | `avan_verdict`, `avan_reason`, `avan_entry`, `avan_stop`, `avan_tp`, `avan_lot` | `t1_status`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `trade_setup` |
+| A08 Консерватор | `cons_verdict`, `cons_reason`, `cons_entry`, `cons_stop`, `cons_tp`, `cons_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
 | A09 Исполнитель | `execution_log`, `final_dna`, `history_dna`, `deliverables` | `brut_*`, `avan_*`, `cons_*` (вердикты и параметры), `open_positions`, `exit_bell` |
 
 ---
@@ -42,9 +42,11 @@
 ## GATE-ПРАВИЛА (реализуются в hooks.py)
 
 ```
-GATE 1 — Ганс:
-  if t1_status != "CONFIRMED" or wave_1_validated != true:
-      A04 пропускается, entry_trigger = false (дефолт)
+GATE 1 — СНЯТ (§1f). Ганс — СЕНСОР, не страж ворот. Его НЕ гейтят
+  по t1_status/wave_1_validated. Он ВСЕГДА кладёт факт на стол:
+  есть действительный фрактал вне Красной (fractal_valid) или нет.
+  Затвор цепочки — на уровне Биржи (РЫНОК будит сенсоров при
+  DETECTED/CONFIRMED Искры), не на уровне Ганса. Сенсор не затыкают.
 
 GATE 2 — Хард-стоп:
   if brut_verdict == "REJECTED"
@@ -53,6 +55,8 @@ GATE 2 — Хард-стоп:
       on_after_agent A09 → {"action": "stop"}
       запись в Атлас Ошибок (economy/data/atlas_trading.jsonl)
       (trading_state сохраняется ДО stop)
+  ⚠️ ПОД СНОС (§1f, СНОС 1): код не решает вход за систему. Нет
+     команды = прогон кончился сам. Вырезать в пересборке входа.
 ```
 
 ЗАКОН ТРИБУНАЛА: все трое трейдеров работают по одной системе Котина.
@@ -131,13 +135,27 @@ wave_1_validated. Две лампочки независимы: пасть (wave
   PANIC → GREEN_LIGHT_IF_GANS (паника толпы = момент, если Ганс дал триггер)
   ASLEEP / DISBELIEF / DECEPTION → NEUTRAL (фон, ворота закрыты)
 
-### scale_timeframe (A03 Паникёр + A02 Морж)
+### scale_timeframe (A02 Морж + A03 Паникёр + A04 Ганс)
 Этаж, на котором сенсор мерил (унаследован от Искры found_timeframe), или null.
-Сенсоры идут смотреть туда, куда показала Искра. Ганс получит цепочку фактов
-в ОДНОМ масштабе.
+Сенсоры идут смотреть туда, куда показала Искра. Все факты — в ОДНОМ масштабе.
 
-### entry_trigger (A04 Ганс)
-true только если fractal_detected=true И fractal_outside_jaw=true.
+### fractal_valid / fractal_side / fractal_price (A04 Ганс)  <!-- HANS_CONTRACT_V2 -->
+Ганс — СЕНСОР фрактала. Кладёт ФАКТ всегда (§1f), не вердикт, не триггер.
+Фильтр = КРАСНАЯ ЛИНИЯ (Зубы Аллигатора, `market_data.alligator.teeth`),
+по первоисточнику Котина — НЕ Челюсть (Jaw). Сравнивает два готовых числа
+из market_data: цену фрактала и Красную. Ядро не дёргает.
+```
+fractal_valid    — bool. true только если центр фрактала ВНЕ Красной
+                   (up выше teeth / down ниже teeth) И фрактал свежий.
+fractal_side     — LONG | SHORT | null. Сторона действительного фрактала.
+fractal_price    — цена фрактала (ориентир Buy Stop над / Sell Stop под).
+                   Трейдеры читают как ОРИЕНТИР, не как команду входа.
+absorption_ratio — 0.0–1.0. Squat-топливо: SQUAT→0.8–0.9, GREEN→0.5–0.7,
+                   FAKE→0.2–0.4, FADE→0.1–0.3. Красит оценку поглощения,
+                   НЕ создаёт и НЕ блокирует действительность фрактала.
+```
+МЁРТВЫЙ фрактал (по другую сторону Красной / в шуме / несвежий) →
+fractal_valid=false. Это полноценный факт, не неудача. Решают трейдеры.
 
 ### arkhiv_confidence (A05 Архивариус)
 `LOW` | `MEDIUM` | `HIGH`
@@ -149,8 +167,10 @@ MEDIUM = sample_size ≥ 5 И success_rate ≥ 0.50.
 ```json
 {"direction": "LONG", "entry": 0.0, "stop": 0.0, "tp": null, "lot_fraction": 0.33}
 ```
-entry = фрактал Ганса (Buy Stop над ним), stop = лоу Волны 2.
-Трейдеры КОПИРУЮТ цены при APPROVED. v1 — только LONG.
+entry = ОРИЕНТИР из `fractal_price` Ганса (Buy Stop над / Sell Stop под),
+stop = лоу Волны 2. ⚠️ §1f: это ОРИЕНТИРЫ на столе, не назначенный вход.
+Трейдер сам называет entry/stop своим характером (не обязан копировать).
+v1 — только LONG.
 
 ### brut_verdict / avan_verdict / cons_verdict
 `APPROVED` | `REJECTED`
@@ -177,6 +197,13 @@ Magic numbers: BRUT=100001, AVANTURIST=100002, KONSERVATOR=100003.
 
 ---
 
+*CHAIN_CONTRACT v1.7 · Торговый Цех · 2026-06-17*
+*v1.7: ГАНС ОЖИВЛЁН. Фрактал-сенсор по КРАСНОЙ линии (teeth, первоисточник
+Котина — не Jaw). Пишет fractal_valid/fractal_side/fractal_price/absorption_ratio
++ scale_timeframe. GATE 1 (гейт Ганса) СНЯТ §1f — сенсор не затыкают, кладёт
+факт всегда. entry_trigger убран из чтений A05/A06/A07/A08 → fractal_valid.
+GATE 2 (хард-стоп) помечен под снос §1f. Ганс читает teeth из готового
+market_data — ядро не тронуто.*
 *CHAIN_CONTRACT v1.6 · Торговый Цех · 2026-06-16*
 *v1.6: ПАНИКЁР ОЖИВЛЁН. 6 фаз толпы из структуры (окна MFI+объём+спред),
 не из таблицы статусов. Паникёр читает market_data.mfi. scale_timeframe.*
