@@ -203,57 +203,6 @@ def page_exchange() -> None:
                 ''')
             return
 
-        # ─── Приборы Паникёра (A03): фаза толпы + накал + светофор ───  # EXCHANGE_PANIC_PANEL
-        if state["active_agent"] == "A03":
-            psig = state.get("panic_signal", {})
-            pst  = state.get("panic_stats", {})
-            pmk  = state.get("panic_market", {})
-            if not psig:
-                with stats_ref["element"]:
-                    ui.html('<div style="color:rgba(255,255,255,0.3); font-size:11px; '
-                            'padding:10px; text-align:center;">Паникёр ещё не мерил толпу — '
-                            'нажми РЫНОК (нужен сигнал Искры)</div>')
-                return
-            phase = psig.get("panic_phase", "—")
-            # накал: PANIC/GREED/TENSION — горячо, остальное — фон
-            hot = phase in ("PANIC", "GREED", "TENSION")
-            ph_color = {"PANIC": "#ff5050", "GREED": "#ffb400",
-                        "TENSION": "#ffb400", "DECEPTION": "#cc88ff",
-                        "DISBELIEF": "rgba(0,204,255,0.9)",
-                        "ASLEEP": "rgba(255,255,255,0.4)"}.get(phase, "rgba(255,255,255,0.7)")
-            sentiment = psig.get("crowd_sentiment", "—") or "—"
-            action = psig.get("action_for_traders", "—")
-            act_color = {"GREEN_LIGHT_IF_GANS": "#00ff88",
-                         "HIGH_SKEPTICISM": "#ffb400",
-                         "NEUTRAL": "rgba(255,255,255,0.4)"}.get(action, "rgba(255,255,255,0.4)")
-            with stats_ref["element"]:
-                ui.html(f'''
-                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ТОЛПА</span>
-                    <span style="color:{ph_color}; font-size:11px; font-weight:700;">{phase}</span>
-                  </div>
-                  <div style="margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">НАКАЛ</span>
-                    <div style="color:rgba(255,255,255,0.7); font-size:10px; font-style:italic;
-                                margin-top:3px; line-height:1.4;">«{sentiment}»</div>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">СВЕТОФОР</span>
-                    <span style="color:{act_color}; font-size:11px; font-weight:700;">{action}</span>
-                  </div>
-                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;
-                              color:rgba(255,255,255,0.35); font-size:9px; line-height:1.7;">
-                    замеров: {pst.get("runs",0)} ·
-                    паник: {pst.get("panic",0)} ·
-                    жадности: {pst.get("greed",0)} ·
-                    скуки: {pst.get("asleep",0)}
-                    <br>{pmk.get("symbol","")} {pmk.get("timeframe","")} · {pmk.get("bar_time","")}
-                  </div>
-                </div>
-                ''')
-            return
-
         # ─── Приборы Ганса (A04): фрактал + Красная + поглощение ───
         if state["active_agent"] == "A04":
             hsig = state.get("hans_signal", {})
