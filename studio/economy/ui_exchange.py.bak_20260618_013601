@@ -617,21 +617,6 @@ def page_exchange() -> None:
             update_chat_display()
             return
 
-        if agent_id == "A05":  # ARKHIV_CHAT_PATCHED
-            ui.notify("📚 Архивариус листает Атлас...", type="info")
-            try:
-                from studio.modules.trading.arkhiv_live import chat_with_arkhiv
-                dialog = [m for m in state["chat_history"]
-                          if m.get("role") in ("user", "assistant") and m.get("content")]
-                reply = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: chat_with_arkhiv(msg, state.get("arkhiv_last_run"), dialog))
-            except Exception as e:
-                reply = f"⚠️ Архивариус не смог ответить: {e}"
-            state["chat_history"].append({
-                "role": "assistant", "agent": "A05", "content": reply})
-            update_chat_display()
-            return
-
         if agent_id == "A04":
             ui.notify("🎯 Ганс на следу...", type="info")
             try:

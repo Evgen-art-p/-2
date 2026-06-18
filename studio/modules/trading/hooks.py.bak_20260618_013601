@@ -275,7 +275,7 @@ def _log_rejections(state: dict):
             "t1_status":     chain.get("t1_status"),
             "morj_status":   chain.get("morj_status"),
             "panic_phase":   chain.get("panic_phase"),
-            "fractal_valid": chain.get("fractal_valid"),  # ARKHIV_REJ_PATCHED
+            "entry_trigger": chain.get("entry_trigger"),
             "pnl":           None,
         })
         print(f"[ATLAS] 📝 Отказ записан: {name} — {reason}")
