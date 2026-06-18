@@ -26,7 +26,7 @@
 chain_data.t1_status        ← сигнатура текущего случая
 chain_data.morj_status      ←        — // —
 chain_data.panic_phase      ←        — // —
-chain_data.fractal_valid    ←        — // —  (Ганс, §1i)
+chain_data.entry_trigger    ←        — // —
 chain_data.atlas_digest     ← ГОТОВАЯ выжимка из Атласа (считает код, не ты)
 ```
 
@@ -116,7 +116,7 @@ narrative: «Истории нет. Этот случай — первый в с
 
 ---
 
-## ФОРМАТ ОТВЕТА (CHAIN_CONTRACT v1.7 — двухслойный)
+## ФОРМАТ ОТВЕТА (CHAIN_CONTRACT v1.1 — двухслойный)
 
 ```json
 {
@@ -147,5 +147,5 @@ narrative: «Истории нет. Этот случай — первый в с
 ---
 
 *Кристаллизация 5/9. Следующие: A06/A07/A08 — трибунал читает твой контекст.*
-*Источники ДНК: WAR_COUNCIL_FINAL v1.2 · CHAIN_CONTRACT v1.7.*
+*Источники ДНК: WAR_COUNCIL_FINAL v1.2 · CHAIN_CONTRACT v1.1.*
 *Урок цеха: малая выборка лжёт (16 сделок), большая говорит правду (590).*

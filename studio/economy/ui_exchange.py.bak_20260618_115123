@@ -523,43 +523,6 @@ def page_exchange() -> None:
             else:
                 ui.notify("🎯 Ганс смолчал (нет данных или сбой)", type="warning")
 
-            # ── EXCHANGE_ARKHIV: Архивариус после Ганса (память цеха) ──
-            # Архивариус рынок НЕ смотрит. Он собирает отпечаток момента
-            # из рабочей памяти (что сложили четыре сенсора) и листает
-            # Атлас: сколько похожих случаев было, чем кончались. Контекст,
-            # не голос (§1f). run_arkhiv без сигнатуры сам прочитает шину.
-            ui.notify("📚 Бужу Архивариуса — листает Атлас...", type="info")
-            try:
-                from studio.modules.trading.arkhiv_live import run_arkhiv
-                ar = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: run_arkhiv())
-            except Exception as e:
-                ui.notify(f"Архивариус не проснулся: {e}", type="negative")
-                ar = {"ok": False}
-
-            if ar.get("ok"):
-                asig = ar.get("signal", {})
-                state["reports"]["A05"] = ar.get("narrative", "") or ar.get("raw", "")
-                state["arkhiv_signal"] = asig
-                state["arkhiv_stats"]  = ar.get("stats", {})
-                state["arkhiv_digest"] = ar.get("digest", {})
-                state["arkhiv_last_run"] = {
-                    "narrative": ar.get("narrative", ""),
-                    "signal":    asig,
-                    "signature": ar.get("signature", {}),
-                }
-                conf = asig.get("arkhiv_confidence", "—")
-                n    = asig.get("sample_size", "—")
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "A05",
-                    "content": (f"📚 Похожих случаев в Атласе: {n}. "
-                                f"Уверенность: {conf}. Отчёт справа.")})
-                update_chat_display()
-                update_avatar_states()
-                ui.notify(f"📚 Архивариус: {conf} ({n} случаев)", type="positive")
-            else:
-                ui.notify("📚 Архивариус смолчал (нет данных или сбой)", type="warning")
-
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
