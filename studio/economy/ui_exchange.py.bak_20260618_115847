@@ -64,10 +64,6 @@ def page_exchange() -> None:
         "morj_last_run": None,     # рабочая память Моржа для чата
         "panic_last_run": None,    # рабочая память Паникёра для чата
         "hans_last_run": None,     # рабочая память Ганса для чата
-        "arkhiv_last_run": None,   # рабочая память Архивариуса для чата
-        "arkhiv_signal": {},       # последний signal Архивариуса → приборы
-        "arkhiv_stats": {},        # статистика прогонов Архивариуса
-        "arkhiv_digest": {},       # выжимка из Атласа (digest)
     }
 
     # Refs на элементы UI — заполняются при сборке layout.
@@ -304,61 +300,6 @@ def page_exchange() -> None:
                     мёртвых: {hst.get("dead",0)} ·
                     пусто: {hst.get("none",0)}
                     <br>{hmk.get("symbol","")} {hmk.get("timeframe","")} · {hmk.get("bar_time","")}
-                  </div>
-                </div>
-                ''')
-            return
-
-        # ─── Приборы Архивариуса (A05): склад + удача + уверенность ───  # EXCHANGE_ARKHIV_PANEL
-        if state["active_agent"] == "A05":
-            asig = state.get("arkhiv_signal", {})
-            ast  = state.get("arkhiv_stats", {})
-            adg  = state.get("arkhiv_digest", {})
-            if not asig and not adg:
-                with stats_ref["element"]:
-                    ui.html('<div style="color:rgba(255,255,255,0.3); font-size:11px; '
-                            'padding:10px; text-align:center;">Архивариус ещё не листал Атлас — '
-                            'нажми РЫНОК (нужен сигнал Искры)</div>')
-                return
-            sample = asig.get("sample_size", adg.get("sample_size", 0))
-            closed = adg.get("closed_trades", "—")
-            success = asig.get("success_rate", adg.get("success_rate"))
-            success_txt = f"{round(success*100)}%" if isinstance(success, (int, float)) else "—"
-            conf = asig.get("arkhiv_confidence", adg.get("arkhiv_confidence", "—"))
-            conf_color = {"HIGH": "#00ff88", "MEDIUM": "#ffb400",
-                          "LOW": "rgba(255,255,255,0.45)"}.get(conf, "rgba(255,255,255,0.45)")
-            reason = asig.get("top_failure_reason", adg.get("top_failure_reason", "—")) or "—"
-            # пустой склад — особый честный вид
-            empty = (sample == 0)
-            sample_color = "rgba(255,255,255,0.4)" if empty else "rgba(0,204,255,0.9)"
-            sample_txt = "пусто — первый случай" if empty else f"{sample} (закрыто {closed})"
-            with stats_ref["element"]:
-                ui.html(f'''
-                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">СКЛАД</span>
-                    <span style="color:{sample_color}; font-size:11px; font-weight:700;">{sample_txt}</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">УДАЧА</span>
-                    <span style="color:rgba(255,255,255,0.7); font-size:11px;">{success_txt}</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; margin-bottom:7px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">УВЕРЕННОСТЬ</span>
-                    <span style="color:{conf_color}; font-size:11px; font-weight:700;">{conf}</span>
-                  </div>
-                  <div style="margin-bottom:10px;">
-                    <span style="color:rgba(255,255,255,0.45); font-size:10px;">ЧАСТАЯ ПРИЧИНА ПОТЕРЬ</span>
-                    <div style="color:rgba(255,255,255,0.7); font-size:10px; font-style:italic;
-                                margin-top:3px; line-height:1.4;">«{reason}»</div>
-                  </div>
-                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;
-                              color:rgba(255,255,255,0.35); font-size:9px; line-height:1.7;">
-                    взглядов: {ast.get("runs",0)} ·
-                    HIGH: {ast.get("high",0)} ·
-                    MEDIUM: {ast.get("medium",0)} ·
-                    LOW: {ast.get("low",0)} ·
-                    пусто: {ast.get("empty",0)}
                   </div>
                 </div>
                 ''')
