@@ -380,11 +380,6 @@ def _settle_positions(state: dict):
             "symbol":      symbol,
             "timeframe":   timeframe,
         })
-
-        # РУКА КЛАДУЩАЯ (ARKHIV_HAND_GIVING): тяжёлая сделка (|pnl_r|>=2R)
-        # → урок в память города через Оле. Рутина (<2R) — только Атлас.
-        # Безопасно: Оле упала → сделка уже записана, цикл цел.
-        _arkhiv_to_city(record)
         print(f"[SETTLE] {'🔔' if reason == 'EXIT_BELL' else '🛑'} "
               f"{pos.get('trader')} закрыт ({reason}): "
               f"pnl={pnl_price} ({pnl_r}R)")
@@ -624,70 +619,6 @@ def _extract_verdict(agent_result: dict, key: str) -> Optional[str]:
     meta   = agent_result.get("meta", {}) or {}
     my_out = meta.get("my_output", {}) or {}
     return my_out.get(key) or agent_result.get("text", "")[:10] or None
-
-
-# ════════════════════════════════════════════════════════════
-# РУКА КЛАДУЩАЯ (ARKHIV_HAND_GIVING) — тяжёлое → память города
-# ─────────────────────────────────────────────────────────────
-# Архивариус — Оле Торгового Квартала. Крупная сделка (|pnl_r|>=2R)
-# не оседает только в тетради цеха — урок ложится в вечную память
-# города через Оле (remember). Рутина (<2R) остаётся в Атласе.
-# Зов Оле безопасен: упала → торговый цикл цел.
-# ════════════════════════════════════════════════════════════
-
-# Порог веса: крупный ход. Ниже — рутина, в город не идёт.
-_HEAVY_R = 2.0
-
-
-def _arkhiv_to_city(record: dict):
-    """
-    Рука кладущая. Кладёт ТЯЖЁЛУЮ закрытую сделку в память города
-    от имени Архивариуса. Лёгкое (|pnl_r|<2R) — игнор (рутина).
-
-    НИКОГДА не роняет торговый цикл: любая беда с Оле → тихий выход.
-    """
-    pnl_r = record.get("pnl_r")
-    if pnl_r is None:
-        return
-    if abs(pnl_r) < _HEAVY_R:
-        return  # рутина — живёт в Атласе цеха, в город не идёт
-
-    trader = record.get("trader", "?")
-    symbol = record.get("symbol", "?")
-    tf     = record.get("timeframe", "?")
-    reason = record.get("close_reason", "?")
-    closed = record.get("closed_at", "")
-
-    # Урок или образец — по знаку
-    if pnl_r <= -_HEAVY_R:
-        mtype = "warning"
-        title = f"Крупный убыток: {trader} {symbol} {tf} ({pnl_r}R)"
-        event = (f"{trader} закрыт по {reason} с {pnl_r}R на {symbol} {tf} "
-                 f"({closed}). Дорого оплаченная информация.")
-        loss = (f"Город забудет, что эта картинка на {symbol} {tf} стоила "
-                f"{pnl_r}R убытка. Урок придётся оплачивать заново.")
-    else:  # pnl_r >= +2R
-        mtype = "inspiration"
-        title = f"Крупная удача: {trader} {symbol} {tf} (+{pnl_r}R)"
-        event = (f"{trader} взял +{pnl_r}R по {reason} на {symbol} {tf} "
-                 f"({closed}). Редкий крупный ход — образец.")
-        loss = (f"Город забудет, что на {symbol} {tf} такая картинка дала "
-                f"+{pnl_r}R. Потеряем образец крупного хода.")
-
-    try:
-        from studio.memory_tools import remember
-        remember(
-            title=title,
-            event=event,
-            significance=f"Крупный результат {pnl_r}R — за порогом рутины.",
-            loss_if_forgotten=loss,
-            memory_type=mtype,
-            storage="chronicles",
-            source="A05_ARKHIV·trading",
-        )
-        print(f"[ARKHIV] 🏛 Урок в память города: {title}")
-    except Exception as e:
-        print(f"[ARKHIV] ⚠️  Оле недоступна ({e}) — урок остался в Атласе цеха")
 
 
 def _write_atlas(entry: dict):
