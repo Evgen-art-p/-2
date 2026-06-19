@@ -258,43 +258,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
                 out(f"  🪨 БРУТ: сбой — {rb.get('error','?')}")
             out("")
 
-            # [AVAN+CONS врезаны патчем patch_avan_cons]
-            # АВАНТЮРИСТ — трейдер §6.2 (конец волны C, разворот)
-            from studio.modules.trading.avan_live import run_avan
-            rav = run_avan(symbol=symbol, timeframe=timeframe)
-            if rav.get("ok"):
-                out(f"  ⚡ АВАНТЮРИСТ:\n     {rav.get('narrative','').strip()}")
-                avs = rav.get("signal", {})
-                vv = avs.get("avan_verdict", "—")
-                if vv == "APPROVED":
-                    out(f"     └─ ВЕРДИКТ: {vv} {avs.get('avan_direction','')} "
-                        f"вход {avs.get('avan_entry','—')} · "
-                        f"стоп {avs.get('avan_stop','—')} · "
-                        f"лот {avs.get('avan_lot','—')}")
-                else:
-                    out(f"     └─ ВЕРДИКТ: {vv} ({avs.get('avan_reason','')})")
-            else:
-                out(f"  ⚡ АВАНТЮРИСТ: сбой — {rav.get('error','?')}")
-            out("")
-
-            # КОНСЕРВАТОР — трейдер §6.3 (откат волны 2, опора)
-            from studio.modules.trading.cons_live import run_cons
-            rco = run_cons(symbol=symbol, timeframe=timeframe)
-            if rco.get("ok"):
-                out(f"  🛡 КОНСЕРВАТОР:\n     {rco.get('narrative','').strip()}")
-                cos = rco.get("signal", {})
-                vc = cos.get("cons_verdict", "—")
-                if vc == "APPROVED":
-                    out(f"     └─ ВЕРДИКТ: {vc} {cos.get('cons_direction','')} "
-                        f"вход {cos.get('cons_entry','—')} · "
-                        f"стоп {cos.get('cons_stop','—')} · "
-                        f"лот {cos.get('cons_lot','—')}")
-                else:
-                    out(f"     └─ ВЕРДИКТ: {vc} ({cos.get('cons_reason','')})")
-            else:
-                out(f"  🛡 КОНСЕРВАТОР: сбой — {rco.get('error','?')}")
-            out("")
-
             if caught >= n_signals:
                 out(f"✓ поймал {caught} срабатываний из {scanned} "
                     f"проверенных кандидатов — стоп.")

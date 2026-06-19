@@ -1,0 +1,402 @@
+# studio/modules/trading/cons_live.py
+# ─────────────────────────────────────────────────────────────
+# ЖИВОЙ ПРОГОН КОНСЕРВАТОРА (A08) — второй ТРЕЙДЕР Совета Биржи
+# CONS_ENGINE_V1 · Версия: 0.1 · 2026-06-19
+#
+# Близнец brut_live.py по ФОРМЕ. Та же природа трейдера: читает весь
+# накрытый стол, СЧИТАЕТ вход сам (trade_setup мёртв), все рычаги на нём,
+# два следа (табло + дневник), петля обучения на pnl (отложена).
+#
+# СТАНЦИЯ ДРУГАЯ. Брут — §6.1 (пробой фрактала за пастью на импульсе).
+# Консерватор — §6.3: откат волны 2 после импульса. Ждёт разрядки AO и
+# опоры на Зубы (Красная). Входит позже всех, надёжнее всех: рынок уже
+# доказал намерения, коррекция выдохлась на опоре. НИКОГДА не торгует
+# против глобального тренда. Пропущенная прибыль — не убыток.
+#
+# ХАРАКТЕР ДРУГОЙ. Снайпер на балансе. Автономия низкая (0.3) — уважает
+# систему, входит реже всех, считает риски, не вероятности. Комнатная
+# температура. Канон на полке — но рука его. Ни одной нашей руки на его
+# руке: lot называет сам, цену считает сам, стоп — его.
+#
+# ДВА СЛЕДА вердикта:
+#   · ТАБЛО  (trading_state["cons"]) — «сейчас», для Исполнителя 09.
+#   · ДНЕВНИК (state/diary_cons.jsonl) — событие во времени, КОПИТСЯ.
+# ─────────────────────────────────────────────────────────────
+
+import json
+import re
+import time
+from pathlib import Path
+from typing import Optional
+
+from studio.llm import chat
+
+_HERE        = Path(__file__).resolve().parent
+A08_DIR      = _HERE / "A08"
+PROMPT_PATH  = A08_DIR / "forge" / "prompt.md"
+KNOWLEDGE    = A08_DIR / "forge" / "knowledge" / "KOTIN_PHILOSOPHY.md"
+DNA_PATH     = A08_DIR / "dna.json"
+STATE_DIR    = _HERE / "state"
+STATS_PATH   = STATE_DIR / "cons_stats.json"
+DIARY_PATH   = STATE_DIR / "diary_cons.jsonl"
+
+
+# ════════════════════════════════════════════════════════════
+# СТОЛ: читаем ВСЮ шину — показания пяти сенсоров
+# ════════════════════════════════════════════════════════════
+
+def _read_table() -> dict:
+    """Снимок накрытого стола из общей шины (trading_state)."""
+    from studio.modules.trading.hooks import load_trading_state
+    t = load_trading_state()
+    return {
+        "iskra":  t.get("iskra", {}),
+        "morj":   t.get("morj", {}),
+        "panic":  t.get("panic", {}),
+        "hans":   t.get("hans", {}),
+        "arkhiv": t.get("arkhiv", {}),
+    }
+
+
+def _save_verdict_to_table(signal: dict):
+    """ТАБЛО: вердикт Консерватора в шину для Исполнителя 09."""
+    from studio.modules.trading.hooks import load_trading_state, save_trading_state
+    t = load_trading_state()
+    t.setdefault("cons", {})
+    t["cons"]["verdict"]   = signal.get("cons_verdict", "REJECTED")
+    t["cons"]["reason"]    = signal.get("cons_reason", "")
+    t["cons"]["direction"] = signal.get("cons_direction")
+    t["cons"]["entry"]     = signal.get("cons_entry")
+    t["cons"]["stop"]      = signal.get("cons_stop")
+    t["cons"]["lot"]       = signal.get("cons_lot")
+    save_trading_state(t)
+
+
+# ════════════════════════════════════════════════════════════
+# ДНЕВНИК: рука пишущая (КОПИТСЯ, append)
+# ════════════════════════════════════════════════════════════
+
+def _append_diary(signal: dict, diary_entry: dict, market: dict, table: dict):
+    """Открывает запись события в личной тетради. result=null — допишет
+    рука дописывающая при закрытии позиции (hooks._settle)."""
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    event = {
+        "ts":        time.time(),
+        "bar_time":  market.get("bar_time"),
+        "symbol":    market.get("symbol"),
+        "timeframe": market.get("timeframe"),
+        "table": {
+            "t1":     table.get("iskra", {}).get("t1_status"),
+            "morj":   table.get("morj", {}).get("morj_status"),
+            "panic":  table.get("panic", {}).get("panic_phase"),
+            "fractal_valid": table.get("hans", {}).get("fractal_valid"),
+        },
+        "verdict":   signal.get("cons_verdict"),
+        "direction": signal.get("cons_direction"),
+        "entry":     signal.get("cons_entry"),
+        "stop":      signal.get("cons_stop"),
+        "lot":       signal.get("cons_lot"),
+        "input":     (diary_entry or {}).get("input", ""),
+        "action":    (diary_entry or {}).get("action", ""),
+        "result":    None,
+    }
+    with open(DIARY_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+
+def _read_recent_diary(n: int = 5) -> list:
+    """Последние n событий из личной тетради."""
+    if not DIARY_PATH.exists():
+        return []
+    try:
+        lines = DIARY_PATH.read_text(encoding="utf-8").strip().splitlines()
+        out = []
+        for line in lines[-n:]:
+            try:
+                out.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+        return out
+    except OSError:
+        return []
+
+
+# ════════════════════════════════════════════════════════════
+# СТАТИСТИКА (для дашборда)
+# ════════════════════════════════════════════════════════════
+
+def _load_stats() -> dict:
+    try:
+        if STATS_PATH.exists():
+            return json.loads(STATS_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        pass
+    return {"runs": 0, "approved": 0, "rejected": 0, "long": 0, "short": 0}
+
+
+def _update_stats(signal: dict) -> dict:
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    stats = _load_stats()
+    stats["runs"] = stats.get("runs", 0) + 1
+    if signal.get("cons_verdict") == "APPROVED":
+        stats["approved"] = stats.get("approved", 0) + 1
+        d = signal.get("cons_direction")
+        if d == "LONG":
+            stats["long"] = stats.get("long", 0) + 1
+        elif d == "SHORT":
+            stats["short"] = stats.get("short", 0) + 1
+    else:
+        stats["rejected"] = stats.get("rejected", 0) + 1
+    STATS_PATH.write_text(
+        json.dumps(stats, ensure_ascii=False, indent=2), encoding="utf-8")
+    return stats
+
+
+# ════════════════════════════════════════════════════════════
+# ПАРСИНГ ТРЁХСЛОЙНОГО ОТВЕТА {narrative, signal, diary_entry}
+# ════════════════════════════════════════════════════════════
+
+def _parse_cons(response: str) -> tuple[str, dict, dict]:
+    cleaned = re.sub(r"```(?:json)?", "", response).strip()
+    start = cleaned.find("{")
+    if start != -1:
+        depth = 0
+        for i in range(start, len(cleaned)):
+            if cleaned[i] == "{":
+                depth += 1
+            elif cleaned[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        obj = json.loads(cleaned[start:i + 1])
+                        return (obj.get("narrative", ""),
+                                obj.get("signal", {}) or {},
+                                obj.get("diary_entry", {}) or {})
+                    except json.JSONDecodeError:
+                        break
+    return response.strip(), {}, {}
+
+
+def _sanitize(signal: dict) -> dict:
+    """APPROVED только с направлением; иначе всё null."""
+    v = signal.get("cons_verdict")
+    if v not in ("APPROVED", "REJECTED"):
+        v = "REJECTED"
+    signal["cons_verdict"] = v
+    if v == "REJECTED":
+        signal["cons_direction"] = None
+        signal["cons_entry"] = None
+        signal["cons_stop"]  = None
+        signal["cons_lot"]   = None
+    else:
+        d = signal.get("cons_direction")
+        if d not in ("LONG", "SHORT"):
+            signal["cons_verdict"]   = "REJECTED"
+            signal["cons_reason"]    = (signal.get("cons_reason", "") +
+                                        " [гашу: APPROVED без направления]").strip()
+            signal["cons_direction"] = None
+            signal["cons_entry"] = None
+            signal["cons_stop"]  = None
+            signal["cons_lot"]   = None
+    return signal
+
+
+# ════════════════════════════════════════════════════════════
+# ЧАТ С АВАНТЮРИСТОМ (клик пузырька)
+# ════════════════════════════════════════════════════════════
+
+def chat_with_cons(question: str, last_run: Optional[dict] = None,
+                   dialog: Optional[list] = None) -> str:
+    prompt = PROMPT_PATH.read_text(encoding="utf-8") if PROMPT_PATH.exists() else ""
+
+    if last_run:
+        sig = last_run.get("signal", {})
+        mk  = last_run.get("market", {})
+        work_ctx = (
+            "\n\n=== ТВОЁ ПОСЛЕДНЕЕ РЕШЕНИЕ (рабочая память) ===\n"
+            f"Инструмент: {mk.get('symbol','?')} {mk.get('timeframe','?')} "
+            f"· бар {mk.get('bar_time','?')}\n"
+            f"Вердикт: {sig.get('cons_verdict','—')} "
+            f"({sig.get('cons_reason','')})\n"
+            f"Направление: {sig.get('cons_direction','—')}  ·  "
+            f"вход {sig.get('cons_entry','—')} · стоп {sig.get('cons_stop','—')}\n"
+            f"Что ты сказал: {last_run.get('narrative','')}\n"
+            "=== КОНЕЦ ===\n\n"
+            "Шеф спрашивает про ЭТО решение. Отвечай как Консерватор — спокойно, "
+            "взвешенно, своим голосом. Живым голосом, БЕЗ JSON — это разговор."
+        )
+    else:
+        work_ctx = (
+            "\n\n=== РАБОЧИЙ РЕЖИМ ===\n"
+            "Ты ещё не смотрел стол в этой сессии. Если Шеф спрашивает про "
+            "рынок — скажи, что нужно нажать РЫНОК. Живым голосом, без JSON."
+        )
+
+    system = prompt + work_ctx
+    try:
+        from studio.grondheim_memory import format_soul_for_agent
+        soul = format_soul_for_agent("A08_KONSERVATOR", dept="trading")
+        if soul:
+            system = prompt + "\n\n=== ТВОЁ СОСТОЯНИЕ (душа) ===\n" + soul + "\n\n" + work_ctx
+    except Exception:
+        pass
+
+    history = []
+    if dialog:
+        for m in dialog[:-1]:
+            r = m.get("role"); c = m.get("content", "")
+            if r in ("user", "assistant") and c:
+                history.append({"role": r, "content": c})
+
+    try:
+        return chat(system=system, user=question, history=history,
+                    agent_id="A08_KONSERVATOR", slot_id="trading")
+    except Exception as e:
+        return f"⚠️ Консерватор не смог ответить: {e}"
+
+
+# ════════════════════════════════════════════════════════════
+# ГЛАВНАЯ ФУНКЦИЯ — один взгляд Консерватора на накрытый стол
+# ════════════════════════════════════════════════════════════
+
+def run_cons(symbol: str = "XAUUSD", timeframe: str = "H4",
+             bars_count: int = 300) -> dict:
+    """Один взгляд Консерватора на стол. Читает показания сенсоров (шина)
+    + market_data ядра, судит сам по §6.2 (конец волны C, разворот)."""
+    # ── 1. Контур: наследуем этаж Искры ──
+    table = _read_table()
+    iskra_tf = table.get("iskra", {}).get("found_timeframe")
+    if iskra_tf:
+        timeframe = iskra_tf
+
+    from studio.modules.trading.mt5_feed import _terminal, _fetch
+    mt5 = _terminal()
+    if mt5 is None:
+        return {"ok": False, "error": "MetaTrader5 не установлен в Python",
+                "narrative": "", "signal": {}, "diary_entry": {},
+                "stats": _load_stats(), "market": {}, "table": table}
+
+    bars, point = _fetch(mt5, symbol, timeframe, bars_count)
+    if not bars or point is None:
+        return {"ok": False,
+                "error": f"Терминал не дал котировки {symbol} {timeframe}.",
+                "narrative": "", "signal": {}, "diary_entry": {},
+                "stats": _load_stats(), "market": {}, "table": table}
+
+    from studio.modules.trading.williams_core import build_market_data
+    md = build_market_data(bars, symbol=symbol, timeframe=timeframe, point=point)
+    if not md:
+        return {"ok": False, "error": "Ядро не собрало market_data",
+                "narrative": "", "signal": {}, "diary_entry": {},
+                "stats": _load_stats(), "market": {}, "table": table}
+
+    # ── 2. Душа + ДНК (вот ТЫ) ──
+    soul = ""
+    try:
+        from studio.grondheim_memory import format_soul_for_agent
+        soul = format_soul_for_agent("A08_KONSERVATOR", dept="trading")
+    except Exception as e:
+        print(f"[CONS] ⚠️  Душа не загрузилась ({e}) — работаю без неё")
+
+    dna_raw = ""
+    try:
+        if DNA_PATH.exists():
+            dna_raw = DNA_PATH.read_text(encoding="utf-8")
+    except OSError:
+        pass
+
+    prompt    = PROMPT_PATH.read_text(encoding="utf-8") if PROMPT_PATH.exists() else ""
+    knowledge = KNOWLEDGE.read_text(encoding="utf-8") if KNOWLEDGE.exists() else ""
+
+    # ── 3. Личный дневник ──
+    recent = _read_recent_diary(5)
+
+    # ── 4. РАСКЛАДКА МОМЕНТА ──
+    alligator = md.get("alligator", {})
+    fractals  = md.get("fractals", {})
+    price     = md.get("price", {})
+    table_for_cons = {
+        "anchor": {
+            "global_trend": table.get("iskra", {}).get("trend_direction"),
+            "found_timeframe": iskra_tf,
+        },
+        "sensors": {
+            "iskra":  {k: table["iskra"].get(k) for k in
+                       ("t1_status", "zero_point_price", "trend_direction")},
+            "morj":   {k: table["morj"].get(k) for k in
+                       ("morj_status", "wave_1_validated", "tension_peak")},
+            "panic":  {k: table["panic"].get(k) for k in
+                       ("panic_phase", "crowd_sentiment")},
+            "hans":   {k: table["hans"].get(k) for k in
+                       ("fractal_valid", "fractal_side", "fractal_price")},
+            "arkhiv": table.get("arkhiv", {}),
+        },
+        "market": {
+            "teeth":  alligator.get("teeth"),
+            "alligator_sleeping": alligator.get("sleeping"),
+            "fractal_up":   fractals.get("last_up"),
+            "fractal_down": fractals.get("last_down"),
+            "hans_fractal_price": table.get("hans", {}).get("fractal_price"),
+            "price":    price,
+            "point":    point,
+        },
+    }
+
+    user_msg = (
+        "=== НАКРЫТЫЙ СТОЛ (раскладка момента) ===\n"
+        f"{json.dumps(table_for_cons, ensure_ascii=False, indent=2)}\n\n"
+        "=== ТВОЙ ДНЕВНИК (последние события — твоя память) ===\n"
+        f"{json.dumps(recent, ensure_ascii=False, indent=2) if recent else '(пусто — первое решение)'}\n\n"
+        "Перед тобой стол и ты сам. Канон у тебя на полке (книга Котина), "
+        "твоя ДНК — ниже. Решаешь только ты. По системе сигнал поздней добычи "
+        "— Разворотный Бар на откате волны 2 (книга, §12): разрядка AO к нулю, "
+        "опора в пасти или на уровне прежней волны 4. Это знание о рынке, не "
+        "команда тебе. Дождался опоры или нет, веришь ей сегодня — твоё. "
+        "Входишь — называешь сторону, СЧИТАЕШЬ entry и stop сам из чисел "
+        "стола; где стоп, какой lot — твоя рука, не рельса. Не входишь — "
+        "verdict REJECTED. Никто не подложит тебе готовую цену и не скажет, "
+        "как поступить. Выдай строго JSON {narrative, signal, "
+        "diary_entry}. signal: cons_verdict, cons_reason, cons_direction, "
+        "cons_entry, cons_stop, cons_lot. diary_entry: input, action, "
+        "result(=null). Ничего вне JSON."
+    )
+
+    system_full = prompt
+    if dna_raw:
+        system_full += "\n\n=== ВОТ ТЫ (твоя ДНК — читай как себя) ===\n" + dna_raw
+    if soul:
+        system_full += "\n\n=== ТВОЁ СОСТОЯНИЕ (душа) ===\n" + soul
+
+    try:
+        response = chat(system=system_full, user=user_msg, knowledge=knowledge,
+                        agent_id="A08_KONSERVATOR", slot_id="trading")
+    except Exception as e:
+        return {"ok": False, "error": f"Консерватор не смог решить: {e}",
+                "narrative": "", "signal": {}, "diary_entry": {},
+                "stats": _load_stats(),
+                "market": {"symbol": symbol, "timeframe": timeframe,
+                           "bar_time": md.get("bar_time"), "point": point},
+                "table": table}
+
+    # ── 5. Парс + санитар + два следа ──
+    narrative, signal, diary_entry = _parse_cons(response)
+    signal = _sanitize(signal)
+
+    market = {"symbol": symbol, "timeframe": timeframe,
+              "bar_time": md.get("bar_time"), "point": point}
+
+    _save_verdict_to_table(signal)
+    _append_diary(signal, diary_entry, market, table)
+    stats = _update_stats(signal)
+
+    return {
+        "ok": True,
+        "error": None,
+        "narrative": narrative,
+        "signal": signal,
+        "diary_entry": diary_entry,
+        "stats": stats,
+        "market": market,
+        "table": table,
+        "raw": response,
+    }
