@@ -619,74 +619,6 @@ def page_exchange() -> None:
             else:
                 ui.notify("📚 Архивариус смолчал (нет данных или сбой)", type="warning")
 
-            # ═══════════════════════════════════════════════════
-            # СОВЕТ САДИТСЯ ЗА СТОЛ — три трейдера (A06/A07/A08)
-            # [TRADERS врезаны патчем patch_traders_button]
-            # ───────────────────────────────────────────────────
-            # Стол накрыт (пять сенсоров записали факты в trading_state).
-            # Трейдеры читают шину САМИ (_read_table в своих движках) —
-            # UI ничего не передаёт. Зовём по очереди, кладём вердикт в
-            # отчёт + чат. Молчание (REJECTED) — норма, каждый ждёт свою
-            # станцию (§1f, Закон Дежурства). Не гасим прогон молчанием.
-            for tr in (
-                {"id": "A06", "icon": "🪨", "name": "Брут",
-                 "run": "run_brut", "mod": "brut_live", "pre": "brut",
-                 "last": "brut_last_run"},
-                {"id": "A07", "icon": "🎲", "name": "Авантюрист",
-                 "run": "run_avan", "mod": "avan_live", "pre": "avan",
-                 "last": "avan_last_run"},
-                {"id": "A08", "icon": "⚖️", "name": "Консерватор",
-                 "run": "run_cons", "mod": "cons_live", "pre": "cons",
-                 "last": "cons_last_run"},
-            ):
-                ui.notify(f"{tr['icon']} Бужу — {tr['name']} садится за стол...",
-                          type="info")
-                try:
-                    import importlib
-                    _mod = importlib.import_module(
-                        f"studio.modules.trading.{tr['mod']}")
-                    _run = getattr(_mod, tr["run"])
-                    rt = await asyncio.get_event_loop().run_in_executor(
-                        None, lambda _r=_run: _r(symbol="XAUUSD", timeframe="H4"))
-                except Exception as e:
-                    ui.notify(f"{tr['icon']} {tr['name']} не сел: {e}",
-                              type="negative")
-                    continue
-
-                if not rt.get("ok"):
-                    ui.notify(f"{tr['icon']} {tr['name']}: "
-                              f"{rt.get('error','сбой')}", type="warning")
-                    continue
-
-                tsig = rt.get("signal", {})
-                pre  = tr["pre"]
-                state["reports"][tr["id"]] = (
-                    rt.get("narrative", "") or rt.get("raw", ""))
-                state[f"{pre}_signal"] = tsig
-                state[f"{pre}_stats"]  = rt.get("stats", {})
-                state[tr["last"]] = {
-                    "narrative": rt.get("narrative", ""),
-                    "signal":    tsig,
-                    "market":    rt.get("market", {}),
-                }
-                verdict = tsig.get(f"{pre}_verdict", "—")
-                if verdict == "APPROVED":
-                    line = (f"{tr['icon']} {tr['name']}: ВХОД "
-                            f"{tsig.get(f'{pre}_direction','')} · "
-                            f"вход {tsig.get(f'{pre}_entry','—')} · "
-                            f"стоп {tsig.get(f'{pre}_stop','—')} · "
-                            f"лот {tsig.get(f'{pre}_lot','—')}. Отчёт справа.")
-                    ui.notify(f"{tr['icon']} {tr['name']}: ВХОД "
-                              f"{tsig.get(f'{pre}_direction','')}", type="positive")
-                else:
-                    line = (f"{tr['icon']} {tr['name']}: пас "
-                            f"({tsig.get(f'{pre}_reason','—')}). Отчёт справа.")
-                    ui.notify(f"{tr['icon']} {tr['name']}: пас", type="info")
-                state["chat_history"].append({
-                    "role": "assistant", "agent": tr["id"], "content": line})
-                update_chat_display()
-                update_avatar_states()
-
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
@@ -808,31 +740,6 @@ def page_exchange() -> None:
                 reply = f"⚠️ Ганс не смог ответить: {e}"
             state["chat_history"].append({
                 "role": "assistant", "agent": "A04", "content": reply})
-            update_chat_display()
-            return
-
-        # [TRADERS CHAT врезаны патчем patch_traders_button]
-        if agent_id in ("A06", "A07", "A08"):
-            _tmap = {
-                "A06": ("brut_live", "chat_with_brut", "brut_last_run", "🪨", "Брут"),
-                "A07": ("avan_live", "chat_with_avan", "avan_last_run", "🎲", "Авантюрист"),
-                "A08": ("cons_live", "chat_with_cons", "cons_last_run", "⚖️", "Консерватор"),
-            }
-            _mod_name, _fn_name, _last_key, _ic, _nm = _tmap[agent_id]
-            ui.notify(f"{_ic} {_nm} думает...", type="info")
-            try:
-                import importlib
-                _m = importlib.import_module(
-                    f"studio.modules.trading.{_mod_name}")
-                _chat = getattr(_m, _fn_name)
-                dialog = [m for m in state["chat_history"]
-                          if m.get("role") in ("user", "assistant") and m.get("content")]
-                reply = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: _chat(msg, state.get(_last_key), dialog))
-            except Exception as e:
-                reply = f"⚠️ {_nm} не смог ответить: {e}"
-            state["chat_history"].append({
-                "role": "assistant", "agent": agent_id, "content": reply})
             update_chat_display()
             return
 

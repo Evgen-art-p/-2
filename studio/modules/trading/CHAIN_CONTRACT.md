@@ -1,6 +1,6 @@
-# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.7
+# КОНТРАКТ КЛЮЧЕЙ — ТОРГОВЫЙ ЦЕХ v1.8
 ## studio/modules/trading/CHAIN_CONTRACT.md
-## Студия «Шесть Пальцев» · 2026-06-17
+## Студия «Шесть Пальцев» · 2026-06-19
 
 > Это единственный источник правды для contract_validator.
 > Каждый агент пишет строго то что указано в "Пишет".
@@ -20,10 +20,10 @@
 | A03 Паникёр | `panic_phase`, `crowd_sentiment`, `action_for_traders`, `scale_timeframe` | `market_data.mfi`, `market_data.price`, `t1_status`, `morj_status`, `found_timeframe` |
 | A04 Ганс | `fractal_valid`, `fractal_side`, `fractal_price`, `absorption_ratio`, `scale_timeframe` | `market_data.fractals`, `market_data.alligator.teeth`, `market_data.mfi`, `market_data.squat`, `t1_status`, `morj_status`, `trend_direction`, `found_timeframe` |
 | A05 Архивариус | `sample_size`, `success_rate`, `top_failure_reason`, `arkhiv_confidence` | `t1_status`, `morj_status`, `panic_phase`, `fractal_valid`, `atlas_digest` |
-| A06 Брут | `brut_verdict`, `brut_reason`, `brut_entry`, `brut_stop`, `brut_tp`, `brut_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
-| A07 Авантюрист | `avan_verdict`, `avan_reason`, `avan_entry`, `avan_stop`, `avan_tp`, `avan_lot` | `t1_status`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `trade_setup` |
-| A08 Консерватор | `cons_verdict`, `cons_reason`, `cons_entry`, `cons_stop`, `cons_tp`, `cons_lot` | `t1_status`, `wave_1_validated`, `morj_status`, `panic_phase`, `fractal_valid`, `fractal_price`, `sample_size`, `success_rate`, `arkhiv_confidence`, `trade_setup` |
-| A09 Исполнитель | `execution_log`, `final_dna`, `history_dna`, `deliverables` | `brut_*`, `avan_*`, `cons_*` (вердикты и параметры), `open_positions`, `exit_bell` |
+| A06 Брут | `brut_verdict`, `brut_reason`, `brut_direction`, `brut_entry`, `brut_stop`, `brut_lot` | `t1_status`, `trend_direction`, `zero_point_price`, `found_timeframe`, `wave_1_validated`, `morj_status`, `tension_peak`, `panic_phase`, `crowd_sentiment`, `fractal_valid`, `fractal_side`, `fractal_price`, `atlas_digest` (через Архивариуса) |
+| A07 Авантюрист | `avan_verdict`, `avan_reason`, `avan_direction`, `avan_entry`, `avan_stop`, `avan_lot` | `t1_status`, `trend_direction`, `zero_point_price`, `found_timeframe`, `wave_1_validated`, `morj_status`, `tension_peak`, `panic_phase`, `crowd_sentiment`, `fractal_valid`, `fractal_side`, `fractal_price`, `atlas_digest` (через Архивариуса) |
+| A08 Консерватор | `cons_verdict`, `cons_reason`, `cons_direction`, `cons_entry`, `cons_stop`, `cons_lot` | `t1_status`, `trend_direction`, `zero_point_price`, `found_timeframe`, `wave_1_validated`, `morj_status`, `tension_peak`, `panic_phase`, `crowd_sentiment`, `fractal_valid`, `fractal_side`, `fractal_price`, `atlas_digest` (через Архивариуса) |
+| A09 Исполнитель | `execution_log`, `final_dna`, `history_dna`, `deliverables` | `brut_*`, `avan_*`, `cons_*` (вердикт, reason, direction, entry, stop, lot), `open_positions`, `exit_bell` |
 
 ---
 
@@ -35,7 +35,7 @@
 | `prev_t1_status`, `prev_zero_point_price` | trading_state через on_before_run | Искра (её память) |
 | `open_positions` | trading_state через on_before_run | A09 Исполнитель |
 | `atlas_digest` | _prepare_atlas_digest перед A05 | A05 Архивариус |
-| `trade_setup` | _prepare_trade_setup перед трибуналом | A06/A07/A08 |
+| ~~`trade_setup`~~ | ~~_prepare_trade_setup~~ | **МЁРТВ (§11)** — трейдеры считают вход сами |
 
 ---
 
@@ -48,22 +48,22 @@ GATE 1 — СНЯТ (§1f). Ганс — СЕНСОР, не страж воро�
   Затвор цепочки — на уровне Биржи (РЫНОК будит сенсоров при
   DETECTED/CONFIRMED Искры), не на уровне Ганса. Сенсор не затыкают.
 
-GATE 2 — Хард-стоп:
-  if brut_verdict == "REJECTED"
-  and avan_verdict == "REJECTED"
-  and cons_verdict == "REJECTED":
-      on_after_agent A09 → {"action": "stop"}
-      запись в Атлас Ошибок (economy/data/atlas_trading.jsonl)
-      (trading_state сохраняется ДО stop)
-  ⚠️ ПОД СНОС (§1f, СНОС 1): код не решает вход за систему. Нет
-     команды = прогон кончился сам. Вырезать в пересборке входа.
+GATE 2 — СНЯТ (§1f, Закон Дежурства). Хард-стопа «все трое REJECTED →
+  stop» БОЛЬШЕ НЕТ. Трое трейдеров ДОЛЖНЫ почти всегда молчать — каждый
+  ждёт свою станцию (Авантюрист — конец C, Брут — пробой фрактала,
+  Консерватор — откат волны 2). Молчание всех троих — норма, не повод
+  гасить прогон. Нет команды на вход = прогон кончился сам, без вердикта
+  кода. Запись REJECTED в Атлас Ошибок делает A09 как факт, не как стоп.
 ```
 
-ЗАКОН ТРИБУНАЛА: все трое трейдеров работают по одной системе Котина.
-Минимальное условие входа для любого — `t1_status=CONFIRMED`.
-Разница между ними — психологический порог, не правила входа.
-Стоп — системный (за лоу Волны 2, из trade_setup), не личный.
-Тейка нет: `*_tp = null`, выход всей позицией по `exit_bell`.
+ЗАКОН ТРИБУНАЛА: все трое трейдеров работают по одной системе Котина,
+читают одни и те же страницы (книга KOTIN_PHILOSOPHY, общая троим) и
+один и тот же накрытый стол. Разница между ними — психологический порог
+и характер, не правила входа. Минимальное условие, при котором цех будит
+трейдеров, — сигнал Искры (`t1_status` DETECTED/CONFIRMED); входить ли —
+решает каждый сам. Стоп каждый считает САМ из чисел стола (канон §8/§10 на
+полке — ориентир, не рельса), не копирует из кода. Тейка нет (§9): полей
+`*_tp` не существует, выход всей позицией по `exit_bell` (делает код).
 
 ---
 
@@ -163,24 +163,29 @@ HIGH = sample_size ≥ 20 И success_rate ≥ 0.65.
 MEDIUM = sample_size ≥ 5 И success_rate ≥ 0.50.
 Числа считает код (atlas_digest) — Архивариус копирует.
 
-### trade_setup (hooks.py, для трибунала)
-```json
-{"direction": "LONG", "entry": 0.0, "stop": 0.0, "tp": null, "lot_fraction": 0.33}
-```
-entry = ОРИЕНТИР из `fractal_price` Ганса (Buy Stop над / Sell Stop под),
-stop = лоу Волны 2. ⚠️ §1f: это ОРИЕНТИРЫ на столе, не назначенный вход.
-Трейдер сам называет entry/stop своим характером (не обязан копировать).
-v1 — только LONG.
+### ~~trade_setup~~ — МЁРТВ (Закон Дежурства §11)
+`_prepare_trade_setup` отменён. Код больше НЕ готовит готовую цену входа
+для трейдеров. Каждый трейдер сам вычисляет `*_direction`/`*_entry`/`*_stop`
+из раскладки момента (фракталы, Teeth, OHLC — факты на столе), своим
+характером. «Биоробот при исполнении» (§11) — про дисциплину ПОСЛЕ
+решения (не трогать уже выставленное), не про копирование из кода.
+Ориентир входа трейдер берёт из `fractal_price` Ганса, если хочет, —
+но не обязан.
 
-### brut_verdict / avan_verdict / cons_verdict
-`APPROVED` | `REJECTED`
-При REJECTED все параметры (entry/stop/tp/lot) = null.
+### brut_verdict / avan_verdict / cons_verdict + параметры
+`*_verdict`: `APPROVED` | `REJECTED`
+При APPROVED трейдер пишет: `*_direction` (`LONG`|`SHORT`), `*_entry`,
+`*_stop`, `*_lot` — все посчитаны ИМ САМИМ из чисел стола. `*_reason` —
+короткая метка его словами.
+При REJECTED все параметры (`direction`/`entry`/`stop`/`lot`) = null.
+Поля `*_tp` НЕ существует (тейка нет, §9). Санитар движка гасит APPROVED
+без направления в REJECTED.
 
 ### execution_log (A09 Исполнитель)
 ```json
 [{
   "trader": "BRUT", "magic": 100001,
-  "verdict": "APPROVED", "entry": 0.0, "stop": 0.0, "tp": null, "lot": 0.33,
+  "verdict": "APPROVED", "direction": "LONG", "entry": 0.0, "stop": 0.0, "lot": 0.33,
   "status": "PAPER", "pnl": null
 }]
 ```
@@ -197,6 +202,18 @@ Magic numbers: BRUT=100001, AVANTURIST=100002, KONSERVATOR=100003.
 
 ---
 
+*CHAIN_CONTRACT v1.8 · Торговый Цех · 2026-06-19*
+*v1.8: ТРЕЙДЕРЫ ПОД ЗАКОН ДЕЖУРСТВА. Авантюрист (A07) и Консерватор (A08)
+переписаны близнецами Брута (avan_live/cons_live): читают накрытый стол,
+считают вход САМИ. Контракт приведён к реальности кода:*
+*— `*_direction` ДОБАВЛЕН всем троим трейдерам (был в коде Брута, не в контракте).*
+*— `*_tp` УБРАН у всех (§9: у Вильямса нет фиксированного тейка).*
+*— `trade_setup` помечен МЁРТВЫМ (§11): код не готовит вход, трейдер считает сам.*
+*— Чтения трейдеров: вместо `trade_setup` — реальный набор фактов стола*
+*  (сенсоры + fractal_price-ориентир + atlas_digest).*
+*— GATE 2 (хард-стоп «все REJECTED») СНЯТ §1f: молчание троих — норма.*
+*— ЗАКОН ТРИБУНАЛА переписан: будит сигнал Искры, входить решает каждый;*
+*  стоп каждый считает сам (не системный из trade_setup).*
 *CHAIN_CONTRACT v1.7 · Торговый Цех · 2026-06-17*
 *v1.7: ГАНС ОЖИВЛЁН. Фрактал-сенсор по КРАСНОЙ линии (teeth, первоисточник
 Котина — не Jaw). Пишет fractal_valid/fractal_side/fractal_price/absorption_ratio
