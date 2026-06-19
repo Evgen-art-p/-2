@@ -604,7 +604,6 @@ def _persist_trading_state(state: dict):
         tstate["positions"].append({
             "trader":    order.get("trader"),
             "magic":     order.get("magic"),
-            "direction": order.get("direction"),   # FIX: было потеряно — шорт закрывался как лонг
             "entry":     order.get("entry"),
             "stop":      order.get("stop"),
             "tp":        order.get("tp"),
