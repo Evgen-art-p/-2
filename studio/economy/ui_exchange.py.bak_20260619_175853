@@ -687,48 +687,6 @@ def page_exchange() -> None:
                 update_chat_display()
                 update_avatar_states()
 
-            # ═══════════════════════════════════════════════════
-            # ИСПОЛНИТЕЛЬ САДИТСЯ — A09 замыкает петлю
-            # [EXECUTOR врезан патчем patch_executor]
-            # ───────────────────────────────────────────────────
-            # Трое трейдеров сказали своё (табло накрыто). Исполнитель:
-            # КОД открывает позиции по факту табло (PAPER), LLM пишет
-            # летопись (execution_log + history_dna + task_score). PnL
-            # посчитает _settle на следующем баре. Круг замыкается.
-            ui.notify("📋 Исполнитель замыкает петлю...", type="info")
-            try:
-                from studio.modules.trading.executor_live import run_executor
-                rex = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: run_executor(symbol="XAUUSD", timeframe="H4"))
-            except Exception as e:
-                rex = {"ok": False, "error": str(e)}
-
-            if rex.get("ok"):
-                esig = rex.get("signal", {})
-                fdna = esig.get("final_dna", {})
-                sent = fdna.get("orders_sent", "—")
-                tsk  = fdna.get("task_score", "—")
-                state["reports"]["A09"] = (
-                    rex.get("narrative", "")
-                    + "\n\n— Летопись: " + esig.get("history_dna", ""))
-                state["executor_signal"] = esig
-                state["executor_stats"]  = rex.get("stats", {})
-                state["executor_last_run"] = {
-                    "narrative": rex.get("narrative", ""),
-                    "signal":    esig,
-                    "market":    rex.get("market", {}),
-                }
-                line = (f"📋 Исполнитель: ордеров {sent} из 3 · "
-                        f"task_score {tsk}. {esig.get('history_dna','')}")
-                ui.notify(f"📋 Исполнитель: {sent} из 3", type="positive")
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "A09", "content": line})
-                update_chat_display()
-                update_avatar_states()
-            else:
-                ui.notify(f"📋 Исполнитель: сбой — {rex.get('error','?')}",
-                          type="warning")
-
     # ── Подсветка активного пузырька ─────────────────────────
     def update_avatar_states():
         for aid, el in avatars_ref["elements"].items():
@@ -854,12 +812,11 @@ def page_exchange() -> None:
             return
 
         # [TRADERS CHAT врезаны патчем patch_traders_button]
-        if agent_id in ("A06", "A07", "A08", "A09"):
+        if agent_id in ("A06", "A07", "A08"):
             _tmap = {
                 "A06": ("brut_live", "chat_with_brut", "brut_last_run", "🪨", "Брут"),
                 "A07": ("avan_live", "chat_with_avan", "avan_last_run", "🎲", "Авантюрист"),
                 "A08": ("cons_live", "chat_with_cons", "cons_last_run", "⚖️", "Консерватор"),
-                "A09": ("executor_live", "chat_with_executor", "executor_last_run", "📋", "Исполнитель"),
             }
             _mod_name, _fn_name, _last_key, _ic, _nm = _tmap[agent_id]
             ui.notify(f"{_ic} {_nm} думает...", type="info")

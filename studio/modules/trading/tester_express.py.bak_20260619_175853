@@ -295,22 +295,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
                 out(f"  🛡 КОНСЕРВАТОР: сбой — {rco.get('error','?')}")
             out("")
 
-            # ИСПОЛНИТЕЛЬ — A09 замыкает петлю (открывает по факту табло)
-            # [EXECUTOR врезан патчем patch_executor]
-            from studio.modules.trading.executor_live import run_executor
-            rex = run_executor(symbol=symbol, timeframe=timeframe)
-            if rex.get("ok"):
-                esig = rex.get("signal", {})
-                fdna = esig.get("final_dna", {})
-                out(f"  📋 ИСПОЛНИТЕЛЬ: ордеров "
-                    f"{fdna.get('orders_sent','—')} из 3 · "
-                    f"task_score {fdna.get('task_score','—')}")
-                if esig.get("history_dna"):
-                    out(f"     └─ летопись: {esig.get('history_dna','').strip()}")
-            else:
-                out(f"  📋 ИСПОЛНИТЕЛЬ: сбой — {rex.get('error','?')}")
-            out("")
-
             if caught >= n_signals:
                 out(f"✓ поймал {caught} срабатываний из {scanned} "
                     f"проверенных кандидатов — стоп.")
