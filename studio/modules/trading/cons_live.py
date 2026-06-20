@@ -58,6 +58,64 @@ def _read_table() -> dict:
     }
 
 
+# ════════════════════════════════════════════════════════════
+# КАМЕНЬ 2: ЯЗЫК ВЕДЕНИЯ — одно открытое поле action.  # TRADER_MANAGE_LANG_V1
+# Трейдер сам выбрал действие из словаря, глядя на весь стол.
+# Код не решает за него — только проверяет, что не брак, и проносит.
+# ════════════════════════════════════════════════════════════
+
+_MANAGE_ACTIONS = ("ENTER", "WAIT", "HOLD", "MOVE_STOP", "ADD", "CLOSE")
+
+
+def _derive_action(signal: dict) -> str:
+    """
+    Действие трейдера. Приоритет — явное поле cons_action (новый язык).
+    Фоллбэк на старый verdict (обратная совместимость): APPROVED→ENTER,
+    REJECTED→WAIT. Так камень 2 не ломает старые ответы.
+    """
+    a = (signal.get("cons_action") or "").upper().strip()
+    if a in _MANAGE_ACTIONS:
+        return a
+    v = signal.get("cons_verdict")
+    if v == "APPROVED":
+        return "ENTER"
+    return "WAIT"
+
+
+def _sanitize_manage(signal: dict) -> dict:
+    """
+    Санитар ведения. Гасит брак в полях ведения — НЕ решает за трейдера.
+      MOVE_STOP без new_stop → брак → WAIT (стоп не трогаем)
+      ADD без add_lot       → брак → HOLD (держим как есть)
+      ENTER чистит cons_verdict под себя (совместимость с камнем 3)
+    """
+    action = _derive_action(signal)
+
+    if action == "MOVE_STOP":
+        ns = signal.get("cons_new_stop")
+        if ns is None:
+            action = "WAIT"
+            signal["cons_reason"] = (signal.get("cons_reason", "") +
+                                      " [гашу MOVE_STOP без new_stop]").strip()
+    elif action == "ADD":
+        al = signal.get("cons_add_lot")
+        if al is None:
+            action = "HOLD"
+            signal["cons_reason"] = (signal.get("cons_reason", "") +
+                                      " [гашу ADD без add_lot]").strip()
+
+    signal["cons_action"] = action
+    # держим verdict в согласии для старого пути Исполнителя:
+    # ENTER → APPROVED, всё остальное (вход не открывается) → как есть
+    if action == "ENTER":
+        signal["cons_verdict"] = "APPROVED"
+    elif action == "WAIT":
+        signal["cons_verdict"] = "REJECTED"
+    # HOLD/MOVE_STOP/ADD/CLOSE — ведение, к открытию входа не относятся;
+    # verdict не навязываем (камень 3 читает action напрямую).
+    return signal
+
+
 def _save_verdict_to_table(signal: dict):
     """ТАБЛО: вердикт Консерватора в шину для Исполнителя 09."""
     from studio.modules.trading.hooks import load_trading_state, save_trading_state
@@ -69,6 +127,10 @@ def _save_verdict_to_table(signal: dict):
     t["cons"]["entry"]     = signal.get("cons_entry")
     t["cons"]["stop"]      = signal.get("cons_stop")
     t["cons"]["lot"]       = signal.get("cons_lot")
+    # КАМЕНЬ 2: язык ведения — действие + числа ведения в шину.  # TRADER_MANAGE_LANG_V1
+    t["cons"]["action"]    = signal.get("cons_action")
+    t["cons"]["new_stop"]  = signal.get("cons_new_stop")
+    t["cons"]["add_lot"]   = signal.get("cons_add_lot")
     save_trading_state(t)
 
 
@@ -450,6 +512,7 @@ def run_cons(symbol: str = "XAUUSD", timeframe: str = "H4",
     # ── 5. Парс + санитар + два следа ──
     narrative, signal, diary_entry = _parse_cons(response)
     signal = _sanitize(signal)
+    signal = _sanitize_manage(signal)   # TRADER_MANAGE_LANG_V1: язык ведения
 
     market = {"symbol": symbol, "timeframe": timeframe,
               "bar_time": md.get("bar_time"), "point": point}

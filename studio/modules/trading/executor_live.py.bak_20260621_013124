@@ -66,79 +66,6 @@ def _read_traders() -> dict:
 # РУКА ОТКРЫВАЮЩАЯ (КОД) — позиции из ТАБЛО, не из слов LLM
 # ════════════════════════════════════════════════════════════
 
-# ════════════════════════════════════════════════════════════
-# РУКА ВЕДУЩАЯ (КОД) — исполняет ВЕДЕНИЕ по действию трейдера.  # EXECUTOR_MANAGE_HAND_V1
-# ─────────────────────────────────────────────────────────────
-# Трейдер назвал action (камень 2): HOLD/MOVE_STOP/ADD/CLOSE.
-# Рука находит ЕГО открытую позицию по магику и исполняет буквально.
-# Защита чисел: уровни/объёмы — подпись трейдера, не пересказ LLM.
-# CLOSE не считает PnL — ставит флаг, _settle закроет единой физикой.
-# ════════════════════════════════════════════════════════════
-
-def _manage_positions_from_table(traders: dict) -> list:
-    """
-    Для каждого трейдера с открытой позицией исполняет его действие
-    ведения над trading_state["positions"]. Возвращает список изменений
-    (для летописи). Открытие (ENTER) — не здесь, это рука открывающая.
-    """
-    from studio.modules.trading.hooks import load_trading_state, save_trading_state
-    tstate = load_trading_state()
-    positions = tstate.get("positions", []) or []
-    if not positions:
-        return []
-
-    changed = []
-    dirty = False
-    for key in ("brut", "avan", "cons"):
-        v = traders.get(key, {})
-        action = (v.get("action") or "").upper().strip()
-        if action in ("", "ENTER", "WAIT", "HOLD"):
-            # ENTER/WAIT — не ведение; HOLD — держит как есть, трогать нечего
-            continue
-        magic = MAGIC[key]
-        # ищем ЕГО открытую позицию
-        pos = next((p for p in positions
-                    if p.get("magic") == magic and p.get("status") == "OPEN"), None)
-        if not pos:
-            continue  # вести нечего
-
-        if action == "MOVE_STOP":
-            ns = v.get("new_stop")
-            if ns is None:
-                continue
-            old = pos.get("stop")
-            pos["stop"] = ns
-            dirty = True
-            changed.append({"trader": TRADER_NAME[key], "action": "MOVE_STOP",
-                            "from": old, "to": ns})
-
-        elif action == "ADD":
-            al = v.get("add_lot")
-            if al is None or al <= 0:
-                continue
-            old_lot = pos.get("lot") or 0
-            pos["lot"] = round(old_lot + al, 4)
-            # вход не усредняем на этом камне — наращиваем объём;
-            # стоп трейдер двигает отдельным MOVE_STOP, если хочет.
-            pos.setdefault("pyramids", 0)
-            pos["pyramids"] += 1
-            dirty = True
-            changed.append({"trader": TRADER_NAME[key], "action": "ADD",
-                            "add_lot": al, "lot_now": pos["lot"]})
-
-        elif action == "CLOSE":
-            # волей трейдера — флаг, физику закрытия делает _settle (PnL/R).
-            pos["manual_close"] = True
-            dirty = True
-            changed.append({"trader": TRADER_NAME[key], "action": "CLOSE"})
-
-    if dirty:
-        tstate["positions"] = positions
-        save_trading_state(tstate)
-    return changed
-
-
-
 def _open_positions_from_table(traders: dict, market: dict) -> list:
     """
     Для каждого APPROVED-трейдера кладёт позицию в trading_state["positions"]
@@ -397,10 +324,6 @@ def run_executor(symbol: str = "XAUUSD", timeframe: str = "H4") -> dict:
 
     # ── 2. РУКА ОТКРЫВАЮЩАЯ (КОД) — позиции по факту табло ────
     opened = _open_positions_from_table(traders, market)
-    # КАМЕНЬ 3: рука ведущая — исполняет HOLD/MOVE_STOP/ADD/CLOSE.  # EXECUTOR_MANAGE_HAND_V1
-    managed = _manage_positions_from_table(traders)
-    if managed:
-        print(f'[EXECUTOR] ✋ ведение: {managed}')
 
     # ── 3. Душа + ДНК + промт ────────────────────────────────
     soul = ""

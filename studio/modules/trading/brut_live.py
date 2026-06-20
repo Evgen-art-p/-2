@@ -74,6 +74,64 @@ def _read_table() -> dict:
     }
 
 
+# ════════════════════════════════════════════════════════════
+# КАМЕНЬ 2: ЯЗЫК ВЕДЕНИЯ — одно открытое поле action.  # TRADER_MANAGE_LANG_V1
+# Трейдер сам выбрал действие из словаря, глядя на весь стол.
+# Код не решает за него — только проверяет, что не брак, и проносит.
+# ════════════════════════════════════════════════════════════
+
+_MANAGE_ACTIONS = ("ENTER", "WAIT", "HOLD", "MOVE_STOP", "ADD", "CLOSE")
+
+
+def _derive_action(signal: dict) -> str:
+    """
+    Действие трейдера. Приоритет — явное поле brut_action (новый язык).
+    Фоллбэк на старый verdict (обратная совместимость): APPROVED→ENTER,
+    REJECTED→WAIT. Так камень 2 не ломает старые ответы.
+    """
+    a = (signal.get("brut_action") or "").upper().strip()
+    if a in _MANAGE_ACTIONS:
+        return a
+    v = signal.get("brut_verdict")
+    if v == "APPROVED":
+        return "ENTER"
+    return "WAIT"
+
+
+def _sanitize_manage(signal: dict) -> dict:
+    """
+    Санитар ведения. Гасит брак в полях ведения — НЕ решает за трейдера.
+      MOVE_STOP без new_stop → брак → WAIT (стоп не трогаем)
+      ADD без add_lot       → брак → HOLD (держим как есть)
+      ENTER чистит brut_verdict под себя (совместимость с камнем 3)
+    """
+    action = _derive_action(signal)
+
+    if action == "MOVE_STOP":
+        ns = signal.get("brut_new_stop")
+        if ns is None:
+            action = "WAIT"
+            signal["brut_reason"] = (signal.get("brut_reason", "") +
+                                      " [гашу MOVE_STOP без new_stop]").strip()
+    elif action == "ADD":
+        al = signal.get("brut_add_lot")
+        if al is None:
+            action = "HOLD"
+            signal["brut_reason"] = (signal.get("brut_reason", "") +
+                                      " [гашу ADD без add_lot]").strip()
+
+    signal["brut_action"] = action
+    # держим verdict в согласии для старого пути Исполнителя:
+    # ENTER → APPROVED, всё остальное (вход не открывается) → как есть
+    if action == "ENTER":
+        signal["brut_verdict"] = "APPROVED"
+    elif action == "WAIT":
+        signal["brut_verdict"] = "REJECTED"
+    # HOLD/MOVE_STOP/ADD/CLOSE — ведение, к открытию входа не относятся;
+    # verdict не навязываем (камень 3 читает action напрямую).
+    return signal
+
+
 def _save_verdict_to_table(signal: dict):
     """
     ТАБЛО: кладёт вердикт Брута в шину для Исполнителя 09.
@@ -88,6 +146,10 @@ def _save_verdict_to_table(signal: dict):
     t["brut"]["entry"]     = signal.get("brut_entry")
     t["brut"]["stop"]      = signal.get("brut_stop")
     t["brut"]["lot"]       = signal.get("brut_lot")
+    # КАМЕНЬ 2: язык ведения — действие + числа ведения в шину.  # TRADER_MANAGE_LANG_V1
+    t["brut"]["action"]    = signal.get("brut_action")
+    t["brut"]["new_stop"]  = signal.get("brut_new_stop")
+    t["brut"]["add_lot"]   = signal.get("brut_add_lot")
     save_trading_state(t)
 
 
@@ -501,6 +563,7 @@ def run_brut(symbol: str = "XAUUSD", timeframe: str = "H4",
     # ── 5. Парс + санитар + два следа: табло и дневник ───────
     narrative, signal, diary_entry = _parse_brut(response)
     signal = _sanitize(signal)
+    signal = _sanitize_manage(signal)   # TRADER_MANAGE_LANG_V1: язык ведения
 
     market = {"symbol": symbol, "timeframe": timeframe,
               "bar_time": md.get("bar_time"), "point": point}

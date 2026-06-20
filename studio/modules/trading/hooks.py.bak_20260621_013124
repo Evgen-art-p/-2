@@ -327,15 +327,12 @@ def _settle_positions(state: dict):
             continue
 
         exit_price, reason = None, None
-        # КАМЕНЬ 3: воля трейдера (CLOSE) — раньше стопа и колокола.  # EXECUTOR_MANAGE_HAND_V1
-        if pos.get("manual_close") and close is not None:
-            exit_price, reason = close, "MANUAL_CLOSE"
         # Стоп — зеркально по направлению
-        if reason is None and direction == "LONG" and low is not None and low <= stop:
+        if direction == "LONG" and low is not None and low <= stop:
             exit_price, reason = stop, "STOP_LOSS"
-        elif reason is None and direction == "SHORT" and high is not None and high >= stop:
+        elif direction == "SHORT" and high is not None and high >= stop:
             exit_price, reason = stop, "STOP_LOSS"
-        elif reason is None and bell and close is not None:
+        elif bell and close is not None:
             exit_price, reason = close, "EXIT_BELL"
 
         if exit_price is None:
