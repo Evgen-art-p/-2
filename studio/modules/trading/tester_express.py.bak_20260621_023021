@@ -63,25 +63,9 @@ def _bar(line_dt: str) -> str:
 
 def run_tester(csv_path: str, symbol: str, timeframe: str,
                n_signals: int = 1, point_override=None,
-               warmup: int = 60, loose: bool = False,
-               on_progress=None, should_stop=None):  # TESTER_HANDLES_V1
+               warmup: int = 60, loose: bool = False):
     from studio.modules.trading.williams_core import read_mt5_csv, build_market_data
     from studio.modules.trading import mt5_feed
-
-    # РУЛЬ (биржа слушает ход / прерывает перебор).  # TESTER_HANDLES_V1
-    def _emit(msg):
-        if on_progress:
-            try:
-                on_progress(msg)
-            except Exception:
-                pass
-    def _stop_requested():
-        if should_stop:
-            try:
-                return bool(should_stop())
-            except Exception:
-                return False
-        return False
 
     point = _resolve_point(symbol, point_override)
 
@@ -200,12 +184,8 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
         out(f"🎤 Сито 2: бужу живой Совет на {len(candidates)} кандидатах...")
         out("")
         for idx, (i, side) in enumerate(candidates):
-            if _stop_requested():   # TESTER_HANDLES_V1: кнопка СТОП биржи
-                out(f"⏸ СТОП по команде Шефа — прошёл {scanned} из {len(candidates)} кандидатов.")
-                break
             state["cursor"] = i
             scanned += 1
-            _emit(f"кандидат {idx+1}/{len(candidates)} · бар {i}")
 
             r_iskra = run_iskra(symbol=symbol, timeframe=timeframe)
             if not r_iskra.get("ok"):
