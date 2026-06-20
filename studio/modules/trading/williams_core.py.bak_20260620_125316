@@ -792,63 +792,6 @@ def _empty_wave_form() -> dict:
 
 
 
-def compute_global_bias(bars: list, alligator: dict, point: float,
-                        slope_lookback: int = 5) -> str:
-    """
-    КОМПАС ГЛОБАЛЬНОГО ФОНА из синей линии Аллигатора (Jaw, SMMA-13).  # GLOBAL_BIAS_COMPASS_V1
-
-    Три линии Аллигатора — три баланса (справедливые цены) на трёх
-    горизонтах памяти. Синяя самая медленная и инертная: дыхание
-    старшего ТФ внутри рабочего окна. Берём ЦЕНУ относительно синей
-    плюс НАКЛОН синей — грубый, но всегда живой компас, переживающий
-    развороты (в отличие от строгого веера, схлопывающегося в NONE
-    ровно на развороте, когда компас нужнее всего).
-
-    ЗАКОН ЯДРА: только ФАКТ направления фона. Не суждение, не команда.
-    Трейдеры читают и сводят сами.
-
-      BULL: close выше Jaw И Jaw не падает (наклон >= 0)
-      BEAR: close ниже Jaw И Jaw не растёт (наклон <= 0)
-      NONE: цена и наклон спорят (переходная зона) ИЛИ синей нет
-
-    Возвращает "BULL" / "BEAR" / "NONE".
-    """
-    jaw = alligator.get("jaw")
-    if jaw is None or not bars:
-        return "NONE"
-
-    close = bars[-1]["close"]
-
-    # Наклон синей: сравниваем текущую Jaw с Jaw slope_lookback баров назад.
-    # Пересчёт лёгкий — SMMA(13) по медианам всего окна, берём срез.
-    medians = [(b["high"] + b["low"]) / 2 for b in bars]
-    jaw_series = _smma_series(medians, 13)
-    jaw_prev = None
-    if len(jaw_series) > slope_lookback:
-        cand = jaw_series[-1 - slope_lookback]
-        if cand is not None:
-            jaw_prev = cand
-
-    slope = 0.0
-    if jaw_prev is not None:
-        slope = jaw - jaw_prev
-
-    # Безразмерный порог наклона: шум в пределах ~5 пунктов считаем плоским.
-    flat = (5 * point) if point else 0.0
-
-    price_above = close > jaw
-    price_below = close < jaw
-    rising  = slope >  flat
-    falling = slope < -flat
-
-    if price_above and not falling:
-        return "BULL"
-    if price_below and not rising:
-        return "BEAR"
-    return "NONE"
-
-
-
 def build_market_data(
     bars:      list[dict],
     symbol:    str   = "UNKNOWN",
@@ -897,10 +840,6 @@ def build_market_data(
     # Читалка формы AO — факты структуры для Искры v2 (окно 140-150).
     # Сенсор кладёт факты (дивер-компас, B/D/B-точка, горб-царь), не вердикты.
     wave_form = read_ao_wave_form(bars, ao_series, teeth_series)
-
-    # Компас глобального фона из синей линии (Jaw).  # GLOBAL_BIAS_COMPASS_V1
-    # Факт направления, всегда на столе (не зависит от дивера/терминала).
-    global_bias = compute_global_bias(bars, alligator, _point)
 
     print(f"[CORE]    _Point={_point} ({symbol})")
 
@@ -981,7 +920,6 @@ def build_market_data(
         "divergent_bar": divergent_bar,          # BuDB/BDB по Profitunity
         "rubber_band":   rubber_band,            # резинка Джастин (глаза Моржа)
         "wave_form":     wave_form,            # факты формы AO (глаз Искры v2)
-        "global_bias":   global_bias,          # компас фона из синей (GLOBAL_BIAS_COMPASS_V1)
 
         "fractals": {
             "last_up":    fractals["last_up"],

@@ -53,7 +53,7 @@ def _load_iskra_memory() -> dict:
         "t1_status": "NOT_FOUND", "zero_point_price": None, "history_dna": ""})
 
 
-def _save_iskra_memory(signal: dict, md: dict = None):  # GLOBAL_BIAS_COMPASS_V1
+def _save_iskra_memory(signal: dict):
     """
     Пишет память Искры в штатный trading_state.json — туда, откуда
     её прочитает Морж и следующий прогон самой Искры (prev_*).
@@ -67,14 +67,9 @@ def _save_iskra_memory(signal: dict, md: dict = None):  # GLOBAL_BIAS_COMPASS_V1
     # ── ISKRA_MEM_V2: два поля спуска v2 — Морж наследует масштаб ──
     # found_timeframe берём из signal (его кладёт user_msg при found),
     # с фоллбэком на старое имя timeframe. trend_direction = компас спуска.
-    # КОМПАС: приоритет — дивер-компас Искры (trend_direction/compass).  # GLOBAL_BIAS_COMPASS_V1
-    # Фоллбэк — global_bias из синей линии (всегда на столе), если дивер молчит.
-    _td = signal.get("trend_direction") or signal.get("compass")
-    if not _td and md:
-        _gb = md.get("global_bias")
-        if _gb in ("BULL", "BEAR"):
-            _td = _gb
-    tstate["iskra"]["trend_direction"] = _td
+    tstate["iskra"]["trend_direction"] = (
+        signal.get("trend_direction") or signal.get("compass")
+    )
     tstate["iskra"]["found_timeframe"] = (
         signal.get("found_timeframe") or signal.get("timeframe")
     )
@@ -493,7 +488,7 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
     narrative, signal = _parse_iskra(response)
 
     # ── 6. Сохранить память (штатно) и статистику ────────────
-    _save_iskra_memory(signal, md)   # GLOBAL_BIAS_COMPASS_V1: фоллбэк компаса
+    _save_iskra_memory(signal)
     stats = _update_stats(prev_status, signal)
 
     # ── 6b. ПЕТЛЯ ОБУЧЕНИЯ — точность отражения → ДНК ────────

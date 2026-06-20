@@ -1,7 +1,7 @@
 {
-  "runs": 1,
+  "runs": 10,
   "high": 0,
   "medium": 0,
-  "low": 1,
-  "empty": 1
+  "low": 10,
+  "empty": 10
 }

@@ -258,6 +258,73 @@ def chat_with_avan(question: str, last_run: Optional[dict] = None,
 # ГЛАВНАЯ ФУНКЦИЯ — один взгляд Авантюриста на накрытый стол
 # ════════════════════════════════════════════════════════════
 
+# ════════════════════════════════════════════════════════════
+# КАМЕНЬ 1: СВОЯ ОТКРЫТАЯ ПОЗИЦИЯ — ФАКТ на стол (не приказ)  # TRADER_SEES_POSITION_V1
+# ─────────────────────────────────────────────────────────────
+# Трейдер видит, что он в рынке: что открыто, сколько живёт, как
+# плавает. Решение — его природа. R считаем ТОЙ ЖЕ формулой, что
+# _settle_positions применит при закрытии (защита чисел).
+# ════════════════════════════════════════════════════════════
+
+_MY_MAGIC = 100002   # паспорт трейдера (как у Исполнителя)
+
+
+def _my_open_position(md: dict) -> dict:
+    """
+    Факт открытой позиции ЭТОГО трейдера (по магику) из trading_state.
+    Нет позиции → None. Есть → живой факт с плавающим R. Без суждений.
+    """
+    try:
+        from studio.modules.trading.hooks import load_trading_state
+        positions = load_trading_state().get("positions", []) or []
+    except Exception:
+        return None
+
+    mine = None
+    for p in positions:
+        if p.get("magic") == _MY_MAGIC and p.get("status") == "OPEN":
+            mine = p
+            break
+    if not mine:
+        return None
+
+    entry = mine.get("entry")
+    stop  = mine.get("stop")
+    direction = mine.get("direction", "LONG")
+    price = (md.get("price", {}) or {}).get("close")
+
+    # Плавающий R — эталон формулы из hooks._settle_positions.
+    floating_r = None
+    if entry is not None and stop is not None and price is not None:
+        if direction == "LONG":
+            risk = entry - stop
+            pnl_price = price - entry
+        else:  # SHORT
+            risk = stop - entry
+            pnl_price = entry - price
+        if risk and risk > 0:
+            floating_r = round(pnl_price / risk, 2)
+
+    # bars_alive — сколько баров живёт (по дате открытия vs текущий бар).
+    bars_alive = None
+    opened_at = mine.get("opened_at")
+    bar_time  = md.get("bar_time")
+    if opened_at and bar_time and opened_at == bar_time:
+        bars_alive = 0   # открыта на этом же баре
+
+    return {
+        "direction":     direction,
+        "entry":         entry,
+        "stop":          stop,
+        "lot":           mine.get("lot"),
+        "opened_at":     opened_at,
+        "current_price": price,
+        "floating_r":    floating_r,   # нереализованный R «закрой сейчас»
+        "bars_alive":    bars_alive,
+    }
+
+
+
 def run_avan(symbol: str = "XAUUSD", timeframe: str = "H4",
              bars_count: int = 300) -> dict:
     """Один взгляд Авантюриста на стол. Читает показания сенсоров (шина)
@@ -315,6 +382,8 @@ def run_avan(symbol: str = "XAUUSD", timeframe: str = "H4",
     fractals  = md.get("fractals", {})
     price     = md.get("price", {})
     table_for_avan = {
+        # КАМЕНЬ 1: своя открытая позиция — ФАКТ (null если не в рынке).  # TRADER_SEES_POSITION_V1
+        "position": _my_open_position(md),
         "anchor": {
             "global_trend": table.get("iskra", {}).get("trend_direction"),
             "found_timeframe": iskra_tf,

@@ -1,46 +1,102 @@
 {
   "version": 1,
-  "updated": "2026-06-19T01:03:36.341800",
+  "updated": "2026-06-20T21:57:23.586810",
   "iskra": {
-    "t1_status": "DETECTED",
-    "zero_point_price": 1217.73,
-    "history_dna": "pivot_MAX:20.2076_1218.26",
-    "trend_direction": null,
+    "t1_status": "NOT_FOUND",
+    "zero_point_price": null,
+    "history_dna": "PIVOT:MAX_41.32_XAUUSD_2025.08.06_08:00",
+    "trend_direction": "BULL",
     "found_timeframe": null
   },
-  "positions": [],
+  "positions": [
+    {
+      "trader": "BRUT",
+      "magic": 100001,
+      "direction": "SHORT",
+      "entry": 1201.99,
+      "stop": 1217.74,
+      "tp": null,
+      "lot": 0.1,
+      "status": "OPEN",
+      "mode": "PAPER",
+      "opened_at": "2010.05.31 16:00",
+      "pnl": null
+    },
+    {
+      "trader": "AVANTURIST",
+      "magic": 100002,
+      "direction": "SHORT",
+      "entry": 1217.73,
+      "stop": 1219.19,
+      "tp": null,
+      "lot": 0.1,
+      "status": "OPEN",
+      "mode": "PAPER",
+      "opened_at": "2010.05.31 16:00",
+      "pnl": null
+    },
+    {
+      "trader": "KONSERVATOR",
+      "magic": 100003,
+      "direction": "SHORT",
+      "entry": 1211.52,
+      "stop": 1217.74,
+      "tp": null,
+      "lot": 0.1,
+      "status": "OPEN",
+      "mode": "PAPER",
+      "opened_at": "2010.05.31 16:00",
+      "pnl": null
+    }
+  ],
   "morj": {
     "morj_status": "AWAKE",
     "wave_1_validated": false,
     "tension_peak": false,
     "history_dna": "",
     "scale_timeframe": "H4",
-    "inherited_dir": null,
+    "inherited_dir": "BEAR",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
       "mature": true,
-      "bars_open": 103
+      "bars_open": 138
     }
   },
   "panic": {
-    "panic_phase": "DISBELIEF",
-    "crowd_sentiment": "Дохлый отскок, объёма нет — это развод, мы не попадёмся",
-    "action_for_traders": "NEUTRAL",
+    "panic_phase": "TENSION",
+    "crowd_sentiment": "Дави, дави, пробивай, мы все тут, ну давай же, там же выход, чтоб тебя!!!",
+    "action_for_traders": "HIGH_SKEPTICISM",
     "history_dna": "",
     "scale_timeframe": "H4"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": null,
-    "fractal_price": null,
-    "absorption_ratio": 0.3,
+    "fractal_side": "SHORT",
+    "fractal_price": 1240.92,
+    "absorption_ratio": 0.88,
     "scale_timeframe": "H4",
     "history_dna": ""
   },
   "brut": {
     "verdict": "REJECTED",
-    "reason": "нет глобального тренда — не знаю, какой фрактал брать",
+    "reason": "Нет пробоя медвежьего фрактала за пастью",
+    "direction": null,
+    "entry": null,
+    "stop": null,
+    "lot": null
+  },
+  "avan": {
+    "verdict": "REJECTED",
+    "reason": "Глобальный BEAR, бычья дивергенция — лонг запрещён каноном. Для шорта нет медвежьего разворотного бара: коррекция вверх только началась, пять пуль не собраны.",
+    "direction": null,
+    "entry": null,
+    "stop": null,
+    "lot": null
+  },
+  "cons": {
+    "verdict": "REJECTED",
+    "reason": "Нет коррекции волны 2: цена 1257.09 выше Teeth (1248.50), но признаков разворотного бара на опоре в сторону тренда нет, волна 1 не валидирована.",
     "direction": null,
     "entry": null,
     "stop": null,
