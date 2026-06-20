@@ -56,7 +56,6 @@ def page_exchange() -> None:
         "chat_history": [],        # лента чата (личный разговор с агентом)
         "reports": {},             # отчёты агентов: agent_id → текст (размышления)
         "uploaded_files": [],      # загрузчик слева
-        "loaded_history": None,    # паспорт заряженной истории (тикер/тф/период)  # EXCHANGE_HISTORY_LOAD_V1
         "iskra_signal": {},        # последний signal Искры → цифры под аватаром
         "iskra_last_run": None,     # рабочий контекст прогона (для чата в рабочем режиме)
         "iskra_stats": {},         # статистика Искры
@@ -758,104 +757,22 @@ def page_exchange() -> None:
             return
         files_ref["element"].clear()
         with files_ref["element"]:
-            hist = state.get("loaded_history")  # EXCHANGE_HISTORY_LOAD_V1
-            if hist:
-                # Карточка-паспорт заряженной истории под загрузчиком.
-                ui.html(f'''
-                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;
-                            border:1px solid rgba(0,255,136,0.25); border-radius:8px;
-                            background:rgba(0,255,136,0.04); margin:4px 0;">
-                  <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                    <span style="color:#00ff88; font-size:13px; font-weight:700;">{hist["symbol"]}</span>
-                    <span style="color:rgba(0,204,255,0.9); font-size:12px; font-weight:700;">{hist["timeframe"]}</span>
-                  </div>
-                  <div style="color:rgba(255,255,255,0.55); font-size:10px; margin-bottom:3px;">
-                    период
-                  </div>
-                  <div style="color:rgba(255,255,255,0.85); font-size:10px; margin-bottom:6px;">
-                    {hist["date_from"]} → {hist["date_to"]}
-                  </div>
-                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;
-                              color:rgba(255,255,255,0.5); font-size:10px;">
-                    {hist["bars"]} баров · {hist["name"]}
-                  </div>
-                </div>
-                ''')
-            elif not state["uploaded_files"]:
+            if not state["uploaded_files"]:
                 ui.label("Нет файлов").style("color: rgba(255,255,255,0.4)")
             else:
                 for f in state["uploaded_files"]:
                     ui.label(f["name"]).style(
                         "color: rgba(255,255,255,0.8); font-size: 11px;")
 
-    # ── ЗАРЯДКА ИСТОРИИ (читаем CSV → паспорт под загрузчиком) ──  # EXCHANGE_HISTORY_LOAD_V1
-    _HISTORY_TFS = ["MN1", "W1", "D1", "H12", "H8", "H4", "H1",
-                    "M30", "M15", "M10", "M5", "M1"]
-
-    def _parse_symbol_tf(filename: str):
-        """EURUSDH1.csv → ('EURUSD','H1'). Код ТФ ищем в хвосте имени
-        (длинные раньше: H12≠H1, MN1≠M1). Остаток спереди — тикер."""
-        stem = filename.rsplit(".", 1)[0].upper().strip()
-        for tf in sorted(_HISTORY_TFS, key=len, reverse=True):
-            if stem.endswith(tf):
-                return stem[:-len(tf)].rstrip("_- "), tf
-        return stem, "?"
-
     def handle_upload(e):
-        """Сохраняет CSV на диск, читает бары, выводит паспорт истории."""
-        name = e.name
-        try:
-            content = e.content.read() if hasattr(e.content, "read") else e.content
-        except Exception as _ce:
-            ui.notify(f"Не прочитать файл: {_ce}", type="negative")
-            return
-
-        if not name.lower().endswith(".csv"):
-            ui.notify("Нужен CSV экспорта MT5", type="warning")
-            return
-
-        # Сохраняем на диск — read_mt5_csv хочет путь, и курсору нужен файл.
-        dest_dir = Path("studio/modules/trading/test_data")
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest = dest_dir / name
-        try:
-            dest.write_bytes(content)
-        except Exception as _we:
-            ui.notify(f"Не сохранить файл: {_we}", type="negative")
-            return
-
-        # Читаем бары ядром (utf-16-le, поле date в каждом баре).
-        try:
-            from studio.modules.trading.williams_core import read_mt5_csv
-            bars = read_mt5_csv(str(dest))
-        except Exception as _re:
-            ui.notify(f"Ядро не прочло CSV: {_re}", type="negative")
-            return
-
-        if not bars:
-            ui.notify(f"{name}: пусто или не формат MT5", type="warning")
-            return
-
-        symbol, tf = _parse_symbol_tf(name)
-        passport = {
-            "name":       name,
-            "path":       str(dest),
-            "symbol":     symbol,
-            "timeframe":  tf,
-            "bars":       len(bars),
-            "date_from":  bars[0].get("date", "?"),
-            "date_to":    bars[-1].get("date", "?"),
-        }
-        state["loaded_history"] = passport
-        # в список тоже кладём (совместимость со старым отображением)
-        state["uploaded_files"] = [{"name": name}]
+        # Пока просто фиксируем имя файла в списке — без обработки.
+        # Реальный разбор истории для тестера придёт позже.
+        state["uploaded_files"].append({"name": e.name})
         update_files_display()
-        ui.notify(
-            f"⚡ Заряжено: {symbol} {tf} · {len(bars)} баров", type="positive")
+        ui.notify(f"Загружен: {e.name} (обработка — позже)", type="info")
 
     def clear_files():
         state["uploaded_files"] = []
-        state["loaded_history"] = None   # EXCHANGE_HISTORY_LOAD_V1
         update_files_display()
         ui.notify("Очищено", type="info")
 
