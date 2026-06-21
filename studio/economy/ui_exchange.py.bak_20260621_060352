@@ -488,31 +488,7 @@ def page_exchange() -> None:
 
         # callbacks: ход в чат, стоп из флага
         def _on_progress(msg):
-            # СТРУКТУРНЫЙ отчёт агента (dict) → раскладываем по аватарам,  # EXCHANGE_TESTER_REPORTS_V1
-            # как run_market в реале. Строка → лёгкий прогресс в консоль.
-            if isinstance(msg, dict) and msg.get("type") == "report":
-                aid = msg.get("agent")
-                narrative = msg.get("narrative", "")
-                if aid and narrative:
-                    state["reports"][aid] = narrative
-                    state["active_agent"] = aid
-                    label = _agent_label(aid)
-                    try:
-                        update_viewer(f"# {label} ({aid})\n\n{narrative}")
-                        update_avatar_states()
-                    except Exception:
-                        pass
-                    # короткая метка в чат — голос в отчёте, не дубль
-                    status = msg.get("status", "")
-                    tail = f" · {status}" if status else ""
-                    state["chat_history"].append({
-                        "role": "assistant", "agent": aid,
-                        "content": f"отработал{tail}. Отчёт справа."})
-                    try:
-                        update_chat_display()
-                    except Exception:
-                        pass
-                return
+            # лёгкий репорт — не плодим тяжёлый UI на каждый бар
             print(f"[EXCHANGE·TESTER] {msg}")
 
         def _should_stop():
