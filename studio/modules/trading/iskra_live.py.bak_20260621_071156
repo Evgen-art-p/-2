@@ -524,5 +524,4 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
             "point":    point,
         },
         "raw": response,   # на случай если парсинг частичный — для отладки
-        "descent": md.get("v2_descent", {"found": False}),  # COUNCIL_BY_DESCENT_V1 факт спуска
     }

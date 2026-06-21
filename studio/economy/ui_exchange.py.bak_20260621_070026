@@ -1262,8 +1262,7 @@ def page_exchange() -> None:
                         auto_upload=True,
                     ).props("flat color=cyan").style("margin: 0 8px 8px 8px;")
                     # Список активов ПОД загрузчиком.  # EXCHANGE_SCAN_FOLDER_V1
-                    files_ref["element"] = ui.element("div").classes("file-list").style(  # EXCHANGE_LIST_GROW_V1
-                        "height:auto; max-height:none; overflow:visible; padding:4px 8px;")
+                    files_ref["element"] = ui.element("div").classes("file-list")
                     # Наглая читалка при старте: показать всё из test_data.
                     _scan_test_data()
                     update_files_display()

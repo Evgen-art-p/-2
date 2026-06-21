@@ -975,44 +975,6 @@ def page_exchange() -> None:
                 return stem[:-len(tf)].rstrip("_- "), tf
         return stem, "?"
 
-    # ── ЧИТАЛКА ПАПКИ: паспорт из CSV + скан test_data ──  # EXCHANGE_SCAN_FOLDER_V1
-    _TEST_DATA_DIR = Path("studio/modules/trading/test_data")
-
-    def _passport_from_csv(path):
-        """Строит паспорт актива из CSV-файла (тикер/тф/период/баров)."""
-        from studio.modules.trading.williams_core import read_mt5_csv
-        p = Path(path)
-        bars = read_mt5_csv(str(p))
-        if not bars:
-            return None
-        symbol, tf = _parse_symbol_tf(p.name)
-        return {
-            "name":      p.name,
-            "path":      str(p),
-            "symbol":    symbol,
-            "timeframe": tf,
-            "bars":      len(bars),
-            "date_from": bars[0].get("date", "?"),
-            "date_to":   bars[-1].get("date", "?"),
-        }
-
-    def _scan_test_data():
-        """Наглая читалка: все CSV из test_data → полка активов."""
-        assets = []
-        try:
-            if _TEST_DATA_DIR.exists():
-                for f in sorted(_TEST_DATA_DIR.glob("*.csv")):
-                    try:
-                        pp = _passport_from_csv(f)
-                        if pp:
-                            assets.append(pp)
-                    except Exception as _e:
-                        print(f"[EXCHANGE·SCAN] {f.name}: {_e}")
-        except Exception as _e:
-            print(f"[EXCHANGE·SCAN] папка: {_e}")
-        state["loaded_assets"] = assets
-        state["active_asset"] = 0 if assets else None
-
     async def handle_upload(e):   # EXCHANGE_UPLOAD_ASYNC_V1 — async как рабочие загрузчики студии
         """Сохраняет CSV на диск, читает бары, выводит паспорт истории."""
         name = e.name
@@ -1255,18 +1217,14 @@ def page_exchange() -> None:
                         ui.button("CLEAR", on_click=clear_files).props(
                             "flat dense size=xs").style(
                             "color:rgba(255,80,80,0.5); font-size:9px;")
-                    # Загрузчик СВЕРХУ.  # EXCHANGE_SCAN_FOLDER_V1
+                    files_ref["element"] = ui.element("div").classes("file-list")
+                    with files_ref["element"]:
+                        ui.label("Нет файлов").style("color: rgba(255,255,255,0.4)")
                     files_ref["uploader"] = ui.upload(   # EXCHANGE_LOAD_FIX_V1
                         on_upload=handle_upload,
                         multiple=True,
                         auto_upload=True,
                     ).props("flat color=cyan").style("margin: 0 8px 8px 8px;")
-                    # Список активов ПОД загрузчиком.  # EXCHANGE_SCAN_FOLDER_V1
-                    files_ref["element"] = ui.element("div").classes("file-list").style(  # EXCHANGE_LIST_GROW_V1
-                        "height:auto; max-height:none; overflow:visible; padding:4px 8px;")
-                    # Наглая читалка при старте: показать всё из test_data.
-                    _scan_test_data()
-                    update_files_display()
 
         # ─── STAGE: чат + отчёты ─────────────────────────────
         with ui.element("div").classes("area-stage"):

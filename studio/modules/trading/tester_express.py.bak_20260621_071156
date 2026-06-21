@@ -224,14 +224,11 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             t1 = sig.get("t1_status", "NOT_FOUND")
 
             bd = bars_all[i].get("date", "?")
-            # ВОРОТА ПО СПУСКУ (закон Шефа): спуск нашёл точку = ФАКТ →  # COUNCIL_BY_DESCENT_V1
-            # Совет собирается и решает САМ. t1_status (суждение Искры-LLM)
-            # больше не глушит круг — это её ГОЛОС, идёт в Совет как мнение.
-            descent = r_iskra.get("descent", {}) or {}
-            found = descent.get("found", False)
-            if not found:
+            # Искра живьём может отмести то, что ядро сочло кандидатом —
+            # это нормально, она судит строже. Показываем коротко и идём.
+            if t1 not in ("DETECTED", "CONFIRMED"):
                 print(f"  кандидат {idx+1}/{len(candidates)} ({bd}, {side}): "
-                      f"спуск не нашёл точку (компас={descent.get('compass')}) — пропускаю")
+                      f"Искра живьём сказала {t1} — пропускаю")
                 continue
             out("")
             out("🎯 " + "─" * 60)
