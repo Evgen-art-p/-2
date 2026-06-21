@@ -56,8 +56,7 @@ def page_exchange() -> None:
         "chat_history": [],        # лента чата (личный разговор с агентом)
         "reports": {},             # отчёты агентов: agent_id → текст (размышления)
         "uploaded_files": [],      # загрузчик слева
-        "loaded_assets": [],       # полка заряженных активов  # EXCHANGE_ASSET_LIST_V1
-        "active_asset": None,      # индекс активного актива
+        "loaded_history": None,    # паспорт заряженной истории (тикер/тф/период)  # EXCHANGE_HISTORY_LOAD_V1
         "iskra_signal": {},        # последний signal Искры → цифры под аватаром
         "iskra_last_run": None,     # рабочий контекст прогона (для чата в рабочем режиме)
         "iskra_stats": {},         # статистика Искры
@@ -461,12 +460,9 @@ def page_exchange() -> None:
         Режим ТЕСТЕР: гонит ЗАРЯЖЕННУЮ историю через готовый run_tester.
         Кран и круг Совета — внутри него. Биржа даёт путь, репорт и стоп.
         """
-        # Гоним АКТИВНЫЙ актив из полки (клик его выбрал).  # EXCHANGE_ASSET_LIST_V1
-        assets = state.get("loaded_assets", [])
-        ai = state.get("active_asset")
-        hist = assets[ai] if (assets and ai is not None and 0 <= ai < len(assets)) else None
+        hist = state.get("loaded_history")
         if not hist:
-            ui.notify("Загрузи актив и кликни по нему в списке слева", type="warning")
+            ui.notify("Сначала загрузи историю в загрузчик слева", type="warning")
             return
         if state.get("tester_running"):
             ui.notify("Перебор уже идёт...", type="warning")
@@ -878,44 +874,40 @@ def page_exchange() -> None:
                           f"*Отчёт пока не создан. Совет ещё не подключён к этому каркасу.*")
 
     # ── Загрузчик (левая колонка) ────────────────────────────
-    def set_active(i):
-        """Клик по активу — активировать (НЕ запускать)."""  # EXCHANGE_ASSET_LIST_V1
-        assets = state.get("loaded_assets", [])
-        if 0 <= i < len(assets):
-            state["active_asset"] = i
-            update_files_display()
-            a = assets[i]
-            ui.notify(f"Активен: {a['symbol']} {a['timeframe']}", type="info")
-
     def update_files_display():
         if not files_ref["element"]:
             return
         files_ref["element"].clear()
         with files_ref["element"]:
-            assets = state.get("loaded_assets", [])  # EXCHANGE_ASSET_LIST_V1
-            if not assets:
-                ui.label("Нет активов").style("color: rgba(255,255,255,0.4); font-size:11px;")
+            hist = state.get("loaded_history")  # EXCHANGE_HISTORY_LOAD_V1
+            if hist:
+                # Карточка-паспорт заряженной истории под загрузчиком.
+                ui.html(f'''
+                <div style="padding:10px 12px; font-family:\'JetBrains Mono\',monospace;
+                            border:1px solid rgba(0,255,136,0.25); border-radius:8px;
+                            background:rgba(0,255,136,0.04); margin:4px 0;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="color:#00ff88; font-size:13px; font-weight:700;">{hist["symbol"]}</span>
+                    <span style="color:rgba(0,204,255,0.9); font-size:12px; font-weight:700;">{hist["timeframe"]}</span>
+                  </div>
+                  <div style="color:rgba(255,255,255,0.55); font-size:10px; margin-bottom:3px;">
+                    период
+                  </div>
+                  <div style="color:rgba(255,255,255,0.85); font-size:10px; margin-bottom:6px;">
+                    {hist["date_from"]} → {hist["date_to"]}
+                  </div>
+                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:6px;
+                              color:rgba(255,255,255,0.5); font-size:10px;">
+                    {hist["bars"]} баров · {hist["name"]}
+                  </div>
+                </div>
+                ''')
+            elif not state["uploaded_files"]:
+                ui.label("Нет файлов").style("color: rgba(255,255,255,0.4)")
             else:
-                active = state.get("active_asset")
-                for i, a in enumerate(assets):
-                    is_active = (i == active)
-                    row = ui.element("div").style(
-                        "padding:7px 10px; margin:3px 0; border-radius:7px; cursor:pointer; "
-                        "font-family:'JetBrains Mono',monospace; "
-                        + ("background:rgba(0,255,136,0.10); border:1px solid rgba(0,255,136,0.45);"
-                           if is_active else
-                           "background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07);"))
-                    row.on("click", lambda _, idx=i: set_active(idx))
-                    with row:
-                        ui.html(
-                            f'''<div style="display:flex;justify-content:space-between;align-items:center;">
-                              <span style="color:{'#00ff88' if is_active else 'rgba(255,255,255,0.85)'};
-                                           font-size:12px;font-weight:700;">{a["symbol"]}</span>
-                              <span style="color:rgba(0,204,255,0.9);font-size:11px;font-weight:700;">{a["timeframe"]}</span>
-                            </div>
-                            <div style="color:rgba(255,255,255,0.5);font-size:9px;margin-top:2px;">
-                              {a["date_from"]} → {a["date_to"]} · {a["bars"]}
-                            </div>''')
+                for f in state["uploaded_files"]:
+                    ui.label(f["name"]).style(
+                        "color: rgba(255,255,255,0.8); font-size: 11px;")
 
     # ── ЗАРЯДКА ИСТОРИИ (читаем CSV → паспорт под загрузчиком) ──  # EXCHANGE_HISTORY_LOAD_V1
     _HISTORY_TFS = ["MN1", "W1", "D1", "H12", "H8", "H4", "H1",
@@ -985,16 +977,9 @@ def page_exchange() -> None:
             "date_from":  bars[0].get("date", "?"),
             "date_to":    bars[-1].get("date", "?"),
         }
-        # ДОБАВЛЯЕМ в полку (не затираем). Дубль по пути — обновляем.  # EXCHANGE_ASSET_LIST_V1
-        assets = state.setdefault("loaded_assets", [])
-        existing = next((k for k, x in enumerate(assets)
-                         if x.get("path") == passport["path"]), None)
-        if existing is not None:
-            assets[existing] = passport
-            state["active_asset"] = existing
-        else:
-            assets.append(passport)
-            state["active_asset"] = len(assets) - 1
+        state["loaded_history"] = passport
+        # в список тоже кладём (совместимость со старым отображением)
+        state["uploaded_files"] = [{"name": name}]
         update_files_display()
         ui.notify(
             f"⚡ Заряжено: {symbol} {tf} · {len(bars)} баров", type="positive")
@@ -1008,8 +993,7 @@ def page_exchange() -> None:
 
     def clear_files():
         state["uploaded_files"] = []
-        state["loaded_assets"] = []      # EXCHANGE_ASSET_LIST_V1
-        state["active_asset"] = None
+        state["loaded_history"] = None   # EXCHANGE_HISTORY_LOAD_V1
         update_files_display()
         ui.notify("Очищено", type="info")
 
