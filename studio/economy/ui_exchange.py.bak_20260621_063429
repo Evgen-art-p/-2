@@ -494,22 +494,11 @@ def page_exchange() -> None:
                 aid = msg.get("agent")
                 narrative = msg.get("narrative", "")
                 if aid and narrative:
-                    # НОВЫЙ КРУГ: Искра (A01) — голова цепочки. Её приход =  # EXCHANGE_ROUND_RESET_V1
-                    # начался новый круг → стол чистим, прошлый сигнал
-                    # теряет значимость (не убит — уступил живому).
-                    if aid == "A01":
-                        state["reports"] = {}
-                        state["active_agent"] = None
-                        try:
-                            update_avatar_states()
-                        except Exception:
-                            pass
                     state["reports"][aid] = narrative
                     state["active_agent"] = aid
                     label = _agent_label(aid)
                     try:
                         update_viewer(f"# {label} ({aid})\n\n{narrative}")
-                        update_avatar()          # EXCHANGE_ROUND_RESET_V1: большое лицо ↔ пузырёк
                         update_avatar_states()
                     except Exception:
                         pass

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "updated": "2026-06-21T05:37:19.942769",
+  "updated": "2026-06-21T06:25:03.759587",
   "iskra": {
-    "t1_status": "DETECTED",
-    "zero_point_price": 1.08364,
-    "history_dna": "PIVOT:MIN_-0.01169515_EURUSD_2022.04.08_1.08364",
+    "t1_status": "NOT_FOUND",
+    "zero_point_price": null,
+    "history_dna": "PIVOT:MIN_-5.97_XAUUSD_2013.04.01_08:00_1595.25",
     "trend_direction": "BEAR",
     "found_timeframe": null
   },
@@ -57,55 +57,55 @@
     "wave_1_validated": false,
     "tension_peak": false,
     "history_dna": "",
-    "scale_timeframe": "D1",
-    "inherited_dir": "BEAR",
+    "scale_timeframe": "H4",
+    "inherited_dir": "BULL",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
       "mature": true,
-      "bars_open": 32
+      "bars_open": 103
     }
   },
   "panic": {
-    "panic_phase": "ASLEEP",
-    "crowd_sentiment": "Тишина. Все ушли.",
+    "panic_phase": "DISBELIEF",
+    "crowd_sentiment": "Дохлый отскок, объёма нет — нас разводят, я бы шортил!",
     "action_for_traders": "NEUTRAL",
     "history_dna": "",
-    "scale_timeframe": "D1"
+    "scale_timeframe": "H4"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": "SHORT",
-    "fractal_price": 1.09447,
-    "absorption_ratio": 0.2,
-    "scale_timeframe": "D1",
+    "fractal_side": "LONG",
+    "fractal_price": 1215.19,
+    "absorption_ratio": 0.3,
+    "scale_timeframe": "H4",
     "history_dna": ""
   },
   "brut": {
     "verdict": "REJECTED",
-    "reason": "Позиция в плюсе, тренд BEAR активен, обратного сигнала нет. Стоп к Зубам — граница жизни пирамиды. [гашу: APPROVED без направления]",
+    "reason": "Шорт против глобального BULL, + бычий пробой фрактала — закрываю. [гашу: APPROVED без направления]",
     "direction": null,
     "entry": null,
     "stop": null,
     "lot": null,
-    "action": "MOVE_STOP",
-    "new_stop": 1.09852,
+    "action": "CLOSE",
+    "new_stop": null,
     "add_lot": null
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Нет разворотного бара для нового шорта, бычья дивергенция не подтверждена, структура медвежьего тренда не сломана — держу позицию",
-    "direction": "SHORT",
-    "entry": null,
-    "stop": null,
-    "lot": null,
-    "action": "HOLD",
+    "reason": "Шорт противоречит глобальному BULL и бычьей дивергенции Искры. Разворотный Бар конца волны C сформирован: дивергенция, приседающий на low, смена моментума. Вхожу в лонг отсюда же.",
+    "direction": "LONG",
+    "entry": 1217.74,
+    "stop": 1214.58,
+    "lot": 0.1,
+    "action": "CLOSE",
     "new_stop": null,
     "add_lot": null
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "exit_bell: Искра DETECTED на дне — бычья дивергенция, конец медвежьего импульса [гашу: APPROVED без направления]",
+    "reason": "Искра DETECTED бычья — обратный сигнал для шорта (звонок выхода по Котину). Глобальный тренд BULL, якорь не на стороне позиции. [гашу: APPROVED без направления]",
     "direction": null,
     "entry": null,
     "stop": null,
