@@ -22,15 +22,16 @@
   },
   "dynamic": {
     "Respect": 1.0,
-    "Patience": 1.0,
-    "Stress": 0.795,
-    "Internal_Light": 0.35,
+    "Patience": 1,
+    "Stress": 0.675,
+    "Internal_Light": 0.43,
     "streak": -13,
     "stars": 0,
     "_note": "автоинициализация при рождении — меняется в процессе жизни",
     "cabinet_chat_2026-06-12": 10,
     "cabinet_chat_2026-06-13": 2,
-    "cabinet_chat_2026-06-14": 7
+    "cabinet_chat_2026-06-14": 7,
+    "cabinet_chat_2026-06-22": 4
   },
   "balance": {
     "GND": 100.0,

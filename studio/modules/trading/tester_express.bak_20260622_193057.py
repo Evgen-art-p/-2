@@ -33,7 +33,6 @@ from datetime import datetime
 
 _HERE = Path(__file__).resolve().parent
 # TESTER_CLEAN_TABLE_V1 · чистый стол на старте + settle на каждом баре
-# TESTER_SETTLE_GAPS_V1 · settle прокатывается по всем барам между кандидатами
 # TESTER_TO_CABINET_V1 · кран+caught+развилка/прогресс через on_progress в кабинет
 
 
@@ -222,7 +221,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
     caught = 0
     scanned = 0
     found_cnt = 0          # TESTER_TO_CABINET_V1: у скольких спуск нашёл точку
-    _last_settled = warmup - 1   # TESTER_SETTLE_GAPS_V1: докуда докатан settle
     try:
         from studio.modules.trading.iskra_live import run_iskra
 
@@ -290,15 +288,11 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             scanned += 1
             _emit(f"кандидат {idx+1}/{len(candidates)} · бар {i}")
 
-            # TESTER_SETTLE_GAPS_V1: прокатываем settle по ВСЕМ барам от
-            # прошлого кандидата до текущего — рынок закрывает позиции
-            # ровно там, где реально дошёл до стопа/колокола, а не
-            # через годы на следующем кандидате (убивает зомби-позиции).
-            # _settle_bar мгновенно выходит на пустом столе — дёшево.
-            for _b in range(_last_settled + 1, i + 1):
-                _settle_bar(bars_all[max(0, _b - 59):_b + 1],
-                            symbol, timeframe, point)
-            _last_settled = i
+            # TESTER_CLEAN_TABLE_V1: рынок закрывает позиции по стопу/колоколу
+            # на текущем баре — как живой on_before_run. Без этого
+            # позиции бессмертны и кочуют между кандидатами.
+            _settle_bar(bars_all[max(0, i - 299):i + 1],
+                        symbol, timeframe, point)
 
             r_iskra = run_iskra(symbol=symbol, timeframe=timeframe)
             if not r_iskra.get("ok"):
