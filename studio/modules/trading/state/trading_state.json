@@ -1,44 +1,14 @@
 {
   "version": 1,
-  "updated": "2026-06-22T19:17:13.423227",
+  "updated": "2026-06-22T22:14:01.727746",
   "iskra": {
-    "t1_status": "DETECTED",
-    "zero_point_price": 1.08364,
-    "history_dna": "MIN 2022.04.08 AO=-0.01169515 price_low=1.08364",
-    "trend_direction": "BULL",
-    "found_timeframe": "D1"
+    "t1_status": "NOT_FOUND",
+    "zero_point_price": null,
+    "history_dna": "last_pivot: MIN ao=-533.2376 price=4375.38 date=2026-03-27",
+    "trend_direction": "BEAR",
+    "found_timeframe": null
   },
-  "positions": [
-    {
-      "trader": "BRUT",
-      "magic": 100001,
-      "direction": "SHORT",
-      "entry": 1.28437,
-      "stop": 1.1025,
-      "tp": null,
-      "lot": 0.1,
-      "status": "OPEN",
-      "mode": "PAPER",
-      "opened_at": "2013.03.26",
-      "pnl": null,
-      "symbol": "EURUSD",
-      "manual_close": true
-    },
-    {
-      "trader": "AVANTURIST",
-      "magic": 100002,
-      "direction": "LONG",
-      "entry": 1.08922,
-      "stop": 1.08363,
-      "tp": null,
-      "lot": 0.1,
-      "status": "OPEN",
-      "mode": "PAPER",
-      "opened_at": "2022.04.08",
-      "pnl": null,
-      "symbol": "EURUSD"
-    }
-  ],
+  "positions": [],
   "morj": {
     "morj_status": "AWAKE",
     "wave_1_validated": false,
@@ -68,37 +38,7 @@
     "scale_timeframe": "D1",
     "history_dna": ""
   },
-  "brut": {
-    "verdict": "REJECTED",
-    "reason": "Бычья дивергенция DETECTED + глобальный тренд BULL — exit_bell для SHORT [гашу: APPROVED без направления]",
-    "direction": null,
-    "entry": null,
-    "stop": null,
-    "lot": null,
-    "action": "CLOSE",
-    "new_stop": null,
-    "add_lot": null
-  },
-  "avan": {
-    "verdict": "APPROVED",
-    "reason": "Разворотный молот на дивергенции, глобальный BULL, Паникёр ASLEEP — дно близко",
-    "direction": "LONG",
-    "entry": 1.08922,
-    "stop": 1.08363,
-    "lot": 0.1,
-    "action": "ENTER",
-    "new_stop": null,
-    "add_lot": null
-  },
-  "cons": {
-    "verdict": "REJECTED",
-    "reason": "нет опоры: цена под Teeth, отката волны 2 к пасти нет, разворотный бар не сформирован",
-    "direction": null,
-    "entry": null,
-    "stop": null,
-    "lot": null,
-    "action": "WAIT",
-    "new_stop": null,
-    "add_lot": null
-  }
+  "brut": {},
+  "avan": {},
+  "cons": {}
 }

@@ -33,7 +33,6 @@ from pathlib import Path
 from typing import Optional
 
 from studio.llm import chat
-# EXECUTOR_TRUTH_V1 · ордер считается по action==ENTER, не по verdict==APPROVED
 
 _HERE        = Path(__file__).resolve().parent
 A09_DIR      = _HERE / "A09"
@@ -46,22 +45,6 @@ LOG_PATH     = STATE_DIR / "executor_log.jsonl"   # летопись (КОПИТ
 # Магия — паспорта трейдеров (из промта A09, копируется точно)
 MAGIC = {"brut": 100001, "avan": 100002, "cons": 100003}
 TRADER_NAME = {"brut": "BRUT", "avan": "AVANTURIST", "cons": "KONSERVATOR"}
-
-
-# ── EXECUTOR_TRUTH_V1: единый критерий «реальный вход» ──
-# Камень 2 даёт action: ENTER/HOLD/MOVE_STOP/ADD/CLOSE. Ордер
-# отправлен ТОЛЬКО при ENTER. Ведение (MOVE_STOP/ADD/CLOSE/HOLD)
-# не ордер. Фоллбэк для старых ответов без action: APPROVED с
-# непустыми entry/stop (то есть настоящий вход, а не ведение).
-def _is_real_entry(v: dict) -> bool:
-    action = (v.get("action") or "").upper().strip()
-    if action:
-        return action == "ENTER"
-    # старый путь без action: APPROVED + реальные числа входа
-    return (v.get("verdict") == "APPROVED"
-            and v.get("entry") is not None
-            and v.get("stop") is not None
-            and v.get("direction") in ("LONG", "SHORT"))
 
 
 # ════════════════════════════════════════════════════════════
@@ -175,7 +158,7 @@ def _open_positions_from_table(traders: dict, market: dict) -> list:
     opened = []
     for key in ("brut", "avan", "cons"):
         v = traders.get(key, {})
-        if not _is_real_entry(v):   # EXECUTOR_TRUTH_V1: только ENTER, не ведение
+        if v.get("verdict") != "APPROVED":
             continue
         magic = MAGIC[key]
         if magic in open_magics:
@@ -249,7 +232,7 @@ def _update_stats(opened: list, traders: dict) -> dict:
     stats = _load_stats()
     stats["runs"] = stats.get("runs", 0) + 1
     approved = sum(1 for k in ("brut", "avan", "cons")
-                   if _is_real_entry(traders.get(k, {})))   # EXECUTOR_TRUTH_V1
+                   if traders.get(k, {}).get("verdict") == "APPROVED")
     stats["orders_sent"] = stats.get("orders_sent", 0) + len(opened)
     stats["orders_skip"] = stats.get("orders_skip", 0) + (3 - approved)
     STATS_PATH.write_text(
@@ -289,7 +272,7 @@ def _build_execution_log_facts(traders: dict) -> list:
     log = []
     for key in ("brut", "avan", "cons"):
         v = traders.get(key, {})
-        approved = _is_real_entry(v)   # EXECUTOR_TRUTH_V1: ордер = реальный вход
+        approved = v.get("verdict") == "APPROVED"
         log.append({
             "trader":  TRADER_NAME[key],
             "magic":   MAGIC[key],
