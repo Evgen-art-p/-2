@@ -32,7 +32,6 @@ from pathlib import Path
 from datetime import datetime
 
 _HERE = Path(__file__).resolve().parent
-# TESTER_CLEAN_TABLE_V1 · чистый стол на старте + settle на каждом баре
 # TESTER_TO_CABINET_V1 · кран+caught+развилка/прогресс через on_progress в кабинет
 
 
@@ -61,57 +60,6 @@ def _resolve_point(symbol: str, override) -> float:
 def _bar(line_dt: str) -> str:
     """Короткая дата бара для лога."""
     return line_dt or "?"
-
-
-# ── TESTER_CLEAN_TABLE_V1: чистый стол + закрытие позиций в тестере ──
-def _clean_table_for_symbol(symbol):
-    """Сносит стол прогоняемого символа ПЕРЕД заходом. Бэктест
-    начинается с чистого листа: ни чужих позиций, ни старых
-    вердиктов. Позиции без поля symbol (старая эпоха) — сносим
-    тоже: доверять им нельзя, они из другого прогона/актива."""
-    from studio.modules.trading.hooks import (
-        load_trading_state, save_trading_state)
-    t = load_trading_state()
-    sym = (symbol or '').upper()
-    before = t.get('positions', []) or []
-    # держим только ЧУЖИЕ символы с явной меткой; своё и безымянное сносим
-    kept = [p for p in before
-            if p.get('symbol') and p.get('symbol', '').upper() != sym]
-    dropped = len(before) - len(kept)
-    t['positions'] = kept
-    # сбрасываем вердикты трейдеров и состояние Искры на чистый лист
-    for k in ('brut', 'avan', 'cons'):
-        t[k] = {}
-    t['iskra'] = {'t1_status': 'NOT_FOUND',
-                  'zero_point_price': None, 'history_dna': ''}
-    save_trading_state(t)
-    if dropped:
-        print(f'[TESTER·CLEAN] снёс {dropped} позиций прошлой эпохи '
-              f'(символ {sym} и безымянные) — стол чист')
-    return dropped
-
-
-def _settle_bar(window, symbol, timeframe, point):
-    """Зовёт hooks._settle_positions на текущем баре — рынок
-    закрывает позиции по стопу/колоколу САМ, как в живом
-    on_before_run. В тестерном пути этого вызова не было —
-    позиции жили вечно. Собираем мини-state с market_data бара."""
-    from studio.modules.trading.williams_core import build_market_data
-    from studio.modules.trading.hooks import (
-        _settle_positions, load_trading_state)
-    md = build_market_data(window, symbol=symbol,
-                           timeframe=timeframe, point=point)
-    if not md:
-        return
-    positions = load_trading_state().get('positions', []) or []
-    if not positions:
-        return
-    st = {'chain_data': {'market_data': md,
-                         'open_positions': positions}}
-    try:
-        _settle_positions(st)   # закрывает по стопу/колоколу, пишет pnl_r
-    except Exception as _e:
-        print(f'[TESTER·SETTLE] пропуск ({_e})')
 
 
 def run_tester(csv_path: str, symbol: str, timeframe: str,
@@ -163,8 +111,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
         sys.exit(1)
 
     total = len(bars_all)
-    # TESTER_CLEAN_TABLE_V1: чистим стол прогоняемого символа ПЕРЕД заходом
-    _clean_table_for_symbol(symbol)
     print("═" * 64)
     print(f"  ЭКСПРЕСС-ТЕСТЕР · {symbol} {timeframe} · {total} баров")
     print(f"  point={point} · ловлю срабатываний Искры: {n_signals}")
@@ -287,12 +233,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             state["cursor"] = i
             scanned += 1
             _emit(f"кандидат {idx+1}/{len(candidates)} · бар {i}")
-
-            # TESTER_CLEAN_TABLE_V1: рынок закрывает позиции по стопу/колоколу
-            # на текущем баре — как живой on_before_run. Без этого
-            # позиции бессмертны и кочуют между кандидатами.
-            _settle_bar(bars_all[max(0, i - 299):i + 1],
-                        symbol, timeframe, point)
 
             r_iskra = run_iskra(symbol=symbol, timeframe=timeframe)
             if not r_iskra.get("ok"):
@@ -420,20 +360,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             # [EXECUTOR врезан патчем patch_executor]
             from studio.modules.trading.executor_live import run_executor
             rex = run_executor(symbol=symbol, timeframe=timeframe)
-            # TESTER_CLEAN_TABLE_V1: метим свежие позиции символом (для Шага 2)
-            try:
-                from studio.modules.trading.hooks import (
-                    load_trading_state, save_trading_state)
-                _ts = load_trading_state()
-                _dirty = False
-                for _p in _ts.get('positions', []) or []:
-                    if not _p.get('symbol'):
-                        _p['symbol'] = symbol
-                        _dirty = True
-                if _dirty:
-                    save_trading_state(_ts)
-            except Exception:
-                pass
             if rex.get("ok"):
                 esig = rex.get("signal", {})
                 fdna = esig.get("final_dna", {})

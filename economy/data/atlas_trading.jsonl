@@ -1,0 +1,2 @@
+{"ts": "2026-06-22T19:01:27.173057", "entry": {"event": "POSITION_CLOSED", "trader": "AVANTURIST", "close_reason": "STOP_LOSS", "pnl": -0.00611, "pnl_r": -1.0, "symbol": "EURUSD", "timeframe": "D1"}}
+{"ts": "2026-06-22T19:13:39.311240", "entry": {"event": "POSITION_CLOSED", "trader": "AVANTURIST", "close_reason": "STOP_LOSS", "pnl": -0.00552, "pnl_r": -1.0, "symbol": "EURUSD", "timeframe": "D1"}}

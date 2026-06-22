@@ -1,55 +1,42 @@
 {
   "version": 1,
-  "updated": "2026-06-22T18:33:02.624234",
+  "updated": "2026-06-22T19:17:13.423227",
   "iskra": {
     "t1_status": "DETECTED",
     "zero_point_price": 1.08364,
-    "history_dna": "BULL_DIVERGENCE_ZERO_1.08364_20220408",
-    "trend_direction": "BEAR",
-    "found_timeframe": null
+    "history_dna": "MIN 2022.04.08 AO=-0.01169515 price_low=1.08364",
+    "trend_direction": "BULL",
+    "found_timeframe": "D1"
   },
   "positions": [
     {
       "trader": "BRUT",
       "magic": 100001,
       "direction": "SHORT",
-      "entry": 1201.99,
-      "stop": 1.09852,
-      "tp": null,
-      "lot": 0.1,
-      "status": "OPEN",
-      "mode": "PAPER",
-      "opened_at": "2010.05.31 16:00",
-      "pnl": null,
-      "manual_close": true
-    },
-    {
-      "trader": "AVANTURIST",
-      "magic": 100002,
-      "direction": "SHORT",
-      "entry": 1217.73,
-      "stop": 1.098519,
-      "tp": null,
-      "lot": 0.1,
-      "status": "OPEN",
-      "mode": "PAPER",
-      "opened_at": "2010.05.31 16:00",
-      "pnl": null,
-      "manual_close": true
-    },
-    {
-      "trader": "KONSERVATOR",
-      "magic": 100003,
-      "direction": "SHORT",
-      "entry": 1211.52,
+      "entry": 1.28437,
       "stop": 1.1025,
       "tp": null,
       "lot": 0.1,
       "status": "OPEN",
       "mode": "PAPER",
-      "opened_at": "2010.05.31 16:00",
+      "opened_at": "2013.03.26",
       "pnl": null,
+      "symbol": "EURUSD",
       "manual_close": true
+    },
+    {
+      "trader": "AVANTURIST",
+      "magic": 100002,
+      "direction": "LONG",
+      "entry": 1.08922,
+      "stop": 1.08363,
+      "tp": null,
+      "lot": 0.1,
+      "status": "OPEN",
+      "mode": "PAPER",
+      "opened_at": "2022.04.08",
+      "pnl": null,
+      "symbol": "EURUSD"
     }
   ],
   "morj": {
@@ -58,7 +45,7 @@
     "tension_peak": false,
     "history_dna": "",
     "scale_timeframe": "D1",
-    "inherited_dir": "BEAR",
+    "inherited_dir": "BULL",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
@@ -68,49 +55,49 @@
   },
   "panic": {
     "panic_phase": "ASLEEP",
-    "crowd_sentiment": "Тихо. Все ушли. Даже смотреть не на что.",
+    "crowd_sentiment": "Скукотища. Рынок мёртвый, все залипают в телефонах.",
     "action_for_traders": "NEUTRAL",
     "history_dna": "",
     "scale_timeframe": "D1"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": "SHORT",
-    "fractal_price": 1.09447,
+    "fractal_side": "LONG",
+    "fractal_price": 1.11848,
     "absorption_ratio": 0.2,
     "scale_timeframe": "D1",
     "history_dna": ""
   },
   "brut": {
-    "verdict": "APPROVED",
-    "reason": "Позиция в тренде, стоп у Зубов, обратного сигнала нет",
-    "direction": "SHORT",
+    "verdict": "REJECTED",
+    "reason": "Бычья дивергенция DETECTED + глобальный тренд BULL — exit_bell для SHORT [гашу: APPROVED без направления]",
+    "direction": null,
     "entry": null,
     "stop": null,
     "lot": null,
-    "action": "HOLD",
+    "action": "CLOSE",
     "new_stop": null,
     "add_lot": null
   },
   "avan": {
-    "verdict": "REJECTED",
-    "reason": "Teeth снизились до 1.098509 — старый стоп 1.297797 бессмыслен. Подтягиваю к границе медвежьей пирамиды. Искра только DETECTED, не CONFIRMED — выходить рано. [гашу: APPROVED без направления]",
-    "direction": null,
-    "entry": null,
-    "stop": null,
-    "lot": null,
-    "action": "MOVE_STOP",
-    "new_stop": 1.098519,
+    "verdict": "APPROVED",
+    "reason": "Разворотный молот на дивергенции, глобальный BULL, Паникёр ASLEEP — дно близко",
+    "direction": "LONG",
+    "entry": 1.08922,
+    "stop": 1.08363,
+    "lot": 0.1,
+    "action": "ENTER",
+    "new_stop": null,
     "add_lot": null
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "Нет разворотного бара на откате волны 2 с опорой — Консерватор не видит входа. Позиция идёт по тренду.",
+    "reason": "нет опоры: цена под Teeth, отката волны 2 к пасти нет, разворотный бар не сформирован",
     "direction": null,
     "entry": null,
     "stop": null,
     "lot": null,
-    "action": "HOLD",
+    "action": "WAIT",
     "new_stop": null,
     "add_lot": null
   }
