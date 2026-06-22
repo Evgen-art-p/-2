@@ -17,7 +17,6 @@
 
 from pathlib import Path
 from nicegui import ui, app
-# TESTER_TO_CABINET_V1 · тестер шлёт развилку и прогресс в чат биржи
 import asyncio
 
 # CSS воркшопа переиспользуем как есть — каркас «как воркшоп».
@@ -524,29 +523,6 @@ def page_exchange() -> None:
                         update_chat_display()
                     except Exception:
                         pass
-                return
-            # ── РАЗВИЛКА (TESTER_TO_CABINET_V1) → жирная строка в чат ──
-            if isinstance(msg, dict) and msg.get("type") == "verdict":
-                txt = msg.get("text", "")
-                hint = msg.get("hint", "")
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "РАЗВИЛКА",
-                    "content": f"📊 {txt}\n→ {hint}"})
-                try:
-                    update_chat_display()
-                except Exception:
-                    pass
-                print(f"[EXCHANGE·TESTER] {msg}")
-                return
-            # ── ПРОГРЕСС перебора (TESTER_TO_CABINET_V1) → лёгкая строка в чат ──
-            if isinstance(msg, dict) and msg.get("type") == "progress":
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "···",
-                    "content": msg.get("text", "")})
-                try:
-                    update_chat_display()
-                except Exception:
-                    pass
                 return
             print(f"[EXCHANGE·TESTER] {msg}")
 

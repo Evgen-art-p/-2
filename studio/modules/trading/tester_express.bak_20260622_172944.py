@@ -32,7 +32,6 @@ from pathlib import Path
 from datetime import datetime
 
 _HERE = Path(__file__).resolve().parent
-# TESTER_TO_CABINET_V1 · кран+caught+развилка/прогресс через on_progress в кабинет
 
 
 # ── point для теста (ТОЛЬКО здесь, ядро остаётся слепым к тикеру) ──
@@ -146,27 +145,11 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
 
     orig_fetch = mt5_feed._fetch
     orig_term  = mt5_feed._terminal
-    orig_pull  = mt5_feed.pull_bars     # TESTER_TO_CABINET_V1
-    orig_step  = mt5_feed.step_down     # TESTER_TO_CABINET_V1
     mt5_feed._fetch    = _fake_fetch
     mt5_feed._terminal = lambda: _FakeMT5()
 
-    # ── ГЕРМЕТИЧНЫЙ КРАН (TESTER_TO_CABINET_V1) ──
-    # Спуск Искры (_read_form_on) берёт бары через pull_bars, не
-    # через _fetch. Накрываем и её: тот же срез истории до курсора.
-    # step_down ЗАПЕРТ — один CSV = один этаж, спуск проверяет
-    # точку на загруженном ТФ по реальной истории, не прыгает на
-    # этажи, которых в этой истории нет.
-    def _fake_pull(sym, tf_name, count=2000):
-        return _fake_fetch(None, sym, tf_name, count)
-    def _locked_step_down(tf_name):
-        return None
-    mt5_feed.pull_bars = _fake_pull
-    mt5_feed.step_down = _locked_step_down
-
     caught = 0
     scanned = 0
-    found_cnt = 0          # TESTER_TO_CABINET_V1: у скольких спуск нашёл точку
     try:
         from studio.modules.trading.iskra_live import run_iskra
 
@@ -247,12 +230,9 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             descent = r_iskra.get("descent", {}) or {}
             found = descent.get("found", False)
             if not found:
-                _msg = (f"кандидат {idx+1}/{len(candidates)} ({bd}, {side}): "
-                        f"спуск не нашёл точку (компас={descent.get('compass')})")
-                print("  " + _msg + " — пропускаю")
-                _emit({"type": "progress", "text": _msg})   # TESTER_TO_CABINET_V1: в кабинет
+                print(f"  кандидат {idx+1}/{len(candidates)} ({bd}, {side}): "
+                      f"спуск не нашёл точку (компас={descent.get('compass')}) — пропускаю")
                 continue
-            found_cnt += 1   # TESTER_TO_CABINET_V1: спуск долетел до Совета
             out("")
             out("🎯 " + "─" * 60)
             out(f"🎯 бар {i} ({bd}) — ИСКРА: {t1}")
@@ -375,7 +355,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
                 out(f"  📋 ИСПОЛНИТЕЛЬ: сбой — {rex.get('error','?')}")
             out("")
 
-            caught += 1   # TESTER_TO_CABINET_V1: Совет собрался и отработал
             if caught >= n_signals:
                 out(f"✓ поймал {caught} срабатываний из {scanned} "
                     f"проверенных кандидатов — стоп.")
@@ -387,29 +366,11 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
                 f"живьём судит строже — это её право. Честный ответ кухни.")
 
     finally:
-        # ── снимаем весь кран: всё как было (TESTER_TO_CABINET_V1) ──
+        # ── снимаем кран: всё как было ──
         mt5_feed._fetch    = orig_fetch
         mt5_feed._terminal = orig_term
-        mt5_feed.pull_bars = orig_pull
-        mt5_feed.step_down = orig_step
         report.close()
 
-    # ── РАЗВИЛКА (TESTER_TO_CABINET_V1) — в кабинет через on_progress + в консоль ──
-    _verdict = (f"РАЗВИЛКА · Сито 1: {len(candidates)} кандидатов · "
-                f"спуск нашёл точку: {found_cnt} · Совет собрался: {caught}")
-    if found_cnt == 0:
-        _hint = ("Совет молчит — спуск не нашёл точку ни у кого. Кандидаты "
-                 "есть, ворота исправны: редок дивер-компас. Следующий шаг — "
-                 "подключить global_bias (синюю) к спуску.")
-    else:
-        _hint = f"Спуск долетел до Совета {found_cnt} раз — ворота работают."
-    _emit({"type": "verdict", "text": _verdict, "hint": _hint,
-           "candidates": len(candidates), "found": found_cnt, "council": caught})
-    print("")
-    print("─" * 64)
-    print("  " + _verdict)
-    print("  → " + _hint)
-    print("─" * 64)
     print("")
     print(f"📄 полный разговор записан: {report_path}")
     print("═" * 64)
