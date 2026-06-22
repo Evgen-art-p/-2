@@ -32,7 +32,6 @@ from pathlib import Path
 from datetime import datetime
 
 _HERE = Path(__file__).resolve().parent
-# TESTER_STERILE_V1 · бэктест по умолчанию НЕ калечит ДНК (--learn чтобы учить)
 # TESTER_CLEAN_TABLE_V1 · чистый стол на старте + settle на каждом баре
 # TESTER_SETTLE_GAPS_V1 · settle прокатывается по всем барам между кандидатами
 # TESTER_TO_CABINET_V1 · кран+caught+развилка/прогресс через on_progress в кабинет
@@ -119,8 +118,7 @@ def _settle_bar(window, symbol, timeframe, point):
 def run_tester(csv_path: str, symbol: str, timeframe: str,
                n_signals: int = 1, point_override=None,
                warmup: int = 60, loose: bool = False,
-               on_progress=None, should_stop=None,  # TESTER_HANDLES_V1
-               learn: bool = False):  # TESTER_STERILE_V1: умолчание — смотреть
+               on_progress=None, should_stop=None):  # TESTER_HANDLES_V1
     from studio.modules.trading.williams_core import read_mt5_csv, build_market_data
     from studio.modules.trading import mt5_feed
 
@@ -200,19 +198,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
     # "if mt5 is None" и дошли до _fetch (который мы подменили).
     class _FakeMT5:  # достаточно, чтобы быть "не None"
         pass
-
-    # ── TESTER_STERILE_V1: стерильность — бэктест не калечит ДНК ──
-    # learn=False (умолчание): глушим петлю обучения на время
-    # прогона. Агенты думают, сделки считаются, но sync_to_dna
-    # не мутирует живую ДНК. learn=True — учебный прогон.
-    import studio.grondheim_memory as _gm
-    _orig_sync = _gm.sync_to_dna
-    if not learn:
-        _gm.sync_to_dna = lambda *a, **k: None   # заглушка-микрофон
-        print('[TESTER] 🧪 стерильный прогон: ДНК агентов НЕ мутирует '
-              '(--learn чтобы учить)')
-    else:
-        print('[TESTER] 🎓 учебный прогон: ДНК агентов мутирует, как в реале')
 
     orig_fetch = mt5_feed._fetch
     orig_term  = mt5_feed._terminal
@@ -483,7 +468,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
 
     finally:
         # ── снимаем весь кран: всё как было (TESTER_TO_CABINET_V1) ──
-        _gm.sync_to_dna = _orig_sync   # TESTER_STERILE_V1: вернуть обучение
         mt5_feed._fetch    = orig_fetch
         mt5_feed._terminal = orig_term
         mt5_feed.pull_bars = orig_pull
@@ -532,15 +516,11 @@ def main():
                     help="сколько баров пропустить на разгон индикаторов")
     ap.add_argument("--loose", action="store_true",
                     help="мягкое сито (если строгое bdb_strong дало ноль)")
-    ap.add_argument("--learn", action="store_true",   # TESTER_STERILE_V1
-                    help="учебный прогон: ДНК агентов мутирует "
-                         "(по умолчанию стерильно — смотрим, не калеча)")
     args = ap.parse_args()
 
     run_tester(args.csv, args.symbol, args.tf,
                n_signals=args.signals, point_override=args.point,
-               warmup=args.warmup, loose=args.loose,
-               learn=args.learn)   # TESTER_STERILE_V1
+               warmup=args.warmup, loose=args.loose)
 
 
 if __name__ == "__main__":

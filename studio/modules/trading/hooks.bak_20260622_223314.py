@@ -13,7 +13,6 @@
 
 import json
 from datetime import datetime
-# ISKRA_FAIR_JUDGEMENT_V1 · суд Искры по pnl_r закрытой сделки
 from pathlib import Path
 from typing import Optional
 
@@ -389,8 +388,6 @@ def _settle_positions(state: dict):
         # → урок в память города через Оле. Рутина (<2R) — только Атлас.
         # Безопасно: Оле упала → сделка уже записана, цикл цел.
         _arkhiv_to_city(record)
-        # ISKRA_FAIR_JUDGEMENT_V1: СУД ИСКРЫ ПО ДЕЛУ — по pnl_r закрытой сделки.
-        _judge_iskra_by_result(pos, pnl_r)
         print(f"[SETTLE] {'🔔' if reason == 'EXIT_BELL' else '🛑'} "
               f"{pos.get('trader')} закрыт ({reason}): "
               f"pnl={pnl_price} ({pnl_r}R)")
@@ -695,30 +692,6 @@ def _arkhiv_to_city(record: dict):
         print(f"[ARKHIV] 🏛 Урок в память города: {title}")
     except Exception as e:
         print(f"[ARKHIV] ⚠️  Оле недоступна ({e}) — урок остался в Атласе цеха")
-
-
-def _judge_iskra_by_result(pos: dict, pnl_r):
-    """ISKRA_FAIR_JUDGEMENT_V1: справедливый суд Искры по ДЕЛУ.
-    Точка Искры повела сделку в плюс → good_work (была права).
-    В минус → bad_work (накосячила). Ноль/нет метки → суда нет
-    (пустышку и старые позиции не наказываем). Мягко (0.3).
-    Никогда не роняет торговый цикл: беда с ДНК → тихий выход."""
-    if pnl_r is None:
-        return
-    # судим ТОЛЬКО позиции с меткой Искры — старые без метки не трогаем
-    if pos.get("iskra_zero_point") is None:
-        return
-    try:
-        from studio.grondheim_memory import sync_to_dna
-        if pnl_r > 0:
-            sync_to_dna("A01_ISKRA", "good_work", intensity=0.3, dept="trading")
-            print(f"[ISKRA] ⚖️  точка повела в +{pnl_r}R → good_work")
-        elif pnl_r < 0:
-            sync_to_dna("A01_ISKRA", "bad_work", intensity=0.3, dept="trading")
-            print(f"[ISKRA] ⚖️  точка увела в {pnl_r}R → bad_work")
-        # pnl_r == 0 → ноль, суда нет
-    except Exception as e:
-        print(f"[ISKRA] ⚠️  суд по результату не сработал ({e})")
 
 
 def _write_atlas(entry: dict):

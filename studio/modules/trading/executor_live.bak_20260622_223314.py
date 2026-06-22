@@ -33,7 +33,6 @@ from pathlib import Path
 from typing import Optional
 
 from studio.llm import chat
-# ISKRA_FAIR_JUDGEMENT_V1 · позиция помнит точку Искры для суда при закрытии
 # EXECUTOR_TRUTH_V1 · ордер считается по action==ENTER, не по verdict==APPROVED
 
 _HERE        = Path(__file__).resolve().parent
@@ -157,19 +156,6 @@ def _manage_positions_from_table(traders: dict) -> list:
 
 
 
-# ── ISKRA_FAIR_JUDGEMENT_V1: точка Искры для суда при закрытии ──
-def _iskra_zero_for_judgement():
-    """Точка Ноль Искры из шины — позиция уносит её с собой,
-    чтобы _settle при закрытии рассудил Искру по делу (pnl_r).
-    Нет точки → None (старый путь, суда не будет)."""
-    try:
-        from studio.modules.trading.hooks import load_trading_state
-        isk = load_trading_state().get("iskra", {}) or {}
-        return isk.get("zero_point_price")
-    except Exception:
-        return None
-
-
 def _open_positions_from_table(traders: dict, market: dict) -> list:
     """
     Для каждого APPROVED-трейдера кладёт позицию в trading_state["positions"]
@@ -214,9 +200,6 @@ def _open_positions_from_table(traders: dict, market: dict) -> list:
             "mode":      "PAPER",
             "opened_at": bar_time,
             "pnl":       None,
-            # ISKRA_FAIR_JUDGEMENT_V1: позиция помнит точку Искры —
-            # при закрытии _settle рассудит её по pnl_r этой сделки.
-            "iskra_zero_point": _iskra_zero_for_judgement(),
         }
         tstate["positions"].append(pos)
         opened.append(pos)

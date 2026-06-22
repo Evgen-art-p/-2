@@ -24,7 +24,6 @@ from datetime import datetime
 from typing import Optional
 
 from studio.llm import chat
-# ISKRA_FAIR_JUDGEMENT_V1 · суд Искры по делу (pnl_r), не за пустышку
 
 _HERE        = Path(__file__).resolve().parent
 A01_DIR      = _HERE / "A01"
@@ -503,18 +502,12 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
     #   аннулировалась (DETECTED→NOT_FOUND) → bad_work (streak↓, Stress↑)
     # Так датчик со временем становится точнее — путь к мастерству.
     new_status = signal.get("t1_status", "NOT_FOUND")
-    # ISKRA_FAIR_JUDGEMENT_V1: суд по ТОЧНОСТИ — только честная награда.
-    # good_work за DETECTED→CONFIRMED остаётся: датчик подтвердил
-    # свою же находку, это правда. А bad_work за DETECTED→NOT_FOUND
-    # УБРАН: NOT_FOUND часто пустышка (точки не было / спуск молчит),
-    # а в тестере prev_status тащится через годы — штраф несправедлив.
-    # Наказание за УБЫТОЧНУЮ точку теперь в hooks._settle (по pnl_r) —
-    # там видно ДЕЛО: повела точка к прибыли или в минус.
     try:
         from studio.grondheim_memory import sync_to_dna
         if prev_status == "DETECTED" and new_status == "CONFIRMED":
             sync_to_dna("A01_ISKRA", "good_work", intensity=0.6, dept="trading")
-        # DETECTED→NOT_FOUND больше НЕ штрафуется здесь (см. _settle).
+        elif prev_status == "DETECTED" and new_status == "NOT_FOUND":
+            sync_to_dna("A01_ISKRA", "bad_work", intensity=0.5, dept="trading")
     except Exception as e:
         print(f"[ISKRA] ⚠️  sync_to_dna не сработал ({e})")
 
