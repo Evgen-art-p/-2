@@ -35,7 +35,6 @@ _HERE = Path(__file__).resolve().parent
 # TESTER_STERILE_V1 · бэктест по умолчанию НЕ калечит ДНК (--learn чтобы учить)
 # TESTER_CLEAN_TABLE_V1 · чистый стол на старте + settle на каждом баре
 # TESTER_SETTLE_GAPS_V1 · settle прокатывается по всем барам между кандидатами
-# TESTER_SETTLE_FULL_WINDOW_V1 · ведение кормит settle полным окном 300 (честный exit_bell)
 # TESTER_TO_CABINET_V1 · кран+caught+развилка/прогресс через on_progress в кабинет
 
 
@@ -312,11 +311,7 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             # через годы на следующем кандидате (убивает зомби-позиции).
             # _settle_bar мгновенно выходит на пустом столе — дёшево.
             for _b in range(_last_settled + 1, i + 1):
-                # TESTER_SETTLE_FULL_WINDOW_V1: ПОЛНОЕ окно 300 баров (было 60).
-                # exit_bell (дивергенция AO) требует большого окна —
-                # на 60 барах он не считался, позиция висела до Air Bag
-                # годами. На 300 звонок звенит вовремя (§9 Котина).
-                _settle_bar(bars_all[max(0, _b - 299):_b + 1],
+                _settle_bar(bars_all[max(0, _b - 59):_b + 1],
                             symbol, timeframe, point)
             _last_settled = i
 

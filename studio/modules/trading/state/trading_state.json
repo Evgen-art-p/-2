@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "updated": "2026-06-22T22:14:01.727746",
+  "updated": "2026-06-22T23:05:56.776720",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "last_pivot: MIN ao=-533.2376 price=4375.38 date=2026-03-27",
+    "history_dna": "MIN ao=-2.2975 price_low=1310.51 time=2014.03.25 22:00",
     "trend_direction": "BEAR",
     "found_timeframe": null
   },
@@ -14,31 +14,61 @@
     "wave_1_validated": false,
     "tension_peak": false,
     "history_dna": "",
-    "scale_timeframe": "D1",
-    "inherited_dir": "BULL",
+    "scale_timeframe": "H1",
+    "inherited_dir": "BEAR",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
       "mature": true,
-      "bars_open": 32
+      "bars_open": 29
     }
   },
   "panic": {
-    "panic_phase": "ASLEEP",
-    "crowd_sentiment": "Скукотища. Рынок мёртвый, все залипают в телефонах.",
+    "panic_phase": "DISBELIEF",
+    "crowd_sentiment": "Дохлый отскок, я бы шортил!",
     "action_for_traders": "NEUTRAL",
     "history_dna": "",
-    "scale_timeframe": "D1"
+    "scale_timeframe": "H1"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": "LONG",
-    "fractal_price": 1.11848,
-    "absorption_ratio": 0.2,
-    "scale_timeframe": "D1",
+    "fractal_side": "SHORT",
+    "fractal_price": 1534.22,
+    "absorption_ratio": 0.65,
+    "scale_timeframe": "H1",
     "history_dna": ""
   },
-  "brut": {},
-  "avan": {},
-  "cons": {}
+  "brut": {
+    "verdict": "REJECTED",
+    "reason": "нет Air Bag",
+    "direction": null,
+    "entry": null,
+    "stop": null,
+    "lot": null,
+    "action": "WAIT",
+    "new_stop": null,
+    "add_lot": null
+  },
+  "avan": {
+    "verdict": "APPROVED",
+    "reason": "Разворотный бар конца волны C собирается: бычья дивергенция Искры на low 1533.6, фрактал SHORT 1534.22 как дно, Паникёр DISBELIEF — толпа ждёт продолжения падения. Четыре пули из пяти — достаточно для раннего входа.",
+    "direction": "LONG",
+    "entry": 1536.14,
+    "stop": 1533.59,
+    "lot": 0.1,
+    "action": "ENTER",
+    "new_stop": null,
+    "add_lot": null
+  },
+  "cons": {
+    "verdict": "REJECTED",
+    "reason": "Нет опоры отката волны 2",
+    "direction": null,
+    "entry": null,
+    "stop": null,
+    "lot": null,
+    "action": "WAIT",
+    "new_stop": null,
+    "add_lot": null
+  }
 }
