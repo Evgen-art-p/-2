@@ -17,7 +17,6 @@
 
 from pathlib import Path
 from nicegui import ui, app
-# TESTER_TRADE_FEED_V1 · лента сделок в чате биржи
 # TESTER_TO_CABINET_V1 · тестер шлёт развилку и прогресс в чат биржи
 import asyncio
 
@@ -537,17 +536,7 @@ def page_exchange() -> None:
                     update_chat_display()
                 except Exception:
                     pass
-                # ── TESTER_TRADE_FEED_V1: лента сделок → строка в чат ──
-            if isinstance(msg, dict) and msg.get("type") == "trade":
-                state["chat_history"].append({
-                    "role": "assistant", "agent": "СДЕЛКА",
-                    "content": msg.get("text", "")})
-                try:
-                    update_chat_display()
-                except Exception:
-                    pass
-                return
-            print(f"[EXCHANGE·TESTER] {msg}")
+                print(f"[EXCHANGE·TESTER] {msg}")
                 return
             # ── ПРОГРЕСС перебора (TESTER_TO_CABINET_V1) → лёгкая строка в чат ──
             if isinstance(msg, dict) and msg.get("type") == "progress":

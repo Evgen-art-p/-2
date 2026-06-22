@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated": "2026-06-22T23:05:56.776720",
+  "updated": "2026-06-23T00:03:25.908495",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "MIN ao=-2.2975 price_low=1310.51 time=2014.03.25 22:00",
-    "trend_direction": "BEAR",
+    "history_dna": "MAX 2025.08.06 08:00 AO=41.31982353 price_high=3378.58",
+    "trend_direction": "BULL",
     "found_timeframe": null
   },
   "positions": [],
@@ -14,33 +14,33 @@
     "wave_1_validated": false,
     "tension_peak": false,
     "history_dna": "",
-    "scale_timeframe": "H1",
+    "scale_timeframe": "H4",
     "inherited_dir": "BEAR",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
       "mature": true,
-      "bars_open": 29
+      "bars_open": 138
     }
   },
   "panic": {
-    "panic_phase": "DISBELIEF",
-    "crowd_sentiment": "Дохлый отскок, я бы шортил!",
-    "action_for_traders": "NEUTRAL",
+    "panic_phase": "TENSION",
+    "crowd_sentiment": "Объёмы бешеные, а цена стоит — СЕЙЧАС РВАНЁТ! Все ломятся, никто не выходит!",
+    "action_for_traders": "HIGH_SKEPTICISM",
     "history_dna": "",
-    "scale_timeframe": "H1"
+    "scale_timeframe": "H4"
   },
   "hans": {
     "fractal_valid": true,
     "fractal_side": "SHORT",
-    "fractal_price": 1534.22,
-    "absorption_ratio": 0.65,
-    "scale_timeframe": "H1",
+    "fractal_price": 1240.92,
+    "absorption_ratio": 0.88,
+    "scale_timeframe": "H4",
     "history_dna": ""
   },
   "brut": {
     "verdict": "REJECTED",
-    "reason": "нет Air Bag",
+    "reason": "Фрактал SHORT 1240.92 не пробит — вход не по мне. Нет истории баров для расчёта Air Bag — без подушки сделка грязная.",
     "direction": null,
     "entry": null,
     "stop": null,
@@ -51,10 +51,10 @@
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Разворотный бар конца волны C собирается: бычья дивергенция Искры на low 1533.6, фрактал SHORT 1534.22 как дно, Паникёр DISBELIEF — толпа ждёт продолжения падения. Четыре пули из пяти — достаточно для раннего входа.",
-    "direction": "LONG",
-    "entry": 1536.14,
-    "stop": 1533.59,
+    "reason": "Медвежья дивергенция на хае 1259.11, разворотный бар конца волны C, Паникёр TENSION читается против толпы",
+    "direction": "SHORT",
+    "entry": 1255.89,
+    "stop": 1259.12,
     "lot": 0.1,
     "action": "ENTER",
     "new_stop": null,
@@ -62,7 +62,7 @@
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "Нет опоры отката волны 2",
+    "reason": "Нет разворотного медвежьего бара на опоре; цена выше Teeth без касания, опора отсутствует.",
     "direction": null,
     "entry": null,
     "stop": null,

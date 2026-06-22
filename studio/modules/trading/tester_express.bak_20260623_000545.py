@@ -32,7 +32,6 @@ from pathlib import Path
 from datetime import datetime
 
 _HERE = Path(__file__).resolve().parent
-# TESTER_TRADE_FEED_V1 · лента сделок: открытие и закрытие видны в кабинете
 # TESTER_STERILE_V1 · бэктест по умолчанию НЕ калечит ДНК (--learn чтобы учить)
 # TESTER_CLEAN_TABLE_V1 · чистый стол на старте + settle на каждом баре
 # TESTER_SETTLE_GAPS_V1 · settle прокатывается по всем барам между кандидатами
@@ -118,40 +117,6 @@ def _settle_bar(window, symbol, timeframe, point):
         print(f'[TESTER·SETTLE] пропуск ({_e})')
 
 
-# ── TESTER_TRADE_FEED_V1: лента сделок (открытие/закрытие в кабинет) ──
-def _table_snapshot():
-    """Множество magic открытых позиций сейчас — для сравнения
-    до/после (что открылось, что закрылось)."""
-    try:
-        from studio.modules.trading.hooks import load_trading_state
-        return {p.get('magic'): dict(p)
-                for p in load_trading_state().get('positions', []) or []
-                if p.get('status') == 'OPEN'}
-    except Exception:
-        return {}
-
-
-def _read_last_closures(n=10):
-    """Последние n закрытых сделок из trading_pnl.jsonl —
-    settle уже записал туда pnl_r, closed_at, reason."""
-    from pathlib import Path as _P
-    import json as _j
-    p = _P('economy/data/trading_pnl.jsonl')
-    if not p.exists():
-        return []
-    try:
-        lines = p.read_text(encoding='utf-8').strip().splitlines()
-        out = []
-        for ln in lines[-n:]:
-            try:
-                out.append(_j.loads(ln))
-            except Exception:
-                pass
-        return out
-    except Exception:
-        return []
-
-
 def run_tester(csv_path: str, symbol: str, timeframe: str,
                n_signals: int = 1, point_override=None,
                warmup: int = 60, loose: bool = False,
@@ -219,33 +184,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
     def out(line=""):
         print(line)
         report.write(line + "\n")
-
-    # TESTER_TRADE_FEED_V1: лента сделок в кабинет+консоль+файл
-    _pnl_seen = {"n": len(_read_last_closures(9999))}
-    def _feed_opened(pos):
-        _d = pos.get('direction', '?')
-        _t = pos.get('trader', '?')
-        _e = pos.get('entry')
-        line = f"🟢 ОТКРЫТА: {_t} {_d} @ {_e}"
-        out("  " + line)
-        _emit({"type": "trade", "kind": "open", "text": line})
-    def _feed_check_closures(cur_bar_i):
-        # читаем новые закрытия с прошлой проверки и шлём ленту
-        all_cl = _read_last_closures(9999)
-        new = all_cl[_pnl_seen['n']:]
-        _pnl_seen['n'] = len(all_cl)
-        for rec in new:
-            _t = rec.get('trader', '?')
-            _r = rec.get('pnl_r')
-            _reason = rec.get('close_reason', '?')
-            _opened = rec.get('opened_at', '?')
-            _closed = rec.get('closed_at', '?')
-            _rstr = (f"{'+' if (_r or 0) >= 0 else ''}{_r}R"
-                     if _r is not None else '—')
-            line = (f"🔴 ЗАКРЫТА: {_t} {_rstr} ({_reason}) · "
-                    f"{_opened} → {_closed}")
-            out("  " + line)
-            _emit({"type": "trade", "kind": "close", "text": line})
 
     # ── КРАН: подменяем _fetch на чтение среза CSV ──
     # Агенты внутри зовут _fetch(mt5, symbol, tf, count). Мы перехватываем:
@@ -381,9 +319,7 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
                 _settle_bar(bars_all[max(0, _b - 299):_b + 1],
                             symbol, timeframe, point)
             _last_settled = i
-            _feed_check_closures(i)   # TESTER_TRADE_FEED_V1: лента закрытий
 
-            _table_before = set(_table_snapshot().keys())   # TESTER_TRADE_FEED_V1
             r_iskra = run_iskra(symbol=symbol, timeframe=timeframe)
             if not r_iskra.get("ok"):
                 continue
@@ -510,14 +446,6 @@ def run_tester(csv_path: str, symbol: str, timeframe: str,
             # [EXECUTOR врезан патчем patch_executor]
             from studio.modules.trading.executor_live import run_executor
             rex = run_executor(symbol=symbol, timeframe=timeframe)
-            # TESTER_TRADE_FEED_V1: лента открытий — что появилось на столе
-            try:
-                _now = _table_snapshot()
-                for _m, _p in _now.items():
-                    if _m not in _table_before:
-                        _feed_opened(_p)
-            except Exception:
-                pass
             # TESTER_CLEAN_TABLE_V1: метим свежие позиции символом (для Шага 2)
             try:
                 from studio.modules.trading.hooks import (
