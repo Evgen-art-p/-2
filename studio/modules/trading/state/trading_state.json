@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated": "2026-06-23T00:03:25.908495",
+  "updated": "2026-06-23T19:13:10.619982",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "MAX 2025.08.06 08:00 AO=41.31982353 price_high=3378.58",
-    "trend_direction": "BULL",
+    "history_dna": "MAX|102.95988235|2026.06.17 04:00",
+    "trend_direction": "BEAR",
     "found_timeframe": null
   },
   "positions": [],

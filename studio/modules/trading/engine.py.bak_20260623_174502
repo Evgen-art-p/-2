@@ -144,34 +144,3 @@ def step_bar(window: list, symbol: str, timeframe: str, point: float,
         "exit_bell": facts["exit_bell"],
         "council_woke": woke,
     }
-
-
-# ════════════════════════════════════════════════════════════
-# ЦИКЛ ПО ИСТОРИИ — машина гонит бары сама (путь 1: один файл/этаж)
-# ════════════════════════════════════════════════════════════
-
-def run_history(bars: list, symbol: str, timeframe: str, point: float,
-                wake=None, settle=None, on_event=None,
-                warmup: int = 60, should_stop=None) -> dict:
-    """
-    Гонит ВСЮ историю бар за баром через step_bar. Машина двигает время
-    сама — Шеф жмёт один раз. На каждом баре логика одного бара:
-    математика -> ведение (settle) -> Совет по звонку.
-    """
-    total = len(bars)
-    woke = 0
-    bells = 0
-    for i in range(warmup, total):
-        if should_stop and should_stop():
-            break
-        window = bars[max(0, i - 299):i + 1]
-        r = step_bar(window, symbol, timeframe, point,
-                     wake_council=(lambda md, _w=wake: _w(md)) if wake else None,
-                     settle=settle, on_event=on_event)
-        if not r.get("ok"):
-            continue
-        if r.get("council_woke"):
-            woke += 1
-        if r.get("exit_bell"):
-            bells += 1
-    return {"bars": total - warmup, "council_woke": woke, "bells": bells}
