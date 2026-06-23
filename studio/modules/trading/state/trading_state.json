@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "updated": "2026-06-23T21:05:13.848226",
+  "updated": "2026-06-24T01:43:16.104900",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "MIN:-27.34864706@3285.31 2025.08.01 08:00",
+    "history_dna": "MAX_AO=41.31982353@2025.08.06 08:00 price_high=3378.58",
     "trend_direction": "BULL",
     "found_timeframe": null
   },
@@ -15,7 +15,7 @@
     "tension_peak": false,
     "history_dna": "",
     "scale_timeframe": "H4",
-    "inherited_dir": "BEAR",
+    "inherited_dir": "BULL",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
@@ -25,33 +25,33 @@
   },
   "panic": {
     "panic_phase": "TENSION",
-    "crowd_sentiment": "Объёмы бешеные, а цена ни с места! Все толкаются, никто не может сдвинуть — сейчас как рванёт!!!",
+    "crowd_sentiment": "Боже, объёмы бешеные, мы все толкаем — а цена ни с места, нас держат, сейчас как шандарахнет!",
     "action_for_traders": "HIGH_SKEPTICISM",
     "history_dna": "",
     "scale_timeframe": "H4"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": "SHORT",
-    "fractal_price": 1240.92,
-    "absorption_ratio": 0.85,
+    "fractal_side": "LONG",
+    "fractal_price": 1253.22,
+    "absorption_ratio": 0.9,
     "scale_timeframe": "H4",
     "history_dna": ""
   },
   "brut": {
-    "verdict": "REJECTED",
-    "reason": "нет пробоя фрактала — фрактал SHORT на 1240.92 не пробит, цена выше",
-    "direction": null,
-    "entry": null,
-    "stop": null,
-    "lot": null,
-    "action": "WAIT",
+    "verdict": "APPROVED",
+    "reason": "пробой валидного фрактала LONG за пастью в сторону глобального BULL — мой вход.",
+    "direction": "LONG",
+    "entry": 1253.23,
+    "stop": 1240.91,
+    "lot": 0.1,
+    "action": "ENTER",
     "new_stop": null,
     "add_lot": null
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Медвежья дивергенция на high, глобальный BEAR, TENSION паникёра, валидный SHORT фрактал внизу — конец коррекции.",
+    "reason": "Медвежья дивергенция на high=zero_point, TENSION толпы, фрактал LONG как ловушка. Глобальный BEAR по дневнику. Плачу за ранний вход.",
     "direction": "SHORT",
     "entry": 1255.89,
     "stop": 1259.12,
@@ -62,7 +62,7 @@
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "Разворотный медвежий бар на откате с опорой и разрядкой AO не сформирован, цена выше Teeth, текущий бар бычий — продолжаю ждать.",
+    "reason": "откат волны 2 не сформирован",
     "direction": null,
     "entry": null,
     "stop": null,

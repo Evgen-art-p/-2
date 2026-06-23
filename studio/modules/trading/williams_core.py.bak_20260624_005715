@@ -902,21 +902,6 @@ def build_market_data(
     # Факт направления, всегда на столе (не зависит от дивера/терминала).
     global_bias = compute_global_bias(bars, alligator, _point)
 
-    # ENGINE_ONE_DOOR_V1: честный глобальный тренд — веер Аллигатора
-    # СТАРШЕГО этажа (рабочий x5 вверх по лесенке), мерян на дату текущего
-    # бара (без заглядывания в будущее). §12 Котина: фильтр большой воды.
-    # Подменяет синюю рабочего (она была приближением, не старшим этажом).
-    # Аллигатор рабочего НЕ тронут — старший меряется отдельно через источник.
-    # Якорь упал / источник недоступен -> остаётся синяя (фоллбэк, стол цел).
-    try:
-        from studio.modules.trading.global_anchor import global_trend as _gt
-        _bar_time = bars[-1].get("date") if bars else None
-        _r = _gt(symbol, timeframe, as_of_date=_bar_time)
-        if _r.get("ok"):
-            global_bias = _r["bias"]
-    except Exception:
-        pass  # любой сбой — оставляем синюю из compute_global_bias
-
     print(f"[CORE]    _Point={_point} ({symbol})")
 
     # Текущие и предыдущие AO / AC
