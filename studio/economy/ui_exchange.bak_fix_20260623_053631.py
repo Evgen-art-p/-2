@@ -537,8 +537,7 @@ def page_exchange() -> None:
                     update_chat_display()
                 except Exception:
                     pass
-                return
-            # ── TESTER_TRADE_FEED_V1: лента сделок → строка в чат ──
+                # ── TESTER_TRADE_FEED_V1: лента сделок → строка в чат ──
             if isinstance(msg, dict) and msg.get("type") == "trade":
                 state["chat_history"].append({
                     "role": "assistant", "agent": "СДЕЛКА",
@@ -547,6 +546,8 @@ def page_exchange() -> None:
                     update_chat_display()
                 except Exception:
                     pass
+                return
+            print(f"[EXCHANGE·TESTER] {msg}")
                 return
             # ── ПРОГРЕСС перебора (TESTER_TO_CABINET_V1) → лёгкая строка в чат ──
             if isinstance(msg, dict) and msg.get("type") == "progress":
