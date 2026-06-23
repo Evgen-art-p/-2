@@ -391,9 +391,6 @@ def _settle_positions(state: dict):
         _arkhiv_to_city(record)
         # ISKRA_FAIR_JUDGEMENT_V1: СУД ИСКРЫ ПО ДЕЛУ — по pnl_r закрытой сделки.
         _judge_iskra_by_result(pos, pnl_r)
-        # ENGINE_ONE_DOOR_V1: СУД ТРЕЙДЕРА — он решил входить, он отвечает.
-        # Минус ПРОТИВ ветра → bad_work. По ветру/штиль → честный минус.
-        _judge_trader_by_result(pos, pnl_r)
         print(f"[SETTLE] {'🔔' if reason == 'EXIT_BELL' else '🛑'} "
               f"{pos.get('trader')} закрыт ({reason}): "
               f"pnl={pnl_price} ({pnl_r}R)")
@@ -621,9 +618,6 @@ def _persist_trading_state(state: dict):
             "status":    "OPEN",
             "mode":      order.get("status"),       # PAPER | LIVE
             "opened_at": bar_time,
-            # ENGINE_ONE_DOOR_V1: позиция запоминает ВЕТЕР входа (global_bias
-            # на баре входа). На закрытии суд трейдера сверит: по ветру или против.
-            "entry_bias": chain.get("market_data", {}).get("global_bias"),
             "pnl":       None,
         })
 
@@ -716,69 +710,15 @@ def _judge_iskra_by_result(pos: dict, pnl_r):
         return
     try:
         from studio.grondheim_memory import sync_to_dna
-        # ENGINE_ONE_DOOR_V1 · ПЕРЕРАСПРЕДЕЛЕНИЕ ОТВЕТСТВЕННОСТИ.
-        # Искра — КОМПАС: показывает разворот, но НЕ принимает решение
-        # о входе (сторона/цена/стоп/против ветра — это рука трейдера).
-        # За МИНУС её больше не наказываем: чаще виноват вход, не компас.
-        # Оставляем РАДОСТЬ за верный компас (плюс). Ответственность за
-        # минус переложена на трейдера (_judge_trader_by_result).
         if pnl_r > 0:
             sync_to_dna("A01_ISKRA", "good_work", intensity=0.3, dept="trading")
-            print(f"[ISKRA] ⚖️  компас повёл в +{pnl_r}R → good_work")
-        # pnl_r <= 0 → Искру НЕ наказываем (компас не отвечает за выстрел)
+            print(f"[ISKRA] ⚖️  точка повела в +{pnl_r}R → good_work")
+        elif pnl_r < 0:
+            sync_to_dna("A01_ISKRA", "bad_work", intensity=0.3, dept="trading")
+            print(f"[ISKRA] ⚖️  точка увела в {pnl_r}R → bad_work")
+        # pnl_r == 0 → ноль, суда нет
     except Exception as e:
         print(f"[ISKRA] ⚠️  суд по результату не сработал ({e})")
-
-def _judge_trader_by_result(pos: dict, pnl_r):
-    """ENGINE_ONE_DOOR_V1: СУД ТРЕЙДЕРА по результату закрытой сделки.
-
-    Перераспределение ответственности: Искра — компас (показывает),
-    трейдер — рука (решает войти). Кто решает, тот и отвечает.
-
-    Правило (слово Шефа): наказываем за МИНУС ПРОТИВ ВЕТРА, не за
-    всякий минус. Вошёл против глобального тренда (§12 Котина) и
-    схватил убыток → bad_work (его дерзость, его плата). Вошёл ПО
-    ветру и не повезло → честная плата ремесла, НЕ наказываем.
-    Плюс → good_work (верное решение, заслужил).
-
-    entry_bias — ветер на баре входа (запомнен в позицию при открытии).
-    direction LONG ↔ ветер BEAR = против. SHORT ↔ ветер BULL = против.
-    Ветра нет (NONE/None) → штиль, наказания за минус нет.
-    Никогда не роняет торговый цикл: беда с ДНК → тихий выход."""
-    if pnl_r is None or pnl_r == 0:
-        return
-    trader = pos.get("trader")
-    if not trader:
-        return
-    _AID = {"BRUT": "A06_BRUT", "AVANTURIST": "A07_AVANTURIST",
-            "KONSERVATOR": "A08_KONSERVATOR"}
-    aid = _AID.get(str(trader).upper())
-    if not aid:
-        return
-
-    direction = pos.get("direction", "LONG")
-    bias = pos.get("entry_bias")  # ветер входа: BULL | BEAR | NONE | None
-
-    against_wind = (
-        (direction == "LONG"  and bias == "BEAR") or
-        (direction == "SHORT" and bias == "BULL")
-    )
-
-    try:
-        from studio.grondheim_memory import sync_to_dna
-        if pnl_r > 0:
-            sync_to_dna(aid, "good_work", intensity=0.3, dept="trading")
-            print(f"[TRADER] ⚖️  {trader} взял +{pnl_r}R → good_work")
-        elif pnl_r < 0 and against_wind:
-            sync_to_dna(aid, "bad_work", intensity=0.3, dept="trading")
-            print(f"[TRADER] ⚖️  {trader} {direction} ПРОТИВ ветра ({bias}) "
-                  f"→ {pnl_r}R → bad_work (нарушил §12)")
-        else:
-            print(f"[TRADER] ⚖️  {trader} {pnl_r}R по ветру/штиль "
-                  f"(bias={bias}) — честный минус, без наказания")
-    except Exception as e:
-        print(f"[TRADER] ⚠️  суд трейдера не сработал ({e})")
-
 
 
 def _write_atlas(entry: dict):

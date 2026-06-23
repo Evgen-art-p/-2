@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# patch_responsibility.py
+# ─────────────────────────────────────────────────────────────
+# ПЕРЕРАСПРЕДЕЛЕНИЕ ОТВЕТСТВЕННОСТИ — компас vs рука.
+#
+# БОЛЕЗНЬ: Искру (компас) наказывали bad_work за минус по её точке —
+# хотя сторону/цену/вход решает ТРЕЙДЕР, не она. А трейдеров за их
+# решения не судили вовсе. Голову били за чужую руку.
+#
+# ЛЕКАРСТВО (слово Шефа: "искра компас, трейдеры решение, они ответственны"):
+#   1. Искру ПОЧИСТИТЬ — убрать bad_work за минус, оставить радость
+#      (good_work) за верный компас. Компас не отвечает за выстрел.
+#   2. Позиция ЗАПОМИНАЕТ ветер входа (global_bias на баре входа).
+#   3. ТРЕЙДЕРА судить: минус ПРОТИВ ветра → bad_work (§12 Котина,
+#      его решение, его плата). По ветру/штиль → честный минус, не трогаем.
+#      Плюс → good_work.
+#
+# Тот же инструмент sync_to_dna, что уже судил Искру — не новый механизм.
+# ТРЕБУЕТ якорь (global_anchor) — иначе entry_bias будет пустой и суд
+# трейдера просто промолчит (безопасно). Кладётся поверх.
+#
+# Правит ОДИН файл: studio/modules/trading/hooks.py (хирургически, бэкап).
+# Идемпотентно: маркер, откат при сломе синтаксиса. Из КОРНЯ репы:
+#   python patch_responsibility.py
+# ─────────────────────────────────────────────────────────────
+import sys, py_compile, shutil
+from datetime import datetime
+from pathlib import Path
+
+MARKER = "_judge_trader_by_result"
+HOOKS = Path("studio/modules/trading/hooks.py")
+
+# три правки: (описание, old, new)
+import base64 as _b64, json as _json
+EDITS = _json.loads(_b64.b64decode("W1si0YfQuNGB0YLQutCwINCY0YHQutGA0YsgKyDRgdGD0LQg0YLRgNC10LnQtNC10YDQsCIsICIgICAgdHJ5OlxuICAgICAgICBmcm9tIHN0dWRpby5ncm9uZGhlaW1fbWVtb3J5IGltcG9ydCBzeW5jX3RvX2RuYVxuICAgICAgICBpZiBwbmxfciA+IDA6XG4gICAgICAgICAgICBzeW5jX3RvX2RuYShcIkEwMV9JU0tSQVwiLCBcImdvb2Rfd29ya1wiLCBpbnRlbnNpdHk9MC4zLCBkZXB0PVwidHJhZGluZ1wiKVxuICAgICAgICAgICAgcHJpbnQoZlwiW0lTS1JBXSDimpbvuI8gINGC0L7Rh9C60LAg0L/QvtCy0LXQu9CwINCyICt7cG5sX3J9UiDihpIgZ29vZF93b3JrXCIpXG4gICAgICAgIGVsaWYgcG5sX3IgPCAwOlxuICAgICAgICAgICAgc3luY190b19kbmEoXCJBMDFfSVNLUkFcIiwgXCJiYWRfd29ya1wiLCBpbnRlbnNpdHk9MC4zLCBkZXB0PVwidHJhZGluZ1wiKVxuICAgICAgICAgICAgcHJpbnQoZlwiW0lTS1JBXSDimpbvuI8gINGC0L7Rh9C60LAg0YPQstC10LvQsCDQsiB7cG5sX3J9UiDihpIgYmFkX3dvcmtcIilcbiAgICAgICAgIyBwbmxfciA9PSAwIOKGkiDQvdC+0LvRjCwg0YHRg9C00LAg0L3QtdGCXG4gICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBlOlxuICAgICAgICBwcmludChmXCJbSVNLUkFdIOKaoO+4jyAg0YHRg9C0INC/0L4g0YDQtdC30YPQu9GM0YLQsNGC0YMg0L3QtSDRgdGA0LDQsdC+0YLQsNC7ICh7ZX0pXCIpIiwgIiAgICB0cnk6XG4gICAgICAgIGZyb20gc3R1ZGlvLmdyb25kaGVpbV9tZW1vcnkgaW1wb3J0IHN5bmNfdG9fZG5hXG4gICAgICAgICMgRU5HSU5FX09ORV9ET09SX1YxIMK3INCf0JXQoNCV0KDQkNCh0J/QoNCV0JTQldCb0JXQndCY0JUg0J7QotCS0JXQotCh0KLQktCV0J3QndCe0KHQotCYLlxuICAgICAgICAjINCY0YHQutGA0LAg4oCUINCa0J7QnNCf0JDQoTog0L/QvtC60LDQt9GL0LLQsNC10YIg0YDQsNC30LLQvtGA0L7Rgiwg0L3QviDQndCVINC/0YDQuNC90LjQvNCw0LXRgiDRgNC10YjQtdC90LjQtVxuICAgICAgICAjINC+INCy0YXQvtC00LUgKNGB0YLQvtGA0L7QvdCwL9GG0LXQvdCwL9GB0YLQvtC/L9C/0YDQvtGC0LjQsiDQstC10YLRgNCwIOKAlCDRjdGC0L4g0YDRg9C60LAg0YLRgNC10LnQtNC10YDQsCkuXG4gICAgICAgICMg0JfQsCDQnNCY0J3Qo9ChINC10ZEg0LHQvtC70YzRiNC1INC90LUg0L3QsNC60LDQt9GL0LLQsNC10Lw6INGH0LDRidC1INCy0LjQvdC+0LLQsNGCINCy0YXQvtC0LCDQvdC1INC60L7QvNC/0LDRgS5cbiAgICAgICAgIyDQntGB0YLQsNCy0LvRj9C10Lwg0KDQkNCU0J7QodCi0Kwg0LfQsCDQstC10YDQvdGL0Lkg0LrQvtC80L/QsNGBICjQv9C70Y7RgSkuINCe0YLQstC10YLRgdGC0LLQtdC90L3QvtGB0YLRjCDQt9CwXG4gICAgICAgICMg0LzQuNC90YPRgSDQv9C10YDQtdC70L7QttC10L3QsCDQvdCwINGC0YDQtdC50LTQtdGA0LAgKF9qdWRnZV90cmFkZXJfYnlfcmVzdWx0KS5cbiAgICAgICAgaWYgcG5sX3IgPiAwOlxuICAgICAgICAgICAgc3luY190b19kbmEoXCJBMDFfSVNLUkFcIiwgXCJnb29kX3dvcmtcIiwgaW50ZW5zaXR5PTAuMywgZGVwdD1cInRyYWRpbmdcIilcbiAgICAgICAgICAgIHByaW50KGZcIltJU0tSQV0g4pqW77iPICDQutC+0LzQv9Cw0YEg0L/QvtCy0ZHQuyDQsiAre3BubF9yfVIg4oaSIGdvb2Rfd29ya1wiKVxuICAgICAgICAjIHBubF9yIDw9IDAg4oaSINCY0YHQutGA0YMg0J3QlSDQvdCw0LrQsNC30YvQstCw0LXQvCAo0LrQvtC80L/QsNGBINC90LUg0L7RgtCy0LXRh9Cw0LXRgiDQt9CwINCy0YvRgdGC0YDQtdC7KVxuICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZTpcbiAgICAgICAgcHJpbnQoZlwiW0lTS1JBXSDimqDvuI8gINGB0YPQtCDQv9C+INGA0LXQt9GD0LvRjNGC0LDRgtGDINC90LUg0YHRgNCw0LHQvtGC0LDQuyAoe2V9KVwiKVxuXG5kZWYgX2p1ZGdlX3RyYWRlcl9ieV9yZXN1bHQocG9zOiBkaWN0LCBwbmxfcik6XG4gICAgXCJcIlwiRU5HSU5FX09ORV9ET09SX1YxOiDQodCj0JQg0KLQoNCV0JnQlNCV0KDQkCDQv9C+INGA0LXQt9GD0LvRjNGC0LDRgtGDINC30LDQutGA0YvRgtC+0Lkg0YHQtNC10LvQutC4LlxuXG4gICAg0J/QtdGA0LXRgNCw0YHQv9GA0LXQtNC10LvQtdC90LjQtSDQvtGC0LLQtdGC0YHRgtCy0LXQvdC90L7RgdGC0Lg6INCY0YHQutGA0LAg4oCUINC60L7QvNC/0LDRgSAo0L/QvtC60LDQt9GL0LLQsNC10YIpLFxuICAgINGC0YDQtdC50LTQtdGAIOKAlCDRgNGD0LrQsCAo0YDQtdGI0LDQtdGCINCy0L7QudGC0LgpLiDQmtGC0L4g0YDQtdGI0LDQtdGCLCDRgtC+0YIg0Lgg0L7RgtCy0LXRh9Cw0LXRgi5cblxuICAgINCf0YDQsNCy0LjQu9C+ICjRgdC70L7QstC+INCo0LXRhNCwKTog0L3QsNC60LDQt9GL0LLQsNC10Lwg0LfQsCDQnNCY0J3Qo9ChINCf0KDQntCi0JjQkiDQktCV0KLQoNCQLCDQvdC1INC30LBcbiAgICDQstGB0Y/QutC40Lkg0LzQuNC90YPRgS4g0JLQvtGI0ZHQuyDQv9GA0L7RgtC40LIg0LPQu9C+0LHQsNC70YzQvdC+0LPQviDRgtGA0LXQvdC00LAgKMKnMTIg0JrQvtGC0LjQvdCwKSDQuFxuICAgINGB0YXQstCw0YLQuNC7INGD0LHRi9GC0L7QuiDihpIgYmFkX3dvcmsgKNC10LPQviDQtNC10YDQt9C+0YHRgtGMLCDQtdCz0L4g0L/Qu9Cw0YLQsCkuINCS0L7RiNGR0Lsg0J/QnlxuICAgINCy0LXRgtGA0YMg0Lgg0L3QtSDQv9C+0LLQtdC30LvQviDihpIg0YfQtdGB0YLQvdCw0Y8g0L/Qu9Cw0YLQsCDRgNC10LzQtdGB0LvQsCwg0J3QlSDQvdCw0LrQsNC30YvQstCw0LXQvC5cbiAgICDQn9C70Y7RgSDihpIgZ29vZF93b3JrICjQstC10YDQvdC+0LUg0YDQtdGI0LXQvdC40LUsINC30LDRgdC70YPQttC40LspLlxuXG4gICAgZW50cnlfYmlhcyDigJQg0LLQtdGC0LXRgCDQvdCwINCx0LDRgNC1INCy0YXQvtC00LAgKNC30LDQv9C+0LzQvdC10L0g0LIg0L/QvtC30LjRhtC40Y4g0L/RgNC4INC+0YLQutGA0YvRgtC40LgpLlxuICAgIGRpcmVjdGlvbiBMT05HIOKGlCDQstC10YLQtdGAIEJFQVIgPSDQv9GA0L7RgtC40LIuIFNIT1JUIOKGlCDQstC10YLQtdGAIEJVTEwgPSDQv9GA0L7RgtC40LIuXG4gICAg0JLQtdGC0YDQsCDQvdC10YIgKE5PTkUvTm9uZSkg4oaSINGI0YLQuNC70YwsINC90LDQutCw0LfQsNC90LjRjyDQt9CwINC80LjQvdGD0YEg0L3QtdGCLlxuICAgINCd0LjQutC+0LPQtNCwINC90LUg0YDQvtC90Y/QtdGCINGC0L7RgNCz0L7QstGL0Lkg0YbQuNC60Ls6INCx0LXQtNCwINGBINCU0J3QmiDihpIg0YLQuNGF0LjQuSDQstGL0YXQvtC0LlwiXCJcIlxuICAgIGlmIHBubF9yIGlzIE5vbmUgb3IgcG5sX3IgPT0gMDpcbiAgICAgICAgcmV0dXJuXG4gICAgdHJhZGVyID0gcG9zLmdldChcInRyYWRlclwiKVxuICAgIGlmIG5vdCB0cmFkZXI6XG4gICAgICAgIHJldHVyblxuICAgIF9BSUQgPSB7XCJCUlVUXCI6IFwiQTA2X0JSVVRcIiwgXCJBVkFOVFVSSVNUXCI6IFwiQTA3X0FWQU5UVVJJU1RcIixcbiAgICAgICAgICAgIFwiS09OU0VSVkFUT1JcIjogXCJBMDhfS09OU0VSVkFUT1JcIn1cbiAgICBhaWQgPSBfQUlELmdldChzdHIodHJhZGVyKS51cHBlcigpKVxuICAgIGlmIG5vdCBhaWQ6XG4gICAgICAgIHJldHVyblxuXG4gICAgZGlyZWN0aW9uID0gcG9zLmdldChcImRpcmVjdGlvblwiLCBcIkxPTkdcIilcbiAgICBiaWFzID0gcG9zLmdldChcImVudHJ5X2JpYXNcIikgICMg0LLQtdGC0LXRgCDQstGF0L7QtNCwOiBCVUxMIHwgQkVBUiB8IE5PTkUgfCBOb25lXG5cbiAgICBhZ2FpbnN0X3dpbmQgPSAoXG4gICAgICAgIChkaXJlY3Rpb24gPT0gXCJMT05HXCIgIGFuZCBiaWFzID09IFwiQkVBUlwiKSBvclxuICAgICAgICAoZGlyZWN0aW9uID09IFwiU0hPUlRcIiBhbmQgYmlhcyA9PSBcIkJVTExcIilcbiAgICApXG5cbiAgICB0cnk6XG4gICAgICAgIGZyb20gc3R1ZGlvLmdyb25kaGVpbV9tZW1vcnkgaW1wb3J0IHN5bmNfdG9fZG5hXG4gICAgICAgIGlmIHBubF9yID4gMDpcbiAgICAgICAgICAgIHN5bmNfdG9fZG5hKGFpZCwgXCJnb29kX3dvcmtcIiwgaW50ZW5zaXR5PTAuMywgZGVwdD1cInRyYWRpbmdcIilcbiAgICAgICAgICAgIHByaW50KGZcIltUUkFERVJdIOKalu+4jyAge3RyYWRlcn0g0LLQt9GP0LsgK3twbmxfcn1SIOKGkiBnb29kX3dvcmtcIilcbiAgICAgICAgZWxpZiBwbmxfciA8IDAgYW5kIGFnYWluc3Rfd2luZDpcbiAgICAgICAgICAgIHN5bmNfdG9fZG5hKGFpZCwgXCJiYWRfd29ya1wiLCBpbnRlbnNpdHk9MC4zLCBkZXB0PVwidHJhZGluZ1wiKVxuICAgICAgICAgICAgcHJpbnQoZlwiW1RSQURFUl0g4pqW77iPICB7dHJhZGVyfSB7ZGlyZWN0aW9ufSDQn9Cg0J7QotCY0JIg0LLQtdGC0YDQsCAoe2JpYXN9KSBcIlxuICAgICAgICAgICAgICAgICAgZlwi4oaSIHtwbmxfcn1SIOKGkiBiYWRfd29yayAo0L3QsNGA0YPRiNC40LsgwqcxMilcIilcbiAgICAgICAgZWxzZTpcbiAgICAgICAgICAgIHByaW50KGZcIltUUkFERVJdIOKalu+4jyAge3RyYWRlcn0ge3BubF9yfVIg0L/QviDQstC10YLRgNGDL9GI0YLQuNC70YwgXCJcbiAgICAgICAgICAgICAgICAgIGZcIihiaWFzPXtiaWFzfSkg4oCUINGH0LXRgdGC0L3Ri9C5INC80LjQvdGD0YEsINCx0LXQtyDQvdCw0LrQsNC30LDQvdC40Y9cIilcbiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6XG4gICAgICAgIHByaW50KGZcIltUUkFERVJdIOKaoO+4jyAg0YHRg9C0INGC0YDQtdC50LTQtdGA0LAg0L3QtSDRgdGA0LDQsdC+0YLQsNC7ICh7ZX0pXCIpXG4iXSwgWyLQstC10YLQtdGAINCy0YXQvtC00LAg0LIg0L/QvtC30LjRhtC40Y4iLCAiICAgICAgICAgICAgXCJvcGVuZWRfYXRcIjogYmFyX3RpbWUsXG4gICAgICAgICAgICBcInBubFwiOiAgICAgICBOb25lLFxuICAgICAgICB9KSIsICIgICAgICAgICAgICBcIm9wZW5lZF9hdFwiOiBiYXJfdGltZSxcbiAgICAgICAgICAgICMgRU5HSU5FX09ORV9ET09SX1YxOiDQv9C+0LfQuNGG0LjRjyDQt9Cw0L/QvtC80LjQvdCw0LXRgiDQktCV0KLQldCgINCy0YXQvtC00LAgKGdsb2JhbF9iaWFzXG4gICAgICAgICAgICAjINC90LAg0LHQsNGA0LUg0LLRhdC+0LTQsCkuINCd0LAg0LfQsNC60YDRi9GC0LjQuCDRgdGD0LQg0YLRgNC10LnQtNC10YDQsCDRgdCy0LXRgNC40YI6INC/0L4g0LLQtdGC0YDRgyDQuNC70Lgg0L/RgNC+0YLQuNCyLlxuICAgICAgICAgICAgXCJlbnRyeV9iaWFzXCI6IGNoYWluLmdldChcIm1hcmtldF9kYXRhXCIsIHt9KS5nZXQoXCJnbG9iYWxfYmlhc1wiKSxcbiAgICAgICAgICAgIFwicG5sXCI6ICAgICAgIE5vbmUsXG4gICAgICAgIH0pIl0sIFsi0LLRi9C30L7QsiDRgdGD0LTQsCDRgtGA0LXQudC00LXRgNCwIiwgIiAgICAgICAgIyBJU0tSQV9GQUlSX0pVREdFTUVOVF9WMTog0KHQo9CUINCY0KHQmtCg0Ksg0J/QniDQlNCV0JvQoyDigJQg0L/QviBwbmxfciDQt9Cw0LrRgNGL0YLQvtC5INGB0LTQtdC70LrQuC5cbiAgICAgICAgX2p1ZGdlX2lza3JhX2J5X3Jlc3VsdChwb3MsIHBubF9yKSIsICIgICAgICAgICMgSVNLUkFfRkFJUl9KVURHRU1FTlRfVjE6INCh0KPQlCDQmNCh0JrQoNCrINCf0J4g0JTQldCb0KMg4oCUINC/0L4gcG5sX3Ig0LfQsNC60YDRi9GC0L7QuSDRgdC00LXQu9C60LguXG4gICAgICAgIF9qdWRnZV9pc2tyYV9ieV9yZXN1bHQocG9zLCBwbmxfcilcbiAgICAgICAgIyBFTkdJTkVfT05FX0RPT1JfVjE6INCh0KPQlCDQotCg0JXQmdCU0JXQoNCQIOKAlCDQvtC9INGA0LXRiNC40Lsg0LLRhdC+0LTQuNGC0YwsINC+0L0g0L7RgtCy0LXRh9Cw0LXRgi5cbiAgICAgICAgIyDQnNC40L3Rg9GBINCf0KDQntCi0JjQkiDQstC10YLRgNCwIOKGkiBiYWRfd29yay4g0J/QviDQstC10YLRgNGDL9GI0YLQuNC70Ywg4oaSINGH0LXRgdGC0L3Ri9C5INC80LjQvdGD0YEuXG4gICAgICAgIF9qdWRnZV90cmFkZXJfYnlfcmVzdWx0KHBvcywgcG5sX3IpIl1d").decode("utf-8"))
+
+def main():
+    if not HOOKS.exists():
+        print(f"❌ Нет {HOOKS} — запусти из КОРНЯ репы"); sys.exit(1)
+    text = HOOKS.read_text(encoding="utf-8")
+    if MARKER in text:
+        print("  = hooks.py: ответственность уже перераспределена — пропуск")
+        return
+    bak = HOOKS.with_suffix(f".py.bak_{datetime.now():%Y%m%d_%H%M%S}")
+    shutil.copy2(HOOKS, bak)
+    print(f"  ↻ hooks.py: бэкап {bak.name}")
+    miss = 0
+    for desc, old, new in EDITS:
+        if old not in text:
+            print(f"  ⚠ якорь не найден: {desc}"); miss += 1; continue
+        text = text.replace(old, new, 1)
+        print(f"  ✓ {desc}")
+    if miss:
+        print(f"  ❌ {miss} якорь(ей) не найдено — НЕ сохраняю, откат. Проверь вручную.")
+        return
+    HOOKS.write_text(text, encoding="utf-8")
+    try:
+        py_compile.compile(str(HOOKS), doraise=True)
+    except py_compile.PyCompileError as e:
+        shutil.copy2(bak, HOOKS)
+        print(f"  ❌ синтаксис сломан — ОТКАЧЕНО ({e})"); sys.exit(1)
+    print("  ✅ hooks.py: ответственность перераспределена.")
+    print("     Искра чиста (минус не наказывает). Трейдер отвечает за вход.")
+
+if __name__ == "__main__":
+    main()
