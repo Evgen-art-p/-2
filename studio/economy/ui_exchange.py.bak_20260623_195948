@@ -426,19 +426,6 @@ def page_exchange() -> None:
     def set_mode(mode: str):
         """Переключить тестер/реал. Прячет/показывает поле баров и СТОП."""
         state["mode"] = mode
-        # ENGINE_ONE_DOOR_V1: кнопка пишет включённый кран на площадь
-        # (trading_state["feed"]). Источник прочитает и направит бар:
-        # tester → папка test_data, real → терминал. Один движок, два крана.
-        try:
-            from studio.modules.trading.feed_source import set_feed_mode
-            _sym = None
-            _assets = state.get("loaded_assets", [])
-            _ai = state.get("active_asset")
-            if _assets and _ai is not None and 0 <= _ai < len(_assets):
-                _sym = _assets[_ai].get("symbol")
-            set_feed_mode(mode, _sym)
-        except Exception as _e:
-            print(f"[EXCHANGE] feed_source не подключён: {_e}")
         is_tester = (mode == "tester")
         # видимость рычагов тестера
         for key in ("bars_input", "stop_btn", "bars_label"):

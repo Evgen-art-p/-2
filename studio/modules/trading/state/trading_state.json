@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated": "2026-06-23T19:13:10.619982",
+  "updated": "2026-06-23T21:05:13.848226",
   "iskra": {
     "t1_status": "NOT_FOUND",
     "zero_point_price": null,
-    "history_dna": "MAX|102.95988235|2026.06.17 04:00",
-    "trend_direction": "BEAR",
+    "history_dna": "MIN:-27.34864706@3285.31 2025.08.01 08:00",
+    "trend_direction": "BULL",
     "found_timeframe": null
   },
   "positions": [],
@@ -25,7 +25,7 @@
   },
   "panic": {
     "panic_phase": "TENSION",
-    "crowd_sentiment": "Объёмы бешеные, а цена стоит — СЕЙЧАС РВАНЁТ! Все ломятся, никто не выходит!",
+    "crowd_sentiment": "Объёмы бешеные, а цена ни с места! Все толкаются, никто не может сдвинуть — сейчас как рванёт!!!",
     "action_for_traders": "HIGH_SKEPTICISM",
     "history_dna": "",
     "scale_timeframe": "H4"
@@ -34,13 +34,13 @@
     "fractal_valid": true,
     "fractal_side": "SHORT",
     "fractal_price": 1240.92,
-    "absorption_ratio": 0.88,
+    "absorption_ratio": 0.85,
     "scale_timeframe": "H4",
     "history_dna": ""
   },
   "brut": {
     "verdict": "REJECTED",
-    "reason": "Фрактал SHORT 1240.92 не пробит — вход не по мне. Нет истории баров для расчёта Air Bag — без подушки сделка грязная.",
+    "reason": "нет пробоя фрактала — фрактал SHORT на 1240.92 не пробит, цена выше",
     "direction": null,
     "entry": null,
     "stop": null,
@@ -51,7 +51,7 @@
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Медвежья дивергенция на хае 1259.11, разворотный бар конца волны C, Паникёр TENSION читается против толпы",
+    "reason": "Медвежья дивергенция на high, глобальный BEAR, TENSION паникёра, валидный SHORT фрактал внизу — конец коррекции.",
     "direction": "SHORT",
     "entry": 1255.89,
     "stop": 1259.12,
@@ -62,7 +62,7 @@
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "Нет разворотного медвежьего бара на опоре; цена выше Teeth без касания, опора отсутствует.",
+    "reason": "Разворотный медвежий бар на откате с опорой и разрядкой AO не сформирован, цена выше Teeth, текущий бар бычий — продолжаю ждать.",
     "direction": null,
     "entry": null,
     "stop": null,
@@ -70,5 +70,9 @@
     "action": "WAIT",
     "new_stop": null,
     "add_lot": null
+  },
+  "feed": {
+    "mode": "tester",
+    "symbol": "XAUUSD"
   }
 }

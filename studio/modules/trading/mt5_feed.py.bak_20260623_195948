@@ -196,20 +196,11 @@ def pull_bars(symbol: str, timeframe: str, count: int = 2000):
     внутри неё) — здесь второй раз его не трогаем, чтобы не было
     гонки с фоновым насосом.
     """
-    # ENGINE_ONE_DOOR_V1: дверь спрашивает ИСТОЧНИК (feed_source),
-    # а не лезет в терминал напрямую. Источник смотрит включённый кран
-    # (real|tester) и идёт в терминал ИЛИ в папку test_data. Так спуск
-    # Искры в тестовом режиме НЕ поднимает MT5 — берёт этажи из CSV.
-    try:
-        from studio.modules.trading.feed_source import bars as _source_bars
-        return _source_bars(symbol, timeframe, count)
-    except Exception as _e:
-        print(f"[FEED] ℹ️  источник недоступен ({_e}) — прямой терминал")
-        mt5 = _terminal()
-        if mt5 is None:
-            print("[FEED] ℹ️  MetaTrader5 не установлен — pull_bars простаивает")
-            return [], None
-        return _fetch(mt5, symbol, timeframe, count)
+    mt5 = _terminal()
+    if mt5 is None:
+        print("[FEED] ℹ️  MetaTrader5 не установлен — pull_bars простаивает")
+        return [], None
+    return _fetch(mt5, symbol, timeframe, count)
 
 
 

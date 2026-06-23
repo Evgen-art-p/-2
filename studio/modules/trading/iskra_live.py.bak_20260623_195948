@@ -352,11 +352,13 @@ def run_iskra(symbol: str = "XAUUSD", timeframe: str = "H4",
       }
     """
     # ── 1. Поднять контур: бары + point из терминала ─────────
-    # ENGINE_ONE_DOOR_V1: рабочий бар через ИСТОЧНИК (кран real|tester),
-    # не через прямой терминал. В тестовом режиме берётся из папки —
-    # MT5 не поднимается. Реал-кран идёт в терминал как прежде.
-    from studio.modules.trading.mt5_feed import pull_bars
-    bars, point = pull_bars(symbol, timeframe, bars_count)
+    from studio.modules.trading.mt5_feed import _terminal, _fetch
+    mt5 = _terminal()
+    if mt5 is None:
+        return {"ok": False, "error": "MetaTrader5 не установлен в Python",
+                "narrative": "", "signal": {}, "stats": _load_stats(), "market": {}}
+
+    bars, point = _fetch(mt5, symbol, timeframe, bars_count)
     if not bars or point is None:
         return {"ok": False,
                 "error": f"Терминал не дал котировки {symbol} {timeframe}. "
