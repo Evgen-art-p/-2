@@ -1,49 +1,24 @@
 {
   "version": 1,
-  "updated": "2026-06-24T01:43:16.104900",
+  "updated": "2026-06-25T21:24:24.512351",
   "iskra": {
-    "t1_status": "NOT_FOUND",
-    "zero_point_price": null,
-    "history_dna": "MAX_AO=41.31982353@2025.08.06 08:00 price_high=3378.58",
-    "trend_direction": "BULL",
+    "t1_status": "DETECTED",
+    "zero_point_price": 1252.55,
+    "history_dna": "MIN pivot ao=-36.68 price_low=1250.31 2016.10.07; BULLISH divergence detected; descent compass=BULL from H4, point found at H4 1252.55",
+    "trend_direction": "BEAR",
     "found_timeframe": null
   },
   "positions": [],
-  "morj": {
-    "morj_status": "AWAKE",
-    "wave_1_validated": false,
-    "tension_peak": false,
-    "history_dna": "",
-    "scale_timeframe": "H4",
-    "inherited_dir": "BULL",
-    "alligator_state": {
-      "sleeping": false,
-      "opening": false,
-      "mature": true,
-      "bars_open": 138
-    }
-  },
-  "panic": {
-    "panic_phase": "TENSION",
-    "crowd_sentiment": "Боже, объёмы бешеные, мы все толкаем — а цена ни с места, нас держат, сейчас как шандарахнет!",
-    "action_for_traders": "HIGH_SKEPTICISM",
-    "history_dna": "",
-    "scale_timeframe": "H4"
-  },
-  "hans": {
-    "fractal_valid": true,
-    "fractal_side": "LONG",
-    "fractal_price": 1253.22,
-    "absorption_ratio": 0.9,
-    "scale_timeframe": "H4",
-    "history_dna": ""
+  "feed": {
+    "mode": "real",
+    "symbol": "XAUUSD"
   },
   "brut": {
     "verdict": "APPROVED",
-    "reason": "пробой валидного фрактала LONG за пастью в сторону глобального BULL — мой вход.",
+    "reason": "пробой валидного фрактала LONG за пастью по глобальному BULL",
     "direction": "LONG",
-    "entry": 1253.23,
-    "stop": 1240.91,
+    "entry": 1215.98,
+    "stop": 1201.99,
     "lot": 0.1,
     "action": "ENTER",
     "new_stop": null,
@@ -51,10 +26,10 @@
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Медвежья дивергенция на high=zero_point, TENSION толпы, фрактал LONG как ловушка. Глобальный BEAR по дневнику. Плачу за ранний вход.",
-    "direction": "SHORT",
-    "entry": 1255.89,
-    "stop": 1259.12,
+    "reason": "Конец волны C: дивергенция DETECTED, фрактал LONG валиден, DECEPTION паникёра — толпа на обмане. РБ high 1217.73.",
+    "direction": "LONG",
+    "entry": 1217.74,
+    "stop": 1214.58,
     "lot": 0.1,
     "action": "ENTER",
     "new_stop": null,
@@ -62,7 +37,7 @@
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "откат волны 2 не сформирован",
+    "reason": "Нет отката волны 2: цена над Зубами тестирует Т0, нет опоры в пасти или на уровне волны 4, нет разрядки AO к нулю.",
     "direction": null,
     "entry": null,
     "stop": null,
@@ -71,8 +46,33 @@
     "new_stop": null,
     "add_lot": null
   },
-  "feed": {
-    "mode": "tester",
-    "symbol": "XAUUSD"
+  "morj": {
+    "morj_status": "AWAKE",
+    "wave_1_validated": false,
+    "tension_peak": false,
+    "history_dna": "",
+    "scale_timeframe": "H4",
+    "inherited_dir": "BEAR",
+    "alligator_state": {
+      "sleeping": false,
+      "opening": false,
+      "mature": true,
+      "bars_open": 220
+    }
+  },
+  "panic": {
+    "panic_phase": "TENSION",
+    "crowd_sentiment": "Объёмы бешеные, а цена стоит на месте! Это ловушка, сейчас все упадут!",
+    "action_for_traders": "HIGH_SKEPTICISM",
+    "history_dna": "",
+    "scale_timeframe": "H4"
+  },
+  "hans": {
+    "fractal_valid": true,
+    "fractal_side": "SHORT",
+    "fractal_price": 1255.5,
+    "absorption_ratio": 0.85,
+    "scale_timeframe": "H4",
+    "history_dna": ""
   }
 }

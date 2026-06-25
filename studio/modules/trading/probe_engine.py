@@ -53,6 +53,21 @@ def main():
     print(f"  спуск Искры заперт (путь 1 = один этаж/файл)")
     print("=" * 60)
 
+    # PROBE_FEED_TESTER_V1: включаем кран tester ДО любого спуска.
+    # Без этого feed_source идёт в терминал (mode=real по умолч.)
+    # за старшими ТФ и получает 'Нет котировок'. Лесенка золота
+    # лежит в test_data/ — кран tester её и читает. Терминал спит.
+    _feed_prev = None
+    try:
+        from studio.modules.trading.feed_source import (
+            get_feed_mode, set_feed_mode)
+        _feed_prev = get_feed_mode()
+        set_feed_mode("tester", args.symbol.upper())
+        print(f"  кран → TESTER (папка test_data), символ "
+              f"{args.symbol.upper()} · терминал не трогаем")
+    except Exception as e:
+        print(f"  (кран не переключился: {e})")
+
     # ── чистим стол этого символа перед заходом (как тестер Шефа) ──
     try:
         from studio.modules.trading.hooks import load_trading_state, save_trading_state
@@ -145,6 +160,14 @@ def main():
                 cnt += 1
         res["council_woke"] = cnt
 
+    # PROBE_FEED_TESTER_V1: возвращаем кран как был — не оставляем
+    # цех в тестовом режиме после верстака.
+    try:
+        if _feed_prev is not None:
+            set_feed_mode(_feed_prev.get("mode", "real"),
+                          _feed_prev.get("symbol"))
+    except Exception:
+        pass
     print("\n" + "=" * 60)
     print(f"  прошёл баров: {res['bars']}")
     print(f"  Точек Ноль (звонков Совету): {res['council_woke']}")
