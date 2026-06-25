@@ -1,5 +1,5 @@
 {
-  "id": "A07_AVANTURIST",
+  "id": "157_AVANTURIST",
   "name": "Авантюрист. Илья.",
   "workshop": "trading",
   "quarter": "Торговый Квартал",
@@ -34,6 +34,5 @@
     "GND": 100.0,
     "Теплики": 100.0,
     "Световики": 0.0
-  },
-  "registry_id": "157_AVANTURIST"
+  }
 }
