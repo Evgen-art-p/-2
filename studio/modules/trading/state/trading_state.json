@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "updated": "2026-06-25T21:24:24.512351",
+  "updated": "2026-06-25T23:04:43.745081",
   "iskra": {
-    "t1_status": "DETECTED",
-    "zero_point_price": 1252.55,
-    "history_dna": "MIN pivot ao=-36.68 price_low=1250.31 2016.10.07; BULLISH divergence detected; descent compass=BULL from H4, point found at H4 1252.55",
-    "trend_direction": "BEAR",
+    "t1_status": "NOT_FOUND",
+    "zero_point_price": null,
+    "history_dna": "AO_max_41.320_pivot_MAX_date_2025-08-06_08:00_price_3378.58_compass_BULL_zero_null",
+    "trend_direction": "BULL",
     "found_timeframe": null
   },
   "positions": [],
@@ -14,22 +14,22 @@
     "symbol": "XAUUSD"
   },
   "brut": {
-    "verdict": "APPROVED",
-    "reason": "пробой валидного фрактала LONG за пастью по глобальному BULL",
-    "direction": "LONG",
-    "entry": 1215.98,
-    "stop": 1201.99,
-    "lot": 0.1,
-    "action": "ENTER",
+    "verdict": "REJECTED",
+    "reason": "NO_NEW_FRACTAL_BREAK",
+    "direction": null,
+    "entry": null,
+    "stop": null,
+    "lot": null,
+    "action": "WAIT",
     "new_stop": null,
     "add_lot": null
   },
   "avan": {
     "verdict": "APPROVED",
-    "reason": "Конец волны C: дивергенция DETECTED, фрактал LONG валиден, DECEPTION паникёра — толпа на обмане. РБ high 1217.73.",
+    "reason": "BUY_STOP_ON_RB",
     "direction": "LONG",
-    "entry": 1217.74,
-    "stop": 1214.58,
+    "entry": 1259.12,
+    "stop": 1255.89,
     "lot": 0.1,
     "action": "ENTER",
     "new_stop": null,
@@ -37,7 +37,7 @@
   },
   "cons": {
     "verdict": "REJECTED",
-    "reason": "Нет отката волны 2: цена над Зубами тестирует Т0, нет опоры в пасти или на уровне волны 4, нет разрядки AO к нулю.",
+    "reason": "Нет отката волны 2 — цена у Т0, нет Разворотного Бара и опоры.",
     "direction": null,
     "entry": null,
     "stop": null,
@@ -48,30 +48,30 @@
   },
   "morj": {
     "morj_status": "AWAKE",
-    "wave_1_validated": false,
+    "wave_1_validated": true,
     "tension_peak": false,
     "history_dna": "",
     "scale_timeframe": "H4",
-    "inherited_dir": "BEAR",
+    "inherited_dir": "BULL",
     "alligator_state": {
       "sleeping": false,
       "opening": false,
       "mature": true,
-      "bars_open": 220
+      "bars_open": 138
     }
   },
   "panic": {
     "panic_phase": "TENSION",
-    "crowd_sentiment": "Объёмы бешеные, а цена стоит на месте! Это ловушка, сейчас все упадут!",
+    "crowd_sentiment": "Объёмы ломовые, а воз и ныне там! Пружина сжимается до упора, сейчас как шарахнет!",
     "action_for_traders": "HIGH_SKEPTICISM",
     "history_dna": "",
     "scale_timeframe": "H4"
   },
   "hans": {
     "fractal_valid": true,
-    "fractal_side": "SHORT",
-    "fractal_price": 1255.5,
-    "absorption_ratio": 0.85,
+    "fractal_side": "LONG",
+    "fractal_price": 1253.22,
+    "absorption_ratio": 0.9,
     "scale_timeframe": "H4",
     "history_dna": ""
   }
