@@ -1,15 +1,15 @@
 {
   "A01": {
-    "warmth": 0.654,
-    "trust": 0.591,
+    "warmth": 0.639,
+    "trust": 0.582,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T15:24:11.874334",
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A03": {
-    "warmth": 0.625,
-    "trust": 0.575,
+    "warmth": 0.613,
+    "trust": 0.568,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T15:24:59.343576",

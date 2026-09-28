@@ -1,23 +1,23 @@
 {
   "A06": {
-    "warmth": 0.757,
-    "trust": 0.651,
+    "warmth": 0.731,
+    "trust": 0.636,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-14T17:52:32.056946",
     "memory": "Передача работы в пайплайне turbo"
   },
   "A08": {
-    "warmth": 0.85,
-    "trust": 0.71,
+    "warmth": 0.815,
+    "trust": 0.689,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-14T17:52:32.072949",
     "memory": "Передача работы в пайплайне turbo"
   },
   "A09": {
-    "warmth": 0.525,
-    "trust": 0.515,
+    "warmth": 0.522,
+    "trust": 0.514,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-14T17:50:47.597651",

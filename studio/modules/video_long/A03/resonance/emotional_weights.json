@@ -1,15 +1,15 @@
 {
   "A02": {
-    "warmth": 0.689,
-    "trust": 0.611,
+    "warmth": 0.67,
+    "trust": 0.6,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T23:08:02.492181",
     "memory": "Передача работы в пайплайне bible"
   },
   "A04": {
-    "warmth": 1.0,
-    "trust": 0.84,
+    "warmth": 0.95,
+    "trust": 0.806,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T23:15:09.538160",

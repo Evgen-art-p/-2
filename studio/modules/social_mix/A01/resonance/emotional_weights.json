@@ -8,24 +8,24 @@
     "memory": "Отлично справилась с последним раном."
   },
   "A02": {
-    "warmth": 0.725,
-    "trust": 0.635,
+    "warmth": 0.703,
+    "trust": 0.622,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T15:24:11.869333",
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A04": {
-    "warmth": 0.551,
-    "trust": 0.53,
+    "warmth": 0.546,
+    "trust": 0.527,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T12:10:52.203503",
     "memory": "Передача работы в пайплайне content_plan"
   },
   "A05": {
-    "warmth": 0.517,
-    "trust": 0.51,
+    "warmth": 0.515,
+    "trust": 0.509,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T11:49:03.653293",

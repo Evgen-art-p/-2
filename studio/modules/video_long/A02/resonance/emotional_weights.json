@@ -1,23 +1,23 @@
 {
   "A01": {
-    "warmth": 0.706,
-    "trust": 0.621,
+    "warmth": 0.685,
+    "trust": 0.609,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T23:07:01.744311",
     "memory": "Передача работы в пайплайне bible"
   },
   "A03": {
-    "warmth": 0.775,
-    "trust": 0.665,
+    "warmth": 0.748,
+    "trust": 0.649,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T23:08:02.488713",
     "memory": "Передача работы в пайплайне bible"
   },
   "A04": {
-    "warmth": 0.517,
-    "trust": 0.51,
+    "warmth": 0.515,
+    "trust": 0.509,
     "respect": 0.5,
     "rivalry": 0.0,
     "last_interaction": "2026-06-06T22:24:04.677130",

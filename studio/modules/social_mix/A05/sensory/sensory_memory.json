@@ -1,23 +1,6 @@
 {
-  "entries": [
-    {
-      "ts": "2026-06-06T11:48:43.670267",
-      "type": "work",
-      "source": "pipeline",
-      "content": "Выполнил задачу: human_text",
-      "tags": [],
-      "emotional_weight": 0.3
-    },
-    {
-      "ts": "2026-06-06T14:20:44.950678",
-      "type": "work",
-      "source": "pipeline",
-      "content": "Выполнил задачу: Шеф, приступаю к разметке. Композиция — это закон.",
-      "tags": [],
-      "emotional_weight": 0.3
-    }
-  ],
-  "summary": "",
+  "entries": [],
+  "summary": "\n[В архиве 2 воспоминаний за прошлые месяцы — Оле поднимет по запросу]",
   "last_location": "",
   "location_tags": []
 }
